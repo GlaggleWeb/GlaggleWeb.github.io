@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Glaggle Zahlenraten</title>
     <style>
-        body { text-align: center; font-family: sans-serif; padding-top: 50px; background-color: white; }
+        body { text-align: center; font-family: sans-serif; padding-top: 100px; background-color: white; }
         input { padding: 20px 30px; font-size: 18px; width: 80px; border-radius: 20px; border: 1px solid #ccc; }
         button { padding: 20px 50px; font-size: 18px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 15px; }
         button:hover { background-color: #0056b3; }
@@ -32,11 +32,11 @@
                 messageField.innerText = "🎉 Richtig! Du hast sie gefunden!";
                 messageField.style.color = "green";
             } else if (userGuess < secretBox) {
-                messageField.innerText = "Zu klein! Probier es nochmal.";
+                messageField.innerText = "🧐Zu klein! Probier es nochmal.";
                 messageField.style.color = "orange";
             } else {
-                messageField.innerText = "Zu groß! Probier es nochmal.";
-                messageField.style.color = "red";
+                messageField.innerText = "🤨Zu groß! Probier es nochmal.";
+                messageField.style.color = "orange";
             }
         }
     </script>
