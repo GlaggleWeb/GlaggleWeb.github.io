@@ -5,7 +5,7 @@
     <meta name="description" content="Glaggle - Glaggle your life">
     <meta name="keywords" content="Glaggle, GlaggleWeb, Zahlenraten, und noch vieles mehr, das bald verfügbar sein wird!">
      <meta name="author" content="Glaggle">
-    <title>Glaggle</title>
+    <title>Glaggle for Phone</title>
     <link rel="icon" type="image/png" href="favicon.ico?v=2">
     <style>
       body {background-color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0;}
@@ -17,6 +17,16 @@
 
 .web-button:hover {background-color: #2E94D1;}
     </style>
+    <script>
+function checkDevice() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+
+    if (isMobile) {
+        window.location.href = "https://glaggle.ch/phone"; }
+}
+
+checkDevice();
+    </script>
 </head>
 <body>
 
