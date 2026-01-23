@@ -2,11 +2,201 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Glame - Your Chatbot">
-    <meta name="keywords" content="Glame your Chatbot">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Glame - Dein Chatbot">
+    <meta name="keywords" content="Glame, Chatbot, Glaggle">
     <meta name="author" content="Glaggle">
     <title>Glame</title>
     <style>
-      body {background-color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0;}
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #chat-wrapper {
+            width: 100%;
+            max-width: 400px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-header {
+            background: #333;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        #status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-left: auto;
+            box-shadow: 0 0 5px #4caf50;
+        }
+
+        #chat-window {
+            flex: 1;
+            padding: 15px;
+            background: #ffffff;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bot-msg, .user-msg {
+            padding: 10px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .bot-msg {
+            align-self: flex-start;
+            background: #e9e9eb;
+            color: #000;
+            border-bottom-left-radius: 2px;
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        #chat-input-area {
+            display: flex;
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            border-radius: 25px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: #007bff;
+        }
+
+        #send-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        #send-btn:hover {
+            background: #0056b3;
+        }
     </style>
+    <script>
+        window.onload = function() {
+            // Datenbank für Antworten
+            const botDaten = {
+                "hallo": "Glaggle-Grüße! Wie kann ich dir heute helfen?",
+                "wer bist du": "Ich bin Glame, dein persönlicher Glaggle-Bot.",
+                "glaggle": "Glaggle ist mehr als nur ein Name – es ist ein Lebensgefühl!",
+                "spiel": "Ich liebe Spiele! Zahlenraten ist super, probier es mal aus.",
+                "logo": "Mein Logo repräsentiert die Welt von Glaggle.",
+                "hilfe": "Frag mich nach 'hallo', 'spiel', 'logo' oder 'wer bist du'!",
+                "default": "Das verstehe ich noch nicht ganz. Frag mich mal nach 'hilfe'."
+            };
+
+            const inputField = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-btn");
+            const chatWindow = document.getElementById("chat-window");
+
+            function antwortSenden() {
+                const text = inputField.value.trim();
+                const msg = text.toLowerCase();
+
+                if (text === "") return;
+
+                // User Nachricht anzeigen
+                chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+                inputField.value = ""; // Feld leeren
+
+                // Automatisch nach unten scrollen
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                // Bot Logik
+                let botAntwort = botDaten["default"];
+                
+                for (let key in botDaten) {
+                    if (msg.includes(key) && key !== "default") {
+                        botAntwort = botDaten[key];
+                    }
+                }
+
+                // "KI" Verzögerung simulieren
+                setTimeout(() => {
+                    chatWindow.innerHTML += `<div class="bot-msg"><b>Bot:</b> ${botAntwort}</div>`;
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }, 700);
+            }
+
+            // Klick auf den Button
+            sendButton.onclick = antwortSenden;
+
+            // Enter-Taste im Input-Feld
+            inputField.onkeypress = function(e) {
+                if (e.key === "Enter") {
+                    antwortSenden();
+                }
+            };
+        };
+    </script>
 </head>
+<body>
+
+<div id="chat-wrapper">
+    <div id="chat-header">
+        <div style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">G</div>
+        <span>Glame</span>
+        <div id="status-dot"></div>
+    </div>
+    <div id="chat-window">
+        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
+    </div>
+    <div id="chat-input-area">
+        <input type="text" id="user-input" placeholder="Nachricht schreiben..." autocomplete="off">
+        <button id="send-btn">➤</button>
+    </div>
+</div>
+
+</body>
+</html>
