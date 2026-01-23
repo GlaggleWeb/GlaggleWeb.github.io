@@ -1,1 +1,12 @@
-hallo
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Glame - Your Chatbot">
+    <meta name="keywords" content="Glame your Chatbot">
+    <meta name="author" content="Glaggle">
+    <title>Glame</title>
+    <style>
+      body {background-color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0;}
+    </style>
+</head>
