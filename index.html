@@ -8,34 +8,49 @@
     <title>Glaggle</title>
     <link rel="icon" type="image/png" href="favicon.ico?v=2">
     <style>
-      body {background-color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0;}
+        body {
+            background-color: white; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
         img {
-            width: 300px; 
+            width: 400px; /* Etwas größer wie auf deinem Screenshot */
             height: auto;
-        .button-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px; /* Abstand zwischen den Buttons */
-        margin-top: 20px;
-    }
+            margin-bottom: 40px;
+        }
 
-    .web-button {
-        display: inline-block;
-        padding: 15px 30px;
-        background-color: #70C4F7;
-        color: white;
-        text-decoration: none;
-        font-weight: bold;
-        border-radius: 20px;
-        font-family: sans-serif;
-        text-align: center;
-        min-width: 200px; 
-        transition: background-color 0.3s ease;
-    }
+        /* Das hier macht aus den Links wieder Buttons */
+        .button-row {
+            display: flex;
+            gap: 20px; /* Abstand zwischen den Buttons */
+        }
 
-    .web-button:hover {
-        background-color: #2E94D1;
-    }
+        .web-button {
+            display: inline-block; 
+            padding: 15px 30px;  
+            background-color: #70C4F7; /* Dein Glaggle-Blau */
+            color: white; 
+            text-decoration: none; 
+            font-weight: bold;
+            border-radius: 50px; /* Rundere Ecken für den modernen Look */
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .web-button:hover {
+            background-color: #2E94D1;
+            transform: scale(1.05); /* Kleiner Zoom-Effekt beim Drüberfahren */
+        }
     </style>
     <script>
 function checkDevice() {
