@@ -12,10 +12,30 @@
         img {
             width: 300px; 
             height: auto;
-        }
-        .web-button {display: inline-block; padding: 15px 30px;  background-color: #70C4F7; color: white; text-decoration: none; font-weight: bold;border-radius: 20px;  font-family: sans-serif;}
+        .button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Abstand zwischen den Buttons */
+        margin-top: 20px;
+    }
 
-.web-button:hover {background-color: #2E94D1;}
+    .web-button {
+        display: inline-block;
+        padding: 15px 30px;
+        background-color: #70C4F7;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 20px;
+        font-family: sans-serif;
+        text-align: center;
+        min-width: 200px; 
+        transition: background-color 0.3s ease;
+    }
+
+    .web-button:hover {
+        background-color: #2E94D1;
+    }
     </style>
     <script>
 function checkDevice() {
@@ -33,9 +53,15 @@ checkDevice();
     <h1>Glaggle your life!</h1>
     <img src="glagglelogo.png" alt="Glaggle Logo" style="mix-blend-mode: multiply;">
 
+    <div class="button-container">
+    <a href="https://glaggle.ch/glame" target="_blank" class="web-button">
+    Glame Chatbot →
+    </a>
+    
     <a href="https://glaggle.ch/zahlenraten" target="_blank" class="web-button">
     Glaggle Zahlenraten →
     </a>
-
+    </div>
+    
 </body>
 </html>
