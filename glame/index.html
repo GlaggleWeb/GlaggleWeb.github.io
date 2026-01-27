@@ -181,15 +181,20 @@ window.onload = function() {
 
 <div id="chat-wrapper">
     <div id="chat-header">
-        <div id="bot-logo-wrapper" style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-    <img src="glagglesonne.png" 
-         alt="Bot" 
-         style="width: 100%; height: 100%; object-fit: cover;"
-         onerror="this.style.display='none'; this.parentElement.innerHTML='G';">
-    </div>
-    <div id="chat-window">
+        <div id="bot-logo-wrapper" style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+            <img src="glagglesonne.png" 
+                 alt="Bot" 
+                 style="width: 100%; height: 100%; object-fit: cover;"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='G';">
+        </div>
+        
+        <span style="margin-left: 10px;">Glame 1.5</span>
+        
+        <div id="status-dot"></div>
+    </div> <div id="chat-window">
         <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
     </div>
+
     <div id="chat-input-area">
         <input type="text" id="user-input" placeholder="Chatte mit Glame 1.5" autocomplete="off">
         <button id="send-btn">➤</button>
