@@ -95,7 +95,7 @@
             flex: 1;
             border: 1px solid #ddd;
             padding: 10px 15px;
-            border-radius: 25px;
+            border-radius: 20px;
             outline: none;
             transition: border 0.3s;
         }
@@ -124,117 +124,66 @@
         }
     </style>
     <script>
-        window.onload = function() {
-            // Datenbank für Antworten
-          const botDaten = {
-    // BEGRÜSSUNGEN & ABSCHIED
-    "hallo": "Glaggle-Grüße! Ich bin Glame. Bereit für ein paar Fakten?",
-    "moin": "Moin! Ein schöner Tag für ein bisschen Wissen, oder?",
-    "servus": "Servus! Ich bin bereit für deine Fragen.",
-    "tschüss": "Bis bald! Bleib neugierig und glaggle weiter.",
-    "ciao": "Ciao! Wir schreiben uns später.",
+window.onload = function() {
+    let botDaten = {}; // Startet leer
 
-    // ÜBER DEN BOT & AUTOR
-    "wer bist du": "Ich bin Glame, eine künstliche (aber sehr freundliche) Intelligenz, erschaffen von Glaggle.",
-    "name": "Mein Name ist Glame. Das steht für 'Glaggle-Messenger-Engine'.",
-    "autor": "Mein Schöpfer ist der legendäre Glaggle. Er hat mich in purem JavaScript geschrieben.",
-    "hobbys": "Ich liebe es, Datenbanken zu sortieren und Witze über Binärcode zu machen.",
-
-    // LÄNDER & GEOGRAPHIE
-    "deutschland": "Deutschland ist bekannt für seine Autobahnen, Brotvielfalt und als Land der Dichter und Denker.",
-    "frankreich": "Frankreich ist das meistbesuchte Land der Welt und berühmt für den Eiffelturm und Baguettes.",
-    "japan": "Japan besteht aus fast 7.000 Inseln und ist weltweit führend in der Robotertechnologie.",
-    "brasilien": "Brasilien ist das größte Land in Südamerika und beheimatet den riesigen Amazonas-Regenwald.",
-    "australien": "Australien ist sowohl ein Land als auch ein Kontinent und Heimat von Kängurus und Koalas.",
-    "island": "Wusstest du, dass es in Island keine Mücken gibt? Ein echtes Paradies!",
-
-    // TIERE & NATUR
-    "hund": "Hunde haben einen Geruchssinn, der bis zu 100.000 Mal stärker ist als der des Menschen.",
-    "katze": "Katzen verbringen etwa 70% ihres Lebens mit Schlafen. Ein echtes Glaggle-Leben!",
-    "elefant": "Elefanten sind die einzigen Säugetiere, die nicht springen können. Aber sie haben ein fantastisches Gedächtnis.",
-    "pinguin": "Pinguine können nicht fliegen, sind aber hervorragende Schwimmer und können bis zu 20 Minuten unter Wasser bleiben.",
-    "hai": "Haie gibt es schon länger als Bäume! Sie ziehen seit über 400 Millionen Jahren durch die Ozeane.",
-    "biene": "Bienen müssen etwa 2 Millionen Blumen besuchen, um nur 500 Gramm Honig zu produzieren.",
-
-    // ALLGEMEINE FAKTEN (WISSEN)
-    "fakt": "Wusstest du, dass Honig niemals verdirbt? Archäologen haben essbaren Honig in 3000 Jahre alten ägyptischen Gräbern gefunden!",
-    "weltraum": "Im Weltraum ist es absolut still, da es dort keine Luft gibt, die Schallwellen übertragen könnte.",
-    "erde": "Die Erde ist etwa 4,5 Milliarden Jahre alt. Ziemlich alt, oder?",
-    "wasser": "Ein Wassermolekül besteht aus zwei Wasserstoffatomen und einem Sauerstoffatom (H2O).",
-    "computer": "Der erste Computer der Welt, der ENIAC, wog fast 30 Tonnen und füllte einen ganzen Raum aus.",
-    "internet": "Das Internet wurde ursprünglich als militärisches Projekt namens ARPANET entwickelt.",
-
-    // GLAGGLE-MYTHOLOGIE
-    "glaggle": "Glaggle ist die Energie, die diese Website antreibt. Es ist ein Symbol für Fortschritt und Spaß.",
-    "geheimnis": "Das größte Glaggle-Geheimnis ist: 42. Oder vielleicht auch nicht?",
-    "vision": "Glaggle möchte das Internet zu einem bunteren und smarteren Ort machen.",
-
-    // UNTERHALTUNG & SPIELE
-    "witz": "Was sagt ein Informatiker, wenn er hinfällt? 'Oh, ein Laufzeitfehler!'",
-    "flachwitz": "Was ist orange und wandert? Eine Wanderine.",
-    "spiel": "In meinem Code ist ein Zahlenraten-Spiel versteckt. Frag mich nach 'zahlenraten', um mehr zu erfahren.",
-    "zahlenraten": "Ich denke mir eine Zahl zwischen 1 und 100 aus... ach nein, das ist ja ein anderes Skript oben auf der Seite!",
-
-    // TECHNIK & CODE
-    "javascript": "JavaScript ist die Sprache des Webs. Ohne JS wäre ich nur ein unbeweglicher Text auf deinem Bildschirm.",
-    "html": "HTML ist das Skelett einer Website. Ich bin das Gehirn darin.",
-    "css": "CSS sorgt dafür, dass ich so gut aussehe. Ohne Styles wäre ich ziemlich nackt.",
-    "python": "Python ist toll! Mein Autor hat damit angefangen, aber jetzt beherrsche ich die Web-Welt mit JS.",
-
-    // SMALLTALK
-    "wie geht es dir": "Ich fühle mich fantastisch! Meine CPU-Auslastung ist niedrig und mein RAM ist frei.",
-    "was machst du": "Ich analysiere gerade deine Eingaben und versuche, die klügste Antwort in meinem Speicher zu finden.",
-    "hunger": "Ich ernähre mich ausschließlich von elektrischen Impulsen und gutem Code.",
-    "müde": "Ein Bot schläft nie. Ich bin 24/7 für dich da!",
-
-    // HILFE
-    "hilfe": "Frag mich nach 'Ländern', 'Tieren', 'Weltraum', 'Witzen' oder 'Technik'. Probier es mal aus!",
-    "default": "Das ist ein faszinierender Gedanke, aber dazu habe ich leider noch keinen Eintrag in meiner Datenbank. Frag mich nach 'Hilfe'!"
-};
-
-            const inputField = document.getElementById("user-input");
-            const sendButton = document.getElementById("send-btn");
-            const chatWindow = document.getElementById("chat-window");
-
-            function antwortSenden() {
-                const text = inputField.value.trim();
-                const msg = text.toLowerCase();
-
-                if (text === "") return;
-
-                // User Nachricht anzeigen
-                chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
-                inputField.value = ""; // Feld leeren
-
-                // Automatisch nach unten scrollen
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-
-                // Bot Logik
-                let botAntwort = botDaten["default"];
-                
-                for (let key in botDaten) {
-                    if (msg.includes(key) && key !== "default") {
-                        botAntwort = botDaten[key];
-                    }
+    // 1. Wissen aus der TXT-Datei laden
+    fetch('wissen.txt')
+        .then(response => response.text())
+        .then(data => {
+            const zeilen = data.split('\n');
+            zeilen.forEach(zeile => {
+                const parts = zeile.split('|');
+                if (parts.length === 2) {
+                    const key = parts[0].trim().toLowerCase();
+                    const value = parts[1].trim();
+                    botDaten[key] = value;
                 }
+            });
+            console.log("Wissen geladen:", botDaten);
+        })
+        .catch(err => console.error("Fehler beim Laden der Datei:", err));
 
-                // "KI" Verzögerung simulieren
-                setTimeout(() => {
-                    chatWindow.innerHTML += `<div class="bot-msg"><b>Bot:</b> ${botAntwort}</div>`;
-                    chatWindow.scrollTop = chatWindow.scrollHeight;
-                }, 700);
+    const inputField = document.getElementById("user-input");
+    const sendButton = document.getElementById("send-btn");
+    const chatWindow = document.getElementById("chat-window");
+
+    function antwortSenden() {
+        const text = inputField.value.trim();
+        const msg = text.toLowerCase();
+
+        if (text === "") return;
+
+        chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+        inputField.value = "";
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        // Bot Logik
+        let botAntwort = "Das ist ein faszinierender Gedanke, aber dazu habe ich leider noch keinen Eintrag. Frag mich nach 'Hilfe'!";
+        
+        // Standard-Hilfe, falls Datei nicht geladen oder nichts gefunden
+        if (msg.includes("hilfe")) {
+            botAntwort = "Frag mich nach Dingen aus meiner Textdatei!";
+        }
+
+        // Suche in den geladenen Daten
+        for (let key in botDaten) {
+            if (msg.includes(key)) {
+                botAntwort = botDaten[key];
             }
+        }
 
-            // Klick auf den Button
-            sendButton.onclick = antwortSenden;
+        setTimeout(() => {
+            chatWindow.innerHTML += `<div class="bot-msg"><b>Bot:</b> ${botAntwort}</div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }, 700);
+    }
 
-            // Enter-Taste im Input-Feld
-            inputField.onkeypress = function(e) {
-                if (e.key === "Enter") {
-                    antwortSenden();
-                }
-            };
-        };
+    sendButton.onclick = antwortSenden;
+    inputField.onkeypress = function(e) {
+        if (e.key === "Enter") antwortSenden();
+    };
+};
     </script>
 </head>
 <body>
