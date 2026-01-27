@@ -181,9 +181,11 @@ window.onload = function() {
 
 <div id="chat-wrapper">
     <div id="chat-header">
-        <div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: transparent;">
-           <img src="favicon.ico" alt="Bot Logo" style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
+        <div id="bot-logo-wrapper" style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <img src="dein-bild.png" 
+         alt="Bot" 
+         style="width: 100%; height: 100%; object-fit: cover;"
+         onerror="this.style.display='none'; this.parentElement.innerHTML='G';">
     </div>
     <div id="chat-window">
         <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
