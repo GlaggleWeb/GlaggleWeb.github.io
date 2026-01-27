@@ -1,0 +1,4 @@
+hallo|Hallo ich bin Glame dein Chatbot!
+deutschland|Deutschland ist bekannt für seine Autobahnen und Brotvielfalt.
+katze|Katzen verbringen etwa 70% ihres Lebens mit Schlafen.
+fakt|Wusstest du, dass Honig niemals verdirbt?
