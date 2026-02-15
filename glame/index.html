@@ -59,6 +59,7 @@
             font-weight: 500;
             line-height: 1.5;
             word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .bot-msg {
@@ -114,6 +115,11 @@
         #send-btn:hover {
             background: #00616E;
         }
+
+        @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
     </style>
     <script>
 // Variable außerhalb der Funktion, damit sich der Bot Dinge merken kann
