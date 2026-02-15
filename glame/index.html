@@ -116,66 +116,46 @@
         }
     </style>
     <script>
-window.onload = function() {
-    let botDaten = {}; // Startet leer
-
-    // 1. Wissen aus der TXT-Datei laden
-    fetch('wissen.txt')
-        .then(response => response.text())
-        .then(data => {
-            const zeilen = data.split('\n');
-            zeilen.forEach(zeile => {
-                const parts = zeile.split('|');
-                if (parts.length === 2) {
-                    const key = parts[0].trim().toLowerCase();
-                    const value = parts[1].trim();
-                    botDaten[key] = value;
-                }
-            });
-            console.log("Wissen geladen:", botDaten);
-        })
-        .catch(err => console.error("Fehler beim Laden der Datei:", err));
-
+async function antwortSenden() {
     const inputField = document.getElementById("user-input");
-    const sendButton = document.getElementById("send-btn");
     const chatWindow = document.getElementById("chat-window");
+    const text = inputField.value.trim();
 
-    function antwortSenden() {
-        const text = inputField.value.trim();
-        const msg = text.toLowerCase();
+    if (text === "") return;
 
-        if (text === "") return;
+    // Nachricht anzeigen
+    chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+    inputField.value = "";
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
-        inputField.value = "";
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+    const botMsgId = "bot-" + Date.now();
+    chatWindow.innerHTML += `<div class="bot-msg" id="${botMsgId}"><b>Glame:</b> ...</div>`;
 
-        // Bot Logik
-        let botAntwort = "Das tönt gut! Leider kann ich dir dabei nicht weiterhelfen. Bitte konsultiere unseren Kundendienst!";
+    try {
+        const p1 = "gsk_"; 
+        const p2 = "ImbDfvvSXzXJfw80vZP5WGdyb3FYknkYv77zRJZN3pfyA1PiRGWu"; // Hier nur den Teil nach gsk_ einfügen
         
-        // Standard-Hilfe, falls Datei nicht geladen oder nichts gefunden
-        if (msg.includes("hilfe")) {
-            botAntwort = "Hallo ich bin Glame. Dein Chatbot!";
-        }
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + p1 + p2,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [{ role: "user", content: text }]
+            })
+        });
 
-        // Suche in den geladenen Daten
-        for (let key in botDaten) {
-            if (msg.includes(key)) {
-                botAntwort = botDaten[key];
-            }
-        }
+        const data = await response.json();
+        const antwort = data.choices[0].message.content;
+        document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> ${antwort}`;
 
-        setTimeout(() => {
-            chatWindow.innerHTML += `<div class="bot-msg"><b>Bot:</b> ${botAntwort}</div>`;
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }, 700);
+    } catch (error) {
+        document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> Verbindung unterbrochen.`;
     }
-
-    sendButton.onclick = antwortSenden;
-    inputField.onkeypress = function(e) {
-        if (e.key === "Enter") antwortSenden();
-    };
-};
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
     </script>
 </head>
 <body>
