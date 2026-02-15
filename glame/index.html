@@ -8,6 +8,7 @@
     <meta name="author" content="Glaggle">
     <title>Glame</title>
     <style>
+       /* 1. GRUNDGERÜST */
         body {
             background-color: #f0f2f5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -17,87 +18,128 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* Verhindert doppeltes Scrollen am Handy */
         }
-#chat-wrapper {
-    width: 95%;
-    max-width: 450px;    /* Verhindert das Breitbild-Problem vom PC */
-    height: 85vh;        /* Nutzt 85% der Bildschirmhöhe */
-    max-height: 700px;   /* Begrenzt die Höhe auf großen Monitoren */
-    background: white;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    overflow: hidden;
-    margin: 20px auto;   /* Zentriert das Fenster */
-}
 
-/* WICHTIG: Die Blasen müssen "width: fit-content" haben */
-.bot-msg, .user-msg {
-    padding: 12px 16px;
-    border-radius: 18px;
-    font-size: 15px;
-    line-height: 1.4;
-    word-wrap: break-word;
-    max-width: 85%;
-    width: fit-content;  /* Die Blase zieht sich nur so weit wie der Text */
-    display: block;      /* Verhindert, dass sie die ganze Zeile einnimmt */
-}
+        /* 2. DER CHAT-CONTAINER */
+        #chat-wrapper {
+            width: 95%;
+            max-width: 450px;    /* Verhindert das Breitbild-Problem am PC */
+            height: 85vh;
+            max-height: 750px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column; /* Stapelt Header, Fenster und Input */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            margin: 20px auto;
+        }
 
-.bot-msg {
-    align-self: flex-start;
-    background: #008C9C;
-    color: white;
-    border-bottom-left-radius: 4px;
-}
+        /* 3. HEADER */
+        #chat-header {
+            background: #333;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
 
-.user-msg {
-    align-self: flex-end;
-    background: #B00000;
-    color: white;
-    border-bottom-right-radius: 4px;
-}
+        /* 4. DAS NACHRICHTEN-FENSTER */
+        #chat-window {
+            flex: 1;                /* Nimmt den gesamten mittleren Platz ein */
+            padding: 15px;
+            background: #ffffff;
+            overflow-y: auto;       /* Macht Nachrichten scrollbar */
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-/* Verhindert das automatische Zoomen auf dem iPhone */
-#user-input {
-    flex: 1;
-    border: 1px solid #ddd;
-    padding: 12px 15px;
-    border-radius: 20px;
-    outline: none;
-    font-size: 16px; /* Mindestens 16px verhindert iOS-Auto-Zoom */
-}
+        /* 5. SPRECHBLASEN-DESIGN */
+        .bot-msg, .user-msg {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            max-width: 85%;
+            width: fit-content;    /* Blase ist nur so groß wie der Text */
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
 
-.new-msg {
-    animation: fadeIn 0.4s ease-out;
-}
+        .bot-msg {
+            align-self: flex-start;
+            background: #008C9C;
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        .user-msg {
+            align-self: flex-end;
+            background: #B00000;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
 
-        #user-input:focus {
-            border-color: #008C9C;
+        /* 6. EINGABE-BEREICH (UNTEN) */
+        #chat-input-area {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            gap: 10px;
+            flex-shrink: 0; /* Bleibt immer gleich hoch */
+        }
+
+        #user-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px; /* Verhindert Auto-Zoom auf iPhones */
         }
 
         #send-btn {
             background: #008C9C;
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            transition: background 0.5s;
+            font-size: 20px;
+            transition: background 0.3s;
+            flex-shrink: 0;
         }
 
-        #send-btn:hover {
-            background: #00616E;
+        /* 7. ANIMATIONEN */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* 8. MOBILE OPTIMIERUNG */
+        @media (max-width: 500px) {
+            #chat-wrapper {
+                width: 100%;
+                height: 100dvh;
+                max-height: none;
+                border-radius: 0;
+                margin: 0;
+            }
         }
         
     </style>
