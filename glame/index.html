@@ -116,6 +116,11 @@
         }
     </style>
     <script>
+// Variable außerhalb der Funktion, damit sich der Bot Dinge merken kann
+let chatVerlauf = [
+    { role: "system", content: "Du bist Glame, der freundliche Chatbot von glaggle.ch." }
+];
+
 async function antwortSenden() {
     const inputField = document.getElementById("user-input");
     const chatWindow = document.getElementById("chat-window");
@@ -123,17 +128,21 @@ async function antwortSenden() {
 
     if (text === "") return;
 
-    // Nachricht anzeigen
+    // 1. Nutzernachricht anzeigen
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
+    // 2. Nachricht in den Verlauf speichern
+    chatVerlauf.push({ role: "user", content: text });
+
     const botMsgId = "bot-" + Date.now();
     chatWindow.innerHTML += `<div class="bot-msg" id="${botMsgId}"><b>Glame:</b> ...</div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
         const p1 = "gsk_"; 
-        const p2 = "ImbDfvvSXzXJfw80vZP5WGdyb3FYknkYv77zRJZN3pfyA1PiRGWu"; // Hier nur den Teil nach gsk_ einfügen
+        const p2 = "ImbDfvvSXzXJfw80vZP5WGdyb3FYknkYv77zRJZN3pfyA1PiRGWu";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -143,19 +152,34 @@ async function antwortSenden() {
             },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ role: "user", content: text }]
+                messages: chatVerlauf // Hier schicken wir den ganzen Verlauf mit
             })
         });
 
         const data = await response.json();
         const antwort = data.choices[0].message.content;
+
+        // Antwort im Verlauf speichern
+        chatVerlauf.push({ role: "assistant", content: antwort });
+
         document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> ${antwort}`;
 
     } catch (error) {
+        console.error(error);
         document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> Verbindung unterbrochen.`;
     }
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
+window.onload = function() {
+    const sendBtn = document.getElementById("send-btn");
+    const inputField = document.getElementById("user-input");
+
+    sendBtn.onclick = antwortSenden;
+
+    inputField.onkeypress = function(e) {
+        if (e.key === "Enter") antwortSenden();
+    };
+};
     </script>
 </head>
 <body>
