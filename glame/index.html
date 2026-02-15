@@ -50,16 +50,25 @@
             flex-direction: column;
             gap: 12px;
         }
+.bot-msg, .user-msg {
+    padding: 10px 16px;
+    border-radius: 18px;
+    max-width: 80%;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+}
 
-        .bot-msg, .user-msg {
-            padding: 10px 16px;
-            border-radius: 18px;
-            max-width: 80%;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 1.5;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s ease-in-out;
+.new-msg {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
         }
 
         .bot-msg {
@@ -115,11 +124,7 @@
         #send-btn:hover {
             background: #00616E;
         }
-
-        @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        
     </style>
     <script>
 // Variable außerhalb der Funktion, damit sich der Bot Dinge merken kann
@@ -135,7 +140,7 @@ async function antwortSenden() {
     if (text === "") return;
 
     // 1. Nutzernachricht anzeigen
-    chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+    chatWindow.innerHTML += `<div class="user-msg new-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
@@ -143,7 +148,7 @@ async function antwortSenden() {
     chatVerlauf.push({ role: "user", content: text });
 
     const botMsgId = "bot-" + Date.now();
-    chatWindow.innerHTML += `<div class="bot-msg" id="${botMsgId}"><b>Glame:</b> ...</div>`;
+    chatWindow.innerHTML += `<div class="bot-msg new-msg" id="${botMsgId}"><b>Glame:</b> <span class="typing">...</span></div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
