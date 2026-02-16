@@ -223,12 +223,13 @@
 </div>
 
 <script>
-// Chatverlauf initialisieren
+<script>
+// Chatverlauf mit System-Anweisung
 let chatVerlauf = [
     { role: "system", content: "Du bist Glame, der freundliche Chatbot von glaggle.ch." }
 ];
 
-// Typing-Funktion für HTML-Inhalte
+// --- TYPING-FUNKTION (Mit 1 Sekunde Extra-Zeit für die Sonne) ---
 function typeWriter(element, text, speed = 10) {
     let i = 0;
     element.innerHTML = ""; 
@@ -236,6 +237,7 @@ function typeWriter(element, text, speed = 10) {
     
     function typing() {
         if (i < text.length) {
+            // HTML-Tags (wie <b> oder <br>) sofort einfügen
             if (text.charAt(i) === '<') {
                 let tagEnd = text.indexOf('>', i);
                 element.innerHTML += text.substring(i, tagEnd + 1);
@@ -244,39 +246,49 @@ function typeWriter(element, text, speed = 10) {
                 element.innerHTML += text.charAt(i);
                 i++;
             }
+            
             const chatWindow = document.getElementById("chat-window");
             chatWindow.scrollTop = chatWindow.scrollHeight;
             setTimeout(typing, speed);
         } else {
+            // Wenn fertig getippt: 1 Sekunde warten, dann alles stoppen
             setTimeout(() => {
-                element.classList.remove("typing-cursor");
+                element.classList.remove("typing-cursor"); // Sonne im Text weg
+                
+                // Logo im Header oben stoppen
+                const logo = document.querySelector("#bot-logo-wrapper img");
+                if (logo) logo.classList.remove("loading-spin");
             }, 2000);
         }
     }
     typing();
 }
 
-
 async function antwortSenden() {
     const inputField = document.getElementById("user-input");
     const chatWindow = document.getElementById("chat-window");
+    const logo = document.querySelector("#bot-logo-wrapper img");
     const text = inputField.value.trim();
 
     if (text === "") return;
 
-    // Nutzernachricht
+    // Logo im Header zum Drehen bringen
+    if (logo) logo.classList.add("loading-spin");
+
+    // 1. Nutzernachricht anzeigen
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
+    // 2. Nachricht in den Verlauf speichern
     chatVerlauf.push({ role: "user", content: text });
 
-    // Bot-Platzhalter
+    // Bot-Platzhalter erstellen
     const botMsgId = "bot-" + Date.now();
     const textId = "text-" + botMsgId;
     chatWindow.innerHTML += `
         <div class="bot-msg" id="${botMsgId}">
-            <b>Glame:</b> <span id="${textId}">...</span>
+            <b>Glame:</b> <span id="${textId}" class="typing">...</span>
         </div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
@@ -299,20 +311,27 @@ async function antwortSenden() {
         const data = await response.json();
         let antwort = data.choices[0].message.content;
 
-        // FORMATIERUNG
-        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Fett
-        antwort = antwort.replace(/^\s*\*\s+/gm, '• ');           // Liste
-        antwort = antwort.replace(/\n/g, '<br>');                // Umbruch
+        // --- FORMATIERUNG ---
+        // Doppelte Sterne zu Fettdruck
+        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        // Einzelne Sterne am Zeilenanfang zu Aufzählungspunkten
+        antwort = antwort.replace(/^\s*\*\s+/gm, '• ');
+        // Zeilenumbrüche für HTML umwandeln
+        antwort = antwort.replace(/\n/g, '<br>');
 
+        // Antwort im Verlauf speichern
         chatVerlauf.push({ role: "assistant", content: antwort });
 
+        // --- SCHREIBEFFEKT STARTEN ---
         const responseElement = document.getElementById(textId);
+        responseElement.classList.remove("typing");
         typeWriter(responseElement, antwort);
 
     } catch (error) {
         console.error(error);
         const errEl = document.getElementById(textId);
         if(errEl) errEl.innerHTML = "Verbindung unterbrochen.";
+        if (logo) logo.classList.remove("loading-spin");
     }
 }
 
@@ -325,6 +344,7 @@ window.onload = function() {
         if (e.key === "Enter") antwortSenden();
     };
 };
+</script>
 </script>
 
 </body>
