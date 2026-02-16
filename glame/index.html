@@ -163,24 +163,9 @@
     animation: blink 0.8s infinite, pulse 1.5s infinite ease-in-out;
 }
 
-/* Blinken wie bisher */
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; } /* Nicht ganz unsichtbar, sieht edler aus */
-}
+/* 7. ANIMATIONEN & SPEZIAL-EFFEKTE */
 
-/* Optional: Die Sonne lässt sich zusätzlich leicht pulsieren */
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-       
+/* Das Logo im Header drehen lassen */
 .loading-spin {
     animation: spin-logo 2s linear infinite;
 }
@@ -188,6 +173,44 @@
 @keyframes spin-logo {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* Die Cursor-Sonne im Text: Blinken und Pulsieren kombiniert */
+.typing-cursor::after {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background: url('glagglesonne.png') no-repeat center center;
+    background-size: contain;
+    margin-left: 5px;
+    vertical-align: middle;
+    /* Hier werden beide Animationen gleichzeitig aufgerufen */
+    animation: blink-soft 0.8s infinite, pulse 1.5s infinite ease-in-out;
+}
+
+/* Sanftes Blinken (edler als hartes An/Aus) */
+@keyframes blink-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Leichtes Vergrößern/Verkleinern */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Standard Fade-In für die Sprechblasen beim Erscheinen */
+@keyframes FadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
         /* 8. MOBILE OPTIMIERUNG */
