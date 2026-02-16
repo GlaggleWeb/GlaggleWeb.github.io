@@ -163,10 +163,29 @@
         
     </style>
     <script>
+<script>
 // Variable außerhalb der Funktion, damit sich der Bot Dinge merken kann
 let chatVerlauf = [
     { role: "system", content: "Du bist Glame, der freundliche Chatbot von glaggle.ch." }
 ];
+
+// --- NEU: Die Typing-Funktion ---
+function typeWriter(element, text, speed = 30) {
+    let i = 0;
+    element.innerHTML = ""; // Cursor/Punkte entfernen
+    
+    function typing() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            // Automatisch mitscrollen während des Schreibens
+            const chatWindow = document.getElementById("chat-window");
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            setTimeout(typing, speed);
+        }
+    }
+    typing();
+}
 
 async function antwortSenden() {
     const inputField = document.getElementById("user-input");
@@ -176,15 +195,20 @@ async function antwortSenden() {
     if (text === "") return;
 
     // 1. Nutzernachricht anzeigen
-    chatWindow.innerHTML += `<div class="user-msg new-msg">${text}</div>`;
+    chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     // 2. Nachricht in den Verlauf speichern
     chatVerlauf.push({ role: "user", content: text });
 
+    // Bot-Platzhalter erstellen (mit Typing-Indikator)
     const botMsgId = "bot-" + Date.now();
-    chatWindow.innerHTML += `<div class="bot-msg new-msg" id="${botMsgId}"><b>Glame:</b> <span class="typing">...</span></div>`;
+    const textId = "text-" + botMsgId;
+    chatWindow.innerHTML += `
+        <div class="bot-msg" id="${botMsgId}">
+            <b>Glame:</b> <span id="${textId}" class="typing">...</span>
+        </div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
@@ -199,7 +223,7 @@ async function antwortSenden() {
             },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: chatVerlauf // Hier schicken wir den ganzen Verlauf mit
+                messages: chatVerlauf 
             })
         });
 
@@ -209,14 +233,17 @@ async function antwortSenden() {
         // Antwort im Verlauf speichern
         chatVerlauf.push({ role: "assistant", content: antwort });
 
-        document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> ${antwort}`;
+        // --- NEU: Schreibmaschinen-Effekt starten ---
+        const responseElement = document.getElementById(textId);
+        responseElement.classList.remove("typing");
+        typeWriter(responseElement, antwort);
 
     } catch (error) {
         console.error(error);
-        document.getElementById(botMsgId).innerHTML = `<b>Glame:</b> Verbindung unterbrochen.`;
+        document.getElementById(textId).innerHTML = "Verbindung unterbrochen.";
     }
-    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
+
 window.onload = function() {
     const sendBtn = document.getElementById("send-btn");
     const inputField = document.getElementById("user-input");
@@ -227,6 +254,7 @@ window.onload = function() {
         if (e.key === "Enter") antwortSenden();
     };
 };
+</script>
     </script>
 </head>
 <body>
