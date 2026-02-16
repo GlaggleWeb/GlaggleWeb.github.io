@@ -238,11 +238,15 @@ function typeWriter(element, text, speed = 10) {
             chatWindow.scrollTop = chatWindow.scrollHeight;
             setTimeout(typing, speed);
         } else {
-            element.classList.remove("typing-cursor"); 
+            // NEU: Warte 1000ms (1 Sekunde), bevor die Sonne verschwindet
+            setTimeout(() => {
+                element.classList.remove("typing-cursor");
+            }, 1500);
         }
     }
     typing();
 }
+
 
 async function antwortSenden() {
     const inputField = document.getElementById("user-input");
