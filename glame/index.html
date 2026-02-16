@@ -149,6 +149,35 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+
+        /* Ergänzung für formatierte Nachrichten */
+
+/* 1. Fettdruck hervorheben */
+.bot-msg b, .user-msg b {
+    font-weight: 800; /* Macht den Text richtig kräftig */
+    color: #ffffff;   /* Stellt sicher, dass es weiß bleibt */
+}
+
+/* 2. Abstände bei Zeilenumbrüchen (<br>) */
+.bot-msg br, .user-msg br {
+    content: "";
+    display: block;
+    margin-bottom: 8px; /* Erzeugt einen schönen Absatz-Effekt */
+}
+
+/* 3. Der blinkende Cursor während des Tippens */
+.typing-cursor::after {
+    content: "┃"; /* Ein schmaler, moderner Cursor */
+    animation: blink 0.8s infinite;
+    margin-left: 2px;
+    vertical-align: middle;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
         
         /* 8. MOBILE OPTIMIERUNG */
         @media (max-width: 500px) {
