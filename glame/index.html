@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -9,7 +8,7 @@
     <meta name="author" content="Glaggle">
     <title>Glame</title>
     <style>
-       /* 1. GRUNDGERÜST */
+        /* 1. GRUNDGERÜST */
         body {
             background-color: #f0f2f5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,19 +18,19 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Verhindert doppeltes Scrollen am Handy */
+            overflow: hidden;
         }
 
         /* 2. DER CHAT-CONTAINER */
         #chat-wrapper {
             width: 95%;
-            max-width: 450px;    /* Verhindert das Breitbild-Problem am PC */
+            max-width: 450px;
             height: 85vh;
             max-height: 750px;
             background: white;
             border-radius: 20px;
             display: flex;
-            flex-direction: column; /* Stapelt Header, Fenster und Input */
+            flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             overflow: hidden;
             margin: 20px auto;
@@ -51,10 +50,10 @@
 
         /* 4. DAS NACHRICHTEN-FENSTER */
         #chat-window {
-            flex: 1;                /* Nimmt den gesamten mittleren Platz ein */
+            flex: 1;
             padding: 15px;
             background: #ffffff;
-            overflow-y: auto;       /* Macht Nachrichten scrollbar */
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -68,10 +67,9 @@
             line-height: 1.4;
             word-wrap: break-word;
             max-width: 85%;
-            width: fit-content;    /* Blase ist nur so groß wie der Text */
+            width: fit-content;
             display: block;
             position: relative;
-            /* Animation passend zu Punkt 7: Einmaliger Slide-Up für neue Nachrichten */
             animation: FadeIn 0.4s ease-out forwards; 
         }
 
@@ -89,7 +87,7 @@
             border-bottom-right-radius: 4px;
         }
 
-        /* 6. EINGABE-BEREICH (UNTEN) */
+        /* 6. EINGABE-BEREICH */
         #chat-input-area {
             display: flex;
             align-items: center;
@@ -97,7 +95,7 @@
             background: #f8f9fa;
             border-top: 1px solid #eee;
             gap: 10px;
-            flex-shrink: 0; /* Bleibt immer gleich hoch */
+            flex-shrink: 0;
         }
 
         #user-input {
@@ -106,8 +104,12 @@
             padding: 12px 15px;
             border-radius: 25px;
             outline: none;
-            font-size: 16px; /* Verhindert Auto-Zoom auf iPhones */
+            font-size: 16px;
             transition: all 0.5s ease-in-out;
+        }
+
+        #user-input:focus {
+            border: 3px solid #00616E; 
         }
 
         #send-btn {
@@ -126,30 +128,28 @@
             flex-shrink: 0;
         }
 
-        #user-input:focus {
-            outline: none; 
-            border: 3px solid #00616E; 
-        }
+        #send-btn:hover { background: #00616E; }
 
-        #send-btn:hover {
-            background: #00616E; 
-        }
-
-        /* 7. ANIMATIONEN */
+        /* 7. ANIMATIONEN & CURSOR */
         @keyframes FadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px); /* Startet tiefer und gleitet hoch */
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .typing { animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-       
+        
+        .typing-cursor::after {
+            content: "┃";
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
         /* 8. MOBILE OPTIMIERUNG */
         @media (max-width: 500px) {
             #chat-wrapper {
@@ -159,40 +159,48 @@
                 border-radius: 0;
                 margin: 0;
             }
-            /* Blinkender Cursor Effekt */
-.typing-cursor::after {
-    content: "┃";
-    animation: blink 0.8s infinite;
-    margin-left: 2px;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
         }
-        
     </style>
-    <script>
+</head>
+<body>
+
+<div id="chat-wrapper">
+    <div id="chat-header">
+        <div id="bot-logo-wrapper" style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+            <img src="glagglesonne.png" alt="Glame" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='G';">
+        </div>
+        <span style="margin-left: 10px;">Glame 2.1</span>
+    </div> 
+    
+    <div id="chat-window">
+        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
+    </div>
+
+    <div id="chat-input-area">
+        <input type="text" id="user-input" placeholder="Chatte mit Glame 2.1" autocomplete="off">
+        <button id="send-btn">➤</button>
+    </div>
+</div>
+
 <script>
-// Variable außerhalb der Funktion, damit sich der Bot Dinge merken kann
 let chatVerlauf = [
     { role: "system", content: "Du bist Glame, der freundliche Chatbot von glaggle.ch." }
 ];
 
-// --- NEU: Die Typing-Funktion ---
-function typeWriter(element, text, speed = 30) {
+function typeWriter(element, text, speed = 25) {
     let i = 0;
-    element.innerHTML = ""; // Cursor/Punkte entfernen
+    element.innerHTML = ""; 
+    element.classList.add("typing-cursor"); // Cursor hinzufügen
     
     function typing() {
         if (i < text.length) {
             element.innerHTML += text.charAt(i);
             i++;
-            // Automatisch mitscrollen während des Schreibens
             const chatWindow = document.getElementById("chat-window");
             chatWindow.scrollTop = chatWindow.scrollHeight;
             setTimeout(typing, speed);
+        } else {
+            element.classList.remove("typing-cursor"); // Cursor entfernen wenn fertig
         }
     }
     typing();
@@ -205,15 +213,12 @@ async function antwortSenden() {
 
     if (text === "") return;
 
-    // 1. Nutzernachricht anzeigen
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
-    // 2. Nachricht in den Verlauf speichern
     chatVerlauf.push({ role: "user", content: text });
 
-    // Bot-Platzhalter erstellen (mit Typing-Indikator)
     const botMsgId = "bot-" + Date.now();
     const textId = "text-" + botMsgId;
     chatWindow.innerHTML += `
@@ -241,17 +246,16 @@ async function antwortSenden() {
         const data = await response.json();
         const antwort = data.choices[0].message.content;
 
-        // Antwort im Verlauf speichern
         chatVerlauf.push({ role: "assistant", content: antwort });
 
-        // --- NEU: Schreibmaschinen-Effekt starten ---
         const responseElement = document.getElementById(textId);
         responseElement.classList.remove("typing");
         typeWriter(responseElement, antwort);
 
     } catch (error) {
         console.error(error);
-        document.getElementById(textId).innerHTML = "Verbindung unterbrochen.";
+        const errEl = document.getElementById(textId);
+        if(errEl) errEl.innerHTML = "Verbindung unterbrochen.";
     }
 }
 
@@ -260,37 +264,11 @@ window.onload = function() {
     const inputField = document.getElementById("user-input");
 
     sendBtn.onclick = antwortSenden;
-
     inputField.onkeypress = function(e) {
         if (e.key === "Enter") antwortSenden();
     };
 };
 </script>
-    </script>
-</head>
-<body>
-
-<div id="chat-wrapper">
-    <div id="chat-header">
-        <div id="bot-logo-wrapper" style="width: 30px; height: 30px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-            <img src="glagglesonne.png" 
-                 alt="Glame" 
-                 style="width: 100%; height: 100%; object-fit: cover;"
-                 onerror="this.style.display='none'; this.parentElement.innerHTML='G';">
-        </div>
-        
-        <span style="margin-left: 10px;">Glame 2.1</span>
-        
-        <div id="status-dot"></div>
-    </div> <div id="chat-window">
-        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
-    </div>
-
-    <div id="chat-input-area">
-        <input type="text" id="user-input" placeholder="Chatte mit Glame 2.1" autocomplete="off">
-        <button id="send-btn">➤</button>
-    </div>
-</div>
 
 </body>
 </html>
