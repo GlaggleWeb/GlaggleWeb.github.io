@@ -150,12 +150,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .typing-cursor::after {
-            content: "┃";
-            animation: blink 0.8s infinite;
-            margin-left: 2px;
-            color: white;
-        }
+        /* 7. ANIMATIONEN & LOGO-CURSOR */
+.typing-cursor::after {
+    content: ""; /* Kein Text-Symbol mehr */
+    display: inline-block;
+    width: 18px;  /* Größe der kleinen Sonne */
+    height: 18px;
+    background: url('glagglesonne.png') no-repeat center center;
+    background-size: contain;
+    margin-left: 5px;
+    vertical-align: middle;
+    animation: blink 0.8s infinite, pulse 1.5s infinite ease-in-out;
+}
+
+/* Blinken wie bisher */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; } /* Nicht ganz unsichtbar, sieht edler aus */
+}
+
+/* Optional: Die Sonne lässt sich zusätzlich leicht pulsieren */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
