@@ -238,10 +238,9 @@ function typeWriter(element, text, speed = 10) {
             chatWindow.scrollTop = chatWindow.scrollHeight;
             setTimeout(typing, speed);
         } else {
-            // NEU: Warte 1000ms (1 Sekunde), bevor die Sonne verschwindet
             setTimeout(() => {
                 element.classList.remove("typing-cursor");
-            }, 1500);
+            }, 2000);
         }
     }
     typing();
