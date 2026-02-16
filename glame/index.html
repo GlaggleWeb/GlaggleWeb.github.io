@@ -180,6 +180,16 @@
             50% { opacity: 0; }
         }
 
+       
+.loading-spin {
+    animation: spin-logo 2s linear infinite;
+}
+
+@keyframes spin-logo {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
         /* 8. MOBILE OPTIMIERUNG */
         @media (max-width: 500px) {
             #chat-wrapper {
