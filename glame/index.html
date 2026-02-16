@@ -57,6 +57,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            scroll-behavior: smooth;
         }
 
         /* 5. SPRECHBLASEN-DESIGN */
@@ -78,6 +79,19 @@
             background: #008C9C;
             color: white;
             border-bottom-left-radius: 4px;
+        }
+
+        /* Stellt sicher, dass Fettgedrucktes im Bot-Feld sichtbar ist */
+        .bot-msg b {
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* Erzeugt Abstände bei Zeilenumbrüchen */
+        .bot-msg br {
+            display: block;
+            margin-bottom: 8px;
+            content: "";
         }
 
         .user-msg {
@@ -136,13 +150,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .typing { animation: blink 1s infinite; }
-        
         .typing-cursor::after {
-            content: "➤";
+            content: "┃";
             animation: blink 0.8s infinite;
             margin-left: 2px;
-            color: rgba(255, 255, 255);
+            color: white;
         }
 
         @keyframes blink {
@@ -150,35 +162,6 @@
             50% { opacity: 0; }
         }
 
-        /* Ergänzung für formatierte Nachrichten */
-
-/* 1. Fettdruck hervorheben */
-.bot-msg b, .user-msg b {
-    font-weight: 800; /* Macht den Text richtig kräftig */
-    color: #ffffff;   /* Stellt sicher, dass es weiß bleibt */
-}
-
-/* 2. Abstände bei Zeilenumbrüchen (<br>) */
-.bot-msg br, .user-msg br {
-    content: "";
-    display: block;
-    margin-bottom: 8px; /* Erzeugt einen schönen Absatz-Effekt */
-}
-
-/* 3. Der blinkende Cursor während des Tippens */
-.typing-cursor::after {
-    content: "┃"; /* Ein schmaler, moderner Cursor */
-    animation: blink 0.8s infinite;
-    margin-left: 2px;
-    vertical-align: middle;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-        
         /* 8. MOBILE OPTIMIERUNG */
         @media (max-width: 500px) {
             #chat-wrapper {
@@ -212,13 +195,12 @@
 </div>
 
 <script>
-<script>
-// Chatverlauf mit System-Anweisung
+// Chatverlauf initialisieren
 let chatVerlauf = [
     { role: "system", content: "Du bist Glame, der freundliche Chatbot von glaggle.ch." }
 ];
 
-// --- TYPING-FUNKTION (HTML-fähig & schnell) ---
+// Typing-Funktion für HTML-Inhalte
 function typeWriter(element, text, speed = 10) {
     let i = 0;
     element.innerHTML = ""; 
@@ -226,7 +208,6 @@ function typeWriter(element, text, speed = 10) {
     
     function typing() {
         if (i < text.length) {
-            // HTML-Tags (wie <b> oder <br>) sofort einfügen
             if (text.charAt(i) === '<') {
                 let tagEnd = text.indexOf('>', i);
                 element.innerHTML += text.substring(i, tagEnd + 1);
@@ -235,7 +216,6 @@ function typeWriter(element, text, speed = 10) {
                 element.innerHTML += text.charAt(i);
                 i++;
             }
-            
             const chatWindow = document.getElementById("chat-window");
             chatWindow.scrollTop = chatWindow.scrollHeight;
             setTimeout(typing, speed);
@@ -253,20 +233,19 @@ async function antwortSenden() {
 
     if (text === "") return;
 
-    // 1. Nutzernachricht anzeigen
+    // Nutzernachricht
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
-    // 2. Nachricht in den Verlauf speichern
     chatVerlauf.push({ role: "user", content: text });
 
-    // Bot-Platzhalter erstellen
+    // Bot-Platzhalter
     const botMsgId = "bot-" + Date.now();
     const textId = "text-" + botMsgId;
     chatWindow.innerHTML += `
         <div class="bot-msg" id="${botMsgId}">
-            <b>Glame:</b> <span id="${textId}" class="typing">...</span>
+            <b>Glame:</b> <span id="${textId}">...</span>
         </div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
@@ -289,22 +268,14 @@ async function antwortSenden() {
         const data = await response.json();
         let antwort = data.choices[0].message.content;
 
-        // --- FORMATIERUNG ---
-        // 1. Doppelte Sterne zu Fettdruck
-        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        
-        // 2. Einzelne Sterne am Zeilenanfang zu Aufzählungspunkten
-        antwort = antwort.replace(/^\s*\*\s+/gm, '• ');
+        // FORMATIERUNG
+        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Fett
+        antwort = antwort.replace(/^\s*\*\s+/gm, '• ');           // Liste
+        antwort = antwort.replace(/\n/g, '<br>');                // Umbruch
 
-        // 3. Zeilenumbrüche für HTML umwandeln
-        antwort = antwort.replace(/\n/g, '<br>');
-
-        // Antwort im Verlauf speichern
         chatVerlauf.push({ role: "assistant", content: antwort });
 
-        // --- SCHREIBEFFEKT STARTEN ---
         const responseElement = document.getElementById(textId);
-        responseElement.classList.remove("typing");
         typeWriter(responseElement, antwort);
 
     } catch (error) {
@@ -323,7 +294,6 @@ window.onload = function() {
         if (e.key === "Enter") antwortSenden();
     };
 };
-</script>
 </script>
 
 </body>
