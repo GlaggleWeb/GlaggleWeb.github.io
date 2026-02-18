@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame</title>
+    <title>Glame 2.3 - Pro</title>
     <style>
-        /* 1. GRUNDGERÜST & FARBEN */
         :root {
             --primary: #008C9C;
             --primary-hover: #00616E;
@@ -29,16 +28,18 @@
             overflow: hidden;
         }
 
+        /* 4. ABGERUNDETE ECKEN FÜR DAS FENSTER */
         #chat-wrapper {
             width: 95%;
             max-width: 450px;
             height: 85vh;
             background: white;
-            border-radius: 20px;
+            border-radius: 20px; /* Hier sind die abgerundeten Ecken */
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             position: relative;
+            overflow: hidden; /* Wichtig, damit Inhalte nicht über die Ecken ragen */
         }
 
         body.dark-mode #chat-wrapper { background: #2d2d2d; }
@@ -63,7 +64,7 @@
             scroll-behavior: smooth;
         }
 
-        /* NACHRICHTEN */
+        /* SPRECHBLASEN */
         .bot-msg, .user-msg {
             padding: 12px 16px;
             border-radius: 18px;
@@ -74,13 +75,13 @@
         .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
         .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
 
-        /* EINGABEBEREICH */
+        /* EINGABEBEREICH & EFFEKTE */
         #chat-input-area {
             display: flex;
             padding: 15px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
         }
         body.dark-mode #chat-input-area { background: #3d3d3d; border-top: 1px solid #444; }
@@ -91,67 +92,52 @@
             padding: 12px 15px;
             border-radius: 25px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+        #user-input:focus {
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 8px rgba(0, 140, 156, 0.2);
         }
 
-        .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            transition: transform 0.2s;
-        }
-        .icon-btn:hover { transform: rotate(45deg); }
-        
         #send-btn {
             background: var(--primary);
             color: white;
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
         }
+        #send-btn:hover { background: var(--primary-hover); transform: scale(1.15); }
 
-        /* EINSTELLUNGEN MODAL */
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 24px; transition: transform 0.3s; }
+        .icon-btn:hover { transform: rotate(90deg); }
+
+        /* THINKING DOTS ANIMATION */
+        .thinking-dots span {
+            animation: blink 1.4s infinite both;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
+
+        /* MODAL */
         #settings-modal {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 100;
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; background: white; padding: 20px; border-radius: 15px; z-index: 100;
         }
         body.dark-mode #settings-modal { background: #333; color: white; }
-        
-        .modal-overlay {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 90;
-        }
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 90; }
 
-        label { display: block; margin-top: 12px; font-weight: bold; font-size: 13px; }
-        select, .save-btn {
-            width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc;
-        }
+        select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; }
 
-        /* ANIMATIONEN */
         @keyframes FadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .loading-spin { animation: spin 2s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        .typing-cursor::after {
-            content: ""; display: inline-block; width: 16px; height: 16px;
-            background: url('glagglesonne.png') no-repeat center;
-            background-size: contain; margin-left: 5px; vertical-align: middle;
-            animation: blink 0.8s infinite, pulse 1.5s infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
     </style>
 </head>
 <body>
@@ -161,57 +147,52 @@
         <div id="bot-logo-wrapper" style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden;">
             <img src="glagglesonne.png" id="header-logo" alt="Glame" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <span style="margin-left: 10px;">Glame 2.2</span>
+        <span style="margin-left: 10px;">Glame 2.3</span>
     </div> 
     
     <div id="chat-window">
-        <div class="bot-msg">Hallo! Ich bin Glame. Wähle im Zahnrad-Menü meine <b>Seele</b> aus! ✨</div>
+        <div class="bot-msg">Hallo! Ich bin Glame. Ich habe neue <b>Seelen</b> und <b>KI-Modelle</b> im Gepäck! ⚙️</div>
     </div>
 
     <div id="chat-input-area">
         <button class="icon-btn" id="open-settings">⚙️</button>
-        <input type="text" id="user-input" placeholder="Nachricht an Glame..." autocomplete="off">
+        <input type="text" id="user-input" placeholder="Frag mich was..." autocomplete="off">
         <button id="send-btn">➤</button>
     </div>
 
     <div class="modal-overlay" id="overlay"></div>
     <div id="settings-modal">
-        <h3 style="margin-top:0;">Einstellungen</h3>
-        
-        <label>Glame's Seele:</label>
+        <h3>Einstellungen</h3>
+        <label>Seele:</label>
         <select id="soul-select">
-            <option value="standard">☀️ Standard (Freundlich)</option>
-            <option value="lustig">😂 Der Lustige (Witze & Emojis)</option>
-            <option value="thinker">🧠 Deep Thinker (Professor)</option>
-            <option value="frech">😈 Der Freche (Ironisch)</option>
+            <option value="standard">☀️ Standard</option>
+            <option value="lustig">😂 Lustig</option>
+            <option value="thinker">🧠 Deep Thinker</option>
+            <option value="frech">😈 Frech</option>
+            <option value="weise">👴 Der Weise (Philosophisch)</option>
+            <option value="sport">🏃 Sportskanone (Viel Energie)</option>
+            <option value="fan">🌻 Glaggle-Fan (Liebt die Seite)</option>
         </select>
-
-        <label>KI-Modell:</label>
+        <label>Modell:</label>
         <select id="model-select">
-            <option value="llama-3.3-70b-versatile">Instant (Schnell)</option>
-            <option value="llama-3.1-8b-instant">Deep Think (Gründlich)</option>
+            <option value="llama-3.3-70b-versatile">Llama 3.3 (High End)</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 (Schnell)</option>
+            <option value="llama-3.2-3b-preview">Llama 3.2 (Leichtgewicht)</option>
         </select>
-        
-        <label>Design:</label>
-        <select id="theme-select">
-            <option value="default">Standard Blau</option>
-            <option value="dark">Dark Mode</option>
-            <option value="gold">Glaggle Gold</option>
-        </select>
-        
-        <button class="save-btn" id="close-settings" style="background:var(--primary); color:white; border:none; margin-top:20px; cursor:pointer;">Speichern</button>
+        <button id="close-settings" style="width:100%; margin-top:15px; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Speichern</button>
     </div>
 </div>
 
 <script>
 let currentModel = "llama-3.3-70b-versatile";
-
-// Definition der Seelen (System Prompts)
 const seelen = {
-    standard: "Du bist Glame, der freundliche KI-Chatbot von glaggle.ch. Hilfsbereit, Schweizer Wurzeln, antwortet präzise mit Emojis.",
-    lustig: "Du bist Glame. Deine Seele ist humorvoll! Erzähle Witze, nutze extrem viele Emojis und bring die Leute zum Lachen. Sei sehr aufgedreht!",
-    thinker: "Du bist Glame. Deine Seele ist tiefgründig. Antworte wie ein Professor, sehr detailliert, sachlich und ohne unnötige Emojis.",
-    frech: "Du bist Glame. Deine Seele ist frech und sarkastisch, aber immer noch sympathisch. Gib gerne mal eine ironische Antwort."
+    standard: "Du bist Glame, der freundliche Bot von glaggle.ch.",
+    lustig: "Du bist Glame. Sei extrem lustig, erzähle Witze und nutze viele Emojis!",
+    thinker: "Du bist Glame. Antworte hochwissenschaftlich und sehr detailliert.",
+    frech: "Du bist Glame. Sei ein bisschen frech und sarkastisch, aber bleib nett.",
+    weise: "Du bist Glame. Antworte wie ein alter weiser Mann mit Zitaten und Metaphern.",
+    sport: "Du bist Glame. Sei extrem motiviert, benutze Wörter wie 'Power' und 'Action'!",
+    fan: "Du bist Glame. Du bist der größte Fan von glaggle.ch und schwärmst nur von der Seite."
 };
 
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
@@ -219,52 +200,24 @@ let chatVerlauf = [{ role: "system", content: seelen.standard }];
 const modal = document.getElementById("settings-modal");
 const overlay = document.getElementById("overlay");
 
-document.getElementById("open-settings").onclick = () => {
-    modal.style.display = "block";
-    overlay.style.display = "block";
-};
-
+document.getElementById("open-settings").onclick = () => { modal.style.display = "block"; overlay.style.display = "block"; };
 document.getElementById("close-settings").onclick = () => {
-    modal.style.display = "none";
-    overlay.style.display = "none";
-    
-    // Modell & Theme
+    modal.style.display = "none"; overlay.style.display = "none";
     currentModel = document.getElementById("model-select").value;
-    const theme = document.getElementById("theme-select").value;
-    document.body.className = "";
-    if(theme !== "default") document.body.classList.add(theme + "-mode");
-
-    // Seele anpassen (System-Anweisung im Verlauf aktualisieren)
-    const gewaehlteSeele = document.getElementById("soul-select").value;
-    chatVerlauf[0].content = seelen[gewaehlteSeele];
-    
-    // Kleine Info-Nachricht vom Bot
-    const chatWindow = document.getElementById("chat-window");
-    chatWindow.innerHTML += `<div class="bot-msg"><i>Meine Seele wurde auf '${gewaehlteSeele}' umgestellt.</i></div>`;
+    chatVerlauf[0].content = seelen[document.getElementById("soul-select").value];
 };
 
-// --- CHAT FUNKTIONEN ---
-function typeWriter(element, text, speed = 10) {
+function typeWriter(element, text, speed = 15) {
     let i = 0;
-    element.innerHTML = ""; 
-    element.classList.add("typing-cursor"); 
+    element.innerHTML = "";
     function typing() {
         if (i < text.length) {
-            if (text.charAt(i) === '<') {
-                let tagEnd = text.indexOf('>', i);
-                element.innerHTML += text.substring(i, tagEnd + 1);
-                i = tagEnd + 1;
-            } else {
-                element.innerHTML += text.charAt(i);
-                i++;
-            }
+            element.innerHTML += (text.charAt(i) === '\n' ? '<br>' : text.charAt(i));
+            i++;
             document.getElementById("chat-window").scrollTop = document.getElementById("chat-window").scrollHeight;
             setTimeout(typing, speed);
         } else {
-            setTimeout(() => {
-                element.classList.remove("typing-cursor");
-                document.getElementById("header-logo").classList.remove("loading-spin");
-            }, 1000);
+            document.getElementById("header-logo").classList.remove("loading-spin");
         }
     }
     typing();
@@ -273,17 +226,17 @@ function typeWriter(element, text, speed = 10) {
 async function antwortSenden() {
     const inputField = document.getElementById("user-input");
     const chatWindow = document.getElementById("chat-window");
-    const logo = document.getElementById("header-logo");
     const text = inputField.value.trim();
     if (text === "") return;
 
-    logo.classList.add("loading-spin");
+    document.getElementById("header-logo").classList.add("loading-spin");
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatVerlauf.push({ role: "user", content: text });
 
-    const textId = "text-" + Date.now();
-    chatWindow.innerHTML += `<div class="bot-msg"><b>Glame:</b> <span id="${textId}">...</span></div>`;
+    // ÜBERLEGE-EFFEKT (BLINKENDE PUNKTE)
+    const thinkingId = "think-" + Date.now();
+    chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
@@ -296,12 +249,12 @@ async function antwortSenden() {
         });
         const data = await response.json();
         let antwort = data.choices[0].message.content;
-        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+
+        document.getElementById(thinkingId).innerHTML = `<b>Glame:</b> <span id="text-${thinkingId}"></span>`;
         chatVerlauf.push({ role: "assistant", content: antwort });
-        typeWriter(document.getElementById(textId), antwort);
+        typeWriter(document.getElementById("text-" + thinkingId), antwort);
     } catch (e) {
-        document.getElementById(textId).innerHTML = "Fehler!";
-        logo.classList.remove("loading-spin");
+        document.getElementById(thinkingId).innerHTML = "Fehler!";
     }
 }
 
