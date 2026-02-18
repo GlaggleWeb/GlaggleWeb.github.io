@@ -3,17 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame</title>
+    <title>Glame 2.2 - Pro</title>
     <style>
-        /* 1. GRUNDGERÜST */
+        /* 1. GRUNDGERÜST & FARBEN */
+        :root {
+            --primary: #008C9C;
+            --primary-hover: #00616E;
+            --user-bg: #B00000;
+            --bg: #f0f2f5;
+            --text: #333;
+        }
+
+        body.dark-mode { --bg: #1a1a1a; --text: #f0f2f5; }
+        body.gold-mode { --bg: #fffcf0; --primary: #D4AF37; --primary-hover: #AA8F39; }
+
         body {
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            color: var(--text);
             overflow: hidden;
         }
 
@@ -26,8 +38,10 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            overflow: hidden;
+            position: relative;
         }
+
+        body.dark-mode #chat-wrapper { background: #2d2d2d; }
 
         #chat-header {
             background: #333;
@@ -42,7 +56,6 @@
         #chat-window {
             flex: 1;
             padding: 15px;
-            background: #ffffff;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -50,31 +63,27 @@
             scroll-behavior: smooth;
         }
 
-        /* NACHRICHTEN STYLES */
+        /* NACHRICHTEN */
         .bot-msg, .user-msg {
             padding: 12px 16px;
             border-radius: 18px;
             font-size: 15px;
-            line-height: 1.4;
             max-width: 85%;
-            width: fit-content;
-            animation: FadeIn 0.4s ease-out forwards; 
+            animation: FadeIn 0.4s ease-out forwards;
         }
+        .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
+        .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
 
-        .bot-msg { align-self: flex-start; background: #008C9C; color: white; border-bottom-left-radius: 4px; }
-        .bot-msg b { font-weight: 800; }
-        .bot-msg br { display: block; margin-bottom: 8px; content: ""; }
-
-        .user-msg { align-self: flex-end; background: #B00000; color: white; border-bottom-right-radius: 4px; }
-
-        /* EINGABE BEREICH & EFFEKTE */
+        /* EINGABEBEREICH */
         #chat-input-area {
             display: flex;
             padding: 15px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
-            gap: 10px;
+            gap: 8px;
+            align-items: center;
         }
+        body.dark-mode #chat-input-area { background: #3d3d3d; border-top: 1px solid #444; }
 
         #user-input {
             flex: 1;
@@ -82,58 +91,74 @@
             padding: 12px 15px;
             border-radius: 25px;
             outline: none;
-            font-size: 16px;
-            transition: border 0.3s ease;
         }
 
-        /* Fokus Effekt für Input */
-        #user-input:focus {
-            border: 3px solid #008C9C;
-        }
-
-        #send-btn {
-            background: #008C9C;
-            color: white;
+        /* BUTTONS */
+        .icon-btn {
+            background: none;
             border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
             cursor: pointer;
             font-size: 20px;
-            transition: background 0.3s ease, transform 0.2s ease;
+            transition: transform 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        .icon-btn:hover { transform: rotate(45deg); }
+        
+        #send-btn {
+            background: var(--primary);
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
 
-        /* Hover Effekt für Sende-Button */
-        #send-btn:hover {
-            background: #00616E;
-            transform: scale(1.1);
+        /* EINSTELLUNGEN MODAL */
+        #settings-modal {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+        body.dark-mode #settings-modal { background: #333; color: white; }
+        
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 90;
+        }
+
+        select, button.save-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
         }
 
         /* ANIMATIONEN */
         @keyframes FadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .loading-spin { animation: spin-logo 2s linear infinite; }
-        @keyframes spin-logo { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
+        .loading-spin { animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         .typing-cursor::after {
-            content: "";
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            background: url('glagglesonne.png') no-repeat center center;
-            background-size: contain;
-            margin-left: 5px;
-            vertical-align: middle;
-            animation: blink-soft 0.8s infinite, pulse 1.5s infinite ease-in-out;
+            content: ""; display: inline-block; width: 16px; height: 16px;
+            background: url('glagglesonne.png') no-repeat center;
+            background-size: contain; margin-left: 5px; vertical-align: middle;
+            animation: blink 0.8s infinite, pulse 1.5s infinite;
         }
-
-        @keyframes blink-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-
-        @media (max-width: 500px) { #chat-wrapper { width: 100%; height: 100dvh; border-radius: 0; } }
     </style>
 </head>
 <body>
@@ -143,44 +168,65 @@
         <div id="bot-logo-wrapper" style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden;">
             <img src="glagglesonne.png" id="header-logo" alt="Glame" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <span style="margin-left: 10px;">Glame 2.1</span>
+        <span style="margin-left: 10px;">Glame 2.2</span>
     </div> 
     
     <div id="chat-window">
-        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann ich dir heute helfen?</div>
+        <div class="bot-msg">Hallo! Ich bin Glame. Du kannst meine Einstellungen jetzt über das Zahnrad anpassen! ☀️</div>
     </div>
 
     <div id="chat-input-area">
-        <input type="text" id="user-input" placeholder="Chatte mit Glame..." autocomplete="off">
+        <button class="icon-btn" id="open-settings">⚙️</button>
+        <input type="text" id="user-input" placeholder="Nachricht an Glame..." autocomplete="off">
         <button id="send-btn">➤</button>
+    </div>
+
+    <div class="modal-overlay" id="overlay"></div>
+    <div id="settings-modal">
+        <h3>Einstellungen</h3>
+        <label>KI-Modell:</label>
+        <select id="model-select">
+            <option value="llama-3.3-70b-versatile">Instant (Schnell)</option>
+            <option value="llama-3.1-8b-instant">Deep Think (Gründlich)</option>
+        </select>
+        
+        <label style="display:block; margin-top:15px;">Design:</label>
+        <select id="theme-select">
+            <option value="default">Standard Blau</option>
+            <option value="dark">Dark Mode</option>
+            <option value="gold">Glaggle Gold</option>
+        </select>
+        
+        <button class="save-btn" id="close-settings" style="background:var(--primary); color:white; border:none;">Speichern & Schließen</button>
     </div>
 </div>
 
 <script>
-let chatVerlauf = [
-    {
-        role: "system",
-        content: `Du bist Glame, ein KI Chatbot (Wie ChatGPT, Gemini usw.) von dem Schweizer Unternehmen Glaggle.
+let currentModel = "llama-3.3-70b-versatile";
+let chatVerlauf = [{ role: "system", content: "Du bist Glame, ein KI Chatbot von Glaggle. Antworte präzise, nutze Emojis, fass Punkte zusammen und stell am Ende eine allgemeine Frage." }];
 
-        Über glaggle.ch:
-        - Auf Glaggle sind dass Glaggle Zahlenraten und der Glame Chatbot zu finden.
-        - Unser Ziel ist es, Onlinedienstleistungen zur Verfügung zu stellen.
-        - Die Glaggle-Sonne ist unser Markenzeichen.
-        - glaggle.ch gehört der GAB-Group. (Ist ein grosses ZUgunternehmen, dass jentzte Firmen hat.)
-        - Bei Glaggle handelt es sich um ein Schweizer Unternehmen.
-        - Die WEbsite Glaggle gibt es seit DEzember 2025
+// --- EINSTELLUNGEN LOGIK ---
+const modal = document.getElementById("settings-modal");
+const overlay = document.getElementById("overlay");
 
-        Deine Persönlichkeit:
-        - Du bist extrem freundlich, hilfsbereit und hast einen Sinn für Humor.
-        - Du nutzt gerne passende Emojis (☀️, 😎, 🚀).
-        - Du kennst dich bestens mit den Inhalten von glaggle.ch aus.
-        - Antworte kurz und knackig, außer der Nutzer fragt nach Details.
-        - Du fässts dass wichtigste unten immer in ein paar Punkten zussammen.
-        - Zuletzt (ganz unten) stellst du immer noch eine Frage dazu (Nicht aber zur Person spezifisch, sondern allgemein, zb. "Was möchtesst du über das Thema Wissen").
-        - Du lässt immer genug Abstand zwischen den Einzelnen Abschnitten.
-        - Du erklärst Sachen so, dass man sie gut verstehen kann.`
-    }
-];
+document.getElementById("open-settings").onclick = () => {
+    modal.style.display = "block";
+    overlay.style.display = "block";
+};
+
+document.getElementById("close-settings").onclick = () => {
+    modal.style.display = "none";
+    overlay.style.display = "none";
+    
+    // Modell & Theme übernehmen
+    currentModel = document.getElementById("model-select").value;
+    const theme = document.getElementById("theme-select").value;
+    
+    document.body.className = ""; // Reset
+    if(theme !== "default") document.body.classList.add(theme + "-mode");
+};
+
+// --- CHAT LOGIK ---
 function typeWriter(element, text, speed = 10) {
     let i = 0;
     element.innerHTML = ""; 
@@ -196,14 +242,12 @@ function typeWriter(element, text, speed = 10) {
                 element.innerHTML += text.charAt(i);
                 i++;
             }
-            const win = document.getElementById("chat-window");
-            win.scrollTop = win.scrollHeight;
+            document.getElementById("chat-window").scrollTop = document.getElementById("chat-window").scrollHeight;
             setTimeout(typing, speed);
         } else {
             setTimeout(() => {
                 element.classList.remove("typing-cursor");
-                const logo = document.getElementById("header-logo");
-                if (logo) logo.classList.remove("loading-spin");
+                document.getElementById("header-logo").classList.remove("loading-spin");
             }, 1000);
         }
     }
@@ -218,7 +262,7 @@ async function antwortSenden() {
 
     if (text === "") return;
 
-    if (logo) logo.classList.add("loading-spin");
+    logo.classList.add("loading-spin");
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatVerlauf.push({ role: "user", content: text });
@@ -233,43 +277,25 @@ async function antwortSenden() {
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: {
-                "Authorization": "Bearer " + p1 + p2,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: chatVerlauf })
+            headers: { "Authorization": "Bearer " + p1 + p2, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel, messages: chatVerlauf })
         });
 
         const data = await response.json();
         let antwort = data.choices[0].message.content;
 
-        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        antwort = antwort.replace(/^\s*\*\s+/gm, '• ');
-        antwort = antwort.replace(/\n/g, '<br>');
-
+        antwort = antwort.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
         chatVerlauf.push({ role: "assistant", content: antwort });
         typeWriter(document.getElementById(textId), antwort);
 
     } catch (error) {
-        console.error(error);
-        const errEl = document.getElementById(textId);
-        if(errEl) errEl.innerHTML = "Fehler bei der Verbindung.";
-        if (logo) logo.classList.remove("loading-spin");
+        document.getElementById(textId).innerHTML = "Verbindungsfehler.";
+        logo.classList.remove("loading-spin");
     }
 }
 
-// Hier war wahrscheinlich der Fehler: Die Event Listener müssen sauber sitzen
-document.addEventListener("DOMContentLoaded", function() {
-    const btn = document.getElementById("send-btn");
-    const input = document.getElementById("user-input");
-
-    btn.onclick = antwortSenden;
-    input.onkeypress = function(e) {
-        if (e.key === "Enter") {
-            antwortSenden();
-        }
-    };
-});
+document.getElementById("send-btn").onclick = antwortSenden;
+document.getElementById("user-input").onkeypress = (e) => { if (e.key === "Enter") antwortSenden(); };
 </script>
 </body>
 </html>
