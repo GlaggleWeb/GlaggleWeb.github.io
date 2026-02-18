@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame 2.4 - Design Edition</title>
+    <title>Glame 3.0 - Ultimate Edition</title>
     <style>
         :root {
             --primary: #008C9C;
@@ -12,9 +12,10 @@
             --bg: #f0f2f5;
             --text: #333;
             --panel: #ffffff;
+            --danger: #d9534f;
         }
 
-        /* VERSCHIEDENE DESIGNS */
+        /* DESIGN THEMES */
         body.dark-mode { --bg: #121212; --text: #eee; --panel: #222; --primary: #333; }
         body.gold-mode { --bg: #fdf5e6; --text: #5d4037; --panel: #fffaf0; --primary: #D4AF37; }
         body.cyber-mode { --bg: #0d0221; --text: #00ff41; --panel: #1a1a2e; --primary: #e94560; }
@@ -33,15 +34,16 @@
             transition: background 0.5s ease;
         }
 
+        /* 1. ABGERUNDETE ECKEN FÜR DAS FENSTER */
         #chat-wrapper {
             width: 95%;
             max-width: 450px;
             height: 85vh;
             background: var(--panel);
-            border-radius: 20px;
+            border-radius: 25px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
             position: relative;
             overflow: hidden;
         }
@@ -49,186 +51,224 @@
         #chat-header {
             background: #222;
             color: white;
-            padding: 15px;
+            padding: 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             font-weight: bold;
+            font-size: 18px;
         }
 
         #chat-window {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
+            scrollbar-width: none;
         }
+        #chat-window::-webkit-scrollbar { display: none; }
 
         .bot-msg, .user-msg {
             padding: 12px 16px;
             border-radius: 18px;
             font-size: 15px;
             max-width: 85%;
-            animation: FadeIn 0.3s ease;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
         }
         .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
         .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
 
-        /* EINGABEBEREICH */
+        /* INPUT AREA */
         #chat-input-area {
             display: flex;
-            padding: 15px;
-            background: rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.03);
             border-top: 1px solid rgba(0,0,0,0.1);
-            gap: 10px;
+            gap: 12px;
             align-items: center;
         }
 
+        /* INPUT FOKUS ERHALTEN */
         #user-input {
             flex: 1;
             border: 1px solid #ccc;
-            padding: 12px 15px;
-            border-radius: 25px;
+            padding: 12px 18px;
+            border-radius: 30px;
             outline: none;
             font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        #user-input:focus {
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 10px rgba(0, 140, 156, 0.2);
         }
 
-        /* BUTTON STYLES (EINHEITLICH) */
-        .round-btn {
-            width: 50px;
-            height: 50px;
+        /* BUTTON STYLES */
+        .btn-circle {
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            background: var(--primary);
             color: white;
+            transition: all 0.3s ease;
             flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-circle:hover { transform: scale(1.1); background: var(--primary-hover); }
+        .btn-circle:active { transform: scale(0.95); }
+
+        /* WEISSES ZAHNRAD */
+        .icon-white {
+            filter: brightness(0) invert(1);
+            width: 24px;
+            height: 24px;
         }
 
-        #settings-btn { background: #666; font-size: 22px; }
-        #settings-btn:hover { transform: rotate(90deg); background: #444; }
-
-        #send-btn { background: var(--primary); font-size: 26px; } /* Pfeil größer gemacht */
-        #send-btn:hover { background: var(--primary-hover); transform: scale(1.1); }
-        #send-btn:active { transform: scale(0.9); }
-
-        /* THINKING DOTS */
-        .thinking-dots span { animation: blink 1.4s infinite both; font-size: 24px; }
+        /* THINKING DOTS EFFECT */
+        .thinking-dots span { animation: blink 1.4s infinite both; font-size: 24px; font-weight: bold; }
         .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
         .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
 
-        /* SETTINGS MODAL */
+        /* MODAL */
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; backdrop-filter: blur(3px); }
         #settings-modal {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80%; background: var(--panel); padding: 25px; border-radius: 20px; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.3); z-index: 100;
+            width: 80%; background: var(--panel); padding: 25px; border-radius: 20px; z-index: 100;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 95; }
-        
-        select, .save-btn { width: 100%; padding: 10px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc; font-size: 14px; }
-        .save-btn { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        select, .action-btn { width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; font-size: 14px; outline: none; }
+        .action-btn { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 15px; }
+        .reset-btn { background: var(--danger); }
 
-        @keyframes FadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="chat-wrapper">
     <div id="chat-header">
-        <img src="glagglesonne.png" style="width: 30px; height: 30px; border-radius: 50%;" id="header-logo">
-        <span style="margin-left: 10px;">Glame 2.4</span>
+        <img src="glagglesonne.png" style="width: 32px; height: 32px; border-radius: 50%;" id="header-logo" onerror="this.src='https://via.placeholder.com/32'">
+        <span style="margin-left: 10px;">Glame 3.0</span>
     </div> 
     
     <div id="chat-window">
-        <div class="bot-msg">Hey! Klick auf das graue Zahnrad, um mein <b>Design</b> oder meine <b>Seele</b> zu ändern! 🎨</div>
+        <div class="bot-msg">Hallo! Ich bin bereit. Passe meine <b>Seele</b> oder mein <b>Design</b> im Menü an! ⚙️</div>
     </div>
 
     <div id="chat-input-area">
-        <button class="round-btn" id="settings-btn">⚙️</button>
-        <input type="text" id="user-input" placeholder="Schreib Glame..." autocomplete="off">
-        <button class="round-btn" id="send-btn">➤</button>
+        <button class="btn-circle" id="open-settings">
+            <!-- Weißes Zahnrad Icon -->
+            <svg class="icon-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19.4 15L21.7 12.8C22.1 12.4 22.1 11.7 21.7 11.3L19.4 9.1C19.1 8.8 19 8.4 19.1 8L19.7 4.9C19.8 4.3 19.4 3.7 18.8 3.6L15.7 3C15.3 2.9 14.9 2.8 14.6 2.5L12.4 0.3C12 -0.1 11.3 -0.1 10.9 0.3L8.7 2.5C8.4 2.8 8 2.9 7.6 3L4.5 3.6C3.9 3.7 3.5 4.3 3.6 4.9L4.2 8C4.3 8.4 4.2 8.8 3.9 9.1L1.6 11.3C1.2 11.7 1.2 12.4 1.6 12.8L3.9 15C4.2 15.3 4.3 15.7 4.2 16.1L3.6 19.2C3.5 19.8 3.9 20.4 4.5 20.5L7.6 21.1C8 21.2 8.4 21.3 8.7 21.6L10.9 23.8C11.3 24.2 12 24.2 12.4 23.8L14.6 21.6C14.9 21.3 15.3 21.2 15.7 21.1L18.8 20.5C19.4 20.4 19.8 19.8 19.7 19.2L19.1 16.1C19 15.7 19.1 15.3 19.4 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <input type="text" id="user-input" placeholder="Nachricht..." autocomplete="off">
+        <button class="btn-circle" id="send-btn" style="font-size: 24px;">➤</button>
     </div>
 
     <div class="modal-overlay" id="overlay"></div>
     <div id="settings-modal">
-        <h2 style="margin-top:0;">Glame Setup</h2>
+        <h3 style="margin:0 0 15px 0;">Einstellungen</h3>
         
-        <label>Design-Thema:</label>
+        <label style="font-size:12px; font-weight:bold;">KI-MODELL</label>
+        <select id="model-select">
+            <option value="llama-3.1-8b-instant">Llama 3.1 (Schnell)</option>
+            <option value="llama-3.3-70b-versatile">Llama 3.3 (Power)</option>
+            <option value="llama-3.2-3b-preview">Llama 3.2 (Mini)</option>
+        </select>
+
+        <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">SEELE</label>
+        <select id="soul-select">
+            <option value="standard">Standard (Hilfreich)</option>
+            <option value="witzig">Witzbold (Emojis & Humor)</option>
+            <option value="frech">Frechdachs (Sarkastisch)</option>
+            <option value="weise">Der Weise (Philosophisch)</option>
+            <option value="fan">Glaggle-Fan (Begeistert)</option>
+        </select>
+
+        <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">DESIGN</label>
         <select id="theme-select">
             <option value="default">Glaggle Blau</option>
             <option value="dark">Dark Mode</option>
-            <option value="gold">Luxury Gold</option>
-            <option value="cyber">Cyberpunk (Neon)</option>
-            <option value="sakura">Sakura (Pink)</option>
+            <option value="gold">Gold Edition</option>
+            <option value="cyber">Cyberpunk</option>
+            <option value="sakura">Sakura Pink</option>
         </select>
 
-        <label style="display:block; margin-top:15px;">Glame's Seele:</label>
-        <select id="soul-select">
-            <option value="standard">Standard</option>
-            <option value="lustig">Witzbold</option>
-            <option value="thinker">Einstein Mode</option>
-            <option value="frech">Frechdachs</option>
-            <option value="weise">Der Weise</option>
-            <option value="fan">Glaggle Fanboy</option>
-        </select>
-
-        <button class="save-btn" id="save-settings">Speichern & Anwenden</button>
+        <button class="action-btn" id="save-settings">Speichern</button>
+        <button class="action-btn reset-btn" id="reset-chat">Chat zurücksetzen</button>
     </div>
 </div>
 
 <script>
-let currentModel = "llama-3.3-70b-versatile";
+let currentModel = "llama-3.1-8b-instant";
 const seelen = {
     standard: "Du bist Glame, der freundliche Schweizer Bot von glaggle.ch.",
-    lustig: "Du bist Glame. Sei extrem lustig und mach Witze!",
-    thinker: "Du bist Glame. Antworte extrem klug und tiefgründig.",
-    frech: "Du bist Glame. Sei frech, aber charmant.",
-    weise: "Du bist Glame. Sprich in Rätseln und Weisheiten.",
-    fan: "Du bist Glame. Du liebst glaggle.ch über alles!"
+    witzig: "Du bist Glame. Erzähle Witze, benutze viele Emojis und sei extrem lustig!",
+    frech: "Du bist Glame. Sei frech, sarkastisch und ein bisschen respektlos, aber bleib im Kern freundlich.",
+    weise: "Du bist Glame. Antworte wie ein alter weiser Philosoph mit Zitaten und tiefgründigen Gedanken.",
+    fan: "Du bist Glame. Du bist der größte Fan von glaggle.ch und liebst alles an dieser Website!"
 };
 
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
 
 const modal = document.getElementById("settings-modal");
 const overlay = document.getElementById("overlay");
+const chatWindow = document.getElementById("chat-window");
 
-document.getElementById("settings-btn").onclick = () => {
-    modal.style.display = "block";
-    overlay.style.display = "block";
-};
+document.getElementById("open-settings").onclick = () => { modal.style.display = "block"; overlay.style.display = "block"; };
 
 document.getElementById("save-settings").onclick = () => {
     modal.style.display = "none";
     overlay.style.display = "none";
-    
-    // Theme wechseln
+    currentModel = document.getElementById("model-select").value;
     const theme = document.getElementById("theme-select").value;
-    document.body.className = "";
-    if(theme !== "default") document.body.classList.add(theme + "-mode");
-
-    // Seele wechseln
-    const soul = document.getElementById("soul-select").value;
-    chatVerlauf[0].content = seelen[soul];
+    document.body.className = (theme === "default") ? "" : theme + "-mode";
+    chatVerlauf[0].content = seelen[document.getElementById("soul-select").value];
 };
 
+document.getElementById("reset-chat").onclick = () => {
+    chatVerlauf = [{ role: "system", content: seelen[document.getElementById("soul-select").value] }];
+    chatWindow.innerHTML = '<div class="bot-msg">Verlauf gelöscht. Wie kann ich dir helfen?</div>';
+    modal.style.display = "none"; overlay.style.display = "none";
+};
+
+// TYPING EFFEKT
+function typeWriter(element, text, i = 0) {
+    if (i < text.length) {
+        element.innerHTML += text.charAt(i).replace(/\n/g, '<br>');
+        i++;
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        setTimeout(() => typeWriter(element, text, i), 20);
+    }
+}
+
 async function antwortSenden() {
-    const input = document.getElementById("user-input");
-    const window = document.getElementById("chat-window");
-    const text = input.value.trim();
+    const inputField = document.getElementById("user-input");
+    const text = inputField.value.trim();
     if (!text) return;
 
-    window.innerHTML += `<div class="user-msg">${text}</div>`;
-    input.value = "";
+    // User Nachricht anzeigen
+    chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+    inputField.value = "";
     chatVerlauf.push({ role: "user", content: text });
 
-    const thinkId = "t-" + Date.now();
-    window.innerHTML += `<div class="bot-msg" id="${thinkId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
-    window.scrollTop = window.scrollHeight;
+    // 2. DENK-EFFEKT (BLINKENDE PUNKTE)
+    const thinkingId = "think-" + Date.now();
+    chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
         const p1 = "gsk_"; 
@@ -241,11 +281,17 @@ async function antwortSenden() {
         const data = await res.json();
         const antwort = data.choices[0].message.content;
         
-        document.getElementById(thinkId).innerHTML = `<b>Glame:</b> ${antwort.replace(/\n/g, '<br>')}`;
+        // Denker entfernen und 3. TYPING-EFFEKT starten
+        const botDiv = document.getElementById(thinkingId);
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        
         chatVerlauf.push({ role: "assistant", content: antwort });
-        window.scrollTop = window.scrollHeight;
+        typeWriter(textSpan, antwort);
+
     } catch (e) {
-        document.getElementById(thinkId).innerHTML = "Ups, Fehler!";
+        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Da gab es ein technisches Problem. Versuche es gleich nochmal!";
     }
 }
 
