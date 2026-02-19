@@ -1,75 +1,109 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Glaggle</title>
+    <title>Glaggle | Glame AI Chatbot & Games</title>
     
     <meta name="description" content="Glaggle your life!">
-    
-    <meta name="keywords" content="Glaggle bietet ihnen Online-Dienstleistungen wie ein kostenloser und LogIn-Freier KI ChatBot oder dass Glaggle Zahlenraten Spiel">
-    
-    <meta property="og:title" content="Glaggle | Glame AI Chatbot & Games">
-    <meta property="og:description" content="Glaggle your Life! Nutze Glame AI oder spiele Games.">
-    <meta property="og:image" content="https://glaggle.ch/glagglelogo.png">
-    <meta property="og:url" content="https://glaggle.ch">
-    
+    <meta name="keywords" content="Glaggle, KI ChatBot, Zahlenraten, Glame AI">
     <meta name="author" content="Glaggle">
-    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
-    <link rel="icon" href="favicon.ico?v=3" type="image/x-icon">
     
+    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
     <link rel="canonical" href="https://glaggle.ch">
 
-<nav class="navbar">
-  <div class="nav-left">
-    <a href="https://glaggle.ch">
-      <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
-    </a>
-  </div>
-
-  <div class="nav-center">
-    <span class="nav-slogan">Glaggle your life!</span>
-  </div>
-
-  <div class="nav-right">
-    <a href="https://glaggle.ch/glame" class="nav-button">Glame Chatbot →</a>
-    <a href="https://glaggle.ch/zahlenraten" class="nav-button">Glaggle Zahlenraten →</a>
-  </div>
-</nav>
-
-<div class="content-spacer"></div>
-
-      
-<div class="content-spacer"></div>
-<div class="content-spacer"></div>
     <style>
+        /* Grund-Layout */
         body {
             background-color: white; 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
+            margin: 0;
+            padding: 0;
             display: flex; 
             flex-direction: column; 
-            justify-content: center; 
             align-items: center; 
-            min-height: 100vh; 
-            margin: 0;
-            padding: 20px;
+            min-height: 100vh;
             box-sizing: border-box;
+        }
+
+        /* NAVIGATION */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 80px;
+            background-color: #ffffff;
+            padding: 0 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .nav-left, .nav-center, .nav-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left { justify-content: flex-start; }
+        .nav-center { justify-content: center; }
+        .nav-right { justify-content: flex-end; gap: 15px; }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .nav-slogan {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .nav-button {
+            text-decoration: none;
+            color: white;
+            background-color: #8cc9f5;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #7ab8e6;
+            transform: scale(1.05);
+        }
+
+        /* HAUPTINHALT */
+        .main-content {
+            margin-top: 120px; /* Platz für die Navbar */
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         h1 {
             font-size: clamp(2rem, 8vw, 3.5rem); 
             margin-bottom: 20px;
-            text-align: center;
+            color: #333;
         }
 
-        .logo {
+        .large-logo {
             width: 100%;
             max-width: 400px;
             height: auto;
             margin-bottom: 40px;
-            mix-blend-mode: multiply;
         }
 
         .button-container {
@@ -79,129 +113,71 @@
             justify-content: center;
         }
 
+        /* Die großen Haupt-Buttons */
         .web-button {
             display: inline-block; 
-            padding: 15px 30px;  
+            padding: 18px 35px;  
             background-color: #70C4F7;
             color: white; 
             text-decoration: none; 
             font-weight: bold;
             border-radius: 50px; 
-            transition: transform 0.2s, background-color 0.2s;
+            transition: all 0.2s;
             text-align: center;
-            min-width: 200px;
+            min-width: 220px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(112, 196, 247, 0.3);
         }
 
         .web-button:hover {
             background-color: #2E94D1;
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(112, 196, 247, 0.4);
         }
 
-/* Grundregeln */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-}
-
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 80px; /* Feste Höhe für mehr Stabilität */
-  background-color: #ffffff;
-  padding: 0 40px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-/* Dreiteilung der Leiste */
-.nav-left, .nav-center, .nav-right {
-  flex: 1; /* Jeder Bereich bekommt 1/3 der Breite */
-  display: flex;
-  align-items: center;
-}
-
-/* Logo links */
-.nav-left {
-  justify-content: flex-start;
-}
-
-.logo-img {
-  height: 50px; /* Größe deines Logos */
-  width: auto;
-}
-
-/* Slogan in der echten Mitte */
-.nav-center {
-  justify-content: center;
-}
-
-.nav-slogan {
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  white-space: nowrap; /* Kein Zeilenumbruch */
-}
-
-/* Buttons rechts */
-.nav-right {
-  justify-content: flex-end;
-  gap: 15px;
-}
-
-.nav-button {
-  text-decoration: none;
-  color: white;
-  background-color: #8cc9f5;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-weight: bold;
-  font-size: 14px;
-  white-space: nowrap;
-  transition: background-color 0.3s;
-}
-
-.nav-button:hover {
-  background-color: #7ab8e6;
-}
-
-/* Platzhalter unter der fixierten Navbar */
-.content-spacer {
-  height: 100px;
-}
+        /* Responsive Design für Handys */
+        @media (max-width: 800px) {
+            .nav-center { display: none; } /* Slogan weg auf Handy für mehr Platz */
+            .navbar { padding: 0 15px; }
+        }
 
         @media (max-width: 600px) {
-            .button-container {
-                flex-direction: column;
-                width: 100%;
-            }
-            .web-button {
-                width: 100%;
-                box-sizing: border-box;
-            }
+            .button-container { flex-direction: column; width: 100%; }
+            .web-button { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Glaggle your life!</h1>
-    <img src="glagglelogo.png" alt="Glaggle Logo" class="logo">
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="https://glaggle.ch">
+                <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
+            </a>
+        </div>
 
-    <div class="button-container">
-        <a href="https://glaggle.ch/glame" class="web-button">
-            Glame Chatbot →
-        </a>
+        <div class="nav-center">
+            <span class="nav-slogan">Glaggle your life!</span>
+        </div>
+
+        <div class="nav-right">
+            <a href="https://glaggle.ch/glame" class="nav-button">Glame Chatbot →</a>
+            <a href="https://glaggle.ch/zahlenraten" class="nav-button">Zahlenraten →</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <h1>Glaggle your life!</h1>
         
-        <a href="https://glaggle.ch/zahlenraten" class="web-button">
-            Glaggle Zahlenraten →
-        </a>
-    </div>
-    
+        <div class="center-logo">
+            <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
+        </div>
+
+        <div class="button-container">
+            <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
+            <a href="https://glaggle.ch/zahlenraten" class="web-button">Glaggle Zahlenraten →</a>
+        </div>
+    </main>
+
 </body>
 </html>
