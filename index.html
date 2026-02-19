@@ -22,16 +22,18 @@
     
     <link rel="canonical" href="https://glaggle.ch">
 
-   <nav class="navbar">
+<nav class="navbar">
   <div class="logo">
     <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
   </div>
+
   <ul class="nav-links">
     <li><a href="https://glaggle.ch/glame/">Glame Chatbot →</a></li>
     <li><a href="https://glaggle.ch/zahlenraten/">Glaggle Zahlenraten →</a></li>
   </ul>
 </nav>
 
+<div class="content-spacer"></div>
 <div class="content-spacer"></div>
     <style>
         body {
@@ -87,67 +89,76 @@
         }
 
        /* Globale Einstellungen für den sauberen Look */
-/* WICHTIG: Entfernt den Standard-Rand des Browsers ganz oben und an den Seiten */
+/* Grundlegende Bereinigung */
 body {
   margin: 0;
   padding: 0;
+  font-family: 'Arial Rounded MT Bold', sans-serif;
 }
 
+/* Die Navbar über die volle Breite */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: flex-start; /* Logo und Links starten links */
-  
-  width: 100%;           /* Geht über die ganze Breite */
-  box-sizing: border-box; /* Sorgt dafür, dass Padding die Breite nicht sprengt */
-  
+  width: 100%;
   background-color: #ffffff;
-  padding: 10px 30px;    /* Abstand nach innen */
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Schicker Schatten-Effekt */
-  
-  position: fixed;       /* Bleibt beim Scrollen oben kleben */
+  padding: 20px 50px; /* Mehr Platz nach oben und unten */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Weicherer, tieferer Schatten */
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
+  box-sizing: border-box;
 }
 
+/* LOGO GRÖSSE: Hier stellst du ein, wie groß es sein soll */
 .logo-img {
-  height: 40px;
+  height: 80px; /* Deutlich größer (vorher war es oft nur 40-50px) */
   width: auto;
-  margin-right: 40px;    /* Platz zwischen Logo und Links */
+  transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
+/* Kleiner Effekt beim Drüberfahren mit der Maus */
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+/* Die Link-Liste */
 .nav-links {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
+  margin-left: 50px; /* Großer Abstand zum Logo */
 }
 
 .nav-links li {
-  margin-right: 15px;
+  margin-right: 20px;
 }
 
-/* Der Button-Style aus deinem Screenshot */
+/* Buttons im Glaggle-Stil */
 .nav-links a {
   text-decoration: none;
   color: white;
   background-color: #8cc9f5;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-family: sans-serif;
+  padding: 15px 30px; /* Größere Buttons */
+  border-radius: 40px; /* Schön rund */
   font-weight: bold;
-  font-size: 14px;
-  transition: 0.3s;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-block;
 }
 
 .nav-links a:hover {
   background-color: #7ab8e6;
+  box-shadow: 0 5px 15px rgba(140, 201, 245, 0.4);
 }
 
-/* WICHTIG: Platzhalter, damit der restliche Inhalt nicht UNTER der Navbar verschwindet */
+/* Platzhalter für den Rest der Seite */
 .content-spacer {
-  height: 70px; 
+  height: 120px; /* Muss so hoch sein wie die Navbar */
 }
 
         @media (max-width: 600px) {
