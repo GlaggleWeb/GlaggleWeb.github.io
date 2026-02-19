@@ -27,18 +27,21 @@
     <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
   </div>
 
-  <ul class="nav-center">
+  <div class="nav-center">
+    <span class="nav-slogan">Glaggle your life!</span>
+  </div>
+
+  <ul class="nav-right">
     <li><a href="https://glaggle.ch/glame/">Glame Chatbot →</a></li>
     <li><a href="https://glaggle.ch/zahlenraten/">Glaggle Zahlenraten →</a></li>
   </ul>
-
-  <div class="nav-right">
-    </div>
 </nav>
 
-<header class="hero">
-  <h1>Glaggle your life!</h1>
-</header>
+<main class="main-content">
+  <div class="center-logo">
+     <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
+  </div>
+  </main>
       
 <div class="content-spacer"></div>
 <div class="content-spacer"></div>
@@ -96,72 +99,57 @@
         }
 
        /* Globale Einstellungen für den sauberen Look */
-/* Grunddesign */
-body {
-  margin: 0;
-  font-family: 'Arial Rounded MT Bold', sans-serif;
-  background-color: #ffffff;
-}
-
 .navbar {
   display: flex;
-  align-items: center; /* Vertikal zentrieren */
-  justify-content: space-between; /* Verteilt links, mitte, rechts */
+  align-items: center;
+  justify-content: space-between; /* Verteilt die 3 Bereiche */
+  width: 100%;
   padding: 10px 40px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   position: fixed;
   top: 0;
-  width: 100%;
+  left: 0;
   box-sizing: border-box;
   z-index: 1000;
 }
 
-/* Linker Bereich: Logo */
-.logo-img {
-  height: 60px; /* Schön groß wie gewünscht */
-  width: auto;
-  display: block;
+/* Der Slogan in der Mitte der Navi-Leiste */
+.nav-slogan {
+  font-family: 'Arial Rounded MT Bold', sans-serif;
+  font-size: 24px; /* Etwas kleiner für die Leiste */
+  font-weight: bold;
+  color: #333;
 }
 
-/* Mittlerer Bereich: Die Buttons */
-.nav-center {
+/* Die Link-Buttons rechts */
+.nav-right {
   display: flex;
   list-style: none;
+  gap: 15px;
   margin: 0;
   padding: 0;
-  gap: 20px; /* Abstand zwischen den Buttons */
 }
 
-.nav-center a {
+.nav-right a {
   text-decoration: none;
   color: white;
   background-color: #8cc9f5;
-  padding: 12px 25px;
-  border-radius: 30px;
+  padding: 8px 18px;
+  border-radius: 20px;
   font-weight: bold;
-  transition: 0.3s ease;
+  font-size: 14px;
 }
 
-.nav-center a:hover {
-  background-color: #7ab8e6;
-  transform: translateY(-2px);
-}
-
-/* Rechter Bereich (leer gehalten wie bei LEGO für Symmetrie) */
-.nav-right {
-  min-width: 60px; /* Hält den Platz frei, damit die Mitte mittig bleibt */
-}
-
-/* Der Schriftzug unter der Navbar */
-.hero {
-  margin-top: 120px;
+/* Abstand für den Inhalt unter der Leiste */
+.main-content {
+  margin-top: 100px;
   text-align: center;
 }
 
-.hero h1 {
-  font-size: 50px;
-  color: #000;
+.large-logo {
+  width: 300px; /* Das große Logo in der Mitte der Seite */
+  height: auto;
 }
 
         @media (max-width: 600px) {
