@@ -24,15 +24,15 @@
 
    <nav class="navbar">
   <div class="logo">
-    <img src="glagglelogo.png" alt="Logo" class="logo-img">
+    <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
   </div>
-
   <ul class="nav-links">
-    <li><a href="https://glaggle.ch/glame/">Glame Chatbot</a></li>
-    
-    <li><a href="https://glaggle.ch/zahlenraten/">Zahlenraten</a></li>
+    <li><a href="https://glaggle.ch/glame/">Glame Chatbot →</a></li>
+    <li><a href="https://glaggle.ch/zahlenraten/">Glaggle Zahlenraten →</a></li>
   </ul>
 </nav>
+
+<div class="content-spacer"></div>
     <style>
         body {
             background-color: white; 
@@ -87,30 +87,36 @@
         }
 
        /* Globale Einstellungen für den sauberen Look */
+/* WICHTIG: Entfernt den Standard-Rand des Browsers ganz oben und an den Seiten */
 body {
   margin: 0;
-  font-family: 'Arial', sans-serif; /* Oder eine ähnliche serifenlose Schrift */
-  background-color: #ffffff;
+  padding: 0;
 }
 
-/* Die Navigationsleiste */
 .navbar {
   display: flex;
   align-items: center;
-  padding: 15px 40px;
+  justify-content: flex-start; /* Logo und Links starten links */
+  
+  width: 100%;           /* Geht über die ganze Breite */
+  box-sizing: border-box; /* Sorgt dafür, dass Padding die Breite nicht sprengt */
+  
   background-color: #ffffff;
-  /* Ein ganz leichter Schatten, damit sie sich vom Rest abhebt */
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 10px 30px;    /* Abstand nach innen */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Schicker Schatten-Effekt */
+  
+  position: fixed;       /* Bleibt beim Scrollen oben kleben */
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
-/* Das Logo-Bild */
 .logo-img {
-  height: 45px; /* Passt die Größe an dein Glaggle-Logo an */
+  height: 40px;
   width: auto;
-  margin-right: 30px;
+  margin-right: 40px;    /* Platz zwischen Logo und Links */
 }
 
-/* Die Liste der Links */
 .nav-links {
   display: flex;
   list-style: none;
@@ -118,28 +124,30 @@ body {
   padding: 0;
 }
 
-/* Einzelne Listen-Elemente */
 .nav-links li {
   margin-right: 15px;
 }
 
-/* Das Design der Links – angepasst an deine blauen Buttons */
+/* Der Button-Style aus deinem Screenshot */
 .nav-links a {
   text-decoration: none;
   color: white;
-  background-color: #8cc9f5; /* Das helle Blau aus deinem Bild */
-  padding: 10px 20px;
-  border-radius: 25px; /* Stark abgerundete Ecken wie bei deinen Buttons */
+  background-color: #8cc9f5;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-family: sans-serif;
   font-weight: bold;
   font-size: 14px;
-  transition: background-color 0.3s ease, transform 0.2s;
-  display: inline-block;
+  transition: 0.3s;
 }
 
-/* Hover-Effekt: Wenn man mit der Maus drüberfährt */
 .nav-links a:hover {
-  background-color: #7ab8e6; /* Ein etwas dunkleres Blau beim Drüberfahren */
-  transform: translateY(-2px); /* Kleiner "Hüpf"-Effekt */
+  background-color: #7ab8e6;
+}
+
+/* WICHTIG: Platzhalter, damit der restliche Inhalt nicht UNTER der Navbar verschwindet */
+.content-spacer {
+  height: 70px; 
 }
 
         @media (max-width: 600px) {
