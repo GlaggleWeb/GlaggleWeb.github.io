@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI</title>
+    <title>Glame AI!</title>
     <style>
         :root {
             --primary: #008C9C;
@@ -307,12 +307,10 @@ function copyFromBase64(btn, base64Text) {
 function typeWriter(element, text) {
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     
-    // Wir bereiten den Text vor und wandeln Code-Blöcke in sicheres HTML um
+    // 1. Code-Blöcke schützen
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
-        
-        // Code in Base64 umwandeln, damit Sonderzeichen das HTML-Attribut nicht zerstören
         const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
         
         return `✂️<div class="code-container">
@@ -324,7 +322,13 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
+    // 2. Aufzählungspunkte: Verwandelt "*" am Zeilenanfang in "•"
+    // Das 'm' Flag sorgt dafür, dass ^ auf jeden Zeilenanfang matcht
+    formatted = formatted.replace(/^\*\s+/gm, '• ');
+
+    // 3. Fettschrift: **text** zu <b>text</b>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
     const segments = formatted.split('✂️');
     let idx = 0;
 
@@ -340,9 +344,12 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
-                        else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
-                        else {
+                        // HTML-Tags in einem Rutsch einfügen, damit sie nicht "getippt" werden
+                        if (seg.slice(charIdx).startsWith('<b>')) { 
+                            element.innerHTML += '<b>'; charIdx += 3; 
+                        } else if (seg.slice(charIdx).startsWith('</b>')) { 
+                            element.innerHTML += '</b>'; charIdx += 4; 
+                        } else {
                             element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
                             charIdx++;
                         }
