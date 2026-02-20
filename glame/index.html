@@ -284,7 +284,7 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-// SICHERE KOPIER-FUNKTION (Nutzt Base64 zur Umgehung von Escaping-Fehlern)
+// SICHERE KOPIER-FUNKTION
 function copyFromBase64(btn, base64Text) {
     try {
         const decodedText = decodeURIComponent(escape(atob(base64Text)));
@@ -296,23 +296,19 @@ function copyFromBase64(btn, base64Text) {
                 btn.innerText = oldText; 
                 btn.style.background = ""; 
             }, 2000);
-        }).catch(err => {
-            console.error('Fehler beim Kopieren: ', err);
         });
     } catch (e) {
-        console.error('Dekodierungsfehler: ', e);
+        console.error('Kopierfehler:', e);
     }
 }
 
 function typeWriter(element, text) {
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     
-    // Wir bereiten den Text vor und wandeln Code-Blöcke in sicheres HTML um
+    // 1. Große Code-Blöcke verarbeiten
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
-        
-        // Code in Base64 umwandeln, damit Sonderzeichen das HTML-Attribut nicht zerstören
         const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
         
         return `✂️<div class="code-container">
@@ -324,7 +320,13 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
+    // 2. Inline-Formatierungen (Fett und Markierungen)
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    
+    // Markiert Text zwischen Backticks `code` oder einfachen Anführungszeichen 'code'
+    // Nutzt ein Inline-Styling für den Markierungseffekt
+    formatted = formatted.replace(/(`|')(.*?)\1/g, '<span style="background: rgba(0,0,0,0.1); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.9em;">$2</span>');
+
     const segments = formatted.split('✂️');
     let idx = 0;
 
@@ -340,14 +342,21 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
+                        // Unterstützung für HTML-Tags beim Tippen
                         if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
                         else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
+                        else if (seg.slice(charIdx).startsWith('<span')) { 
+                            let endTagIdx = seg.indexOf('>', charIdx) + 1;
+                            element.innerHTML += seg.slice(charIdx, endTagIdx);
+                            charIdx = endTagIdx;
+                        }
+                        else if (seg.slice(charIdx).startsWith('</span>')) { element.innerHTML += '</span>'; charIdx += 7; }
                         else {
                             element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
                             charIdx++;
                         }
                         chatWindow.scrollTop = chatWindow.scrollHeight;
-                        setTimeout(type, 5);
+                        setTimeout(type, 2);
                     } else { 
                         idx++; 
                         process(); 
@@ -395,7 +404,7 @@ async function antwortSenden() {
         typeWriter(textSpan, antwort);
 
     } catch (e) {
-        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Technisches Problem. Versuche es gleich nochmal!";
+        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Technisches Problem.";
     }
 }
 
