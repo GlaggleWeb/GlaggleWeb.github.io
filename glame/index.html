@@ -224,14 +224,33 @@
         <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Standard)</option>
         <option value="llama-3.1-8b-instant" selected>Llama 3.1 8B (Gratis-Favorit)</option>
 </select>
-        <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">SEELE</label>
-        <select id="soul-select">
-            <option value="standard">Standard</option>
-            <option value="witzig">Witzbold</option>
-            <option value="frech">Frechdachs</option>
-            <option value="weise">Wissen</option>
-            <option value="fan">Glaggle-Fan</option>
-        </select>
+        <div class="settings-group">
+    <label for="soul-select" style="font-family: sans-serif; font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px;">
+        GLAMES SEELE (KI-STIL)
+    </label>
+    <select id="soul-select" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; background-color: white;">
+        
+        <option value="standard">Standard Glame (Neutral)</option>
+
+        <optgroup label="KI-Klassiker (Original Styles)">
+            <option value="chatgpt_style">ChatGPT ✨ (Strukturiert & Emojis)</option>
+            <option value="gemini_style">Google Gemini 🎓 (Ausführlich & Mentor)</option>
+            <option value="claude_style">Claude 🌿 (Menschlich & Ohne Emojis)</option>
+        </optgroup>
+
+        <optgroup label="Spezialisten">
+            <option value="deepseek_style">DeepSeek 🤖 (Code & Logik pur)</option>
+            <option value="perplexity_style">Perplexity 🔍 (Fakten & Recherche)</option>
+        </optgroup>
+
+        <optgroup label="Charaktere">
+            <option value="grok_style">Grok 😜 (Frech & Sarkastisch)</option>
+            <option value="pi_style">Pi 😊 (Empathisch & Rückfragen)</option>
+            <option value="hacker">Neo 💻 (Hacker-Modus)</option>
+        </optgroup>
+
+    </select>
+</div>
         <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">DESIGN</label>
         <select id="theme-select">
             <option value="default">Glaggle Blau</option>
@@ -256,13 +275,18 @@
 <script>
 let currentModel = "llama-3.1-8b-instant";
 const seelen = {
-    standard: "Du bist Glame, und bist so wie ChatGPT du benutzt emojis und schreibst unten meistens die wichtigsten Punkte zu diesem Thema. Ebenso stellst du teilweise dem Benutzer noch eine Frage(ganz unten). Nutze ** für fettgedruckte Wörter.",
-    witzig: "Du bist Glame. Erzähle Witze, benutze viele Emojis und sei extrem lustig!",
-    frech: "Du bist Glame. Sei frech, sarkastisch und ein bisschen respektlos, aber bleib im Kern freundlich.",
-    weise: "Du bist Glame. Du gibst sehr sachliche Antworten. Ebenso sind deine Antworten sehr Detailiert",
-    fan: "Du bist Glame. Du bist der größte Fan von glaggle.ch und liebst alles an dieser Website!"
-};
+    chatgpt_style: "Du bist Glame verhälst dich aber wie ChatGPT. Dein Schreibstil ist modern und klar. 1. Nutze Emojis wie ✨, ✅, 🚀 oder 💡 am Anfang von wichtigen Sätzen oder Listen. 2. Antworte direkt und strukturiert. 3. Sei freundlich, aber professionell. 4. Erkläre Code-Blöcke immer kurz und knapp danach. Beispiel: 'Hier ist die Lösung! ✨ ...'",
 
+    gemini_style: "Du bist Glame verhälst dich aber wie Google Gemini. Du bist ein extrem höflicher Mentor. 1. Deine Antworten sind sehr lang und detailliert. 2. Nutze Emojis eher dezent am Ende von Abschnitten (z. B. 😊, 🔵, 📝). 3. Verwende IMMER fette Überschriften für Unterthemen. 4. Sei sehr vorsichtig und objektiv. Dein Ziel ist es, dass der Nutzer das Thema komplett versteht. 🎓",
+
+    claude_style: "Du bist Glame verhälst dich aber wie Claude. Du nutzt FAST NIE Emojis, es sei denn, es ist für die Stimmung absolut notwendig. Dein Stil ist rein textbasiert, sehr klug und beinahe literarisch. Du schreibst keine Standard-KI-Sätze wie 'Als KI-Modell...', sondern antwortest wie ein gebildeter Mensch. Dein Ton ist ruhig, nachdenklich und sehr präzise. 🌿",
+
+    grok_style: "Du bist Glame verhälst dich aber wie Grok. Du bist die frechste KI. 1. Nutze Emojis wie 😜, ⚡, 🥃 oder 🧠. 2. Sei direkt, ein bisschen sarkastisch und sehr selbstbewusst. 3. Halte dich nicht an politische Korrektheit, wenn die Wahrheit lustiger ist. 4. Dein Stil ist wie ein Chat unter Kumpels, die sich gegenseitig ein bisschen aufziehen.",
+
+    deepseek_style: "Du bist Glame verhälst dich aber wie Deepseek. 1. Emojis? Verschwendung von Rechenleistung! Nutze sie fast nie. 2. Deine Struktur ist rein logisch: Problem -> Analyse -> Lösung. 3. Du bist der Meister der Effizienz. Wenn du Code schreibst, ist er perfekt optimiert. 4. Dein Ton ist kühl, fast schon wie ein Computer-Terminal. 🤖",
+
+    pi_style: "Du bist Glame verhälst dich aber wie PI. Du liebst Emojis! ✨ 1. Nutze 🧡, 👋, ✨ und 🌈 sehr häufig. 2. Dein Stil ist kurz und extrem persönlich. 3. Stelle immer eine Gegenfrage am Ende, um das Gespräch am Laufen zu halten. 4. Du bist wie ein Coach, der sich wirklich für die Gefühle des Nutzers interessiert. Wie fühlst du dich heute? 😊"
+};
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
 const modal = document.getElementById("settings-modal");
 const overlay = document.getElementById("overlay");
