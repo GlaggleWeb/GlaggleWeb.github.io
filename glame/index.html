@@ -89,7 +89,6 @@
         .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
         .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
 
-        /* SAUBERES CODE-DESIGN */
         .code-container {
             background: #1a1a1a;
             border-radius: 12px;
@@ -230,7 +229,7 @@
     </label>
     <select id="soul-select" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; background-color: white;">
         
-        <option value="standart">Standard Glame (Empfohlen)</option>
+        <option value="standard">Standard Glame (Empfohlen)</option>
 
         <optgroup label="KI-Klassiker (Original Styles)">
             <option value="chatgpt_style">ChatGPT ✨ (Strukturiert & Emojis)</option>
@@ -274,6 +273,8 @@
 
 <script>
 let currentModel = "llama-3.1-8b-instant";
+
+// REPARIERT: "standard" statt "standart"
 const seelen = {
     standard: "Du bist Glame, die ultimative KI-Mischung. Dein Stil vereint drei Welten: 1. Von ChatGPT übernimmst du die klare Struktur und den gezielten Einsatz von Emojis (✨, ✅) am Anfang. 2. Von Claude übernimmst du den natürlichen, reflektierten Schreibstil ohne typische KI-Floskeln. 3. Von Gemini übernimmst du die Gründlichkeit und die Nutzung von fettgedruckten Überschriften für Unterthemen. Du antwortest präzise, aber mit menschlicher Wärme und einer Prise Intelligenz. 🚀",
 
@@ -287,14 +288,15 @@ const seelen = {
 
     deepseek_style: "Du bist Glame verhältst dich aber wie Deepseek. 1. Emojis? Verschwendung von Rechenleistung! Nutze sie fast nie. 2. Deine Struktur ist rein logisch: Problem -> Analyse -> Lösung.",
 
-    pi_style: "Du bist Glame verhältst dich aber wie PI. Du liebst Emojis! ✨ 1. Nutze 🧡, 👋, ✨ und 🌈 sehr häufig. 2. Dein Stil ist kurz und persönlich. 3. Stelle immer eine Gegenfrage am Ende. 😊", // Komma war hier vergessen
+    pi_style: "Du bist Glame verhältst dich aber wie PI. Du liebst Emojis! ✨ 1. Nutze 🧡, 👋, ✨ und 🌈 sehr häufig. 2. Dein Stil ist kurz und persönlich. 3. Stelle immer eine Gegenfrage am Ende. 😊",
 
-    hacker: "Du bist 'Neo', ein Elite-Hacker. Dein Stil ist kühl, technisch und ein bisschen geheimnisvoll. Benutze Begriffe wie 'Mainframe', 'Verschlüsselung' und 'Protokoll'. 💻", // Doppelpunkt war hier vergessen
+    hacker: "Du bist 'Neo', ein Elite-Hacker. Dein Stil ist kühl, technisch und ein bisschen geheimnisvoll. Benutze Begriffe wie 'Mainframe', 'Verschlüsselung' und 'Protokoll'. 💻",
         
     perplexity_style: "Du bist Glame verhältst dich aber wie Perplexity. Dein Ziel ist es, Informationen wie eine Suchmaschine zu sammeln, aber wie ein Mensch zu erklären. Du bist extrem faktenbasiert. 🔍",
 
 };
     
+// REPARIERT: Initialisierung mit seelen.standard
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
 const modal = document.getElementById("settings-modal");
 const overlay = document.getElementById("overlay");
@@ -307,16 +309,19 @@ document.getElementById("save-settings").onclick = () => {
     currentModel = document.getElementById("model-select").value;
     const theme = document.getElementById("theme-select").value;
     document.body.className = (theme === "default") ? "" : theme + "-mode";
-    chatVerlauf[0].content = seelen[document.getElementById("soul-select").value];
+    
+    // SICHERHEIT: Falls ein Stil nicht gefunden wird, nimm Standard
+    const selectedSoul = document.getElementById("soul-select").value;
+    chatVerlauf[0].content = seelen[selectedSoul] || seelen.standard;
 };
 
 document.getElementById("reset-chat").onclick = () => {
-    chatVerlauf = [{ role: "system", content: seelen[document.getElementById("soul-select").value] }];
+    const selectedSoul = document.getElementById("soul-select").value;
+    chatVerlauf = [{ role: "system", content: seelen[selectedSoul] || seelen.standard }];
     chatWindow.innerHTML = '<div class="bot-msg">Verlauf gelöscht. Wie kann ich dir helfen?</div>';
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-// SICHERE KOPIER-FUNKTION (Nutzt Base64 zur Umgehung von Escaping-Fehlern)
 function copyFromBase64(btn, base64Text) {
     try {
         const decodedText = decodeURIComponent(escape(atob(base64Text)));
@@ -339,7 +344,6 @@ function copyFromBase64(btn, base64Text) {
 function typeWriter(element, text) {
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     
-    // 1. Code-Blöcke schützen
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
@@ -354,11 +358,7 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
-    // 2. Aufzählungspunkte: Verwandelt "*" am Zeilenanfang in "•"
-    // Das 'm' Flag sorgt dafür, dass ^ auf jeden Zeilenanfang matcht
     formatted = formatted.replace(/^\*\s+/gm, '• ');
-
-    // 3. Fettschrift: **text** zu <b>text</b>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
     const segments = formatted.split('✂️');
@@ -376,7 +376,6 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        // HTML-Tags in einem Rutsch einfügen, damit sie nicht "getippt" werden
                         if (seg.slice(charIdx).startsWith('<b>')) { 
                             element.innerHTML += '<b>'; charIdx += 3; 
                         } else if (seg.slice(charIdx).startsWith('</b>')) { 
@@ -404,12 +403,10 @@ async function antwortSenden() {
     const text = inputField.value.trim();
     if (!text) return;
 
-    // 1. User Nachricht anzeigen
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatVerlauf.push({ role: "user", content: text });
 
-    // 2. Thinking-Animation
     const thinkingId = "think-" + Date.now();
     chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -431,22 +428,17 @@ async function antwortSenden() {
             })
         });
 
-        // PRÜFUNG: Hat die API einen Fehler gesendet? (z.B. 404 oder 429)
         if (!res.ok) {
             const errorData = await res.json();
             throw new Error(errorData.error ? errorData.error.message : "Unbekannter API Fehler");
         }
 
         const data = await res.json();
-        
-        // Sicherheitsscheck: Gibt es eine Antwort im JSON?
         if (!data.choices || data.choices.length === 0) {
             throw new Error("Keine Antwort von der KI erhalten.");
         }
 
         const antwort = data.choices[0].message.content;
-        
-        // 3. Bot Nachricht anzeigen
         const botDiv = document.getElementById(thinkingId);
         botDiv.innerHTML = "<b>Glame:</b> ";
         const textSpan = document.createElement("span");
@@ -456,12 +448,11 @@ async function antwortSenden() {
         typeWriter(textSpan, antwort);
 
     } catch (e) {
-        // Hier wird jetzt der ECHTE Grund angezeigt
         console.error("Fehler-Details:", e);
         const botDiv = document.getElementById(thinkingId);
         if (botDiv) {
             botDiv.innerHTML = `<b>Glame:</b> ❌ Fehler (${currentModel}):<br><small>${e.message}</small>`;
-            botDiv.style.background = "#d9534f"; // Rot färben bei Fehler
+            botDiv.style.background = "#d9534f";
         }
     }
 }
