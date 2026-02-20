@@ -320,12 +320,12 @@ function showSuccess(btn) {
 function typeWriter(element, text) {
     let i = 0;
     
-    // 1. Zuerst formatieren wir alle Code-Blöcke im Text
+    // 1. Markdown-Formatierung umwandeln
+    // Zuerst: Code-Blöcke (mit Scheren-Symbol schützen)
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
-    const formattedText = text.replace(codeRegex, (match, lang, code) => {
+    let formattedText = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'code';
         const cleanCode = code.trim();
-        // Wir verpacken den Block in ein spezielles Format, damit der Typewriter ihn erkennt
         return `✂️<div class="code-container">
                     <div class="code-header">
                         <span>${language.toUpperCase()}</span>
@@ -335,9 +335,53 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
-    // 2. Wir splitten den Text an den Scheren-Symbolen (unsere Code-Blöcke)
+    // NEU: Fettgedruckten Text umwandeln (Ersetzt **Text** durch <b>Text</b>)
+    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+    // 2. In Segmente unterteilen (Text vs. Code-Box)
     const segments = formattedText.split('✂️');
     let currentSegment = 0;
+
+    function processSegment() {
+        if (currentSegment < segments.length) {
+            let content = segments[currentSegment];
+            
+            if (content.startsWith('<div class="code-container"')) {
+                // Code-Box sofort einfügen
+                element.innerHTML += content;
+                currentSegment++;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                processSegment();
+            } else {
+                // Normaler Text (jetzt mit <b> Tags) wird getippt
+                // Wir müssen hier HTML-Tags beim Tippen überspringen
+                let charIndex = 0;
+                function typeChar() {
+                    if (charIndex < content.length) {
+                        if (content.slice(charIndex).startsWith('<b>')) {
+                            element.innerHTML += '<b>';
+                            charIndex += 3;
+                        } else if (content.slice(charIndex).startsWith('</b>')) {
+                            element.innerHTML += '</b>';
+                            charIndex += 4;
+                        } else {
+                            let char = content.charAt(charIndex);
+                            element.innerHTML += char === '\n' ? '<br>' : char;
+                            charIndex++;
+                        }
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                        setTimeout(typeChar, 7); // Deine Geschwindigkeit
+                    } else {
+                        currentSegment++;
+                        processSegment();
+                    }
+                }
+                typeChar();
+            }
+        }
+    }
+    processSegment();
+}
 
     function processSegment() {
         if (currentSegment < segments.length) {
