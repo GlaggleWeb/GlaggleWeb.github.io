@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame</title>
+    <title>Glame 3.0</title>
     <style>
         :root {
             --primary: #008C9C;
@@ -15,7 +15,7 @@
             --danger: #d9534f;
         }
 
-        /* DESIGN THEMES - Alle wieder da! */
+        /* DESIGN THEMES */
         body.dark-mode   { --bg: #121212; --text: #eee;    --panel: #222;    --primary: #333; }
         body.gold-mode   { --bg: #fdf5e6; --text: #5d4037; --panel: #fffaf0; --primary: #D4AF37; }
         body.cyber-mode  { --bg: #0d0221; --text: #00ff41; --panel: #1a1a2e; --primary: #e94560; }
@@ -89,41 +89,57 @@
         .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
         .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
 
+        /* SAUBERES CODE-DESIGN */
         .code-container {
-            background: #1e1e1e;
+            background: #1a1a1a;
             border-radius: 12px;
-            margin: 10px 0;
+            margin: 15px 0;
             border: 1px solid #333;
             overflow: hidden;
+            width: 100%;
+            display: block;
             color: #efefef;
-            text-align: left;
         }
+
         .code-header {
-            background: #323232;
+            background: #2d2d2d;
             padding: 8px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
-            color: #ccc;
+            border-bottom: 1px solid #444;
         }
+
+        .code-header span {
+            font-size: 11px;
+            font-weight: bold;
+            color: #9cdcfe;
+            text-transform: uppercase;
+        }
+
         .copy-btn {
             background: #444;
             border: none;
-            color: white;
-            padding: 4px 10px;
+            color: #fff;
+            padding: 4px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 11px;
+            min-width: 80px;
         }
+
+        .copy-btn:hover { background: #555; }
+
         pre {
             margin: 0;
             padding: 15px;
             overflow-x: auto;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 13px;
-            background: #1e1e1e;
-            color: #9cdcfe;
+            color: #d4d4d4;
+            background: #1a1a1a;
+            line-height: 1.4;
+            text-align: left;
         }
 
         #chat-input-area {
@@ -156,46 +172,8 @@
             background: var(--primary); color: white; transition: all 0.3s ease;
             flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
-        .code-container {
-    background: #1a1a1a;
-    border-radius: 12px;
-    margin: 15px 0;
-    border: 1px solid #333;
-    overflow: hidden;
-    width: 100%;
-    display: block; /* Verhindert das Verrutschen */
-}
-
-.code-header {
-    background: #2d2d2d;
-    padding: 8px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #444;
-}
-
-.code-header span {
-    font-size: 11px;
-    font-weight: bold;
-    color: #9cdcfe;
-    text-transform: uppercase;
-}
-
-.copy-btn {
-    background: #444;
-    border: none;
-    color: #fff;
-    padding: 4px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 11px;
-    min-width: 80px; /* Damit der Button beim Textwechsel nicht hüpft */
-}
         
         .btn-circle:hover { transform: scale(1.1); }
-
         .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
 
         .thinking-dots span { animation: blink 1.4s infinite both; font-size: 24px; }
@@ -223,7 +201,7 @@
     </div> 
     
     <div id="chat-window">
-        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann <b>Glame</b> dir heute <b>helfen</b> ?</div>
+        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann <b>Glame</b> dir heute <b>helfen</b>?</div>
     </div>
 
     <div id="chat-input-area">
@@ -306,25 +284,25 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-function copyCode(btn, text) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    btn.innerText = "Kopiert! ✅";
-    setTimeout(() => { btn.innerText = "Kopieren"; }, 2000);
+// KORREKTE KOPIER-FUNKTION
+function copyToClipboard(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+        const oldText = btn.innerText;
+        btn.innerText = "Kopiert! ✅";
+        setTimeout(() => { btn.innerText = oldText; }, 2000);
+    }).catch(err => {
+        console.error('Fehler beim Kopieren: ', err);
+    });
 }
 
-
 function typeWriter(element, text) {
+    // Erkennt Code-Blöcke
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
         
-        // Hier wird der fertige Container gebaut
+        // Markiert den Block für die Sofort-Einfügung
         return `✂️<div class="code-container">
                     <div class="code-header">
                         <span>${language}</span>
@@ -342,41 +320,35 @@ function typeWriter(element, text) {
         if (idx < segments.length) {
             let seg = segments[idx];
             if (seg.startsWith('<div class="code-container"')) {
-                // Code-Blöcke werden SOFORT eingefügt, nicht getippt
+                // Code-Blöcke werden SOFORT als fertiges HTML eingefügt
                 element.innerHTML += seg;
                 idx++;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
                 process();
             } else {
                 // Normaler Text wird getippt
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
+                        // Prüfen auf HTML Tags (fett)
                         if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
                         else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
                         else {
                             element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
                             charIdx++;
                         }
-                        // Scrollt automatisch mit
-                        const win = document.getElementById("chat-window");
-                        win.scrollTop = win.scrollHeight;
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
                         setTimeout(type, 5);
-                    } else { idx++; process(); }
+                    } else { 
+                        idx++; 
+                        process(); 
+                    }
                 }
                 type();
             }
         }
     }
     process();
-}
-
-// Diese Funktion muss auch vorhanden sein
-function copyToClipboard(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-        const oldText = btn.innerText;
-        btn.innerText = "Kopiert! ✅";
-        setTimeout(() => { btn.innerText = oldText; }, 2000);
-    });
 }
 
 async function antwortSenden() {
