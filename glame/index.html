@@ -414,9 +414,10 @@ async function antwortSenden() {
         chatVerlauf.push({ role: "assistant", content: antwort });
         typeWriter(textSpan, antwort);
 
-    } catch (e) {
-        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Technisches Problem. Versuche es gleich nochmal!";
-    }
+} catch (e) {
+    // Ändere diese Zeile:
+    document.getElementById(thinkingId).innerHTML = `<b>Glame:</b> Fehler (${currentModel}): ${e.message}`;
+    console.log("Fehler-Details:", e);
 }
 
 document.getElementById("send-btn").onclick = antwortSenden;
