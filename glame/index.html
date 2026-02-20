@@ -298,17 +298,17 @@ function copyFromBase64(btn, base64Text) {
             }, 2000);
         });
     } catch (e) {
-        console.error('Kopierfehler:', e);
+        console.error('Fehler beim Kopieren:', e);
     }
 }
 
 function typeWriter(element, text) {
+    // 1. Code-Blöcke vorbereiten
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
-    
-    // 1. Große Code-Blöcke verarbeiten
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
+        // Sicherer Base64-String ohne Zeilenumbrüche
         const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
         
         return `✂️<div class="code-container">
@@ -320,12 +320,12 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
-    // 2. Inline-Formatierungen (Fett und Markierungen)
+    // 2. Fettgedrucktes
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    
-    // Markiert Text zwischen Backticks `code` oder einfachen Anführungszeichen 'code'
-    // Nutzt ein Inline-Styling für den Markierungseffekt
-    formatted = formatted.replace(/(`|')(.*?)\1/g, '<span style="background: rgba(0,0,0,0.1); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.9em;">$2</span>');
+
+    // 3. Inline-Markierung für 'text' oder `text`
+    // Wir nutzen eine CSS-Klasse für sauberes Design
+    formatted = formatted.replace(/(`|')(.*?)\1/g, '<span style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: inherit; font-weight: 500;">$2</span>');
 
     const segments = formatted.split('✂️');
     let idx = 0;
@@ -334,6 +334,7 @@ function typeWriter(element, text) {
         if (idx < segments.length) {
             let seg = segments[idx];
             if (seg.startsWith('<div class="code-container"')) {
+                // Code-Blöcke SOFORT einfügen (nicht tippen!)
                 element.innerHTML += seg;
                 idx++;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -342,21 +343,23 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        // Unterstützung für HTML-Tags beim Tippen
-                        if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
-                        else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
-                        else if (seg.slice(charIdx).startsWith('<span')) { 
-                            let endTagIdx = seg.indexOf('>', charIdx) + 1;
-                            element.innerHTML += seg.slice(charIdx, endTagIdx);
-                            charIdx = endTagIdx;
-                        }
-                        else if (seg.slice(charIdx).startsWith('</span>')) { element.innerHTML += '</span>'; charIdx += 7; }
-                        else {
+                        // HTML-Tags in einem Rutsch einfügen
+                        if (seg.slice(charIdx).startsWith('<b>')) { 
+                            element.innerHTML += '<b>'; charIdx += 3; 
+                        } else if (seg.slice(charIdx).startsWith('</b>')) { 
+                            element.innerHTML += '</b>'; charIdx += 4; 
+                        } else if (seg.slice(charIdx).startsWith('<span')) {
+                            let tagEnd = seg.indexOf('>', charIdx) + 1;
+                            element.innerHTML += seg.slice(charIdx, tagEnd);
+                            charIdx = tagEnd;
+                        } else if (seg.slice(charIdx).startsWith('</span>')) {
+                            element.innerHTML += '</span>'; charIdx += 7;
+                        } else {
                             element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
                             charIdx++;
                         }
                         chatWindow.scrollTop = chatWindow.scrollHeight;
-                        setTimeout(type, 2);
+                        setTimeout(type, 5);
                     } else { 
                         idx++; 
                         process(); 
