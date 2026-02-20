@@ -156,6 +156,44 @@
             background: var(--primary); color: white; transition: all 0.3s ease;
             flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+
+        .code-container {
+    background: #1a1a1a;
+    border-radius: 12px;
+    margin: 15px 0;
+    border: 1px solid #333;
+    overflow: hidden;
+    width: 100%;
+    display: block; /* Verhindert das Verrutschen */
+}
+
+.code-header {
+    background: #2d2d2d;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+}
+
+.code-header span {
+    font-size: 11px;
+    font-weight: bold;
+    color: #9cdcfe;
+    text-transform: uppercase;
+}
+
+.copy-btn {
+    background: #444;
+    border: none;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    min-width: 80px; /* Damit der Button beim Textwechsel nicht hüpft */
+}
+        
         .btn-circle:hover { transform: scale(1.1); }
 
         .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
