@@ -276,12 +276,43 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-// HILFSFUNKTION FÜR DEN KOPIER-BUTTON
 function copyCode(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-        btn.innerText = "Kopiert!";
-        setTimeout(() => btn.innerText = "Kopieren", 2000);
-    });
+    // 1. Versuch: Moderne Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showSuccess(btn);
+        }).catch(err => {
+            fallbackCopy(btn, text); // Falls Berechtigung fehlt
+        });
+    } else {
+        fallbackCopy(btn, text); // Für ältere Browser
+    }
+}
+
+// Backup-Methode (erstellt ein unsichtbares Textfeld)
+function fallbackCopy(btn, text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showSuccess(btn);
+    } catch (err) {
+        console.error('Kopieren fehlgeschlagen', err);
+    }
+    document.body.removeChild(textArea);
+}
+
+// Feedback-Animation für den Button
+function showSuccess(btn) {
+    const originalText = btn.innerText;
+    btn.innerText = "Kopiert! ✅";
+    btn.style.background = "#2B8C08"; // Kurz grün werden
+    setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.background = ""; // Zurück zur Originalfarbe
+    }, 2000);
 }
 
 // DER INTELLIGENTE TYPEWRITER (MIT CODE-ERKENNUNG)
