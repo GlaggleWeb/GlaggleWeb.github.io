@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI!</title>
+    <title>Glame AI</title>
     <style>
         :root {
             --primary: #008C9C;
@@ -385,10 +385,12 @@ async function antwortSenden() {
     const text = inputField.value.trim();
     if (!text) return;
 
+    // 1. User Nachricht anzeigen
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
     inputField.value = "";
     chatVerlauf.push({ role: "user", content: text });
 
+    // 2. Thinking-Animation
     const thinkingId = "think-" + Date.now();
     chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
     chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -400,12 +402,32 @@ async function antwortSenden() {
         
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": "Bearer " + p1 + p2 + p3, "Content-Type": "application/json" },
-            body: JSON.stringify({ model: currentModel, messages: chatVerlauf })
+            headers: { 
+                "Authorization": "Bearer " + p1 + p2 + p3, 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                model: currentModel, 
+                messages: chatVerlauf 
+            })
         });
+
+        // PRÜFUNG: Hat die API einen Fehler gesendet? (z.B. 404 oder 429)
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error ? errorData.error.message : "Unbekannter API Fehler");
+        }
+
         const data = await res.json();
+        
+        // Sicherheitsscheck: Gibt es eine Antwort im JSON?
+        if (!data.choices || data.choices.length === 0) {
+            throw new Error("Keine Antwort von der KI erhalten.");
+        }
+
         const antwort = data.choices[0].message.content;
         
+        // 3. Bot Nachricht anzeigen
         const botDiv = document.getElementById(thinkingId);
         botDiv.innerHTML = "<b>Glame:</b> ";
         const textSpan = document.createElement("span");
@@ -414,12 +436,16 @@ async function antwortSenden() {
         chatVerlauf.push({ role: "assistant", content: antwort });
         typeWriter(textSpan, antwort);
 
-} catch (e) {
-    // Ändere diese Zeile:
-    document.getElementById(thinkingId).innerHTML = `<b>Glame:</b> Fehler (${currentModel}): ${e.message}`;
-    console.log("Fehler-Details:", e);
+    } catch (e) {
+        // Hier wird jetzt der ECHTE Grund angezeigt
+        console.error("Fehler-Details:", e);
+        const botDiv = document.getElementById(thinkingId);
+        if (botDiv) {
+            botDiv.innerHTML = `<b>Glame:</b> ❌ Fehler (${currentModel}):<br><small>${e.message}</small>`;
+            botDiv.style.background = "#d9534f"; // Rot färben bei Fehler
+        }
+    }
 }
-
 document.getElementById("send-btn").onclick = antwortSenden;
 document.getElementById("user-input").onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
 </script>
