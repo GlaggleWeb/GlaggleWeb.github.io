@@ -16,11 +16,23 @@
         }
 
         /* DESIGN THEMES */
-        body.dark-mode { --bg: #121212; --text: #eee; --panel: #222; --primary: #333; }
-        body.gold-mode { --bg: #fdf5e6; --text: #5d4037; --panel: #fffaf0; --primary: #D4AF37; }
-        body.cyber-mode { --bg: #0d0221; --text: #00ff41; --panel: #1a1a2e; --primary: #e94560; }
-        body.sakura-mode { --bg: #fff0f5; --text: #d02090; --panel: #fff; --primary: #ffb7c5; }
-        body.modern-mode { --bg: #288E99; --text: #FFFFFF; --panel: #95BFC7; --primary: #2B8C08; }
+       /* --- Deine Originalen Designs --- */
+body.dark-mode   { --bg: #121212; --text: #eee;    --panel: #222;    --primary: #333; }
+body.gold-mode   { --bg: #fdf5e6; --text: #5d4037; --panel: #fffaf0; --primary: #D4AF37; }
+body.cyber-mode  { --bg: #0d0221; --text: #00ff41; --panel: #1a1a2e; --primary: #e94560; }
+body.sakura-mode { --bg: #fff0f5; --text: #d02090; --panel: #fff;    --primary: #ffb7c5; }
+body.modern-mode { --bg: #288E99; --text: #FFFFFF; --panel: #95BFC7; --primary: #2B8C08; }
+
+/* --- Neue Ergänzungen --- */
+body.nord-mode   { --bg: #2e3440; --text: #eceff4; --panel: #3b4252; --primary: #88c0d0; }
+body.synth-mode  { --bg: #2b213a; --text: #ff7edb; --panel: #241b2f; --primary: #36f9f6; }
+body.forest-mode { --bg: #1b2621; --text: #e8f3e8; --panel: #2a3b32; --primary: #8fb339; }
+body.coffee-mode { --bg: #231f20; --text: #d7ccc8; --panel: #3e2723; --primary: #bcaaa4; }
+body.slate-mode  { --bg: #f8fafc; --text: #1e293b; --panel: #ffffff; --primary: #3b82f6; }
+
+/* --- Bonus: High-Contrast & Midnight --- */
+body.high-contrast { --bg: #000000; --text: #ffffff; --panel: #000000; --primary: #ffff00; }
+body.midnight-mode { --bg: #00040a; --text: #94a3b8; --panel: #0f172a; --primary: #38bdf8; }
         
         body {
             background-color: var(--bg);
@@ -202,12 +214,19 @@
         <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">DESIGN</label>
         <select id="theme-select">
             <option value="default">Glaggle Blau</option>
-            <option value="dark">Dark Mode</option>
-            <option value="gold">Gold Edition</option>
-            <option value="cyber">Cyberpunk</option>
-            <option value="sakura">Sakura Pink</option>
-            <option value="modern">Modern</option>
-        </select>
+<option value="dark">Dark Mode</option>
+<option value="gold">Gold Edition</option>
+<option value="cyber">Cyberpunk</option>
+<option value="sakura">Sakura Pink</option>
+<option value="modern">Modern</option>
+
+<option value="nord">Nordic Ice (Arktisch)</option>
+<option value="synth">Synthwave 84 (Neon)</option>
+<option value="forest">Evergreen (Wald)</option>
+<option value="coffee">Espresso (Kaffee)</option>
+<option value="slate">Slate (Minimalist)</option>
+<option value="high-contrast">High Contrast (Barrierefrei)</option>
+<option value="midnight">Midnight (Tiefsee)</option>
 
         <button class="action-btn" id="save-settings">Speichern</button>
         <button class="action-btn reset-btn" id="reset-chat">Chat zurücksetzen</button>
