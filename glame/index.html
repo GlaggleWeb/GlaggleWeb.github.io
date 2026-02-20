@@ -296,17 +296,18 @@ function copyToClipboard(btn, text) {
 }
 
 function typeWriter(element, text) {
-    // Erkennt Code-Blöcke
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
         
-        // Markiert den Block für die Sofort-Einfügung
+        // Wir nutzen btoa (Base64), um den Code sicher durch das HTML-Attribut zu schleusen
+        const safeCode = btoa(unescape(encodeURIComponent(cleanCode)));
+        
         return `✂️<div class="code-container">
                     <div class="code-header">
                         <span>${language}</span>
-                        <button class="copy-btn" onclick="copyToClipboard(this, \`${cleanCode.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Kopieren</button>
+                        <button class="copy-btn" onclick="copyFromBase64(this, '${safeCode}')">Kopieren</button>
                     </div>
                     <pre><code>${cleanCode}</code></pre>
                 </div>✂️`;
@@ -320,17 +321,14 @@ function typeWriter(element, text) {
         if (idx < segments.length) {
             let seg = segments[idx];
             if (seg.startsWith('<div class="code-container"')) {
-                // Code-Blöcke werden SOFORT als fertiges HTML eingefügt
                 element.innerHTML += seg;
                 idx++;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
                 process();
             } else {
-                // Normaler Text wird getippt
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        // Prüfen auf HTML Tags (fett)
                         if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
                         else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
                         else {
@@ -349,6 +347,23 @@ function typeWriter(element, text) {
         }
     }
     process();
+}
+
+function copyFromBase64(btn, base64Text) {
+    try {
+        const decodedText = decodeURIComponent(escape(atob(base64Text)));
+        navigator.clipboard.writeText(decodedText).then(() => {
+            const oldText = btn.innerText;
+            btn.innerText = "Kopiert! ✅";
+            btn.style.background = "#2B8C08"; // Optionaler visueller Effekt
+            setTimeout(() => { 
+                btn.innerText = oldText; 
+                btn.style.background = ""; 
+            }, 2000);
+        });
+    } catch (err) {
+        console.error('Fehler beim Kopieren:', err);
+    }
 }
 
 async function antwortSenden() {
