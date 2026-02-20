@@ -147,6 +147,42 @@ body.midnight-mode { --bg: #00040a; --text: #94a3b8; --panel: #0f172a; --primary
             height: 24px;
         }
 
+        .code-container {
+    background: #1e1e1e;
+    border-radius: 12px;
+    margin: 10px 0;
+    border: 1px solid #333;
+    overflow: hidden;
+    color: #efefef;
+}
+.code-header {
+    background: #323232;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-family: sans-serif;
+}
+.copy-btn {
+    background: var(--primary);
+    border: none;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+}
+pre {
+    margin: 0;
+    padding: 15px;
+    overflow-x: auto;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    background: #1e1e1e;
+}
+
         /* THINKING DOTS EFFECT */
         .thinking-dots span { animation: blink 1.4s infinite both; font-size: 24px; font-weight: bold; }
         .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
