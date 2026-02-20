@@ -276,52 +276,30 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
+// KOPIER-FUNKTION
 function copyCode(btn, text) {
-    // 1. Versuch: Moderne Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-            showSuccess(btn);
-        }).catch(err => {
-            fallbackCopy(btn, text); // Falls Berechtigung fehlt
-        });
-    } else {
-        fallbackCopy(btn, text); // Für ältere Browser
-    }
-}
-
-// Backup-Methode (erstellt ein unsichtbares Textfeld)
-function fallbackCopy(btn, text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
     document.body.appendChild(textArea);
     textArea.select();
     try {
         document.execCommand('copy');
-        showSuccess(btn);
+        const originalText = btn.innerText;
+        btn.innerText = "Kopiert! ✅";
+        btn.style.background = "#2B8C08";
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "";
+        }, 2000);
     } catch (err) {
-        console.error('Kopieren fehlgeschlagen', err);
+        console.error('Fehler beim Kopieren', err);
     }
     document.body.removeChild(textArea);
 }
 
-// Feedback-Animation für den Button
-function showSuccess(btn) {
-    const originalText = btn.innerText;
-    btn.innerText = "Kopiert! ✅";
-    btn.style.background = "#2B8C08"; // Kurz grün werden
-    setTimeout(() => {
-        btn.innerText = originalText;
-        btn.style.background = ""; // Zurück zur Originalfarbe
-    }, 2000);
-}
-
-// DER INTELLIGENTE TYPEWRITER (MIT CODE-ERKENNUNG)
-// DER VERBESSERTE TYPEWRITER
+// TYPEWRITER MIT FETT- UND CODE-ERKENNUNG
 function typeWriter(element, text) {
-    let i = 0;
-    
-    // 1. Markdown-Formatierung umwandeln
-    // Zuerst: Code-Blöcke (mit Scheren-Symbol schützen)
+    // 1. Markdown umwandeln
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     let formattedText = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'code';
@@ -335,10 +313,9 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
-    // NEU: Fettgedruckten Text umwandeln (Ersetzt **Text** durch <b>Text</b>)
+    // Sterne durch <b> ersetzen
     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
-    // 2. In Segmente unterteilen (Text vs. Code-Box)
     const segments = formattedText.split('✂️');
     let currentSegment = 0;
 
@@ -347,22 +324,23 @@ function typeWriter(element, text) {
             let content = segments[currentSegment];
             
             if (content.startsWith('<div class="code-container"')) {
-                // Code-Box sofort einfügen
                 element.innerHTML += content;
                 currentSegment++;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
                 processSegment();
             } else {
-                // Normaler Text (jetzt mit <b> Tags) wird getippt
-                // Wir müssen hier HTML-Tags beim Tippen überspringen
                 let charIndex = 0;
                 function typeChar() {
                     if (charIndex < content.length) {
+                        // HTML Tags (wie <b>) direkt einfügen statt tippen
                         if (content.slice(charIndex).startsWith('<b>')) {
                             element.innerHTML += '<b>';
                             charIndex += 3;
                         } else if (content.slice(charIndex).startsWith('</b>')) {
                             element.innerHTML += '</b>';
+                            charIndex += 4;
+                        } else if (content.slice(charIndex).startsWith('<br>')) {
+                            element.innerHTML += '<br>';
                             charIndex += 4;
                         } else {
                             let char = content.charAt(charIndex);
@@ -370,40 +348,7 @@ function typeWriter(element, text) {
                             charIndex++;
                         }
                         chatWindow.scrollTop = chatWindow.scrollHeight;
-                        setTimeout(typeChar, 7); // Deine Geschwindigkeit
-                    } else {
-                        currentSegment++;
-                        processSegment();
-                    }
-                }
-                typeChar();
-            }
-        }
-    }
-    processSegment();
-}
-
-    function processSegment() {
-        if (currentSegment < segments.length) {
-            let content = segments[currentSegment];
-            
-            if (content.startsWith('<div class="code-container"')) {
-                // Wenn es ein Code-Block ist: Sofort einfügen ohne Tippen
-                element.innerHTML += content;
-                currentSegment++;
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-                processSegment(); // Nächstes Segment sofort starten
-            } else {
-                // Wenn es normaler Text ist: Buchstabenweise tippen
-                let charIndex = 0;
-                function typeChar() {
-                    if (charIndex < content.length) {
-                        // Wir behandeln normale Zeilenumbrüche
-                        let char = content.charAt(charIndex);
-                        element.innerHTML += char === '\n' ? '<br>' : char;
-                        charIndex++;
-                        chatWindow.scrollTop = chatWindow.scrollHeight;
-                        setTimeout(typeChar, 4); // Geschwindigkeit hier anpassen
+                        setTimeout(typeChar, 10); // HIER Geschwindigkeit ändern
                     } else {
                         currentSegment++;
                         processSegment();
@@ -455,6 +400,5 @@ async function antwortSenden() {
 
 document.getElementById("send-btn").onclick = antwortSenden;
 document.getElementById("user-input").onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
-</script>
 </body>
 </html>
