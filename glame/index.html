@@ -284,7 +284,7 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-// SICHERE KOPIER-FUNKTION
+// SICHERE KOPIER-FUNKTION (Nutzt Base64 zur Umgehung von Escaping-Fehlern)
 function copyFromBase64(btn, base64Text) {
     try {
         const decodedText = decodeURIComponent(escape(atob(base64Text)));
@@ -296,19 +296,23 @@ function copyFromBase64(btn, base64Text) {
                 btn.innerText = oldText; 
                 btn.style.background = ""; 
             }, 2000);
+        }).catch(err => {
+            console.error('Fehler beim Kopieren: ', err);
         });
     } catch (e) {
-        console.error('Fehler beim Kopieren:', e);
+        console.error('Dekodierungsfehler: ', e);
     }
 }
 
 function typeWriter(element, text) {
-    // 1. Code-Blöcke vorbereiten
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
+    
+    // Wir bereiten den Text vor und wandeln Code-Blöcke in sicheres HTML um
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
-        // Sicherer Base64-String ohne Zeilenumbrüche
+        
+        // Code in Base64 umwandeln, damit Sonderzeichen das HTML-Attribut nicht zerstören
         const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
         
         return `✂️<div class="code-container">
@@ -320,13 +324,7 @@ function typeWriter(element, text) {
                 </div>✂️`;
     });
 
-    // 2. Fettgedrucktes
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-    // 3. Inline-Markierung für 'text' oder `text`
-    // Wir nutzen eine CSS-Klasse für sauberes Design
-    formatted = formatted.replace(/(`|')(.*?)\1/g, '<span style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: inherit; font-weight: 500;">$2</span>');
-
     const segments = formatted.split('✂️');
     let idx = 0;
 
@@ -334,7 +332,6 @@ function typeWriter(element, text) {
         if (idx < segments.length) {
             let seg = segments[idx];
             if (seg.startsWith('<div class="code-container"')) {
-                // Code-Blöcke SOFORT einfügen (nicht tippen!)
                 element.innerHTML += seg;
                 idx++;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -343,18 +340,9 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        // HTML-Tags in einem Rutsch einfügen
-                        if (seg.slice(charIdx).startsWith('<b>')) { 
-                            element.innerHTML += '<b>'; charIdx += 3; 
-                        } else if (seg.slice(charIdx).startsWith('</b>')) { 
-                            element.innerHTML += '</b>'; charIdx += 4; 
-                        } else if (seg.slice(charIdx).startsWith('<span')) {
-                            let tagEnd = seg.indexOf('>', charIdx) + 1;
-                            element.innerHTML += seg.slice(charIdx, tagEnd);
-                            charIdx = tagEnd;
-                        } else if (seg.slice(charIdx).startsWith('</span>')) {
-                            element.innerHTML += '</span>'; charIdx += 7;
-                        } else {
+                        if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
+                        else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
+                        else {
                             element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
                             charIdx++;
                         }
@@ -407,7 +395,7 @@ async function antwortSenden() {
         typeWriter(textSpan, antwort);
 
     } catch (e) {
-        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Technisches Problem.";
+        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Technisches Problem. Versuche es gleich nochmal!";
     }
 }
 
