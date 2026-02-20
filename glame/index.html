@@ -284,30 +284,41 @@ document.getElementById("reset-chat").onclick = () => {
     modal.style.display = "none"; overlay.style.display = "none";
 };
 
-// KORREKTE KOPIER-FUNKTION
-function copyToClipboard(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-        const oldText = btn.innerText;
-        btn.innerText = "Kopiert! ✅";
-        setTimeout(() => { btn.innerText = oldText; }, 2000);
-    }).catch(err => {
-        console.error('Fehler beim Kopieren: ', err);
-    });
+// SICHERE KOPIER-FUNKTION (Nutzt Base64 zur Umgehung von Escaping-Fehlern)
+function copyFromBase64(btn, base64Text) {
+    try {
+        const decodedText = decodeURIComponent(escape(atob(base64Text)));
+        navigator.clipboard.writeText(decodedText).then(() => {
+            const oldText = btn.innerText;
+            btn.innerText = "Kopiert! ✅";
+            btn.style.background = "#2B8C08";
+            setTimeout(() => { 
+                btn.innerText = oldText; 
+                btn.style.background = ""; 
+            }, 2000);
+        }).catch(err => {
+            console.error('Fehler beim Kopieren: ', err);
+        });
+    } catch (e) {
+        console.error('Dekodierungsfehler: ', e);
+    }
 }
 
 function typeWriter(element, text) {
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
+    
+    // Wir bereiten den Text vor und wandeln Code-Blöcke in sicheres HTML um
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
         
-        // Wir nutzen btoa (Base64), um den Code sicher durch das HTML-Attribut zu schleusen
-        const safeCode = btoa(unescape(encodeURIComponent(cleanCode)));
+        // Code in Base64 umwandeln, damit Sonderzeichen das HTML-Attribut nicht zerstören
+        const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
         
         return `✂️<div class="code-container">
                     <div class="code-header">
                         <span>${language}</span>
-                        <button class="copy-btn" onclick="copyFromBase64(this, '${safeCode}')">Kopieren</button>
+                        <button class="copy-btn" onclick="copyFromBase64(this, '${safeBase64}')">Kopieren</button>
                     </div>
                     <pre><code>${cleanCode}</code></pre>
                 </div>✂️`;
@@ -347,23 +358,6 @@ function typeWriter(element, text) {
         }
     }
     process();
-}
-
-function copyFromBase64(btn, base64Text) {
-    try {
-        const decodedText = decodeURIComponent(escape(atob(base64Text)));
-        navigator.clipboard.writeText(decodedText).then(() => {
-            const oldText = btn.innerText;
-            btn.innerText = "Kopiert! ✅";
-            btn.style.background = "#2B8C08"; // Optionaler visueller Effekt
-            setTimeout(() => { 
-                btn.innerText = oldText; 
-                btn.style.background = ""; 
-            }, 2000);
-        });
-    } catch (err) {
-        console.error('Fehler beim Kopieren:', err);
-    }
 }
 
 async function antwortSenden() {
