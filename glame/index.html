@@ -300,12 +300,85 @@ document.getElementById("reset-chat").onclick = () => {
 };
 
 // TYPING EFFEKT
-function typeWriter(element, text, i = 0) {
-    if (i < text.length) {
-        element.innerHTML += text.charAt(i).replace(/\n/g, '<br>');
-        i++;
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-        setTimeout(() => typeWriter(element, text, i), 20);
+// Hilfsfunktion zum Kopieren
+function copyCode(btn, text) {
+    const hiddenInput = document.createElement('textarea');
+    hiddenInput.value = text;
+    document.body.appendChild(hiddenInput);
+    hiddenInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(hiddenInput);
+    btn.innerText = "Kopiert!";
+    setTimeout(() => btn.innerText = "Kopieren", 2000);
+}
+
+// Die verbesserte Typing-Funktion
+function typeWriter(element, text) {
+    let i = 0;
+    // Markdown-Code-Blöcke vorab formatieren
+    const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
+    const formattedText = text.replace(codeRegex, (match, lang, code) => {
+        const language = lang || 'code';
+        const cleanCode = code.trim();
+        return `<div class="code-container">
+                    <div class="code-header">
+                        <span>${language}</span>
+                        <button class="copy-btn" onclick="copyCode(this, \`${cleanCode.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Kopieren</button>
+                    </div>
+                    <pre><code>${cleanCode}</code></pre>
+                </div>`;
+    });
+
+    // Wir splitten den Text so, dass HTML-Tags nicht zerhackt werden
+    const parts = formattedText.split(/(<[^>]*>)/g);
+    let currentPart = 0;
+    let charIndex = 0;
+
+    function nextChar() {
+        if (currentPart < parts.length) {
+            if (parts[currentPart].startsWith('<')) {
+                // Wenn es ein HTML-Tag ist (wie unsere Code-Box), sofort einfügen
+                element.innerHTML += parts[currentPart];
+                currentPart++;
+                nextChar();
+            } else {
+                // Wenn es normaler Text ist, buchstabenweise tippen
+                if (charIndex < parts[currentPart].length) {
+                    element.innerHTML += parts[currentPart].charAt(charIndex).replace(/\n/g, '<br>');
+                    charIndex++;
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                    setTimeout(nextChar, 15);
+                } else {
+                    charIndex = 0;
+                    currentPart++;
+                    nextChar();
+                }
+            }
+        }
+    }
+    nextChar();
+}
+
+// In deiner antwortSenden() Funktion den unteren Teil so anpassen:
+async function antwortSenden() {
+    // ... (dein bisheriger Code bis zum API-Call)
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", { /* ... */ });
+        const data = await res.json();
+        const antwort = data.choices[0].message.content;
+
+        const botDiv = document.getElementById(thinkingId);
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        
+        chatVerlauf.push({ role: "assistant", content: antwort });
+        
+        // Starte den neuen, klugen Typewriter
+        typeWriter(textSpan, antwort);
+
+    } catch (e) {
+        document.getElementById(thinkingId).innerHTML = "<b>Glame:</b> Fehler!";
     }
 }
 
