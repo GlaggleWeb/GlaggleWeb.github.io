@@ -285,47 +285,60 @@ function copyCode(btn, text) {
 }
 
 // DER INTELLIGENTE TYPEWRITER (MIT CODE-ERKENNUNG)
+// DER VERBESSERTE TYPEWRITER
 function typeWriter(element, text) {
     let i = 0;
-    // Markdown Code-Blöcke formatieren
+    
+    // 1. Zuerst formatieren wir alle Code-Blöcke im Text
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
     const formattedText = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'code';
         const cleanCode = code.trim();
-        return `<div class="code-container">
+        // Wir verpacken den Block in ein spezielles Format, damit der Typewriter ihn erkennt
+        return `✂️<div class="code-container">
                     <div class="code-header">
                         <span>${language.toUpperCase()}</span>
                         <button class="copy-btn" onclick="copyCode(this, \`${cleanCode.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Kopieren</button>
                     </div>
                     <pre><code>${cleanCode}</code></pre>
-                </div>`;
+                </div>✂️`;
     });
 
-    const parts = formattedText.split(/(<[^>]*>)/g);
-    let currentPart = 0;
-    let charIndex = 0;
+    // 2. Wir splitten den Text an den Scheren-Symbolen (unsere Code-Blöcke)
+    const segments = formattedText.split('✂️');
+    let currentSegment = 0;
 
-    function nextChar() {
-        if (currentPart < parts.length) {
-            if (parts[currentPart].startsWith('<')) {
-                element.innerHTML += parts[currentPart];
-                currentPart++;
-                nextChar();
+    function processSegment() {
+        if (currentSegment < segments.length) {
+            let content = segments[currentSegment];
+            
+            if (content.startsWith('<div class="code-container"')) {
+                // Wenn es ein Code-Block ist: Sofort einfügen ohne Tippen
+                element.innerHTML += content;
+                currentSegment++;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                processSegment(); // Nächstes Segment sofort starten
             } else {
-                if (charIndex < parts[currentPart].length) {
-                    element.innerHTML += parts[currentPart].charAt(charIndex).replace(/\n/g, '<br>');
-                    charIndex++;
-                    chatWindow.scrollTop = chatWindow.scrollHeight;
-                    setTimeout(nextChar, 15);
-                } else {
-                    charIndex = 0;
-                    currentPart++;
-                    nextChar();
+                // Wenn es normaler Text ist: Buchstabenweise tippen
+                let charIndex = 0;
+                function typeChar() {
+                    if (charIndex < content.length) {
+                        // Wir behandeln normale Zeilenumbrüche
+                        let char = content.charAt(charIndex);
+                        element.innerHTML += char === '\n' ? '<br>' : char;
+                        charIndex++;
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                        setTimeout(typeChar, 4); // Geschwindigkeit hier anpassen
+                    } else {
+                        currentSegment++;
+                        processSegment();
+                    }
                 }
+                typeChar();
             }
         }
     }
-    nextChar();
+    processSegment();
 }
 
 async function antwortSenden() {
