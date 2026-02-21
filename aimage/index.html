@@ -3,98 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage Pro</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <title>AImage Generator</title>
     <style>
-        :root { --p: #007aff; --bg: #f2f2f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        button { background: var(--p); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        #img-box { margin: 20px 0; background: #e5e5ea; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        img { width: 100%; height: auto; display: none; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--p); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #121212;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        h2 { color: white; margin-bottom: 20px; font-weight: 600; }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .btn-gen {
+            background: #310085; /* Das dunkle Lila aus deinem Screenshot */
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-gen:hover { background: #4b00c7; }
+
+        #result-box {
+            margin-top: 20px;
+            background: #2a2a2a;
+            height: 300px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        /* Spinner Animation */
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid #6200ea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
-        .active { display: flex; }
-        .modal { background: white; padding: 20px; border-radius: 20px; width: 280px; }
-        .hidden { display: none !important; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            width: 300px;
+            text-align: center;
+        }
+        .btn-download {
+            background: #6200ea;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>AImage v2</h2>
-    <input type="text" id="pInput" placeholder="Was soll ich zeichnen?">
-    <button onclick="generate()">Bild generieren</button>
-    <div id="img-box">
-        <div class="loader" id="loader"></div>
-        <img id="mainImg">
+<div class="container">
+    <h2>AImage Generator</h2>
+    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
+    <button class="btn-gen" id="genBtn" onclick="generate()">Bild generieren</button>
+    
+    <div id="result-box">
+        <div id="loader-container" style="display: none; color: #888;">
+            <div class="loader" style="margin: 0 auto 10px;"></div>
+            <p id="timerText">Starte...</p>
+        </div>
+        <p id="placeholderText" style="color: #666;">Bereit für deine Idee</p>
+        <img id="outputImg">
     </div>
-    <button id="sBtn" class="hidden" style="background:#34c759" onclick="openSave()">Speichern</button>
+
+    <button id="saveBtn" style="display:none; background:#27ae60; margin-top:10px;" class="btn-gen" onclick="openModal()">Speichern unter...</button>
 </div>
 
-<div id="modal" class="modal-bg">
+<div id="modal" class="modal-overlay">
     <div class="modal">
-        <h3>Speichern</h3>
-        <input type="text" id="fName">
-        <button onclick="download()">Download</button>
-        <button onclick="closeModal()" style="background:none;color:#8e8e93;margin-top:5px">Abbrechen</button>
+        <h3 style="margin-top:0; color: black;">Speichern unter...</h3>
+        <input type="text" id="fileNameInput" style="background:white; color:black; border: 1px solid #ddd;">
+        <button class="btn-download" onclick="downloadImage()">Download</button>
+        <p onclick="closeModal()" style="color:gray; margin-top:15px; cursor:pointer; font-size: 14px;">Abbrechen</p>
     </div>
 </div>
 
 <script>
-    const img = document.getElementById('mainImg');
-    const loader = document.getElementById('loader');
-    const sBtn = document.getElementById('sBtn');
-    const modal = document.getElementById('modal');
+    const outputImg = document.getElementById('outputImg');
+    const loaderContainer = document.getElementById('loader-container');
+    const placeholderText = document.getElementById('placeholderText');
+    const timerText = document.getElementById('timerText');
+    const saveBtn = document.getElementById('saveBtn');
+    const genBtn = document.getElementById('genBtn');
+
+    let seconds = 0;
+    let timerInterval;
 
     function generate() {
-        const prompt = document.getElementById('pInput').value;
-        if(!prompt) return;
+        const prompt = document.getElementById('promptInput').value;
+        if(!prompt) return alert("Gib erst einen Text ein!");
 
-        img.style.display = "none";
-        sBtn.classList.add("hidden");
-        loader.style.display = "block";
+        // UI Reset
+        outputImg.style.display = "none";
+        saveBtn.style.display = "none";
+        placeholderText.style.display = "none";
+        loaderContainer.style.display = "block";
+        genBtn.disabled = true;
+        genBtn.style.opacity = "0.5";
 
-        const seed = Math.floor(Math.random() * 9999);
+        // Timer starten
+        seconds = 0;
+        timerText.innerText = "Sekunden: 0";
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            seconds++;
+            timerText.innerText = "Sekunden: " + seconds;
+            if(seconds > 30) { // Timeout nach 30 Sek
+                clearInterval(timerInterval);
+                alert("Dauert zu lange. Bitte Seite neu laden oder anderen Prompt versuchen.");
+                location.reload();
+            }
+        }, 1000);
+
+        const seed = Math.floor(Math.random() * 999999);
+        // Wir nutzen die stabilste URL-Form
+        const finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=800&height=800&nologo=true`;
         
-        // NEUE VARIANTE: Wir nutzen einen anderen Endpunkt (Cloudflare-optimiert)
-        // Wir hängen den Prompt direkt an die URL an
-        const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}`;
-
-        // Wir nutzen den Image-Konstruktor, um den Ladevorgang zu überwachen
-        const tempImg = new Image();
-        tempImg.src = url;
+        outputImg.src = finalUrl;
         
-        tempImg.onload = function() {
-            img.src = url;
-            img.style.display = "block";
-            loader.style.display = "none";
-            sBtn.classList.remove("hidden");
+        outputImg.onload = () => {
+            clearInterval(timerInterval);
+            loaderContainer.style.display = "none";
+            outputImg.style.display = "block";
+            saveBtn.style.display = "block";
+            genBtn.disabled = false;
+            genBtn.style.opacity = "1";
         };
 
-        tempImg.onerror = function() {
-            // Falls das auch nicht geht, versuchen wir es mit einer festen Fallback-URL
-            // Manche Browser blockieren kryptische URLs, daher kürzen wir sie
-            console.log("Versuche Fallback...");
-            img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt).substring(0, 50)}?seed=${seed}`;
+        outputImg.onerror = () => {
+            clearInterval(timerInterval);
+            alert("Fehler beim Laden. Versuche es nochmal!");
+            location.reload();
         };
     }
 
-    function openSave() {
-        document.getElementById('fName').value = "Bild-" + Math.floor(Date.now()/1000);
-        modal.classList.add("active");
+    function openModal() {
+        document.getElementById('fileNameInput').value = "AImage-" + Math.floor(Date.now()/1000);
+        document.getElementById('modal').style.display = "flex";
     }
 
-    function closeModal() { modal.classList.remove("active"); }
+    function closeModal() {
+        document.getElementById('modal').style.display = "none";
+    }
 
-    function download() {
-        const name = document.getElementById('fName').value || 'bild';
-        // Für Safari auf GitHub ist das Öffnen im neuen Tab die einzige 100% funktionierende Lösung
-        window.open(img.src, '_blank');
+    function downloadImage() {
+        const name = document.getElementById('fileNameInput').value || 'bild';
+        // Sicherster Download für Safari & Chrome auf GitHub
+        window.open(outputImg.src, '_blank');
         closeModal();
     }
 </script>
+
 </body>
 </html>
