@@ -3,185 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage Generator</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <title>AImage Pro</title>
     <style>
-        :root {
-            --primary: #6200ea;
-            --bg: #121212;
-            --card: #ffffff;
-        }
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            background-color: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: var(--card);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border: 2px solid #eee;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            font-size: 16px;
-        }
-        #image-container {
-            margin: 20px 0;
-            background: #222;
-            border-radius: 15px;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        img { width: 100%; height: auto; display: none; border-radius: 10px; }
-
-        .loader {
-            border: 4px solid #333;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px; height: 40px;
-            animation: spin 1s linear infinite;
-            display: none;
-        }
+        :root { --p: #6200ea; --bg: #121212; }
+        body { font-family: sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; color: #333; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        button { background: var(--p); color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #img-box { margin: 20px 0; background: #eee; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        img { width: 100%; height: auto; display: none; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--p); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-overlay.active { display: flex; }
-
-        .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            width: 85%;
-            max-width: 320px;
-        }
-        .secondary-btn { background: #eee; color: #333; margin-top: 8px; }
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; }
+        .active { display: flex; }
+        .modal { background: white; padding: 20px; border-radius: 15px; width: 280px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin-top:0; color:#333;">AImage</h2>
-    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
+    <h2>AImage Generator</h2>
+    <input type="text" id="pInput" placeholder="Deine Beschreibung...">
     <button onclick="generate()">Bild generieren</button>
-
-    <div id="image-container">
+    <div id="img-box">
         <div class="loader" id="loader"></div>
-        <img id="resultImg">
+        <img id="mainImg">
     </div>
-
-    <button id="saveBtn" style="background: #27ae60; display: none;">Bild speichern</button>
+    <button id="sBtn" class="hidden" style="background:#27ae60" onclick="showModal()">Bild speichern</button>
 </div>
 
-<div id="saveModal" class="modal-overlay">
+<div id="modal" class="modal-bg">
     <div class="modal">
-        <h3 style="margin-top:0">Speichern</h3>
-        <p style="font-size: 14px; color: #666;">Wähle einen Namen:</p>
-        <input type="text" id="fileName">
-        <button onclick="confirmDownload()">Download</button>
-        <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
+        <h3>Speichern</h3>
+        <input type="text" id="fName">
+        <button onclick="download()">Download</button>
+        <button onclick="closeModal()" style="background:none;color:#666;margin-top:5px">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    const img = document.getElementById('resultImg');
+    const img = document.getElementById('mainImg');
     const loader = document.getElementById('loader');
-    const saveBtn = document.getElementById('saveBtn');
-    const modal = document.getElementById('saveModal');
-    const fileNameInput = document.getElementById('fileName');
+    const sBtn = document.getElementById('sBtn');
+    const modal = document.getElementById('modal');
 
-    function generate() {
-        const prompt = document.getElementById('promptInput').value;
-        if(!prompt) return alert("Bitte Text eingeben!");
+    async function generate() {
+        const prompt = document.getElementById('pInput').value;
+        if(!prompt) return alert("Text fehlt!");
 
-        img.style.display = 'none';
-        saveBtn.style.display = 'none';
-        loader.style.display = 'block';
+        // UI Reset
+        img.style.display = "none";
+        sBtn.classList.add("hidden");
+        loader.style.display = "block";
 
         const seed = Math.floor(Math.random() * 999999);
-        // Wir nutzen die direkte URL ohne Proxy
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
-        
-        img.src = imageUrl;
-    }
-
-    img.onload = () => {
-        loader.style.display = 'none';
-        img.style.display = 'block';
-        saveBtn.style.display = 'block';
-    };
-
-    img.onerror = () => {
-        loader.style.display = 'none';
-        alert("Fehler beim Laden des Bildes. Probiere es kurz noch einmal.");
-    };
-
-    saveBtn.onclick = () => {
-        fileNameInput.value = "AImage-" + Math.floor(Date.now() / 1000);
-        modal.classList.add('active');
-    };
-
-    function closeModal() {
-        modal.classList.remove('active');
-    }
-
-    async function confirmDownload() {
-        const name = fileNameInput.value || 'bild';
-        const imageUrl = img.src;
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
 
         try {
-            // Wir versuchen das Bild zu laden
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            // DER TRICK: Wir laden das Bild erst als Datenstrom (Fetch)
+            // Das umgeht Safari's "Img-Error" Blockade oft
+            const response = await fetch(url);
+            if(!response.ok) throw new Error("Server antwortet nicht");
             
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${name}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            const blob = await response.blob();
+            const objectURL = URL.createObjectURL(blob);
+            
+            img.src = objectURL;
+            img.style.display = "block";
+            loader.style.display = "none";
+            sBtn.classList.remove("hidden");
         } catch (e) {
-            // FALLBACK FÜR SAFARI:
-            // Falls CORS (fetch) fehlschlägt, öffnen wir das Bild in einem neuen Tab
-            // Dort kann der User es per Rechtsklick/Lange drücken speichern
-            window.open(imageUrl, '_blank');
+            loader.style.display = "none";
+            alert("Safari blockiert die Verbindung. Tipp: Seite kurz neu laden oder anderen Browser testen.");
         }
+    }
+
+    function showModal() {
+        document.getElementById('fName').value = "Bild-" + Date.now();
+        modal.classList.add("active");
+    }
+
+    function closeModal() { modal.classList.remove("active"); }
+
+    function download() {
+        const name = document.getElementById('fName').value || 'bild';
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = name + ".jpg";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         closeModal();
     }
 </script>
