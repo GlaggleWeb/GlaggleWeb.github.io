@@ -173,6 +173,181 @@
     const filenameInput = document.getElementById('filenameInput');
 
     // Funktion zum Generieren des Bildes
+    <!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AImage</title>
+    <style>
+        :root {
+            --primary-color: #6200ea;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 1.5rem; color: #333; }
+
+        .input-group { margin-bottom: 1.5rem; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box; /* Wichtig damit Padding nicht die Breite sprengt */
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover { background-color: #3700b3; }
+        
+        button.secondary { background-color: #777; }
+        button.secondary:hover { background-color: #555; }
+
+        /* Bildbereich */
+        #image-container {
+            margin-top: 20px;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        /* Lade-Animation (Spinner) */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none; /* Standardmäßig ausgeblendet */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Versteckte Elemente */
+        .hidden { display: none !important; }
+
+        /* Modal / Popup Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal input {
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .modal-buttons button { width: 100%; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>KI Bild Generator</h1>
+    
+    <div class="input-group">
+        <input type="text" id="promptInput" placeholder="Beschreibe dein Bild (z.B. futuristische Stadt)...">
+        <button onclick="generateImage()">Bild generieren</button>
+    </div>
+
+    <div id="image-container">
+        <div class="loader" id="loader"></div>
+        <img id="resultImage" alt="Generiertes Bild">
+    </div>
+
+    <button id="saveBtn" class="hidden" onclick="openSaveModal()">Bild speichern</button>
+</div>
+
+<div id="saveModal" class="modal-overlay hidden">
+    <div class="modal">
+        <h3>Bild speichern</h3>
+        <p>Wie soll die Datei heißen?</p>
+        <input type="text" id="filenameInput" placeholder="Dateiname eingeben">
+        <div class="modal-buttons">
+            <button class="secondary" onclick="closeSaveModal()">Abbrechen</button>
+            <button onclick="downloadImage()">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const imageContainer = document.getElementById('image-container');
+    const resultImage = document.getElementById('resultImage');
+    const loader = document.getElementById('loader');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveModal = document.getElementById('saveModal');
+    const filenameInput = document.getElementById('filenameInput');
+
+    // Funktion zum Generieren des Bildes
     function generateImage() {
         const prompt = document.getElementById('promptInput').value;
         if (!prompt) {
@@ -208,6 +383,61 @@
             alert("Fehler beim Laden des Bildes. Bitte versuche es erneut.");
         };
     }
+
+    // Modal öffnen
+    function openSaveModal() {
+        // Standard Dateiname vorschlagen (basierend auf Prompt oder Zeitstempel)
+        filenameInput.value = `KI-Bild-${Date.now()}`;
+        saveModal.classList.remove('hidden');
+        filenameInput.focus();
+    }
+
+    // Modal schließen
+    function closeSaveModal() {
+        saveModal.classList.add('hidden');
+    }
+
+    // Die eigentliche Download Funktion
+    async function downloadImage() {
+        const url = resultImage.src;
+        let filename = filenameInput.value;
+        
+        // Sicherstellen, dass die Datei auf .jpg endet
+        if (!filename.toLowerCase().endsWith('.jpg') && !filename.toLowerCase().endsWith('.png')) {
+            filename += '.jpg';
+        }
+
+        try {
+            // Wir müssen das Bild erst "fetchen", um es als Blob zu bekommen.
+            // Das verhindert CORS Probleme und erlaubt uns, den Dateinamen zu setzen.
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // Temporären Download-Link erstellen
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Aufräumen
+            window.URL.revokeObjectURL(blobUrl);
+            closeSaveModal();
+
+        } catch (error) {
+            console.error(error);
+            alert("Fehler beim Speichern des Bildes.");
+        }
+    }
+
+    // Enter-Taste im Modal soll auch speichern
+    filenameInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            downloadImage();
+        }
+    });
 
     // Modal öffnen
     function openSaveModal() {
