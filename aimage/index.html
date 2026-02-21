@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage</title>
+    <title>AImage - Generator</title>
     <style>
         :root {
             --primary-color: #6200ea;
@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             display: flex;
             justify-content: center;
@@ -31,17 +31,14 @@
             text-align: center;
         }
 
-        h1 { margin-bottom: 1.5rem; color: #333; }
-
-        .input-group { margin-bottom: 1.5rem; }
-
         input[type="text"] {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box; /* Wichtig damit Padding nicht die Breite sprengt */
+            box-sizing: border-box;
+            margin-bottom: 10px;
         }
 
         button {
@@ -52,18 +49,11 @@
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
+            width: 100%;
         }
 
-        button:hover { background-color: #3700b3; }
-        
-        button.secondary { background-color: #777; }
-        button.secondary:hover { background-color: #555; }
-
-        /* Bildbereich */
         #image-container {
-            margin-top: 20px;
+            margin: 20px 0;
             min-height: 300px;
             display: flex;
             justify-content: center;
@@ -71,39 +61,29 @@
             background: #eee;
             border-radius: 8px;
             overflow: hidden;
-            position: relative;
         }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            display: none; /* Standardmäßig ausgeblendet */
-        }
+        img { max-width: 100%; display: none; }
 
-        /* Lade-Animation (Spinner) */
         .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            display: none; /* Standardmäßig ausgeblendet */
+            display: none;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Versteckte Elemente */
         .hidden { display: none !important; }
 
-        /* Modal / Popup Styling */
+        /* Modal */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -114,319 +94,105 @@
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 300px;
         }
-
-        .modal input {
-            margin: 15px 0;
-            width: 100%;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .modal-buttons button { width: 100%; }
-
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>AImage</h1>
-    
-    <div class="input-group">
-        <input type="text" id="promptInput" placeholder="Beschreibe dein Bild (z.B. futuristische Stadt)...">
-        <button onclick="generateImage()">Bild generieren</button>
-    </div>
+    <input type="text" id="promptInput" placeholder="Was soll ich zeichnen?">
+    <button id="genBtn">Bild generieren</button>
 
     <div id="image-container">
         <div class="loader" id="loader"></div>
-        <img id="resultImage" alt="Generiertes Bild">
+        <img id="resultImage" crossorigin="anonymous">
     </div>
 
-    <button id="saveBtn" class="hidden" onclick="openSaveModal()">Bild speichern</button>
+    <button id="saveBtn" class="hidden" style="background-color: #2ecc71;">Bild speichern</button>
 </div>
 
 <div id="saveModal" class="modal-overlay hidden">
     <div class="modal">
-        <h3>Bild speichern</h3>
-        <p>Wie soll die Datei heißen?</p>
-        <input type="text" id="filenameInput" placeholder="Dateiname eingeben">
-        <div class="modal-buttons">
-            <button class="secondary" onclick="closeSaveModal()">Abbrechen</button>
-            <button onclick="downloadImage()">Speichern</button>
-        </div>
+        <h3>Speichern</h3>
+        <input type="text" id="filenameInput">
+        <button id="confirmDownload">Jetzt Downloaden</button>
+        <button id="closeModal" style="background: none; color: #777; margin-top: 10px;">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    const imageContainer = document.getElementById('image-container');
+    const promptInput = document.getElementById('promptInput');
+    const genBtn = document.getElementById('genBtn');
     const resultImage = document.getElementById('resultImage');
     const loader = document.getElementById('loader');
     const saveBtn = document.getElementById('saveBtn');
     const saveModal = document.getElementById('saveModal');
     const filenameInput = document.getElementById('filenameInput');
+    const confirmDownload = document.getElementById('confirmDownload');
+    const closeModal = document.getElementById('closeModal');
 
-    // Funktion zum Generieren des Bildes
-    <!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage</title>
-    <style>
-        :root {
-            --primary-color: #6200ea;
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-        }
+    // 1. Bild generieren
+    genBtn.onclick = function() {
+        const prompt = promptInput.value;
+        if (!prompt) return alert("Gib einen Text ein!");
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        h1 { margin-bottom: 1.5rem; color: #333; }
-
-        .input-group { margin-bottom: 1.5rem; }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box; /* Wichtig damit Padding nicht die Breite sprengt */
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
-        }
-
-        button:hover { background-color: #3700b3; }
-        
-        button.secondary { background-color: #777; }
-        button.secondary:hover { background-color: #555; }
-
-        /* Bildbereich */
-        #image-container {
-            margin-top: 20px;
-            min-height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #eee;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: none; /* Standardmäßig ausgeblendet */
-        }
-
-        /* Lade-Animation (Spinner) */
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            display: none; /* Standardmäßig ausgeblendet */
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Versteckte Elemente */
-        .hidden { display: none !important; }
-
-        /* Modal / Popup Styling */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .modal input {
-            margin: 15px 0;
-            width: 100%;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .modal-buttons button { width: 100%; }
-
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>KI Bild Generator</h1>
-    
-    <div class="input-group">
-        <input type="text" id="promptInput" placeholder="Beschreibe dein Bild (z.B. futuristische Stadt)...">
-        <button onclick="generateImage()">Bild generieren</button>
-    </div>
-
-    <div id="image-container">
-        <div class="loader" id="loader"></div>
-        <img id="resultImage" alt="Generiertes Bild">
-    </div>
-
-    <button id="saveBtn" class="hidden" onclick="openSaveModal()">Bild speichern</button>
-</div>
-
-<div id="saveModal" class="modal-overlay hidden">
-    <div class="modal">
-        <h3>Bild speichern</h3>
-        <p>Wie soll die Datei heißen?</p>
-        <input type="text" id="filenameInput" placeholder="Dateiname eingeben">
-        <div class="modal-buttons">
-            <button class="secondary" onclick="closeSaveModal()">Abbrechen</button>
-            <button onclick="downloadImage()">Speichern</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const resultImage = document.getElementById('resultImage');
-    const loader = document.getElementById('loader');
-    const saveBtn = document.getElementById('saveBtn');
-    const saveModal = document.getElementById('saveModal');
-    const filenameInput = document.getElementById('filenameInput');
-
-    function generateImage() {
-        const prompt = document.getElementById('promptInput').value;
-        if (!prompt) {
-            alert("Bitte gib eine Beschreibung ein!");
-            return;
-        }
-
-        // UI zurücksetzen
-        resultImage.style.display = 'none';
         saveBtn.classList.add('hidden');
+        resultImage.style.display = 'none';
         loader.style.display = 'block';
 
-        // WICHTIG FÜR SAFARI: Cross-Origin Erlaubnis setzen
-        resultImage.crossOrigin = "anonymous";
+        const seed = Math.floor(Math.random() * 1000000);
+        // Wir fügen Parameter hinzu, um die Qualität zu sichern
+        resultImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+    };
 
-        const seed = Math.floor(Math.random() * 100000);
-        const encodedPrompt = encodeURIComponent(prompt);
-        
-        // Die URL von Pollinations
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&nologo=true`;
+    // Wenn Bild fertig geladen
+    resultImage.onload = function() {
+        loader.style.display = 'none';
+        resultImage.style.display = 'block';
+        saveBtn.classList.remove('hidden');
+    };
 
-        // Bildquelle setzen
-        resultImage.src = imageUrl;
+    // Fehlerfall
+    resultImage.onerror = function() {
+        loader.style.display = 'none';
+        alert("Fehler beim Laden. Versuch es nochmal!");
+    };
 
-        resultImage.onload = function() {
-            loader.style.display = 'none';
-            resultImage.style.display = 'block';
-            saveBtn.classList.remove('hidden');
-        };
-
-        resultImage.onerror = function() {
-            loader.style.display = 'none';
-            alert("Fehler beim Laden des Bildes. Das kann an Safari-Sicherheitsregeln liegen, wenn die Datei nur lokal geöffnet ist.");
-        };
-    }
-
-    function openSaveModal() {
-        filenameInput.value = `KI-Bild-${Date.now()}`;
+    // 2. Modal öffnen
+    saveBtn.onclick = function() {
+        filenameInput.value = "mein-ki-bild";
         saveModal.classList.remove('hidden');
-        filenameInput.focus();
-    }
+    };
 
-    function closeSaveModal() {
+    closeModal.onclick = function() {
         saveModal.classList.add('hidden');
-    }
+    };
 
-    async function downloadImage() {
-        const url = resultImage.src;
-        let filename = filenameInput.value || "ki-bild";
-        
-        if (!filename.toLowerCase().endsWith('.jpg')) {
-            filename += '.jpg';
-        }
-
+    // 3. Download erzwingen
+    confirmDownload.onclick = async function() {
         try {
-            // Wir nutzen Fetch, um die Bilddaten zu greifen
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Netzwerk-Antwort war nicht ok');
-            
+            const response = await fetch(resultImage.src);
             const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const url = window.URL.createObjectURL(blob);
             
-            window.URL.revokeObjectURL(blobUrl);
-            closeSaveModal();
-        } catch (error) {
-            console.error("Download-Fehler:", error);
-            // Fallback für Safari, falls Fetch blockiert wird:
-            window.open(url, '_blank');
-            alert("Der direkte Download wurde blockiert. Das Bild wurde in einem neuen Tab geöffnet – du kannst es dort per Rechtsklick speichern.");
-            closeSaveModal();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filenameInput.value + ".jpg";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            saveModal.classList.add('hidden');
+        } catch (err) {
+            // Falls Safari den Blob-Download blockiert, öffnen wir das Bild einfach im neuen Tab
+            window.open(resultImage.src, '_blank');
+            saveModal.classList.add('hidden');
         }
-    }
-
-    filenameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") downloadImage(); });
+    };
 </script>
 
 </body>
