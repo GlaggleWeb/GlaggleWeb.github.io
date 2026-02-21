@@ -2,181 +2,207 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AImage App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AImage - Generator</title>
     <style>
-        :root { --primary: #310085; --accent: #6200ea; --bg: #0f0f0f; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg); 
-            color: white; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
-            overflow: hidden;
+        :root {
+            --primary: #6200ea;
+            --success: #2ecc71;
+            --bg: #f4f4f9;
         }
-        .app-container {
-            background: #1a1a1a;
-            width: 100%;
-            max-width: 400px;
-            height: 100vh;
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
             display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
-        h1 { font-size: 24px; text-align: center; margin-bottom: 20px; color: #fff; }
-        
-        .input-group { margin-bottom: 20px; }
-        input {
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        input[type="text"] {
             width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1px solid #333;
-            background: #252525;
-            color: white;
+            padding: 14px;
+            border: 2px solid #eee;
+            border-radius: 10px;
             font-size: 16px;
             box-sizing: border-box;
+            margin-bottom: 12px;
             outline: none;
         }
-        input:focus { border-color: var(--accent); }
 
-        .btn-main {
-            background: var(--primary);
+        input[type="text"]:focus { border-color: var(--primary); }
+
+        button {
+            background-color: var(--primary);
             color: white;
             border: none;
-            padding: 16px;
-            width: 100%;
-            border-radius: 14px;
-            font-weight: 700;
+            padding: 14px;
+            border-radius: 10px;
             font-size: 16px;
             cursor: pointer;
-            transition: transform 0.1s;
+            width: 100%;
+            font-weight: bold;
         }
-        .btn-main:active { transform: scale(0.98); }
 
-        #display-area {
-            flex-grow: 1;
+        #image-container {
             margin: 20px 0;
-            background: #252525;
-            border-radius: 20px;
+            min-height: 300px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            position: relative;
-            border: 1px solid #333;
+            align-items: center;
+            background: #f0f0f0;
+            border-radius: 12px;
             overflow: hidden;
         }
 
-        img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        img { max-width: 100%; display: none; border-radius: 8px; }
 
-        /* Modern Spinner */
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #333;
-            border-top: 5px solid var(--accent);
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
             display: none;
         }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .save-bar { display: none; margin-top: auto; padding-bottom: 10px; }
-        .btn-save { background: #28a745; }
+        .hidden { display: none !important; }
 
         /* Modal */
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 300px; color: black; text-align: center; }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 85%;
+            max-width: 320px;
+        }
+
+        .save-btn-active { background-color: var(--success); margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h1>AImage App</h1>
-    
-    <div class="input-group">
-        <input type="text" id="prompt" placeholder="Beschreibe dein Bild...">
+<div class="container">
+    <h1>AImage</h1>
+    <input type="text" id="promptInput" placeholder="Was soll ich zeichnen?">
+    <button id="genBtn">Bild generieren</button>
+
+    <div id="image-container">
+        <div class="loader" id="loader"></div>
+        <img id="resultImage" crossorigin="anonymous">
     </div>
 
-    <button class="btn-main" onclick="runAppGen()">Bild erstellen</button>
-
-    <div id="display-area">
-        <div class="spinner" id="loader"></div>
-        <p id="msg" style="color: #666;">Warte auf Eingabe...</p>
-        <img id="mainImg">
-    </div>
-
-    <div class="save-bar" id="saveBar">
-        <button class="btn-main btn-save" onclick="openSaveModal()">Bild speichern</button>
-    </div>
+    <button id="saveBtn" class="hidden save-btn-active">Bild speichern</button>
 </div>
 
-<div class="modal" id="saveModal">
-    <div class="modal-content">
-        <h3 style="margin-top:0">Speichern unter</h3>
-        <input type="text" id="fname" style="background:#f0f0f0; color:black; border:1px solid #ccc; margin-bottom:10px;">
-        <button class="btn-main" onclick="doDownload()">Download</button>
-        <button onclick="closeModal()" style="background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">Abbrechen</button>
+<div id="saveModal" class="modal-overlay hidden">
+    <div class="modal">
+        <h3>Speichern</h3>
+        <p>Dateiname wählen:</p>
+        <input type="text" id="filenameInput">
+        <button id="confirmDownload">Download starten</button>
+        <button id="closeModal" style="background:none; color:#999; margin-top:10px;">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    const img = document.getElementById('mainImg');
+    const genBtn = document.getElementById('genBtn');
+    const promptInput = document.getElementById('promptInput');
+    const resultImage = document.getElementById('resultImage');
     const loader = document.getElementById('loader');
-    const msg = document.getElementById('msg');
-    const saveBar = document.getElementById('saveBar');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveModal = document.getElementById('saveModal');
+    const filenameInput = document.getElementById('filenameInput');
+    const confirmDownload = document.getElementById('confirmDownload');
+    const closeModal = document.getElementById('closeModal');
 
-    function runAppGen() {
-        const p = document.getElementById('prompt').value;
-        if(!p) return alert("Bitte gib etwas ein!");
+    // 1. GENERIEREN
+    genBtn.onclick = function() {
+        const text = promptInput.value;
+        if (!text) return alert("Bitte beschreibe ein Bild!");
 
-        // App-State: Loading
-        msg.style.display = "none";
-        img.style.display = "none";
-        saveBar.style.display = "none";
-        loader.style.display = "block";
+        saveBtn.classList.add('hidden');
+        resultImage.style.display = 'none';
+        loader.style.display = 'block';
 
         const seed = Math.floor(Math.random() * 999999);
-        // Wir nutzen die offizielle Pollinations-Struktur für Apps
-        const url = `https://pollinations.ai/p/${encodeURIComponent(p)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true`;
+        // Wir setzen CrossOrigin VOR dem Laden der Source
+        resultImage.crossOrigin = "anonymous";
+        resultImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+    };
 
-        // Safari-Safe Loading
-        const requestImg = new Image();
-        requestImg.src = url;
+    resultImage.onload = function() {
+        loader.style.display = 'none';
+        resultImage.style.display = 'block';
+        saveBtn.classList.remove('hidden');
+    };
 
-        requestImg.onload = function() {
-            img.src = url;
-            img.style.display = "block";
-            loader.style.display = "none";
-            saveBar.style.display = "block";
-        };
+    resultImage.onerror = function() {
+        loader.style.display = 'none';
+        alert("Fehler beim Laden. Versuche es bitte nochmal.");
+    };
 
-        requestImg.onerror = function() {
-            loader.style.display = "none";
-            msg.style.display = "block";
-            msg.innerText = "Verbindung zu glaggle.ch gestört. Bitte prüfe dein Internet.";
-            msg.style.color = "red";
-        };
-    }
+    // 2. MODAL ÖFFNEN
+    saveBtn.onclick = function() {
+        filenameInput.value = "KI-Bild-" + Math.floor(Date.now() / 1000);
+        saveModal.classList.remove('hidden');
+    };
 
-    function openSaveModal() {
-        document.getElementById('fname').value = "AImage-" + Date.now();
-        document.getElementById('saveModal').style.display = "flex";
-    }
+    closeModal.onclick = function() {
+        saveModal.classList.add('hidden');
+    };
 
-    function closeModal() { document.getElementById('saveModal').style.display = "none"; }
+    // 3. ECHTER DOWNLOAD (Canvas Methode für Safari)
+    confirmDownload.onclick = function() {
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = resultImage.naturalWidth;
+            canvas.height = resultImage.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(resultImage, 0, 0);
 
-    function doDownload() {
-        // Da glaggle.ch eine eigene Domain ist, ist window.open der sicherste Weg für Safari
-        window.open(img.src, '_blank');
-        closeModal();
-    }
+            let name = filenameInput.value || "image";
+            if(!name.endsWith(".jpg")) name += ".jpg";
+
+            const dataUrl = canvas.toDataURL("image/jpeg");
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            saveModal.classList.add('hidden');
+        } catch (e) {
+            console.error(e);
+            alert("Safari blockiert den direkten Download. Halte das Bild gedrückt zum Speichern.");
+        }
+    };
 </script>
 
 </body>
