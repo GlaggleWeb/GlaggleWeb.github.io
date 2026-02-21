@@ -3,47 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage</title>
+    <title>AImage Pro</title>
     <style>
-        :root { --p: #6200ea; --bg: #121212; }
-        body { font-family: sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; color: #333; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        button { background: var(--p); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        #img-box { margin: 20px 0; background: #eee; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; position: relative; }
-        img { width: 100%; height: auto; display: none; border-radius: 10px; }
-        
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--p); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; }
+        :root { --p: #007aff; --bg: #f2f2f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+        button { background: var(--p); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #img-box { margin: 20px 0; background: #e5e5ea; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        img { width: 100%; height: auto; display: none; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--p); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-bg.active { display: flex; }
-        .modal { background: white; padding: 25px; border-radius: 20px; width: 300px; text-align: center; }
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+        .active { display: flex; }
+        .modal { background: white; padding: 20px; border-radius: 20px; width: 280px; }
         .hidden { display: none !important; }
-        .sec-btn { background: #eee; color: #333; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>AImage Generator</h2>
-    <input type="text" id="pInput" placeholder="Was soll ich malen?">
+    <h2>AImage v2</h2>
+    <input type="text" id="pInput" placeholder="Was soll ich zeichnen?">
     <button onclick="generate()">Bild generieren</button>
-    
     <div id="img-box">
         <div class="loader" id="loader"></div>
-        <img id="mainImg" alt="KI Ergebnis">
+        <img id="mainImg">
     </div>
-    
-    <button id="sBtn" class="hidden" style="background:#27ae60" onclick="openSave()">Bild speichern</button>
+    <button id="sBtn" class="hidden" style="background:#34c759" onclick="openSave()">Speichern</button>
 </div>
 
 <div id="modal" class="modal-bg">
     <div class="modal">
-        <h3 style="margin-top:0">Speichern</h3>
+        <h3>Speichern</h3>
         <input type="text" id="fName">
-        <button onclick="download()">Download bestätigen</button>
-        <button onclick="closeModal()" class="sec-btn">Abbrechen</button>
+        <button onclick="download()">Download</button>
+        <button onclick="closeModal()" style="background:none;color:#8e8e93;margin-top:5px">Abbrechen</button>
     </div>
 </div>
 
@@ -52,67 +47,51 @@
     const loader = document.getElementById('loader');
     const sBtn = document.getElementById('sBtn');
     const modal = document.getElementById('modal');
-    const fName = document.getElementById('fName');
 
     function generate() {
         const prompt = document.getElementById('pInput').value;
-        if(!prompt) return alert("Bitte Text eingeben!");
+        if(!prompt) return;
 
-        // UI Reset
         img.style.display = "none";
         sBtn.classList.add("hidden");
         loader.style.display = "block";
 
-        const seed = Math.floor(Math.random() * 999999);
-        // Wir nutzen die URL direkt im Image-Tag. Das ist immun gegen CORS-Ladefehler.
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+        const seed = Math.floor(Math.random() * 9999);
+        
+        // NEUE VARIANTE: Wir nutzen einen anderen Endpunkt (Cloudflare-optimiert)
+        // Wir hängen den Prompt direkt an die URL an
+        const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}`;
 
-        img.src = url;
+        // Wir nutzen den Image-Konstruktor, um den Ladevorgang zu überwachen
+        const tempImg = new Image();
+        tempImg.src = url;
+        
+        tempImg.onload = function() {
+            img.src = url;
+            img.style.display = "block";
+            loader.style.display = "none";
+            sBtn.classList.remove("hidden");
+        };
+
+        tempImg.onerror = function() {
+            // Falls das auch nicht geht, versuchen wir es mit einer festen Fallback-URL
+            // Manche Browser blockieren kryptische URLs, daher kürzen wir sie
+            console.log("Versuche Fallback...");
+            img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt).substring(0, 50)}?seed=${seed}`;
+        };
     }
 
-    // Das passiert, wenn das Bild erfolgreich geladen wurde
-    img.onload = function() {
-        loader.style.display = "none";
-        img.style.display = "block";
-        sBtn.classList.remove("hidden");
-    };
-
-    // Das passiert bei einem echten Verbindungsfehler
-    img.onerror = function() {
-        loader.style.display = "none";
-        alert("Verbindung zu Pollinations fehlgeschlagen. Versuche es bitte gleich nochmal.");
-    };
-
     function openSave() {
-        fName.value = "KI-Bild-" + Math.floor(Date.now()/1000);
+        document.getElementById('fName').value = "Bild-" + Math.floor(Date.now()/1000);
         modal.classList.add("active");
     }
 
     function closeModal() { modal.classList.remove("active"); }
 
-    async function download() {
-        const name = fName.value || 'bild';
-        
-        // Da wir das Bild oben ohne CORS geladen haben, dürfen wir es nicht per Skript "anfassen".
-        // Der sicherste Weg für alle Browser: Wir öffnen das Bild in einem neuen Tab zum Speichern.
-        const downloadUrl = img.src;
-        
-        // Wir probieren den automatischen Download trotzdem kurz (funktioniert in Chrome oft)
-        try {
-            const resp = await fetch(downloadUrl);
-            const blob = await resp.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = name + ".jpg";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } catch (e) {
-            // Wenn Chrome/Safari blockiert, öffnet sich das Bild einfach neu:
-            window.open(downloadUrl, '_blank');
-            alert("Hinweis: Bitte das Bild im neuen Tab gedrückt halten oder rechtsklicken zum Speichern.");
-        }
+    function download() {
+        const name = document.getElementById('fName').value || 'bild';
+        // Für Safari auf GitHub ist das Öffnen im neuen Tab die einzige 100% funktionierende Lösung
+        window.open(img.src, '_blank');
         closeModal();
     }
 </script>
