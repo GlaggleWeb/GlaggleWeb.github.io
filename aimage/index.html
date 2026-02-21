@@ -3,197 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage - Generator</title>
+    <title>AImage - KI Generator</title>
     <style>
         :root {
-            --primary-color: #6200ea;
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
+            --primary: #6200ea;
+            --bg: #f8f9fa;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
         }
-
-        .container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 500px;
+            max-width: 450px;
             text-align: center;
         }
-
-        input[type="text"] {
+        input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #ddd;
+            margin: 10px 0;
+            border: 2px solid #eee;
             border-radius: 8px;
-            font-size: 16px;
             box-sizing: border-box;
-            margin-bottom: 10px;
         }
-
         button {
-            background-color: var(--primary-color);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
+            padding: 12px;
             width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
         }
-
         #image-container {
-            margin: 20px 0;
+            margin-top: 20px;
+            background: #f0f0f0;
+            border-radius: 12px;
             min-height: 300px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            background: #eee;
-            border-radius: 8px;
-            overflow: hidden;
+            justify-content: center;
+            position: relative;
         }
-
-        img { max-width: 100%; display: none; }
-
+        img {
+            max-width: 100%;
+            border-radius: 12px;
+            display: none;
+        }
+        /* Spinner */
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
             display: none;
         }
-
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .hidden { display: none !important; }
+        
+        .hidden { display: none; }
 
         /* Modal */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            inset: 0;
+            background: rgba(0,0,0,0.6);
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 1000;
+            justify-content: center;
+            z-index: 100;
         }
-
         .modal {
             background: white;
-            padding: 2rem;
+            padding: 20px;
             border-radius: 12px;
-            width: 80%;
-            max-width: 300px;
+            width: 280px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>AImage</h1>
-    <input type="text" id="promptInput" placeholder="Was soll ich zeichnen?">
-    <button id="genBtn">Bild generieren</button>
+<div class="card">
+    <h2>AImage Generator</h2>
+    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
+    <button onclick="generate()">Bild erstellen</button>
 
     <div id="image-container">
         <div class="loader" id="loader"></div>
-        <img id="resultImage" crossorigin="anonymous">
+        <img id="resultImg" crossorigin="anonymous">
     </div>
 
-    <button id="saveBtn" class="hidden" style="background-color: #2ecc71;">Bild speichern</button>
+    <button id="saveBtn" class="hidden" style="background: #27ae60; margin-top: 10px;">Bild speichern</button>
 </div>
 
 <div id="saveModal" class="modal-overlay hidden">
     <div class="modal">
-        <h3>Speichern</h3>
-        <input type="text" id="filenameInput">
-        <button id="confirmDownload">Jetzt Downloaden</button>
-        <button id="closeModal" style="background: none; color: #777; margin-top: 10px;">Abbrechen</button>
+        <h3>Speichern unter...</h3>
+        <input type="text" id="fileName" placeholder="Dateiname">
+        <button onclick="confirmDownload()">Download</button>
+        <button onclick="toggleModal()" style="background:none; color: #666;">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    const promptInput = document.getElementById('promptInput');
-    const genBtn = document.getElementById('genBtn');
-    const resultImage = document.getElementById('resultImage');
+    const img = document.getElementById('resultImg');
     const loader = document.getElementById('loader');
     const saveBtn = document.getElementById('saveBtn');
-    const saveModal = document.getElementById('saveModal');
-    const filenameInput = document.getElementById('filenameInput');
-    const confirmDownload = document.getElementById('confirmDownload');
-    const closeModal = document.getElementById('closeModal');
+    const modal = document.getElementById('saveModal');
 
-    // 1. Bild generieren
-    genBtn.onclick = function() {
-        const prompt = promptInput.value;
-        if (!prompt) return alert("Gib einen Text ein!");
+    function generate() {
+        const prompt = document.getElementById('promptInput').value;
+        if(!prompt) return alert("Prompt fehlt!");
 
+        img.style.display = 'none';
         saveBtn.classList.add('hidden');
-        resultImage.style.display = 'none';
         loader.style.display = 'block';
 
-        const seed = Math.floor(Math.random() * 1000000);
-        // Wir fügen Parameter hinzu, um die Qualität zu sichern
-        resultImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
-    };
+        const seed = Math.floor(Math.random() * 999999);
+        // Nutze eine zuverlässige Pollinations-Struktur
+        img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+    }
 
-    // Wenn Bild fertig geladen
-    resultImage.onload = function() {
+    img.onload = () => {
         loader.style.display = 'none';
-        resultImage.style.display = 'block';
+        img.style.display = 'block';
         saveBtn.classList.remove('hidden');
     };
 
-    // Fehlerfall
-    resultImage.onerror = function() {
+    img.onerror = () => {
         loader.style.display = 'none';
-        alert("Fehler beim Laden. Versuch es nochmal!");
+        alert("Fehler beim Laden. Versuche einen anderen Prompt.");
     };
 
-    // 2. Modal öffnen
-    saveBtn.onclick = function() {
-        filenameInput.value = "mein-ki-bild";
-        saveModal.classList.remove('hidden');
-    };
+    saveBtn.onclick = () => toggleModal();
 
-    closeModal.onclick = function() {
-        saveModal.classList.add('hidden');
-    };
+    function toggleModal() {
+        modal.classList.toggle('hidden');
+        document.getElementById('fileName').value = "KI-Bild-" + Date.now();
+    }
 
-    // 3. Download erzwingen
-    confirmDownload.onclick = async function() {
+    async function confirmDownload() {
+        const name = document.getElementById('fileName').value || 'bild';
         try {
-            const response = await fetch(resultImage.src);
+            const response = await fetch(img.src);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
             a.href = url;
-            a.download = filenameInput.value + ".jpg";
+            a.download = `${name}.jpg`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-            
-            saveModal.classList.add('hidden');
-        } catch (err) {
-            // Falls Safari den Blob-Download blockiert, öffnen wir das Bild einfach im neuen Tab
-            window.open(resultImage.src, '_blank');
-            saveModal.classList.add('hidden');
+        } catch (e) {
+            // Fallback für Safari Sicherheits-Veto
+            window.open(img.src, '_blank');
         }
-    };
+        toggleModal();
+    }
 </script>
-
 </body>
 </html>
