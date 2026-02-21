@@ -1,19 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>AImage</title>
-  <style>
-    body { text-align: center; background: #111; color: white; }
-    iframe { width: 90vw; height: 90vh; border: none; }
-  </style>
+<meta charset="UTF-8">
+<title>AImage</title>
+<style>
+body {
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+input {
+    width: 60%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    background: #00c3ff;
+    color: black;
+}
+
+iframe {
+    margin-top: 20px;
+    width: 90vw;
+    height: 70vh;
+    border: none;
+    border-radius: 10px;
+}
+</style>
 </head>
 <body>
 
-<h1>🎨 Craiyon AI Bildgenerator</h1>
-<iframe src="https://www.craiyon.com/"></iframe>
+<h1>🎨 AImage</h1>
 
-<p>Benutze das Tool oben und gib deinen Prompt dort ein.</p>
+<input type="text" id="prompt" placeholder="Gib deinen Prompt ein...">
+<button onclick="generate()">Generieren</button>
+
+<iframe id="craiyonFrame" src="https://www.craiyon.com/"></iframe>
+
+<script>
+function generate() {
+    const prompt = document.getElementById('prompt').value.trim();
+    if(!prompt) {
+        alert("Bitte einen Prompt eingeben!");
+        return;
+    }
+    // Hinweis: DALL·E Mini / Craiyon kann keine direkten Prompt-Parameter über URL akzeptieren,
+    // deshalb bleibt das iFrame einfach offen, und der User gibt den Prompt direkt ein.
+    alert("Bitte gib den Prompt im eingebetteten Craiyon-Fenster ein.\nDein eigener Prompt: " + prompt);
+}
+</script>
 
 </body>
 </html>
