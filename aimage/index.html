@@ -3,62 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage</title>
+    <title>AImage - Official API</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box; }
-        button { background: #310085; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        #box { margin: 20px 0; background: #2a2a2a; height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #333; }
-        img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .loader { border: 3px solid #444; border-top: 3px solid #310085; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
+        :root { --primary: #310085; --bg: #121212; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; background: #2a2a2a; color: white; font-size: 16px; box-sizing: border-box; }
+        .btn-gen { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        #output-container { margin: 20px 0; background: #2a2a2a; min-height: 300px; border-radius: 18px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #333; }
+        img { width: 100%; height: auto; display: none; }
+        .loader { border: 4px solid #333; border-top: 4px solid #6200ea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal { background: white; padding: 25px; border-radius: 20px; width: 280px; color: black; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>AImage Generator</h2>
-    <input type="text" id="p" placeholder="Was soll ich zeichnen?">
-    <button onclick="gen()">Bild generieren</button>
-    <div id="box">
-        <div class="loader" id="l"></div>
-        <img id="i">
+    <h2 style="margin-top:0">AImage AI</h2>
+    <input type="text" id="promptInput" placeholder="Was soll ich erstellen?">
+    <button class="btn-gen" onclick="generateImage()">Bild generieren</button>
+    
+    <div id="output-container">
+        <div class="loader" id="loader"></div>
+        <img id="resultImg" alt="KI Bild">
     </div>
-    <p id="error" style="color: #ff4444; font-size: 12px; display: none;">Verbindung blockiert. Teste mobile Daten.</p>
+    
+    <button id="saveBtn" style="display:none; background:#27ae60; margin-top:10px;" class="btn-gen" onclick="showModal()">Speichern</button>
+</div>
+
+<div id="modal" class="modal-overlay">
+    <div class="modal">
+        <h3 style="margin-top:0">Speichern</h3>
+        <input type="text" id="fileName" style="background:white; color:black; border:1px solid #ccc;">
+        <button class="btn-gen" style="background:#6200ea" onclick="startDownload()">Download</button>
+        <p onclick="closeModal()" style="color:gray; margin-top:15px; cursor:pointer; font-size: 14px;">Abbrechen</p>
+    </div>
 </div>
 
 <script>
-    function gen() {
-        const p = document.getElementById('p').value;
-        const i = document.getElementById('i');
-        const l = document.getElementById('l');
-        const err = document.getElementById('error');
+    async function generateImage() {
+        const prompt = document.getElementById('promptInput').value;
+        const img = document.getElementById('resultImg');
+        const loader = document.getElementById('loader');
+        const saveBtn = document.getElementById('saveBtn');
 
-        if(!p) return;
+        if(!prompt) return alert("Bitte gib einen Text ein!");
 
-        i.style.display = "none";
-        err.style.display = "none";
-        l.style.display = "block";
+        // Reset
+        img.style.display = "none";
+        saveBtn.style.display = "none";
+        loader.style.display = "block";
 
-        const s = Math.floor(Math.random() * 9999);
-        
-        // ALTERNATIVER ANBIETER (VIA DUCKDUCKGO/PIXSY PROXY)
-        // Wir nutzen hier eine URL, die oft durch Filter schlüpft
-        const url = `https://external-content.duckduckgo.com/iu/?u=https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?seed=${s}`;
+        const seed = Math.floor(Math.random() * 1000000);
+        // Wir nutzen die strukturierte URL, die auch die Pollinations-Apps nutzen
+        const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
 
-        i.src = url;
+        // Wir erzwingen das Laden über einen Cache-Buster
+        const timestamp = new Date().getTime();
+        img.src = `${url}&t=${timestamp}`;
 
-        i.onload = () => {
-            l.style.display = "none";
-            i.style.display = "block";
+        img.onload = () => {
+            loader.style.display = "none";
+            img.style.display = "block";
+            saveBtn.style.display = "block";
         };
 
-        i.onerror = () => {
-            l.style.display = "none";
-            err.style.display = "block";
+        img.onerror = () => {
+            loader.style.display = "none";
+            alert("Verbindung fehlgeschlagen. Tipp: Versuche es mal ohne WLAN (mobile Daten).");
         };
     }
+
+    function showModal() {
+        document.getElementById('fileName').value = "AImage-" + Date.now();
+        document.getElementById('modal').style.display = "flex";
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
+
+    function startDownload() {
+        const img = document.getElementById('resultImg');
+        // In Safari funktioniert das Öffnen im neuen Tab am besten zum Speichern
+        window.open(img.src, '_blank');
+        closeModal();
+    }
 </script>
+
 </body>
 </html>
