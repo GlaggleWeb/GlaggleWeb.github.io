@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Aimage</title>
+<title>Safari Safe KI Generator</title>
 
 <style>
 body {
@@ -31,29 +31,32 @@ button {
     font-weight: bold;
 }
 
-img {
+iframe {
     margin-top: 30px;
-    max-width: 80%;
+    width: 1024px;
+    height: 1024px;
+    border: none;
     border-radius: 15px;
+    background: black;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎨 KI Bildgenerator</h1>
+<h1>🎨 KI Bildgenerator (Safari Safe)</h1>
 
 <input type="text" id="prompt" placeholder="Beschreibe dein Bild...">
 <button onclick="generate()">Generieren</button>
 
 <br><br>
 
-<img id="result" style="display:none;">
+<iframe id="frame" style="display:none;"></iframe>
 
 <script>
 function generate() {
     const prompt = document.getElementById("prompt").value;
-    const img = document.getElementById("result");
+    const frame = document.getElementById("frame");
 
     if (!prompt) {
         alert("Bitte Prompt eingeben!");
@@ -61,15 +64,13 @@ function generate() {
     }
 
     const encoded = encodeURIComponent(prompt);
-    
-    // Safari mag kein fetch bei file://
-    // Direktes Setzen der Bildquelle funktioniert aber
-    img.src = "https://image.pollinations.ai/prompt/" 
-              + encoded 
-              + "?width=1024&height=1024&nocache=" 
-              + Date.now();
 
-    img.style.display = "block";
+    frame.src = "https://image.pollinations.ai/prompt/" 
+                + encoded 
+                + "?width=1024&height=1024&nocache=" 
+                + Date.now();
+
+    frame.style.display = "block";
 }
 </script>
 
