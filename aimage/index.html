@@ -3,42 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage Pro</title>
+    <title>AImage</title>
     <style>
         :root { --p: #6200ea; --bg: #121212; }
         body { font-family: sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; color: #333; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        button { background: var(--p); color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        #img-box { margin: 20px 0; background: #eee; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        img { width: 100%; height: auto; display: none; }
+        .card { background: white; color: #333; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        button { background: var(--p); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        #img-box { margin: 20px 0; background: #eee; min-height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; position: relative; }
+        img { width: 100%; height: auto; display: none; border-radius: 10px; }
+        
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--p); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; }
-        .active { display: flex; }
-        .modal { background: white; padding: 20px; border-radius: 15px; width: 280px; }
-        .hidden { display: none; }
+
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-bg.active { display: flex; }
+        .modal { background: white; padding: 25px; border-radius: 20px; width: 300px; text-align: center; }
+        .hidden { display: none !important; }
+        .sec-btn { background: #eee; color: #333; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>AImage Generator</h2>
-    <input type="text" id="pInput" placeholder="Deine Beschreibung...">
+    <input type="text" id="pInput" placeholder="Was soll ich malen?">
     <button onclick="generate()">Bild generieren</button>
+    
     <div id="img-box">
         <div class="loader" id="loader"></div>
-        <img id="mainImg">
+        <img id="mainImg" alt="KI Ergebnis">
     </div>
-    <button id="sBtn" class="hidden" style="background:#27ae60" onclick="showModal()">Bild speichern</button>
+    
+    <button id="sBtn" class="hidden" style="background:#27ae60" onclick="openSave()">Bild speichern</button>
 </div>
 
 <div id="modal" class="modal-bg">
     <div class="modal">
-        <h3>Speichern</h3>
+        <h3 style="margin-top:0">Speichern</h3>
         <input type="text" id="fName">
-        <button onclick="download()">Download</button>
-        <button onclick="closeModal()" style="background:none;color:#666;margin-top:5px">Abbrechen</button>
+        <button onclick="download()">Download bestätigen</button>
+        <button onclick="closeModal()" class="sec-btn">Abbrechen</button>
     </div>
 </div>
 
@@ -47,10 +52,11 @@
     const loader = document.getElementById('loader');
     const sBtn = document.getElementById('sBtn');
     const modal = document.getElementById('modal');
+    const fName = document.getElementById('fName');
 
-    async function generate() {
+    function generate() {
         const prompt = document.getElementById('pInput').value;
-        if(!prompt) return alert("Text fehlt!");
+        if(!prompt) return alert("Bitte Text eingeben!");
 
         // UI Reset
         img.style.display = "none";
@@ -58,42 +64,55 @@
         loader.style.display = "block";
 
         const seed = Math.floor(Math.random() * 999999);
+        // Wir nutzen die URL direkt im Image-Tag. Das ist immun gegen CORS-Ladefehler.
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
 
-        try {
-            // DER TRICK: Wir laden das Bild erst als Datenstrom (Fetch)
-            // Das umgeht Safari's "Img-Error" Blockade oft
-            const response = await fetch(url);
-            if(!response.ok) throw new Error("Server antwortet nicht");
-            
-            const blob = await response.blob();
-            const objectURL = URL.createObjectURL(blob);
-            
-            img.src = objectURL;
-            img.style.display = "block";
-            loader.style.display = "none";
-            sBtn.classList.remove("hidden");
-        } catch (e) {
-            loader.style.display = "none";
-            alert("Safari blockiert die Verbindung. Tipp: Seite kurz neu laden oder anderen Browser testen.");
-        }
+        img.src = url;
     }
 
-    function showModal() {
-        document.getElementById('fName').value = "Bild-" + Date.now();
+    // Das passiert, wenn das Bild erfolgreich geladen wurde
+    img.onload = function() {
+        loader.style.display = "none";
+        img.style.display = "block";
+        sBtn.classList.remove("hidden");
+    };
+
+    // Das passiert bei einem echten Verbindungsfehler
+    img.onerror = function() {
+        loader.style.display = "none";
+        alert("Verbindung zu Pollinations fehlgeschlagen. Versuche es bitte gleich nochmal.");
+    };
+
+    function openSave() {
+        fName.value = "KI-Bild-" + Math.floor(Date.now()/1000);
         modal.classList.add("active");
     }
 
     function closeModal() { modal.classList.remove("active"); }
 
-    function download() {
-        const name = document.getElementById('fName').value || 'bild';
-        const a = document.createElement('a');
-        a.href = img.src;
-        a.download = name + ".jpg";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    async function download() {
+        const name = fName.value || 'bild';
+        
+        // Da wir das Bild oben ohne CORS geladen haben, dürfen wir es nicht per Skript "anfassen".
+        // Der sicherste Weg für alle Browser: Wir öffnen das Bild in einem neuen Tab zum Speichern.
+        const downloadUrl = img.src;
+        
+        // Wir probieren den automatischen Download trotzdem kurz (funktioniert in Chrome oft)
+        try {
+            const resp = await fetch(downloadUrl);
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name + ".jpg";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch (e) {
+            // Wenn Chrome/Safari blockiert, öffnet sich das Bild einfach neu:
+            window.open(downloadUrl, '_blank');
+            alert("Hinweis: Bitte das Bild im neuen Tab gedrückt halten oder rechtsklicken zum Speichern.");
+        }
         closeModal();
     }
 </script>
