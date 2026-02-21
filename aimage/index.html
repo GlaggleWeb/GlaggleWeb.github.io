@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage</title>
+    <title>AImage Generator</title>
     <style>
         :root {
             --primary: #6200ea;
-            --bg: #1a1a1a; /* Dunklerer Hintergrund für modernen Look */
+            --bg: #121212;
             --card: #ffffff;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, system-ui, sans-serif;
             background-color: var(--bg);
             display: flex;
             justify-content: center;
@@ -30,10 +30,10 @@
         }
         input[type="text"] {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
             border: 2px solid #eee;
-            border-radius: 10px;
+            border-radius: 12px;
             box-sizing: border-box;
             font-size: 16px;
         }
@@ -41,18 +41,16 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
             width: 100%;
-            transition: transform 0.2s;
+            font-size: 16px;
         }
-        button:active { transform: scale(0.98); }
-
         #image-container {
             margin: 20px 0;
-            background: #f0f0f0;
+            background: #222;
             border-radius: 15px;
             min-height: 300px;
             display: flex;
@@ -60,10 +58,10 @@
             justify-content: center;
             overflow: hidden;
         }
-        img { width: 100%; display: none; }
+        img { width: 100%; height: auto; display: none; border-radius: 10px; }
 
         .loader {
-            border: 4px solid #f3f3f3;
+            border: 4px solid #333;
             border-top: 4px solid var(--primary);
             border-radius: 50%;
             width: 40px; height: 40px;
@@ -72,45 +70,37 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* WICHTIG: Das Modal ist standardmäßig versteckt */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: none; /* Versteckt das Modal beim Start */
+            background: rgba(0,0,0,0.85);
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
         }
-        /* Wenn diese Klasse aktiv ist, wird das Modal gezeigt */
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal {
             background: white;
             padding: 25px;
             border-radius: 20px;
-            width: 300px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            width: 85%;
+            max-width: 320px;
         }
-        .secondary-btn {
-            background: none;
-            color: #666;
-            margin-top: 10px;
-        }
+        .secondary-btn { background: #eee; color: #333; margin-top: 8px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin-top:0">AImage</h2>
-    <input type="text" id="promptInput" placeholder="Was soll ich zeichnen?">
-    <button onclick="generate()">Bild erstellen</button>
+    <h2 style="margin-top:0; color:#333;">AImage</h2>
+    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
+    <button onclick="generate()">Bild generieren</button>
 
     <div id="image-container">
         <div class="loader" id="loader"></div>
-        <img id="resultImg" crossorigin="anonymous">
+        <img id="resultImg">
     </div>
 
     <button id="saveBtn" style="background: #27ae60; display: none;">Bild speichern</button>
@@ -118,9 +108,10 @@
 
 <div id="saveModal" class="modal-overlay">
     <div class="modal">
-        <h3>Speichern unter...</h3>
-        <input type="text" id="fileName" placeholder="Dateiname">
-        <button onclick="confirmDownload()">Download starten</button>
+        <h3 style="margin-top:0">Speichern</h3>
+        <p style="font-size: 14px; color: #666;">Wähle einen Namen:</p>
+        <input type="text" id="fileName">
+        <button onclick="confirmDownload()">Download</button>
         <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
     </div>
 </div>
@@ -136,43 +127,47 @@
         const prompt = document.getElementById('promptInput').value;
         if(!prompt) return alert("Bitte Text eingeben!");
 
-        // Reset UI
         img.style.display = 'none';
         saveBtn.style.display = 'none';
         loader.style.display = 'block';
 
         const seed = Math.floor(Math.random() * 999999);
-        img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+        // Wir nutzen die direkte URL ohne Proxy
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+        
+        img.src = imageUrl;
     }
 
     img.onload = () => {
         loader.style.display = 'none';
         img.style.display = 'block';
-        saveBtn.style.display = 'block'; // Zeige Save-Button erst wenn Bild da ist
+        saveBtn.style.display = 'block';
     };
 
     img.onerror = () => {
         loader.style.display = 'none';
-        alert("Fehler beim Laden.");
+        alert("Fehler beim Laden des Bildes. Probiere es kurz noch einmal.");
     };
 
-    // Modal öffnen
     saveBtn.onclick = () => {
         fileNameInput.value = "AImage-" + Math.floor(Date.now() / 1000);
-        modal.classList.add('active'); // Zeigt das Modal
+        modal.classList.add('active');
     };
 
-    // Modal schließen
     function closeModal() {
-        modal.classList.remove('active'); // Versteckt das Modal
+        modal.classList.remove('active');
     }
 
     async function confirmDownload() {
         const name = fileNameInput.value || 'bild';
+        const imageUrl = img.src;
+
         try {
-            const response = await fetch(img.src);
+            // Wir versuchen das Bild zu laden
+            const response = await fetch(imageUrl);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
+            
             const a = document.createElement('a');
             a.href = url;
             a.download = `${name}.jpg`;
@@ -181,8 +176,10 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         } catch (e) {
-            // Safari Fallback
-            window.open(img.src, '_blank');
+            // FALLBACK FÜR SAFARI:
+            // Falls CORS (fetch) fehlschlägt, öffnen wir das Bild in einem neuen Tab
+            // Dort kann der User es per Rechtsklick/Lange drücken speichern
+            window.open(imageUrl, '_blank');
         }
         closeModal();
     }
