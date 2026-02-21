@@ -121,6 +121,7 @@
     const loader = document.getElementById('loader');
     const saveBtn = document.getElementById('saveBtn');
     const modal = document.getElementById('saveModal');
+    const fileNameInput = document.getElementById('fileName');
 
     function generate() {
         const prompt = document.getElementById('promptInput').value;
@@ -131,7 +132,6 @@
         loader.style.display = 'block';
 
         const seed = Math.floor(Math.random() * 999999);
-        // Nutze eine zuverlässige Pollinations-Struktur
         img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
     }
 
@@ -143,18 +143,22 @@
 
     img.onerror = () => {
         loader.style.display = 'none';
-        alert("Fehler beim Laden. Versuche einen anderen Prompt.");
+        alert("Fehler beim Laden.");
     };
 
-    saveBtn.onclick = () => toggleModal();
+    // Öffnet das Fenster und erstellt NUR DANN einen neuen Namen
+    saveBtn.onclick = () => {
+        fileNameInput.value = "KI-Bild-" + Math.floor(Date.now() / 1000);
+        modal.classList.remove('hidden');
+    };
 
-    function toggleModal() {
-        modal.classList.toggle('hidden');
-        document.getElementById('fileName').value = "KI-Bild-" + Date.now();
+    // Schließt das Fenster einfach nur
+    function closeSaveModal() {
+        modal.classList.add('hidden');
     }
 
     async function confirmDownload() {
-        const name = document.getElementById('fileName').value || 'bild';
+        const name = fileNameInput.value || 'bild';
         try {
             const response = await fetch(img.src);
             const blob = await response.blob();
@@ -167,10 +171,9 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         } catch (e) {
-            // Fallback für Safari Sicherheits-Veto
             window.open(img.src, '_blank');
         }
-        toggleModal();
+        closeSaveModal();
     }
 </script>
 </body>
