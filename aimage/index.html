@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AImage Generator</title>
+    <title>AImage Pro</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, sans-serif;
             background-color: #121212;
             margin: 0;
             display: flex;
@@ -16,93 +16,69 @@
         }
         .container {
             background: #1e1e1e;
-            padding: 2rem;
+            padding: 30px;
             border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
+            width: 350px;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        h2 { color: white; margin-bottom: 20px; font-weight: 600; }
-        
+        h2 { color: white; margin-bottom: 20px; }
         input {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             margin-bottom: 15px;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid #333;
             background: #2a2a2a;
             color: white;
             box-sizing: border-box;
-            font-size: 16px;
         }
-
         .btn-gen {
-            background: #310085; /* Das dunkle Lila aus deinem Screenshot */
+            background: #310085; /* Dein Lila */
             color: white;
             border: none;
-            padding: 14px;
+            padding: 12px;
             width: 100%;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
-            transition: background 0.3s;
         }
-        .btn-gen:hover { background: #4b00c7; }
-
         #result-box {
             margin-top: 20px;
             background: #2a2a2a;
             height: 300px;
             border-radius: 15px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
+            border: 1px solid #333;
         }
-
-        img { width: 100%; height: 100%; object-fit: cover; display: none; }
-
-        /* Spinner Animation */
+        img { width: 100%; display: none; }
         .loader {
-            border: 4px solid #333;
-            border-top: 4px solid #6200ea;
+            border: 3px solid #444;
+            border-top: 3px solid #310085;
             border-radius: 50%;
-            width: 40px; height: 40px;
+            width: 30px; height: 30px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Modal */
+        
+        /* Modal Style wie im Screenshot */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.8);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
         .modal {
             background: white;
-            padding: 30px;
-            border-radius: 24px;
-            width: 300px;
+            padding: 25px;
+            border-radius: 20px;
+            width: 280px;
             text-align: center;
-        }
-        .btn-download {
-            background: #6200ea;
-            color: white;
-            border: none;
-            padding: 14px;
-            width: 100%;
-            border-radius: 12px;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -110,105 +86,75 @@
 
 <div class="container">
     <h2>AImage Generator</h2>
-    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
-    <button class="btn-gen" id="genBtn" onclick="generate()">Bild generieren</button>
-    
+    <input type="text" id="prompt" placeholder="Was soll ich generieren?">
+    <button class="btn-gen" onclick="generate()">Bild generieren</button>
     <div id="result-box">
-        <div id="loader-container" style="display: none; color: #888;">
-            <div class="loader" style="margin: 0 auto 10px;"></div>
-            <p id="timerText">Starte...</p>
-        </div>
-        <p id="placeholderText" style="color: #666;">Bereit für deine Idee</p>
-        <img id="outputImg">
+        <div id="loader" style="display:none"><div class="loader"></div></div>
+        <img id="output">
     </div>
-
     <button id="saveBtn" style="display:none; background:#27ae60; margin-top:10px;" class="btn-gen" onclick="openModal()">Speichern unter...</button>
 </div>
 
 <div id="modal" class="modal-overlay">
     <div class="modal">
-        <h3 style="margin-top:0; color: black;">Speichern unter...</h3>
-        <input type="text" id="fileNameInput" style="background:white; color:black; border: 1px solid #ddd;">
-        <button class="btn-download" onclick="downloadImage()">Download</button>
-        <p onclick="closeModal()" style="color:gray; margin-top:15px; cursor:pointer; font-size: 14px;">Abbrechen</p>
+        <h3 style="margin-top:0; color:black">Speichern unter...</h3>
+        <input type="text" id="filename" style="background:white; color:black; border: 1px solid #ddd;">
+        <button class="btn-gen" style="background:#6200ea" onclick="download()">Download</button>
+        <p onclick="closeModal()" style="color:gray; margin-top:10px; cursor:pointer;">Abbrechen</p>
     </div>
 </div>
 
 <script>
-    const outputImg = document.getElementById('outputImg');
-    const loaderContainer = document.getElementById('loader-container');
-    const placeholderText = document.getElementById('placeholderText');
-    const timerText = document.getElementById('timerText');
+    const output = document.getElementById('output');
+    const loader = document.getElementById('loader');
     const saveBtn = document.getElementById('saveBtn');
-    const genBtn = document.getElementById('genBtn');
-
-    let seconds = 0;
-    let timerInterval;
 
     function generate() {
-        const prompt = document.getElementById('promptInput').value;
-        if(!prompt) return alert("Gib erst einen Text ein!");
+        const text = document.getElementById('prompt').value;
+        if(!text) return;
 
-        // UI Reset
-        outputImg.style.display = "none";
+        loader.style.display = "block";
+        output.style.display = "none";
         saveBtn.style.display = "none";
-        placeholderText.style.display = "none";
-        loaderContainer.style.display = "block";
-        genBtn.disabled = true;
-        genBtn.style.opacity = "0.5";
 
-        // Timer starten
-        seconds = 0;
-        timerText.innerText = "Sekunden: 0";
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            seconds++;
-            timerText.innerText = "Sekunden: " + seconds;
-            if(seconds > 30) { // Timeout nach 30 Sek
-                clearInterval(timerInterval);
-                alert("Dauert zu lange. Bitte Seite neu laden oder anderen Prompt versuchen.");
-                location.reload();
-            }
-        }, 1000);
+        const seed = Math.floor(Math.random() * 10000);
+        
+        // DER PROXY-TRICK:
+        // Wir nutzen den "wsrv.nl" Proxy. Dieser lädt das Bild für uns 
+        // und liefert es an Safari aus. Das umgeht fast alle Sperren.
+        const rawUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?seed=${seed}&width=800&height=800&nologo=true`;
+        const proxiedUrl = `https://wsrv.nl/?url=${encodeURIComponent(rawUrl)}&default=error`;
 
-        const seed = Math.floor(Math.random() * 999999);
-        // Wir nutzen die stabilste URL-Form
-        const finalUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=800&height=800&nologo=true`;
-        
-        outputImg.src = finalUrl;
-        
-        outputImg.onload = () => {
-            clearInterval(timerInterval);
-            loaderContainer.style.display = "none";
-            outputImg.style.display = "block";
+        output.src = proxiedUrl;
+
+        output.onload = () => {
+            loader.style.display = "none";
+            output.style.display = "block";
             saveBtn.style.display = "block";
-            genBtn.disabled = false;
-            genBtn.style.opacity = "1";
         };
 
-        outputImg.onerror = () => {
-            clearInterval(timerInterval);
-            alert("Fehler beim Laden. Versuche es nochmal!");
-            location.reload();
+        output.onerror = () => {
+            // Falls der Proxy hakt, versuchen wir es ein letztes Mal direkt
+            if(output.src !== rawUrl) {
+                output.src = rawUrl;
+            } else {
+                loader.style.display = "none";
+                alert("Fehler beim Laden. Bitte probiere einen anderen Begriff.");
+            }
         };
     }
 
     function openModal() {
-        document.getElementById('fileNameInput').value = "AImage-" + Math.floor(Date.now()/1000);
+        document.getElementById('filename').value = "KI-Bild-" + Date.now();
         document.getElementById('modal').style.display = "flex";
     }
 
-    function closeModal() {
-        document.getElementById('modal').style.display = "none";
-    }
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
 
-    function downloadImage() {
-        const name = document.getElementById('fileNameInput').value || 'bild';
-        // Sicherster Download für Safari & Chrome auf GitHub
-        window.open(outputImg.src, '_blank');
+    function download() {
+        window.open(output.src, '_blank');
         closeModal();
     }
 </script>
-
 </body>
 </html>
