@@ -7,10 +7,11 @@
     <style>
         :root {
             --primary: #6200ea;
-            --bg: #f8f9fa;
+            --bg: #1a1a1a; /* Dunklerer Hintergrund für modernen Look */
+            --card: #ffffff;
         }
         body {
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             display: flex;
             justify-content: center;
@@ -19,84 +20,92 @@
             margin: 0;
         }
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             width: 90%;
             max-width: 450px;
             text-align: center;
         }
-        input {
+        input[type="text"] {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
+            margin-bottom: 15px;
             border: 2px solid #eee;
-            border-radius: 8px;
+            border-radius: 10px;
             box-sizing: border-box;
+            font-size: 16px;
         }
         button {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
+            width: 100%;
+            transition: transform 0.2s;
         }
+        button:active { transform: scale(0.98); }
+
         #image-container {
-            margin-top: 20px;
+            margin: 20px 0;
             background: #f0f0f0;
-            border-radius: 12px;
+            border-radius: 15px;
             min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            overflow: hidden;
         }
-        img {
-            max-width: 100%;
-            border-radius: 12px;
-            display: none;
-        }
-        /* Spinner */
+        img { width: 100%; display: none; }
+
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             animation: spin 1s linear infinite;
             display: none;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .hidden { display: none; }
 
-        /* Modal */
+        /* WICHTIG: Das Modal ist standardmäßig versteckt */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex;
+            background: rgba(0,0,0,0.8);
+            display: none; /* Versteckt das Modal beim Start */
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 1000;
         }
+        /* Wenn diese Klasse aktiv ist, wird das Modal gezeigt */
+        .modal-overlay.active {
+            display: flex;
+        }
+
         .modal {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 280px;
+            padding: 25px;
+            border-radius: 20px;
+            width: 300px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .secondary-btn {
+            background: none;
+            color: #666;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>AImage</h2>
-    <input type="text" id="promptInput" placeholder="Was soll ich generieren?">
+    <h2 style="margin-top:0">AImage</h2>
+    <input type="text" id="promptInput" placeholder="Was soll ich zeichnen?">
     <button onclick="generate()">Bild erstellen</button>
 
     <div id="image-container">
@@ -104,15 +113,15 @@
         <img id="resultImg" crossorigin="anonymous">
     </div>
 
-    <button id="saveBtn" class="hidden" style="background: #27ae60; margin-top: 10px;">Bild speichern</button>
+    <button id="saveBtn" style="background: #27ae60; display: none;">Bild speichern</button>
 </div>
 
-<div id="saveModal" class="modal-overlay hidden">
+<div id="saveModal" class="modal-overlay">
     <div class="modal">
         <h3>Speichern unter...</h3>
         <input type="text" id="fileName" placeholder="Dateiname">
-        <button onclick="confirmDownload()">Download</button>
-        <button onclick="toggleModal()" style="background:none; color: #666;">Abbrechen</button>
+        <button onclick="confirmDownload()">Download starten</button>
+        <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
     </div>
 </div>
 
@@ -125,10 +134,11 @@
 
     function generate() {
         const prompt = document.getElementById('promptInput').value;
-        if(!prompt) return alert("Prompt fehlt!");
+        if(!prompt) return alert("Bitte Text eingeben!");
 
+        // Reset UI
         img.style.display = 'none';
-        saveBtn.classList.add('hidden');
+        saveBtn.style.display = 'none';
         loader.style.display = 'block';
 
         const seed = Math.floor(Math.random() * 999999);
@@ -138,7 +148,7 @@
     img.onload = () => {
         loader.style.display = 'none';
         img.style.display = 'block';
-        saveBtn.classList.remove('hidden');
+        saveBtn.style.display = 'block'; // Zeige Save-Button erst wenn Bild da ist
     };
 
     img.onerror = () => {
@@ -146,15 +156,15 @@
         alert("Fehler beim Laden.");
     };
 
-    // Öffnet das Fenster und erstellt NUR DANN einen neuen Namen
+    // Modal öffnen
     saveBtn.onclick = () => {
-        fileNameInput.value = "KI-Bild-" + Math.floor(Date.now() / 1000);
-        modal.classList.remove('hidden');
+        fileNameInput.value = "AImage-" + Math.floor(Date.now() / 1000);
+        modal.classList.add('active'); // Zeigt das Modal
     };
 
-    // Schließt das Fenster einfach nur
-    function closeSaveModal() {
-        modal.classList.add('hidden');
+    // Modal schließen
+    function closeModal() {
+        modal.classList.remove('active'); // Versteckt das Modal
     }
 
     async function confirmDownload() {
@@ -171,9 +181,10 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         } catch (e) {
+            // Safari Fallback
             window.open(img.src, '_blank');
         }
-        closeSaveModal();
+        closeModal();
     }
 </script>
 </body>
