@@ -1,86 +1,19 @@
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Safari Final KI Generator</title>
-
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: white;
-    text-align: center;
-    padding: 40px;
-}
-
-input {
-    width: 60%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-}
-
-button {
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: #00c3ff;
-    font-weight: bold;
-}
-
-#imageContainer {
-    margin-top: 30px;
-}
-
-img {
-    max-width: 80%;
-    border-radius: 15px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>AImage</title>
+  <style>
+    body { text-align: center; background: #111; color: white; }
+    iframe { width: 90vw; height: 90vh; border: none; }
+  </style>
 </head>
-
 <body>
 
-<h1>🎨 KI Bildgenerator</h1>
+<h1>🎨 Craiyon AI Bildgenerator</h1>
+<iframe src="https://www.craiyon.com/"></iframe>
 
-<input type="text" id="prompt" placeholder="Beschreibe dein Bild...">
-<button onclick="generate()">Generieren</button>
-
-<div id="imageContainer"></div>
-
-<script>
-function generate() {
-    const prompt = document.getElementById("prompt").value;
-    const container = document.getElementById("imageContainer");
-
-    if (!prompt) {
-        alert("Bitte Prompt eingeben!");
-        return;
-    }
-
-    const encoded = encodeURIComponent(prompt);
-    const seed = Math.floor(Math.random() * 1000000);
-
-    const url = "https://image.pollinations.ai/prompt/" 
-                + encoded 
-                + "?width=1024&height=1024&seed=" 
-                + seed;
-
-    container.innerHTML = "";
-
-    const img = document.createElement("img");
-    img.src = url;
-
-    img.onerror = function() {
-        container.innerHTML = "❌ Bild konnte nicht geladen werden.";
-    };
-
-    container.appendChild(img);
-}
-</script>
+<p>Benutze das Tool oben und gib deinen Prompt dort ein.</p>
 
 </body>
 </html>
