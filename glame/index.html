@@ -369,25 +369,26 @@
 
 <script>
 
-// DOM Elemente für das Setup
+const modal = document.getElementById("settings-modal");
+const overlay = document.getElementById("overlay");
 const welcomeModal = document.getElementById("welcome-modal");
 const setupBtn = document.getElementById("start-btn");
+const chatWindow = document.getElementById("chat-window");
 
 // Funktion: Prüfen ob User neu ist
 window.addEventListener('DOMContentLoaded', () => {
     const userStored = localStorage.getItem('glame_user');
     if (!userStored) {
-        // Zeige Popup und Overlay
         welcomeModal.style.display = "block";
         overlay.style.display = "block";
     } else {
-        // Falls schon bekannt, personalisierte Begrüßung
         const userData = JSON.parse(userStored);
-        const welcomeMsg = document.querySelector(".bot-msg");
-        welcomeMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! Wie kann ich dir heute helfen?`;
+        const firstMsg = chatWindow.querySelector(".bot-msg");
+        if(firstMsg) {
+            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! Wie kann ich dir heute helfen?`;
+        }
     }
 });
-
 // Speichern der Daten
 setupBtn.onclick = () => {
     const name = document.getElementById("setup-username").value.trim();
