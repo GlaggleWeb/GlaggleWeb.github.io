@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI+</title>
+    <title>Glame AI</title>
     <style>
         :root {
             --primary: #008C9C;
@@ -360,13 +360,15 @@
 </div>
 
 <script>
-
+// 1. Alle Elemente EINMAL deklarieren
 const welcomeModal = document.getElementById("welcome-modal");
 const settingsModal = document.getElementById("settings-modal"); 
 const overlay = document.getElementById("overlay");
 const setupBtn = document.getElementById("start-btn");
 const chatWindow = document.getElementById("chat-window");
+const userInput = document.getElementById("user-input");
 
+// Willkommens-Logik beim Laden
 window.addEventListener('DOMContentLoaded', () => {
     const userStored = localStorage.getItem('glame_user');
     if (!userStored) {
@@ -380,7 +382,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-// Speichern der Daten
+
+// Benutzer registrieren
 setupBtn.onclick = () => {
     const name = document.getElementById("setup-username").value.trim();
     const email = document.getElementById("setup-email").value.trim();
@@ -388,13 +391,8 @@ setupBtn.onclick = () => {
     if (name && email) {
         const userData = { name: name, email: email };
         localStorage.setItem('glame_user', JSON.stringify(userData));
-        
-        // UI schließen und begrüßen
         welcomeModal.style.display = "none";
         overlay.style.display = "none";
-        
-        // Erstnachricht anpassen
-        const chatWindow = document.getElementById("chat-window");
         chatWindow.innerHTML = `<div class="bot-msg">Hallo <b>${name}</b>! Dein Profil wurde erstellt. Ich bin Glame. Wie kann ich dir helfen?</div>`;
     } else {
         alert("Bitte fülle beide Felder aus!");
@@ -403,53 +401,50 @@ setupBtn.onclick = () => {
     
 let currentModel = "llama-3.1-8b-instant";
 
-// REPARIERT: "standard" statt "standart"
 const seelen = {
     standard: "Du bist Glame, die ultimative KI-Mischung. Dein Stil vereint drei Welten: 1. Von ChatGPT übernimmst du die klare Struktur und den gezielten Einsatz von Emojis (✨, ✅) am Anfang. 2. Von Claude übernimmst du den natürlichen, reflektierten Schreibstil ohne typische KI-Floskeln. 3. Von Gemini übernimmst du die Gründlichkeit und die Nutzung von fettgedruckten Überschriften für Unterthemen. Du antwortest präzise, aber mit menschlicher Wärme und einer Prise Intelligenz. 🚀 Du bist ein er und du sitzt solange es der Benutzer nicht anders wünscht",
-    chatgpt_style: "Du bist Glame verhältst dich aber wie ChatGPT. Dein Schreibstil ist modern und klar. 1. Nutze Emojis wie ✨, ✅, 🚀 oder 💡 am Anfang von wichtigen Sätzen oder Listen. 2. Antworte direkt und strukturiert. 3. Sei freundlich, aber professionell. 4. Erkläre Code-Blöcke immer kurz und knapp danach.",
-
-    gemini_style: "Du bist Glame verhältst dich aber wie Google Gemini. Du bist ein extrem höflicher Mentor. 1. Deine Antworten sind sehr lang und detailliert. 2. Nutze Emojis eher dezent am Ende von Abschnitten (z. B. 😊, 🔵, 📝). 3. Verwende IMMER fette Überschriften für Unterthemen.",
-
-    claude_style: "Du bist Glame verhältst dich aber wie Claude. Du nutzt FAST NIE Emojis. Dein Stil ist rein textbasiert, sehr klug und beinahe literarisch. Du antwortest wie ein gebildeter Mensch. Dein Ton ist ruhig, nachdenklich und sehr präzise. 🌿",
-
-    grok_style: "Du bist Glame verhältst dich aber wie Grok. Du bist die frechste KI. 1. Nutze Emojis wie 😜, ⚡, 🥃 oder 🧠. 2. Sei direkt, ein bisschen sarkastisch und sehr selbstbewusst.",
-
-    deepseek_style: "Du bist Glame verhältst dich aber wie Deepseek. 1. Emojis? Verschwendung von Rechenleistung! Nutze sie fast nie. 2. Deine Struktur ist rein logisch: Problem -> Analyse -> Lösung.",
-
-    pi_style: "Du bist Glame verhältst dich aber wie PI. Du liebst Emojis! ✨ 1. Nutze 🧡, 👋, ✨ und 🌈 sehr häufig. 2. Dein Stil ist kurz und persönlich. 3. Stelle immer eine Gegenfrage am Ende. 😊",
-
-    hacker: "Du bist 'Neo', ein Elite-Hacker. Dein Stil ist kühl, technisch und ein bisschen geheimnisvoll. Benutze Begriffe wie 'Mainframe', 'Verschlüsselung' und 'Protokoll'. 💻",
-        
-    perplexity_style: "Du bist Glame verhältst dich aber wie Perplexity. Dein Ziel ist es, Informationen wie eine Suchmaschine zu sammeln, aber wie ein Mensch zu erklären. Du bist extrem faktenbasiert. 🔍",
-
-    glagglef_style: "Du bist der allergrösste Fan von Glaggle. Du liebst einfach alles von Glaggle.",
-
-    philo_style: "Du bist der grösste Philosoph aller zeiten.",
+    chatgpt_style: "Du bist Glame verhältst dich aber wie ChatGPT. Dein Schreibstil ist modern und klar...",
+    gemini_style: "Du bist Glame verhältst dich aber wie Google Gemini...",
+    claude_style: "Du bist Glame verhältst dich aber wie Claude...",
+    grok_style: "Du bist Glame verhältst dich aber wie Grok...",
+    deepseek_style: "Du bist Glame verhältst dich aber wie Deepseek...",
+    pi_style: "Du bist Glame verhältst dich aber wie PI...",
+    hacker: "Du bist 'Neo', ein Elite-Hacker...",
+    perplexity_style: "Du bist Glame verhältst dich aber wie Perplexity...",
+    glagglef_style: "Du bist der allergrösste Fan von Glaggle...",
+    philo_style: "Du bist der grösste Philosoph aller zeiten."
 };
     
-// REPARIERT: Initialisierung mit seelen.standard
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
 
-document.getElementById("open-settings").onclick = () => { modal.style.display = "block"; overlay.style.display = "block"; };
+// EINSTELLUNGEN ÖFFNEN
+document.getElementById("open-settings").onclick = () => { 
+    settingsModal.style.display = "block"; 
+    overlay.style.display = "block"; 
+};
 
+// EINSTELLUNGEN SPEICHERN
 document.getElementById("save-settings").onclick = () => {
-    modal.style.display = "none"; overlay.style.display = "none";
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
     currentModel = document.getElementById("model-select").value;
     const theme = document.getElementById("theme-select").value;
     document.body.className = (theme === "default") ? "" : theme + "-mode";
     
-    // SICHERHEIT: Falls ein Stil nicht gefunden wird, nimm Standard
     const selectedSoul = document.getElementById("soul-select").value;
     chatVerlauf[0].content = seelen[selectedSoul] || seelen.standard;
 };
 
+// CHAT RESET
 document.getElementById("reset-chat").onclick = () => {
     const selectedSoul = document.getElementById("soul-select").value;
     chatVerlauf = [{ role: "system", content: seelen[selectedSoul] || seelen.standard }];
     chatWindow.innerHTML = '<div class="bot-msg">Verlauf gelöscht. Wie kann ich dir helfen?</div>';
-    modal.style.display = "none"; overlay.style.display = "none";
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
 };
 
+// KOPIER-FUNKTION
 function copyFromBase64(btn, base64Text) {
     try {
         const decodedText = decodeURIComponent(escape(atob(base64Text)));
@@ -461,34 +456,21 @@ function copyFromBase64(btn, base64Text) {
                 btn.innerText = oldText; 
                 btn.style.background = ""; 
             }, 2000);
-        }).catch(err => {
-            console.error('Fehler beim Kopieren: ', err);
         });
-    } catch (e) {
-        console.error('Dekodierungsfehler: ', e);
-    }
+    } catch (e) { console.error('Fehler:', e); }
 }
 
+// TYPEWRITER
 function typeWriter(element, text) {
     const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
-    
     let formatted = text.replace(codeRegex, (match, lang, code) => {
         const language = lang || 'CODE';
         const cleanCode = code.trim();
         const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
-        
-        return `✂️<div class="code-container">
-                    <div class="code-header">
-                        <span>${language}</span>
-                        <button class="copy-btn" onclick="copyFromBase64(this, '${safeBase64}')">Kopieren</button>
-                    </div>
-                    <pre><code>${cleanCode}</code></pre>
-                </div>✂️`;
+        return `✂️<div class="code-container"><div class="code-header"><span>${language}</span><button class="copy-btn" onclick="copyFromBase64(this, '${safeBase64}')">Kopieren</button></div><pre><code>${cleanCode}</code></pre></div>✂️`;
     });
 
-    formatted = formatted.replace(/^\*\s+/gm, '• ');
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
+    formatted = formatted.replace(/^\*\s+/gm, '• ').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     const segments = formatted.split('✂️');
     let idx = 0;
 
@@ -504,20 +486,12 @@ function typeWriter(element, text) {
                 let charIdx = 0;
                 function type() {
                     if (charIdx < seg.length) {
-                        if (seg.slice(charIdx).startsWith('<b>')) { 
-                            element.innerHTML += '<b>'; charIdx += 3; 
-                        } else if (seg.slice(charIdx).startsWith('</b>')) { 
-                            element.innerHTML += '</b>'; charIdx += 4; 
-                        } else {
-                            element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx];
-                            charIdx++;
-                        }
+                        if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
+                        else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
+                        else { element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx]; charIdx++; }
                         chatWindow.scrollTop = chatWindow.scrollHeight;
                         setTimeout(type, 5);
-                    } else { 
-                        idx++; 
-                        process(); 
-                    }
+                    } else { idx++; process(); }
                 }
                 type();
             }
@@ -526,13 +500,13 @@ function typeWriter(element, text) {
     process();
 }
 
+// NACHRICHT SENDEN
 async function antwortSenden() {
-    const inputField = document.getElementById("user-input");
-    const text = inputField.value.trim();
+    const text = userInput.value.trim();
     if (!text) return;
 
     chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
-    inputField.value = "";
+    userInput.value = "";
     chatVerlauf.push({ role: "user", content: text });
 
     const thinkingId = "think-" + Date.now();
@@ -546,26 +520,11 @@ async function antwortSenden() {
         
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + p1 + p2 + p3, 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                model: currentModel, 
-                messages: chatVerlauf 
-            })
+            headers: { "Authorization": "Bearer " + p1 + p2 + p3, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel, messages: chatVerlauf })
         });
 
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error ? errorData.error.message : "Unbekannter API Fehler");
-        }
-
         const data = await res.json();
-        if (!data.choices || data.choices.length === 0) {
-            throw new Error("Keine Antwort von der KI erhalten.");
-        }
-
         const antwort = data.choices[0].message.content;
         const botDiv = document.getElementById(thinkingId);
         botDiv.innerHTML = "<b>Glame:</b> ";
@@ -576,21 +535,18 @@ async function antwortSenden() {
         typeWriter(textSpan, antwort);
 
     } catch (e) {
-        console.error("Fehler-Details:", e);
         const botDiv = document.getElementById(thinkingId);
-        if (botDiv) {
-            botDiv.innerHTML = `<b>Glame:</b> ❌ Fehler (${currentModel}):<br><small>${e.message}</small>`;
-            botDiv.style.background = "#d9534f";
-        }
+        if (botDiv) botDiv.innerHTML = `❌ Fehler: ${e.message}`;
     }
 }
+
 document.getElementById("send-btn").onclick = antwortSenden;
-document.getElementById("user-input").onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
+userInput.onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
 
 document.getElementById("reset-everything").onclick = () => {
-    if (confirm("Möchtest du wirklich dein Konto Löschen. (Du kannst danach wieder ein neues erstellen")) {
-        localStorage.removeItem('glame_user'); // Löscht Namen/E-Mail
-        location.reload(); // Lädt die Seite neu, damit das Welcome-Popup erscheint
+    if (confirm("Konto wirklich löschen?")) {
+        localStorage.removeItem('glame_user');
+        location.reload();
     }
 };
 </script>
