@@ -590,6 +590,13 @@ async function antwortSenden() {
 }
 document.getElementById("send-btn").onclick = antwortSenden;
 document.getElementById("user-input").onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
+
+document.getElementById("reset-everything").onclick = () => {
+    if (confirm("Möchtest du wirklich dein Konto Löschen. (Du kannst danach wieder ein neues erstellen")) {
+        localStorage.removeItem('glame_user'); // Löscht Namen/E-Mail
+        location.reload(); // Lädt die Seite neu, damit das Welcome-Popup erscheint
+    }
+};
 </script>
 </body>
 </html>
