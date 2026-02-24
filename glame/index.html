@@ -361,13 +361,12 @@
 
 <script>
 
-const modal = document.getElementById("settings-modal");
-const overlay = document.getElementById("overlay");
 const welcomeModal = document.getElementById("welcome-modal");
+const settingsModal = document.getElementById("settings-modal"); // Geändert von 'modal' zu 'settingsModal' für Klarheit
+const overlay = document.getElementById("overlay");
 const setupBtn = document.getElementById("start-btn");
 const chatWindow = document.getElementById("chat-window");
 
-// Funktion: Prüfen ob User neu ist
 window.addEventListener('DOMContentLoaded', () => {
     const userStored = localStorage.getItem('glame_user');
     if (!userStored) {
