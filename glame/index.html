@@ -171,7 +171,75 @@
             background: var(--primary); color: white; transition: all 0.3s ease;
             flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
+
+        /* Styling für das Willkommens-Popup */
+#welcome-modal {
+    display: none; 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 85%; 
+    max-width: 350px; /* Begrenzt die Breite auf mobilen Geräten */
+    background: var(--panel); 
+    padding: 30px; 
+    border-radius: 25px; 
+    z-index: 1000; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -45%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#welcome-modal h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 22px;
+}
+
+#welcome-modal input {
+    width: 100%; 
+    padding: 12px; 
+    margin-top: 15px; 
+    border-radius: 12px; 
+    border: 1px solid #ddd; 
+    outline: none;
+    font-size: 14px;
+    box-sizing: border-box; /* Wichtig, damit Padding das Feld nicht sprengt */
+    transition: border 0.3s;
+}
+
+#welcome-modal input:focus {
+    border-color: var(--primary);
+}
+
+#welcome-modal .action-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    margin-top: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+#welcome-modal .action-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+/* Overlay-Effekt verstärken */
+.modal-overlay {
+    backdrop-filter: blur(8px);
+}
         .btn-circle:hover { transform: scale(1.1); }
         .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
 
