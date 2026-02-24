@@ -384,6 +384,7 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
         const userData = JSON.parse(userStored);
         const firstMsg = chatWindow.querySelector(".bot-msg");
+        updateAvatar(name);
         if(firstMsg) {
             firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! Wie kann ich dir heute helfen?`;
         }
@@ -400,6 +401,7 @@ setupBtn.onclick = () => {
         localStorage.setItem('glame_user', JSON.stringify(userData));
         welcomeModal.style.display = "none";
         overlay.style.display = "none";
+        updateAvatar(name);
         chatWindow.innerHTML = `<div class="bot-msg">Hallo <b>${name}</b>! Dein Profil wurde erstellt. Ich bin Glame. Wie kann ich dir helfen?</div>`;
     } else {
         alert("Bitte fülle beide Felder aus!");
