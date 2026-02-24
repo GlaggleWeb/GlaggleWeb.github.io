@@ -379,33 +379,32 @@ const userAvatar = document.getElementById("user-avatar");
 // Willkommens-Logik beim Laden
 window.addEventListener('DOMContentLoaded', () => {
     const userStored = localStorage.getItem('glame_user');
-    if (!userStored) {
-        welcomeModal.style.display = "block";
-        overlay.style.display = "block";
-    } else {
+    if (userStored) {
         const userData = JSON.parse(userStored);
+        
+        // ÄNDERUNG HIER:
+        updateAvatar(userData.name); // Den Namen an die Funktion weitergeben
+        
         const firstMsg = chatWindow.querySelector(".bot-msg");
-        updateAvatar(name);
         if(firstMsg) {
-            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! Wie kann ich dir heute helfen?`;
+            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>!`;
         }
     }
 });
-
+    
 // Benutzer registrieren
 setupBtn.onclick = () => {
     const name = document.getElementById("setup-username").value.trim();
     const email = document.getElementById("setup-email").value.trim();
 
     if (name && email) {
-        const userData = { name: name, email: email };
-        localStorage.setItem('glame_user', JSON.stringify(userData));
+        localStorage.setItem('glame_user', JSON.stringify({ name, email }));
+        
+        // ÄNDERUNG HIER:
+        updateAvatar(name); // Den neuen Namen sofort anzeigen
+        
         welcomeModal.style.display = "none";
         overlay.style.display = "none";
-        updateAvatar(name);
-        chatWindow.innerHTML = `<div class="bot-msg">Hallo <b>${name}</b>! Dein Profil wurde erstellt. Ich bin Glame. Wie kann ich dir helfen?</div>`;
-    } else {
-        alert("Bitte fülle beide Felder aus!");
     }
 };
     
