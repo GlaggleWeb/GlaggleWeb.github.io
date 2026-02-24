@@ -362,7 +362,7 @@
 <script>
 
 const welcomeModal = document.getElementById("welcome-modal");
-const settingsModal = document.getElementById("settings-modal"); // Geändert von 'modal' zu 'settingsModal' für Klarheit
+const settingsModal = document.getElementById("settings-modal"); 
 const overlay = document.getElementById("overlay");
 const setupBtn = document.getElementById("start-btn");
 const chatWindow = document.getElementById("chat-window");
@@ -429,9 +429,6 @@ const seelen = {
     
 // REPARIERT: Initialisierung mit seelen.standard
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
-const modal = document.getElementById("settings-modal");
-const overlay = document.getElementById("overlay");
-const chatWindow = document.getElementById("chat-window");
 
 document.getElementById("open-settings").onclick = () => { modal.style.display = "block"; overlay.style.display = "block"; };
 
