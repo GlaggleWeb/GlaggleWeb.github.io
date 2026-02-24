@@ -248,6 +248,12 @@
 .reset-btn:hover {
     background: #c9302c !important;
 }
+
+#user-avatar {
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
         .btn-circle:hover { transform: scale(1.1); }
         .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
 
@@ -509,6 +515,13 @@ function typeWriter(element, text) {
         }
     }
     process();
+}
+
+function updateAvatar(name) {
+    if (name && userAvatar) {
+        userAvatar.innerText = name.charAt(0).toUpperCase(); // Erster Buchstabe in Groß
+        userAvatar.style.display = "flex";    // Den Kreis sichtbar machen
+    }
 }
 
 // NACHRICHT SENDEN
