@@ -321,37 +321,31 @@ async function glaggleSearch() {
 
     if (!query) return;
 
-    // KI-Fix und Abfrage-Optimierung
+    // KI-Fix & Such-Optimierung
     let finalQuery = query.toLowerCase().trim();
-    if (finalQuery === "ki") {
-        finalQuery = "Künstliche Intelligenz";
-    }
+    if (finalQuery === "ki") finalQuery = "Künstliche Intelligenz";
+    if (finalQuery === "google") finalQuery = "Google Suchmaschine offiziell";
 
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
     try {
-        // Wir nutzen die API ohne HTML-Vorschau für sauberere Daten
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_redirect=1&no_html=1`);
+        // Wir nutzen hier den "no_redirect" Parameter, um DDG-interne Links zu minimieren
+        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`);
         const data = await response.json();
 
         loader.style.display = "none";
         let resultsFound = 0;
         const addedLinks = new Set();
 
-        // Funktion zum Säubern der URL (Direkt-Links)
-        function getCleanUrl(url) {
-            if (!url) return "";
-            // Falls DDG eine interne Umleitung nutzt, versuchen wir die echte URL zu finden
-            if (url.includes('uddg=')) {
-                const parts = url.split('uddg=');
-                const realUrl = decodeURIComponent(parts[1].split('&')[0]);
-                return realUrl;
-            }
-            return url;
-        }
-
         function add(title, text, rawUrl) {
+            if (!rawUrl) return;
+            
+            // FILTER: Wir blockieren Links, die "duckduckgo.com" im Namen haben
+            if (rawUrl.includes("duckduckgo.com") && !finalQuery.includes("duckduckgo")) {
+                return; 
+            }
+
             const cleanUrl = getCleanUrl(rawUrl);
             if (cleanUrl && !addedLinks.has(cleanUrl) && resultsFound < 30) {
                 renderResult(title, text, cleanUrl);
@@ -360,60 +354,50 @@ async function glaggleSearch() {
             }
         }
 
-        // 1. Das Haupt-Ergebnis (falls vorhanden)
-        if (data.AbstractText && data.AbstractURL) {
+        // 1. Das Haupt-Ergebnis (Abstract)
+        if (data.AbstractURL) {
             add(data.Heading, data.AbstractText, data.AbstractURL);
         }
 
-        // 2. Alle Themen-Listen durchsuchen
+        // 2. Die Related Topics durchsuchen
         if (data.RelatedTopics) {
             data.RelatedTopics.forEach(item => {
-                // Direkte Links in RelatedTopics
-                if (item.FirstURL) {
-                    add(extractTitle(item.Text), item.Text, item.FirstURL);
-                }
-                // Links in Unter-Kategorien (Topics)
+                // Manchmal sind Ergebnisse in "Topics" Gruppen versteckt
                 if (item.Topics) {
                     item.Topics.forEach(sub => {
-                        if (sub.FirstURL) {
-                            add(extractTitle(sub.Text), sub.Text, sub.FirstURL);
-                        }
+                        if (sub.FirstURL) add(extractTitle(sub.Text), sub.Text, sub.FirstURL);
                     });
+                } else if (item.FirstURL) {
+                    add(extractTitle(item.Text), item.Text, item.FirstURL);
                 }
             });
         }
 
+        // 3. Notfall-Option: Wenn gar nichts kommt, verlinke auf eine neutrale Suche
         if (resultsFound === 0) {
-            resultsDiv.innerHTML = "<p>Keine direkten Ergebnisse gefunden. Probier es mit einem spezifischeren Begriff.</p>";
+            resultsDiv.innerHTML = `
+                <div class="glaggle-entry">
+                    <p>Glaggle hat keine direkten Deep-Links gefunden. Möchtest du die externe Suche für <b>"${query}"</b> öffnen?</p>
+                    <br>
+                    <a href="https://www.bing.com/search?q=${encodeURIComponent(query)}" target="_blank" class="web-button" style="display:inline-block; min-width:auto;">Auf Bing suchen →</a>
+                </div>`;
         }
 
     } catch (e) {
         loader.style.display = "none";
-        resultsDiv.innerHTML = "<p>Fehler beim Laden der Ergebnisse. Benutze Glame AI</p>";
+        resultsDiv.innerHTML = "<p>Fehler beim Abrufen der Web-Daten.</p>";
     }
 }
 
-function renderResult(title, text, url) {
-    const resultsDiv = document.getElementById('glaggleResults');
-    let domain = "Link";
+// Hilfsfunktion zum Säubern der URL
+function getCleanUrl(url) {
     try {
-        domain = new URL(url).hostname.replace('www.', '');
-    } catch(e) {}
-    
-    const div = document.createElement('div');
-    div.className = 'glaggle-entry';
-    div.innerHTML = `
-        <small style="color: #34a853; font-weight: bold;">${domain}</small><br>
-        <a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>
-        <p>${text}</p>
-    `;
-    resultsDiv.appendChild(div);
-}
-
-function extractTitle(text) {
-    // Falls der Text zu lang ist, kürzen wir ihn für den Titel
-    let t = text.split(/[-,(]/)[0].trim();
-    return t.length > 5 ? t : "Webseite besuchen";
+        if (url.includes('uddg=')) {
+            let realUrl = url.split('uddg=')[1].split('&')[0];
+            return decodeURIComponent(realUrl);
+        }
+        return url;
+    } catch(e) { return url; }
 }
 </script>
 </html>
