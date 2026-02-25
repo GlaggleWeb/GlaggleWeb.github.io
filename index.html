@@ -186,7 +186,9 @@
     <div class="search-section">
         <div class="search-bar-container">
             <input type="text" id="glaggleQuery" placeholder="Glaggle your life..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
-            <button onclick="glaggleSearch()" class="search-icon-btn">🔍</button>
+            <button onclick="glaggleSearch()" class="search-icon-btn">
+            <span class="glaggle-lupe">&#128269;</span>
+            </button>
         </div>
         
         <div class="loader" id="glaggleLoader"></div>
@@ -285,6 +287,29 @@
         margin: 20px auto;
     }
 
+.search-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* Die Lupe als SVG - so wird sie perfekt Glaggle-Blau */
+.search-icon-btn::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: #70C4F7; /* Dein Glaggle-Blau */
+    /* Hier wird die Lupe als Maske definiert */
+    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 
