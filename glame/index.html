@@ -377,18 +377,23 @@ const userInput = document.getElementById("user-input");
 const userAvatar = document.getElementById("user-avatar");
 
 // Willkommens-Logik beim Laden
+// Willkommens-Logik beim Laden
 window.addEventListener('DOMContentLoaded', () => {
     const userStored = localStorage.getItem('glame_user');
+    
     if (userStored) {
+        // Falls ein User existiert: Normaler Start
         const userData = JSON.parse(userStored);
-        
-        // ÄNDERUNG HIER:
-        updateAvatar(userData.name); // Den Namen an die Funktion weitergeben
+        updateAvatar(userData.name);
         
         const firstMsg = chatWindow.querySelector(".bot-msg");
         if(firstMsg) {
-            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>!`;
+            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! ✨`;
         }
+    } else {
+        // FALLS KEIN USER EXISTIERT: Zeige das Anmelde-Fenster!
+        welcomeModal.style.display = "block";
+        overlay.style.display = "block";
     }
 });
     
