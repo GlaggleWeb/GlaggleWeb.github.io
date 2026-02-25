@@ -185,7 +185,7 @@
 
     <div class="search-section">
         <div class="search-bar-container">
-            <input type="text" id="glaggleQuery" placeholder="Glaggle das Internet..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+            <input type="text" id="glaggleQuery" placeholder="Glaggle your life..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
             <button onclick="glaggleSearch()" class="search-icon-btn">🔍</button>
         </div>
         
@@ -364,7 +364,7 @@ async function glaggleSearch() {
 
     } catch (e) {
         loader.style.display = "none";
-        resultsDiv.innerHTML = "<p>Fehler beim Laden der Ergebnisse.</p>";
+        resultsDiv.innerHTML = "<p>Fehler beim Laden der Ergebnisse. Benutze Glame AI</p>";
     }
 }
 
