@@ -6,156 +6,125 @@
     <title>Glaggle</title>
     
     <meta name="description" content="Glaggle your life!">
-    <meta name="keywords" content="Glaggle, KI ChatBot, Zahlenraten, Glame AI">
+    <meta name="keywords" content="Glaggle, Zahlenraten, Glame AI">
     <meta name="author" content="Glaggle">
     
     <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
     <link rel="canonical" href="https://glaggle.ch">
 
-    <meta property="og:title" content="Glaggle | Glaggle your life!">
-
-<meta property="og:description" content="Nutze den Glame AI Chatbot oder spiele das Glaggle Zahlenraten – kostenlos und ohne Login!">
-
-<meta property="og:image" content="https://glaggle.ch/glagglelogo.png">
-
-<meta property="og:url" content="https://glaggle.ch">
-
-<meta property="og:type" content="website">
-
-<meta name="twitter:card" content="summary_large_image">
-
     <style>
-        /* Grund-Layout */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --link-color: #2E94D1;
+            --desc-color: #555555;
+            --input-bg: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+                --link-color: #8cc9f5;
+                --desc-color: #bdc1c6;
+                --input-bg: #3c4043;
+            }
+        }
+
         body {
-            background-color: white; 
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
-            margin: 0;
-            padding: 0;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-            box-sizing: border-box;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; transition: background-color 0.3s;
         }
 
         /* NAVIGATION */
         .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            height: 80px;
-            background-color: #ffffff;
-            padding: 0 40px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            box-sizing: border-box;
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 80px; background-color: var(--nav-bg);
+            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
         }
 
-        .nav-left, .nav-center, .nav-right {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-left { justify-content: flex-start; }
+        .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
         .nav-center { justify-content: center; }
-        .nav-right { justify-content: flex-end; gap: 15px; }
+        .nav-right { justify-content: flex-end; gap: 10px; }
 
-        .logo-img {
-            height: 50px;
-            width: auto;
-        }
-
-        .nav-slogan {
-            font-size: 22px;
-            font-weight: bold;
-            color: #333;
-            white-space: nowrap;
-        }
+        .logo-img { height: 40px; width: auto; }
+        .nav-slogan { font-size: 18px; font-weight: bold; color: var(--text-color); white-space: nowrap; }
 
         .nav-button {
-            text-decoration: none;
-            color: white;
-            background-color: #8cc9f5;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            transition: 0.3s;
+            text-decoration: none; color: white; background-color: #8cc9f5;
+            padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px;
+            transition: 0.3s; white-space: nowrap;
         }
-
-        .nav-button:hover {
-            background-color: #7ab8e6;
-            transform: scale(1.05);
-        }
+        .nav-button:hover { background-color: #7ab8e6; transform: scale(1.05); }
 
         /* HAUPTINHALT */
-        .main-content {
-            margin-top: 120px; /* Platz für die Navbar */
-            padding: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+        .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
+        .large-logo { width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; }
+
+        /* SUCHE */
+        .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
+        .search-bar-container {
+            display: flex; align-items: center; background: var(--input-bg);
+            border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .search-bar-container:focus-within { box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); border-color: #70C4F7; }
+
+        #glaggleQuery {
+            flex: 1; border: none; outline: none; padding: 12px;
+            font-size: 18px; background: transparent; color: var(--text-color);
         }
 
-        h1 {
-            font-size: clamp(2rem, 8vw, 3.5rem); 
-            margin-bottom: 20px;
-            color: #333;
+        .search-icon-btn {
+            background: none; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; padding: 10px;
         }
-
-        .large-logo {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            margin-bottom: 40px;
-        }
-
-        .button-container {
-            display: flex; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            justify-content: center;
-        }
-
-        /* Die großen Haupt-Buttons */
-        .web-button {
-            display: inline-block; 
-            padding: 18px 35px;  
+        .search-icon-btn::before {
+            content: ""; display: inline-block; width: 24px; height: 24px;
             background-color: #70C4F7;
-            color: white; 
-            text-decoration: none; 
-            font-weight: bold;
-            border-radius: 50px; 
-            transition: all 0.2s;
-            text-align: center;
-            min-width: 220px;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(112, 196, 247, 0.3);
+            -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+            mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+            mask-size: contain; -webkit-mask-size: contain;
         }
 
-        .web-button:hover {
-            background-color: #2E94D1;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(112, 196, 247, 0.4);
+        /* ERGEBNISSE */
+        .glaggle-entry {
+            background: var(--card-bg); padding: 20px; margin-bottom: 15px;
+            border-radius: 15px; border: 1px solid var(--card-border);
+            text-align: left; transition: transform 0.2s;
         }
+        .glaggle-entry a { color: var(--link-color); text-decoration: none; font-size: 1.1rem; font-weight: bold; }
+        .glaggle-entry p { color: var(--desc-color); margin-top: 5px; font-size: 0.9rem; }
 
-        /* Responsive Design für Handys */
-        @media (max-width: 800px) {
-            .nav-center { display: none; } /* Slogan weg auf Handy für mehr Platz */
+        .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .favicon { width: 16px; height: 16px; }
+
+        .loader { display: none; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #70C4F7; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* BUTTONS UNTEN */
+        .button-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .web-button {
+            display: inline-block; padding: 15px 25px; background-color: #70C4F7;
+            color: white; text-decoration: none; font-weight: bold;
+            border-radius: 50px; transition: 0.2s; min-width: 180px;
+        }
+        .web-button:hover { background-color: #2E94D1; transform: translateY(-2px); }
+
+        @media (max-width: 700px) {
+            .nav-center { display: none; }
             .navbar { padding: 0 15px; }
-        }
-
-        @media (max-width: 600px) {
-            .button-container { flex-direction: column; width: 100%; }
-            .web-button { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -163,241 +132,115 @@
 
     <nav class="navbar">
         <div class="nav-left">
-            <a href="https://glaggle.ch">
-                <img src="glagglelogo.png" alt="Glaggle Logo" class="logo-img">
-            </a>
+            <a href="https://glaggle.ch"><img src="glagglelogo.png" class="logo-img" alt="Logo"></a>
         </div>
-
-        <div class="nav-center">
-            <span class="nav-slogan">Glaggle your life!</span>
-        </div>
-
+        <div class="nav-center"><span class="nav-slogan">Glaggle your life!</span></div>
         <div class="nav-right">
-            <a href="https://glaggle.ch/glame" class="nav-button">Glame Chatbot →</a>
-            <a href="https://glaggle.ch/zahlenraten" class="nav-button">Zahlenraten →</a>
+            <a href="https://glaggle.ch/glame" class="nav-button">Glame AI</a>
+            <a href="https://glaggle.ch/zahlenraten" class="nav-button">Zahlenraten</a>
         </div>
     </nav>
 
     <main class="main-content">
-    <div class="center-logo">
-        <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
-    </div>
-
-    <div class="search-section">
-        <div class="search-bar-container">
-            <input type="text" id="glaggleQuery" placeholder="Glaggle your life..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
-            <button onclick="glaggleSearch()" class="search-icon-btn">
-            <span class="glaggle-lupe">&#128269;</span>
-            </button>
+        <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
+        
+        <div class="search-section">
+            <div class="search-bar-container">
+                <input type="text" id="glaggleQuery" placeholder="Glaggle das Internet..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+                <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+            </div>
+            <div class="loader" id="glaggleLoader"></div>
+            <div id="glaggleResults" class="results-container"></div>
         </div>
-        
-        <div class="loader" id="glaggleLoader"></div>
-        
-        <div id="glaggleResults" class="results-container"></div>
-    </div>
 
-    <div class="button-container" id="quickButtons">
-        <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
-        <a href="https://glaggle.ch/zahlenraten" class="web-button">Glaggle Zahlenraten →</a>
-    </div>
-</main>
-
-<style>
-    /* Spezifisches Styling für die Suche im Glaggle-Style */
-    .search-section {
-        width: 100%;
-        max-width: 600px;
-        margin-bottom: 30px;
-    }
-
-    .search-bar-container {
-        display: flex;
-        align-items: center;
-        background: white;
-        border: 1px solid #dfe1e5;
-        border-radius: 30px;
-        padding: 5px 20px;
-        transition: box-shadow 0.3s;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    .search-bar-container:focus-within {
-        box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4);
-        border-color: #70C4F7;
-    }
-
-    #glaggleQuery {
-        flex: 1;
-        border: none;
-        outline: none;
-        padding: 12px;
-        font-size: 18px;
-        font-family: inherit;
-    }
-
-    .search-icon-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 20px;
-        color: #70C4F7;
-    }
-
-    .results-container {
-        margin-top: 30px;
-        text-align: left;
-        width: 100%;
-    }
-
-    .glaggle-entry {
-        background: #fdfdfd;
-        padding: 20px;
-        margin-bottom: 15px;
-        border-radius: 15px;
-        border: 1px solid #eee;
-        transition: transform 0.2s;
-    }
-
-    .glaggle-entry:hover {
-        transform: scale(1.02);
-        border-color: #70C4F7;
-    }
-
-    .glaggle-entry a {
-        color: #2E94D1;
-        text-decoration: none;
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
-
-    .glaggle-entry p {
-        color: #555;
-        font-size: 0.95rem;
-        margin: 8px 0 0 0;
-    }
-
-    .loader {
-        display: none;
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #70C4F7;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-    }
-
-.search-icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-}
-
-/* Die Lupe als SVG - so wird sie perfekt Glaggle-Blau */
-.search-icon-btn::before {
-    content: "";
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background-color: #70C4F7; /* Dein Glaggle-Blau */
-    /* Hier wird die Lupe als Maske definiert */
-    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-}
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+        <div class="button-container" id="quickButtons">
+            <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
+            <a href="https://glaggle.ch/zahlenraten" class="web-button">Zahlenraten →</a>
+        </div>
+    </main>
 
 <script>
 async function glaggleSearch() {
     const query = document.getElementById('glaggleQuery').value;
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
+    const quickButtons = document.getElementById('quickButtons');
 
     if (!query) return;
 
-    // KI-Fix & Such-Optimierung
     let finalQuery = query.toLowerCase().trim();
     if (finalQuery === "ki") finalQuery = "Künstliche Intelligenz";
-    if (finalQuery === "google") finalQuery = "Google Suchmaschine offiziell";
 
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
+    quickButtons.style.opacity = "0.5";
 
     try {
-        // Wir nutzen hier den "no_redirect" Parameter, um DDG-interne Links zu minimieren
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`);
+        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_redirect=1&no_html=1`);
         const data = await response.json();
 
         loader.style.display = "none";
+        quickButtons.style.opacity = "1";
         let resultsFound = 0;
         const addedLinks = new Set();
 
         function add(title, text, rawUrl) {
-            if (!rawUrl) return;
-            
-            // FILTER: Wir blockieren Links, die "duckduckgo.com" im Namen haben
-            if (rawUrl.includes("duckduckgo.com") && !finalQuery.includes("duckduckgo")) {
-                return; 
-            }
-
             const cleanUrl = getCleanUrl(rawUrl);
-            if (cleanUrl && !addedLinks.has(cleanUrl) && resultsFound < 30) {
+            if (!cleanUrl || cleanUrl.includes("duckduckgo.com")) return;
+            if (!addedLinks.has(cleanUrl) && resultsFound < 30) {
                 renderResult(title, text, cleanUrl);
                 addedLinks.add(cleanUrl);
                 resultsFound++;
             }
         }
 
-        // 1. Das Haupt-Ergebnis (Abstract)
-        if (data.AbstractURL) {
-            add(data.Heading, data.AbstractText, data.AbstractURL);
-        }
+        if (data.AbstractURL) add(data.Heading, data.AbstractText, data.AbstractURL);
 
-        // 2. Die Related Topics durchsuchen
         if (data.RelatedTopics) {
             data.RelatedTopics.forEach(item => {
-                // Manchmal sind Ergebnisse in "Topics" Gruppen versteckt
                 if (item.Topics) {
-                    item.Topics.forEach(sub => {
-                        if (sub.FirstURL) add(extractTitle(sub.Text), sub.Text, sub.FirstURL);
-                    });
+                    item.Topics.forEach(sub => add(extractTitle(sub.Text), sub.Text, sub.FirstURL));
                 } else if (item.FirstURL) {
                     add(extractTitle(item.Text), item.Text, item.FirstURL);
                 }
             });
         }
 
-        // 3. Notfall-Option: Wenn gar nichts kommt, verlinke auf eine neutrale Suche
         if (resultsFound === 0) {
-            resultsDiv.innerHTML = `
-                <div class="glaggle-entry">
-                    <p>Glaggle hat keine direkten Deep-Links gefunden. Möchtest du die externe Suche für <b>"${query}"</b> öffnen?</p>
-                    <br>
-                    <a href="https://www.bing.com/search?q=${encodeURIComponent(query)}" target="_blank" class="web-button" style="display:inline-block; min-width:auto;">Auf Bing suchen →</a>
-                </div>`;
+            resultsDiv.innerHTML = `<div class="glaggle-entry"><p>Keine direkten Treffer. <a href="https://www.bing.com/search?q=${encodeURIComponent(query)}" target="_blank">Suche auf Bing fortsetzen</a></p></div>`;
         }
-
     } catch (e) {
         loader.style.display = "none";
-        resultsDiv.innerHTML = "<p>Fehler beim Abrufen der Web-Daten.</p>";
+        resultsDiv.innerHTML = "<p>Ein kleiner Glaggle-Fehler ist aufgetreten.</p>";
     }
 }
 
-// Hilfsfunktion zum Säubern der URL
 function getCleanUrl(url) {
-    try {
-        if (url.includes('uddg=')) {
-            let realUrl = url.split('uddg=')[1].split('&')[0];
-            return decodeURIComponent(realUrl);
-        }
-        return url;
-    } catch(e) { return url; }
+    if (url.includes('uddg=')) return decodeURIComponent(url.split('uddg=')[1].split('&')[0]);
+    return url;
+}
+
+function extractTitle(text) {
+    return text.split(/[-(]/)[0].trim().substring(0, 60);
+}
+
+function renderResult(title, text, url) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry';
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
+            <small style="color: #34a853; font-weight:bold;">${domain}</small>
+        </div>
+        <a href="${url}" target="_blank">${title}</a>
+        <p>${text}</p>
+    `;
+    resultsDiv.appendChild(div);
 }
 </script>
+</body>
 </html>
