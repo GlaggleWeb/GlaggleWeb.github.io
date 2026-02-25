@@ -296,9 +296,9 @@ async function glaggleSearch() {
 
     if (!query) return;
 
-    // KI Fix: Verhindert "Kiribati" bei der Suche nach KI
-    let finalQuery = query;
-    if (query.toLowerCase().trim() === "ki") {
+    // KI-Fix und Abfrage-Optimierung
+    let finalQuery = query.toLowerCase().trim();
+    if (finalQuery === "ki") {
         finalQuery = "Künstliche Intelligenz";
     }
 
@@ -306,68 +306,89 @@ async function glaggleSearch() {
     loader.style.display = "block";
 
     try {
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_html=1`);
+        // Wir nutzen die API ohne HTML-Vorschau für sauberere Daten
+        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(finalQuery)}&format=json&no_redirect=1&no_html=1`);
         const data = await response.json();
 
         loader.style.display = "none";
         let resultsFound = 0;
-
-        // Funktion zum Hinzufügen (verhindert Doppelte)
         const addedLinks = new Set();
 
-        function add(title, text, url) {
-            if (!addedLinks.has(url) && resultsFound < 30) {
-                renderResult(title, text, url);
-                addedLinks.add(url);
+        // Funktion zum Säubern der URL (Direkt-Links)
+        function getCleanUrl(url) {
+            if (!url) return "";
+            // Falls DDG eine interne Umleitung nutzt, versuchen wir die echte URL zu finden
+            if (url.includes('uddg=')) {
+                const parts = url.split('uddg=');
+                const realUrl = decodeURIComponent(parts[1].split('&')[0]);
+                return realUrl;
+            }
+            return url;
+        }
+
+        function add(title, text, rawUrl) {
+            const cleanUrl = getCleanUrl(rawUrl);
+            if (cleanUrl && !addedLinks.has(cleanUrl) && resultsFound < 30) {
+                renderResult(title, text, cleanUrl);
+                addedLinks.add(cleanUrl);
                 resultsFound++;
             }
         }
 
-        // 1. Haupt-Ergebnis
-        if (data.AbstractText) {
+        // 1. Das Haupt-Ergebnis (falls vorhanden)
+        if (data.AbstractText && data.AbstractURL) {
             add(data.Heading, data.AbstractText, data.AbstractURL);
         }
 
-        // 2. Alle Themen und Unterthemen (Topics) durchsuchen
-        data.RelatedTopics.forEach(item => {
-            if (item.FirstURL) {
-                add(extractTitle(item.Text), item.Text, item.FirstURL);
-            }
-            if (item.Topics) { // Sucht in Unterkategorien für MEHR Ergebnisse
-                item.Topics.forEach(sub => {
-                    if (sub.FirstURL) {
-                        add(extractTitle(sub.Text), sub.Text, sub.FirstURL);
-                    }
-                });
-            }
-        });
+        // 2. Alle Themen-Listen durchsuchen
+        if (data.RelatedTopics) {
+            data.RelatedTopics.forEach(item => {
+                // Direkte Links in RelatedTopics
+                if (item.FirstURL) {
+                    add(extractTitle(item.Text), item.Text, item.FirstURL);
+                }
+                // Links in Unter-Kategorien (Topics)
+                if (item.Topics) {
+                    item.Topics.forEach(sub => {
+                        if (sub.FirstURL) {
+                            add(extractTitle(sub.Text), sub.Text, sub.FirstURL);
+                        }
+                    });
+                }
+            });
+        }
 
         if (resultsFound === 0) {
-            resultsDiv.innerHTML = "<p>Keine Ergebnisse gefunden.</p>";
+            resultsDiv.innerHTML = "<p>Keine direkten Ergebnisse gefunden. Probier es mit einem spezifischeren Begriff.</p>";
         }
 
     } catch (e) {
         loader.style.display = "none";
-        resultsDiv.innerHTML = "<p>Fehler bei der Verbindung.</p>";
+        resultsDiv.innerHTML = "<p>Fehler beim Laden der Ergebnisse.</p>";
     }
 }
 
 function renderResult(title, text, url) {
     const resultsDiv = document.getElementById('glaggleResults');
-    const domain = new URL(url).hostname.replace('www.', '');
+    let domain = "Link";
+    try {
+        domain = new URL(url).hostname.replace('www.', '');
+    } catch(e) {}
     
     const div = document.createElement('div');
     div.className = 'glaggle-entry';
     div.innerHTML = `
-        <small style="color: #34a853;">${domain}</small><br>
-        <a href="${url}" target="_blank" style="font-weight:bold; font-size:1.2rem;">${title}</a>
+        <small style="color: #34a853; font-weight: bold;">${domain}</small><br>
+        <a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>
         <p>${text}</p>
     `;
     resultsDiv.appendChild(div);
 }
 
 function extractTitle(text) {
-    return text.split(/[-,(]/)[0].substring(0, 60);
+    // Falls der Text zu lang ist, kürzen wir ihn für den Titel
+    let t = text.split(/[-,(]/)[0].trim();
+    return t.length > 5 ? t : "Webseite besuchen";
 }
 </script>
 </html>
