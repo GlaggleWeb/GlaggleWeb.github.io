@@ -397,19 +397,40 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
     
-// Benutzer registrieren
+// Benutzer registrieren & Begrüßung auslösen
 setupBtn.onclick = () => {
     const name = document.getElementById("setup-username").value.trim();
     const email = document.getElementById("setup-email").value.trim();
 
     if (name && email) {
+        // Daten speichern
         localStorage.setItem('glame_user', JSON.stringify({ name, email }));
         
-        // ÄNDERUNG HIER:
-        updateAvatar(name); // Den neuen Namen sofort anzeigen
+        // Avatar und UI aktualisieren
+        updateAvatar(name);
         
+        // Modal schließen
         welcomeModal.style.display = "none";
         overlay.style.display = "none";
+
+        // --- NEU: Den Benutzer im Chat willkommen heißen ---
+        const welcomeText = `Schön dich kennenzulernen, **${name}**! ✨ Ich bin bereit. Worüber möchtest du heute sprechen? 🚀`;
+        
+        // Nachricht im Verlauf speichern
+        chatVerlauf.push({ role: "assistant", content: welcomeText });
+
+        // Nachricht visuell hinzufügen
+        const botDiv = document.createElement("div");
+        botDiv.className = "bot-msg";
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        chatWindow.appendChild(botDiv);
+
+        // Mit Typewriter-Effekt anzeigen
+        typeWriter(textSpan, welcomeText);
+    } else {
+        alert("Bitte fülle beide Felder aus, um fortzufahren! 😊");
     }
 };
     
