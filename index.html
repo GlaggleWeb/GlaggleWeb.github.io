@@ -297,50 +297,58 @@ async function glaggleSearch() {
 
     if (!query) return;
 
-    // UI Vorbereiten
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
-    quickButtons.style.opacity = "0.3"; // Buttons ausblenden/dimmen
+    quickButtons.style.opacity = "0.3";
 
     try {
-        // Nutzung der DuckDuckGo API für echte externe Ergebnisse
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`);
+        // Wir fragen die "Related Topics" ab, die oft normale Web-Links enthalten
+        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
         const data = await response.json();
 
         loader.style.display = "none";
         quickButtons.style.opacity = "1";
 
-        let hasResults = false;
+        let resultsFound = 0;
 
-        // Haupt-Abstract anzeigen
-        if (data.AbstractText) {
-            appendGlaggleResult(data.Heading, data.AbstractText, data.AbstractURL);
-            hasResults = true;
+        // 1. Falls es eine direkte Antwort gibt
+        if (data.AbstractText && data.AbstractURL) {
+            const siteName = new URL(data.AbstractURL).hostname.replace('www.', '');
+            appendGlaggleResult(data.Heading, data.AbstractText, data.AbstractURL, siteName);
+            resultsFound++;
         }
 
-        // Weitere Themen
-        data.RelatedTopics.slice(0, 5).forEach(topic => {
-            if (topic.Text && !topic.Name) {
-                appendGlaggleResult("Glaggle Fundstück", topic.Text, topic.FirstURL);
-                hasResults = true;
+        // 2. Die Liste der weiteren Web-Ergebnisse durchgehen
+        data.RelatedTopics.forEach(topic => {
+            // Wir filtern nur echte Links heraus
+            if (topic.FirstURL && topic.Text) {
+                // Extrahiert den Webseitennamen aus der URL (z.B. "github.com")
+                const siteName = new URL(topic.FirstURL).hostname.replace('www.', '');
+                
+                // Wir nehmen den Text bis zum ersten Punkt oder Zeilenumbruch als Titel, falls kein Heading da ist
+                const title = topic.Text.split(' - ')[0].substring(0, 50) + "...";
+                
+                appendGlaggleResult(title, topic.Text, topic.FirstURL, siteName);
+                resultsFound++;
             }
         });
 
-        if (!hasResults) {
-            resultsDiv.innerHTML = "<p style='color:#888;'>Glaggle konnte dazu leider nichts finden. Probier's mal mit 'Schweiz', 'KI' oder 'Pizza'.</p>";
+        if (resultsFound === 0) {
+            resultsDiv.innerHTML = "<p style='color:#888;'>Glaggle hat im weiten Web nichts gefunden. Probier ein anderes Stichwort!</p>";
         }
 
     } catch (e) {
         loader.style.display = "none";
-        resultsDiv.innerHTML = "<p style='color:red;'>Ups! Die Glaggle-Server sind gerade kitzelig. Versuch es gleich nochmal.</p>";
+        resultsDiv.innerHTML = "<p style='color:red;'>Netzwerk-Schluckauf! Versuch's nochmal.</p>";
     }
 }
 
-function appendGlaggleResult(title, text, url) {
+function appendGlaggleResult(title, text, url, siteName) {
     const resultsDiv = document.getElementById('glaggleResults');
     const div = document.createElement('div');
     div.className = 'glaggle-entry';
     div.innerHTML = `
+        <small style="color: #006621; display: block; margin-bottom: 2px;">${siteName}</small>
         <a href="${url}" target="_blank">${title}</a>
         <p>${text}</p>
     `;
