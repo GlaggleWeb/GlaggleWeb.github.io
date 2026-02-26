@@ -183,6 +183,14 @@
         </div>
     </main>
 <script>
+
+// Hier kannst du beliebig viele Seiten hinzufügen
+const meineLieblingsSeiten = [
+    { title: "Glaggle", desc: "Glaggle Your life!", url: "https://glaggle.ch" },
+    { title: "YouTube", desc: "Schaue die neuesten Videos weltweit.", url: "https://youtube.com" },
+    { title: "Glaggle Zahlenraten", desc: "Ein lustiges Spiel, um Zahlen zu erraten.", url: "https://glaggle.ch/zahlenraten" }
+];
+    
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; // Ersetze dies durch deinen echten Key-Teil
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; // Ersetze dies durch deinen echten Key-Teil
@@ -206,6 +214,8 @@ async function glaggleSearch() {
 
     // 2. Wikipedia Suche (NUR DEUTSCH und ohne Titel-Zusatz)
     await searchWikipedia(query, 'de');
+
+    sucheInEigenerListe(query);
 
     // 3. Web-Suche (SearXNG)
     const searxInstances = [
@@ -236,6 +246,21 @@ async function glaggleSearch() {
     }
     
     loader.style.display = "none";
+}
+
+
+function sucheInEigenerListe(query) {
+    const q = query.toLowerCase();
+    // Filtert die Liste nach Seiten, die das Wort enthalten
+    const treffer = meineLieblingsSeiten.filter(seite => 
+        seite.title.toLowerCase().includes(q) || 
+        seite.desc.toLowerCase().includes(q)
+    );
+
+    treffer.forEach(seite => {
+        // Wir markieren sie als "isWiki = true", damit sie oben einsortiert werden
+        renderResult(seite.title, seite.desc, seite.url, true);
+    });
 }
 
 // Angepasste Wikipedia-Funktion ohne "Wiki DE" im Titel
