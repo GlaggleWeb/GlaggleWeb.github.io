@@ -287,7 +287,7 @@ async function fetchGroqAI(query) {
                     { role: "system", content: "Du bist Glaggle AI. Antworte kurz, hilfreich und auf Deutsch." },
                     { role: "user", content: `Erkläre kurz was das ist: ${query}` }
                 ],
-                model: "llama3-8b-8192",
+                model: "llama-3.1-8b-instant",
                 temperature: 0.7
             })
         });
