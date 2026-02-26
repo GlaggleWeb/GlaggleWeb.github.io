@@ -201,22 +201,19 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI Zusammenfassung (Parallel starten)
+    // 1. KI Zusammenfassung (Wie bei Glame, ohne Proxy)
     fetchGroqAI(query);
 
-    // 2. Wikipedia Suche (Parallel starten)
-    searchWikipedia(query, 'de');
-    
-    searchWikipedia(query, 'en');
+    // 2. Wikipedia Suche (NUR DEUTSCH und ohne Titel-Zusatz)
+    await searchWikipedia(query, 'de');
 
-    // 3. Bestehende SearXNG / Fallback Suche
+    // 3. Web-Suche (SearXNG)
     const searxInstances = [
         "https://search.mdl.solutions",
         "https://searx.work",
         "https://priv.au"
     ];
 
-    let success = false;
     for (let instance of searxInstances) {
         try {
             const response = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&format=json`, {
@@ -230,7 +227,6 @@ async function glaggleSearch() {
                     data.results.slice(0, 15).forEach(result => {
                         renderResult(result.title, result.content || "", result.url);
                     });
-                    success = true;
                     break; 
                 }
             }
@@ -240,7 +236,24 @@ async function glaggleSearch() {
     }
     
     loader.style.display = "none";
-} // Ende glaggleSearch
+}
+
+// Angepasste Wikipedia-Funktion ohne "Wiki DE" im Titel
+async function searchWikipedia(query, lang) {
+    try {
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if(data.query && data.query.search) {
+            data.query.search.forEach(item => {
+                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
+                // Hier wurde das "[Wiki DE]" entfernt:
+                renderResult(item.title, item.snippet + "...", wikiUrl, true);
+            });
+        }
+    } catch (e) { console.error("Wiki Fehler", e); }
+} 
 
 // --- Wikipedia Integration ---
 async function searchWikipedia(query, lang) {
