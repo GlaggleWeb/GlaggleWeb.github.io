@@ -235,11 +235,10 @@ async function glaggleSearch() {
                     break; 
                 }
             }
-        } catch (e) { console.log("SearX Instanz offline"); }
+        } catch (e) {
+        document.getElementById('ai-text').innerText = "Fehler: " + e.message;
+        console.error("Groq Error Details:", e);
     }
-    if(!success) loader.style.display = "none";
-}
-
 // --- NEU: Wikipedia Integration ---
 async function searchWikipedia(query, lang) {
     try {
