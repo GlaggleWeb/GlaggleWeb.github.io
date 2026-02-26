@@ -200,7 +200,7 @@ function getGKey() {
 }
 
 async function glaggleSearch() {
-    const query = document.getElementById('glaggleQuery').value;
+    const query = document.getElementById('glaggleQuery').value.trim();
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
     
@@ -209,15 +209,16 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI Zusammenfassung (Wie bei Glame, ohne Proxy)
-    fetchGroqAI(query);
-
-    // 2. Wikipedia Suche (NUR DEUTSCH und ohne Titel-Zusatz)
-    await searchWikipedia(query, 'de');
-
+    // 1. Deine eigene Liste (Sofort-Ergebnisse)
     sucheInEigenerListe(query);
 
-    // 3. Web-Suche (SearXNG)
+    // 2. KI Zusammenfassung (Parallel starten)
+    fetchGroqAI(query);
+
+    // 3. Wikipedia Suche (Wartet auf Antwort)
+    await searchWikipedia(query, 'de');
+
+    // 4. Web-Suche (SearXNG)
     const searxInstances = [
         "https://search.mdl.solutions",
         "https://searx.work",
@@ -247,7 +248,6 @@ async function glaggleSearch() {
     
     loader.style.display = "none";
 }
-
 
 function sucheInEigenerListe(query) {
     const q = query.toLowerCase();
