@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle+</title>
+    <title>Glaggle</title>
     
     <meta name="description" content="Glaggle your life!">
     <meta name="keywords" content="Glaggle, Zahlenraten, Glame AI">
@@ -255,22 +255,6 @@ async function searchWikipedia(query, lang) {
     } catch (e) { console.error("Wiki Fehler", e); }
 } 
 
-// --- Wikipedia Integration ---
-async function searchWikipedia(query, lang) {
-    try {
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if(data.query && data.query.search) {
-            data.query.search.forEach(item => {
-                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
-                renderResult(`[Wiki ${lang.toUpperCase()}] ${item.title}`, item.snippet + "...", wikiUrl, true);
-            });
-        }
-    } catch (e) { console.error("Wiki Fehler", e); }
-}
-
 // --- Groq Llama Integration ---
 async function fetchGroqAI(query) {
     const resultsDiv = document.getElementById('glaggleResults');
@@ -326,7 +310,7 @@ async function fetchGroqAI(query) {
             if (i < antwort.length) {
                 aiTextElement.innerHTML += antwort.charAt(i);
                 i++;
-                setTimeout(type, 15);
+                setTimeout(type, 5);
             }
         }
         type();
