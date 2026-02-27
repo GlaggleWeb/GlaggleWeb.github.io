@@ -211,7 +211,7 @@ async function glaggleSearch() {
     loader.style.display = "block";
 
     // 1. Deine eigene Liste (Sofort-Ergebnisse)
-    sucheInEigenerListe(query);
+    await sucheInEigenerListe(query);
 
     // 2. KI Zusammenfassung (Parallel starten)
     fetchGroqAI(query);
