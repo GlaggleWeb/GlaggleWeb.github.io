@@ -271,15 +271,14 @@ async function glaggleSearch() {
 
 function sucheInEigenerListe(query) {
     const q = query.toLowerCase();
-    // Filtert die Liste nach Seiten, die das Wort enthalten
     const treffer = meineLieblingsSeiten.filter(seite => 
         seite.title.toLowerCase().includes(q) || 
         seite.desc.toLowerCase().includes(q)
     );
 
     treffer.forEach(seite => {
-        // Wir markieren sie als "isWiki = true", damit sie oben einsortiert werden
-        renderResult(seite.title, seite.desc, seite.url, true);
+        // Wir nutzen "fav" als Spezial-Typ
+        renderResult(seite.title, seite.desc, seite.url, "fav");
     });
 }
 
@@ -294,7 +293,8 @@ async function searchWikipedia(query, lang) {
             data.query.search.forEach(item => {
                 const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
                 // Hier wurde das "[Wiki DE]" entfernt:
-                renderResult(item.title, item.snippet + "...", wikiUrl, true);
+                // In searchWikipedia am Ende:
+renderResult(item.title, item.snippet + "...", wikiUrl, "wiki");
             });
         }
     } catch (e) { console.error("Wiki Fehler", e); }
@@ -366,14 +366,17 @@ type();
     }
 }
 
-function renderResult(title, text, url, isWiki = false) {
+function renderResult(title, text, url, type = "web") {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
     const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
     
     const div = document.createElement('div');
     div.className = 'glaggle-entry';
-    if(isWiki) div.style.backgroundColor = "rgba(112, 196, 247, 0.05)";
+    
+    // Optisches Highlight für Favoriten und Wiki
+    if(type === "fav") div.style.backgroundColor = "rgba(112, 196, 247, 0.1)"; // Etwas kräftigeres Blau
+    if(type === "wiki") div.style.backgroundColor = "rgba(112, 196, 247, 0.05)";
 
     const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
 
@@ -386,15 +389,21 @@ function renderResult(title, text, url, isWiki = false) {
         <p>${cleanText}</p>
     `;
     
-    if(isWiki) {
-        // Wikipedia nach der KI-Box einsortieren
-        const aiContainer = document.getElementById('ai-container');
-        if (aiContainer && aiContainer.nextSibling) {
-            resultsDiv.insertBefore(div, aiContainer.nextSibling);
+    const aiBox = document.getElementById('ai-container');
+
+    if (type === "fav") {
+        // Favoriten: Direkt nach der KI einfügen
+        if (aiBox && aiBox.nextSibling) {
+            resultsDiv.insertBefore(div, aiBox.nextSibling);
         } else {
-            resultsDiv.appendChild(div);
+            resultsDiv.prepend(div); // Falls KI noch nicht da ist
         }
+    } else if (type === "wiki") {
+        // Wikipedia: Nach den Favoriten einfügen
+        // Wir suchen das letzte Element mit Typ "fav" oder die KI Box
+        resultsDiv.appendChild(div); 
     } else {
+        // Normale Web-Ergebnisse: Immer ans Ende
         resultsDiv.appendChild(div);
     }
 }
