@@ -319,17 +319,63 @@ async function glaggleSearch() {
     });
 }
 
-function sucheInEigenerListe(query) {
+async function sucheInEigenerListe(query) {
     const q = query.toLowerCase().trim();
-    // Prüfung auf 2 Buchstaben (wie gewünscht)
+    
+    // Wir lassen die Suche jetzt schon ab 2 Buchstaben zu
     if (q.length < 2) return; 
 
-    const treffer = meineLieblingsSeiten.filter(seite => 
+    // 1. Klassische Vor-Filterung (schnell)
+    // Wir nehmen Seiten, die den Text enthalten ODER lassen die KI später entscheiden
+    const potenzielleTreffer = meineLieblingsSeiten.filter(seite => 
         seite.title.toLowerCase().includes(q) || 
         seite.desc.toLowerCase().includes(q)
     );
 
-    treffer.forEach(seite => {
+    // 2. KI-Unterstützung für "schlaue" Zuordnung
+    // Wir fragen die KI, welche unserer Favoriten zur Anfrage passen
+    try {
+        const seitenListeString = meineLieblingsSeiten.map(s => s.title).join(", ");
+        
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: `Du bist ein Filter-System. Ich gebe dir eine Liste von Seitentiteln: [${seitenListeString}]. 
+                    Prüfe, welche dieser Titel zur Suchanfrage passt (auch semantisch). 
+                    Antworte NUR mit den passenden Titeln, getrennt durch Komma. Wenn nichts passt, antworte 'KEINE'.` },
+                    { role: "user", content: `Suche: ${q}` }
+                ] 
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const kiAntwort = data.choices[0].message.content;
+
+            if (kiAntwort !== "KEINE") {
+                // Die KI-Treffer mit unseren Daten abgleichen und anzeigen
+                meineLieblingsSeiten.forEach(seite => {
+                    if (kiAntwort.includes(seite.title)) {
+                        // Verhindern, dass wir Duplikate anzeigen, falls die klassische Suche schon denselben Treffer hat
+                        if (!potenzielleTreffer.find(p => p.title === seite.title)) {
+                            renderResult(seite.title, seite.desc, seite.url, "fav");
+                        }
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        console.error("KI-Favoriten-Filter Fehler", e);
+    }
+
+    // Die klassischen Treffer trotzdem sofort anzeigen (Geschwindigkeit)
+    potenzielleTreffer.forEach(seite => {
         renderResult(seite.title, seite.desc, seite.url, "fav");
     });
 }
