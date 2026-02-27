@@ -3,7 +3,7 @@ const meineLieblingsSeiten = [
     { title: "Glaggle", desc: "Glaggle Your life!", url: "https://glaggle.ch" },
     { title: "YouTube", desc: "Schaue die neuesten Videos weltweit.", url: "https://youtube.com" },
     { title: "Glaggle Zahlenraten", desc: "Ein lustiges Spiel, um Zahlen zu erraten.", url: "https://glaggle.ch/zahlenraten" },
-    { title: "Glame AI", desc: "Nutze den intelligenten Ki Chatbot von Glaggle", url: "https://glaggle.ch/glame" },
+    { title: "Glame AI", desc: "Nutze den intelligenten KI Chatbot von Glaggle", url: "https://glaggle.ch/glame" },
     { title: "Glaggle Mail", desc: "Sichere E-Mails für dein Glaggle-Konto.", url: "https://mail.glaggle.ch" },
     { title: "Facebook", desc: "Vernetze dich mit Freunden und der Welt.", url: "https://facebook.com" },
     { title: "Instagram", desc: "Teile Fotos und Videos mit deinen Followern.", url: "https://instagram.com" },
