@@ -361,7 +361,7 @@ async function fetchGroqAI(query) {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und auf Deutsch." },
+                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und auf Deutsch. Du bist wie die Suchzussamenfassung von Google. Du gibst also Zussamenfassungen auf Suchanfragen" },
                     { role: "user", content: `Erkläre kurz: ${query}` }
                 ] 
             })
@@ -534,7 +534,7 @@ async function optimizeSearch() {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist ein Suchmaschinen-Experte. Optimiere die folgende Suchanfrage für bessere Ergebnisse. Antworte NUR mit der verbesserten Anfrage, kein Text drumherum." },
+                    { role: "system", content: "Du bist ein Suchmaschinen-Experte. Optimiere die folgende Suchanfrage für bessere Ergebnisse. Antworte NUR mit der verbesserten Anfrage, kein Text drumherum. Du probierst die Wörter auf 1-2 zu begrenzen. Auch soll der Hauptfokus behalten werden (also wenn der Nutzer zb. nach KI fragt änderst du es auf Künstliche Intelligenz oder ähnlich und nicht zb. KI Technologien oder so.)" },
                     { role: "user", content: query }
                 ] 
             })
