@@ -176,21 +176,32 @@
 }
 
 /* Der neue "Glaggle-Cursor" */
+/* Der bunte Glaggle-Cursor */
 .custom-caret {
-    position: fixed; /* Fixed sorgt dafür, dass er über allem schwebt */
-    width: 3px; /* Etwas dicker für besseren Effekt */
+    position: fixed;
+    width: 3px;
     height: 24px;
-    background: linear-gradient(180deg, #70C4F7, #ff00ff, #00ff88);
-    background-size: 100% 200%;
-    pointer-events: none; /* Man kann nicht darauf klicken */
+    /* Glaggle-Farben: Blau, Rot, Gelb, Grün, Orange */
+    background: linear-gradient(
+        180deg, 
+        #4285F4, /* Blau */
+        #EA4335, /* Rot */
+        #FBBC05, /* Gelb */
+        #34A853, /* Grün */
+        #FF6D00  /* Orange */
+    );
+    background-size: 100% 300%; /* Vergrößert den Verlauf für die Animation */
+    pointer-events: none;
     z-index: 9999;
-    border-radius: 2px;
-    transition: left 0.1s ease-out, top 0.1s ease-out; /* Der Word-Effekt */
-    animation: caretColor 3s infinite linear;
+    border-radius: 5px;
+    transition: left 0.1s ease-out, top 0.1s ease-out;
+    /* Animation lässt die Farben im Strich fließen */
+    animation: glaggleFlow 3s infinite alternate ease-in-out;
     display: none;
 }
 
-@keyframes caretColor {
+/* Die Farben wandern sanft auf und ab */
+@keyframes glaggleFlow {
     0% { background-position: 0% 0%; }
     100% { background-position: 0% 100%; }
 }
