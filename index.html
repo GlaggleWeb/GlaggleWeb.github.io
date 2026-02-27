@@ -413,32 +413,50 @@ function moveCaret() {
     const rect = inputField.getBoundingClientRect();
     const style = window.getComputedStyle(inputField);
     const paddingLeft = parseFloat(style.paddingLeft);
-    const fontSize = style.fontSize;
-    const fontName = style.fontFamily;
-
-    // Hilfselement zum Messen
+    const paddingRight = parseFloat(style.paddingRight);
+    
+    // 1. Wir messen die gesamte Breite des Textes im Input
     const helper = document.createElement("span");
     helper.style.visibility = "hidden";
     helper.style.position = "absolute";
     helper.style.whiteSpace = "pre";
-    helper.style.font = `${fontSize} ${fontName}`;
-    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
+    helper.style.font = `${style.fontSize} ${style.fontFamily}`;
+    helper.textContent = inputField.value; // Den kompletten Text messen
     document.body.appendChild(helper);
     
-    const textWidth = helper.getBoundingClientRect().width;
+    const totalTextWidth = helper.getBoundingClientRect().width;
+    
+    // 2. Wir messen den Text bis zur Cursor-Position
+    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
+    const caretPosInText = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
-    // DER TRICK: Wir ziehen den Scroll-Wert des Inputs ab!
-    // inputField.scrollLeft ist der Teil des Textes, der links verschwunden ist.
-    const scrollOffset = inputField.scrollLeft;
+    // 3. Die magische Berechnung:
+    // Wir nehmen die tatsächliche Position des Text-Endes im Input-Feld
+    // und ziehen den Versatz ab.
+    let finalLeft;
+    const availableWidth = rect.width - paddingLeft - paddingRight;
 
-    // Die finale Position auf dem Bildschirm
-    let finalLeft = rect.left + paddingLeft + textWidth - scrollOffset;
+    if (totalTextWidth <= availableWidth) {
+        // Fall A: Text passt noch komplett ins Feld
+        finalLeft = rect.left + paddingLeft + caretPosInText;
+    } else {
+        // Fall B: Text wird gescrollt (Feld ist voll)
+        // Der Browser hält den Cursor bei langen Eingaben meist ganz rechts
+        finalLeft = rect.right - paddingRight;
+        
+        // Kleiner Check: Wenn der User im langen Text nach links navigiert
+        const scrollOffset = inputField.scrollLeft;
+        const relativePos = paddingLeft + caretPosInText - scrollOffset;
+        finalLeft = rect.left + relativePos;
 
-    // SICHERHEITS-CHECK: Er darf nicht über die Lupe (rechts) hinaus
-    const maxRight = rect.right - 45; // 45px Platz für die Lupe lassen
-    if (finalLeft > maxRight) {
-        finalLeft = maxRight;
+        // "Stoppschild" Lupe:
+        const maxRight = rect.right - paddingRight;
+        if (finalLeft > maxRight) finalLeft = maxRight;
+        
+        // "Stoppschild" Links (beim Zurücknavigieren):
+        const minLeft = rect.left + paddingLeft;
+        if (finalLeft < minLeft) finalLeft = minLeft;
     }
 
     // Positionierung
