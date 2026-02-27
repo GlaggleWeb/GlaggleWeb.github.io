@@ -249,5 +249,25 @@ const meineLieblingsSeiten = [
     { title: "ChatGPT", desc: "Fortschrittliche KI für Texte, Code und Analysen.", url: "https://chatgpt.com" },
     { title: "Claude AI", desc: "Intelligente Sprach-KI von Anthropic.", url: "https://claude.ai" },
     { title: "Perplexity AI", desc: "KI-gestützte Suchmaschine für präzise Antworten.", url: "https://perplexity.ai" },
-    { title: "DeepL Write", desc: "KI-Tool zur Verbesserung von Grammatik und Stil.", url: "https://deepl.com/write" }
+    { title: "DeepL Write", desc: "KI-Tool zur Verbesserung von Grammatik und Stil.", url: "https://deepl.com/write" },
+    { title: "Pixabay", desc: "Über 4 Millionen hochwertige Stock-Fotos, Videos und Musik.", url: "https://pixabay.com" },
+    { title: "Pexels", desc: "Die besten kostenlosen Stock-Fotos und Videos an einem Ort.", url: "https://pexels.com" },
+    { title: "Unsplash", desc: "Wunderschöne, kostenlose Bilder von der weltweiten Fotografen-Community.", url: "https://unsplash.com" },
+    { title: "Freepik", desc: "Grafikressourcen wie Vektoren, Fotos und PSD-Dateien.", url: "https://freepik.com" },
+    { title: "Burst", desc: "Kostenlose Stock-Fotos für Websites und kommerzielle Nutzung.", url: "https://burst.shopify.com" },
+    { title: "StockSnap.io", desc: "Hundertausende hochauflösende Bilder ohne Copyright-Beschränkungen.", url: "https://stocksnap.io" },
+    { title: "Flaticon", desc: "Die größte Datenbank für kostenlose Icons im Web.", url: "https://flaticon.com" },
+    { title: "Font Awesome", desc: "Die beliebteste Icon-Library für Webentwickler.", url: "https://fontawesome.com" },
+    { title: "Iconfinder", desc: "Millionen von Icons für Designer und Entwickler.", url: "https://iconfinder.com" },
+    { title: "Noun Project", desc: "Icons und Fotos für absolut alles.", url: "https://thenounproject.com" },
+    { title: "Free Music Archive", desc: "Kostenlose Musik für Videos und Projekte.", url: "https://freemusicarchive.org" },
+    { title: "Bensound", desc: "Gebührenfreie Musik für YouTube und Multimedia.", url: "https://bensound.com" },
+    { title: "Epidemic Sound", desc: "Professionelle Musik und Soundeffekte (Abo-Modell).", url: "https://epidemicsound.com" },
+    { title: "Google Fonts", desc: "Kostenlose Schriftarten für Web und Print.", url: "https://fonts.google.com" },
+    { title: "Adobe Color", desc: "Farbenräder erstellen und Farbschemata entdecken.", url: "https://color.adobe.com" },
+    { title: "Coolors", desc: "Der superschnelle Farbschema-Generator.", url: "https://coolors.co" },
+    { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" },
+    { title: "Coolors", desc: "Der superschnelle Farbschema-Generator.", url: "https://coolors.co" },
+    { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" }
+]; // <-- Das ist die wichtigste Zeile!
     
