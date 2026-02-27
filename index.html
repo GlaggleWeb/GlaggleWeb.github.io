@@ -225,32 +225,20 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI starten
-    fetchGroqAI(query);
+    // ZUERST: KI-Box sofort als Platzhalter erstellen (damit sie ganz oben ist)
+    const aiBox = createAiPlaceholder();
+    resultsDiv.appendChild(aiBox);
 
-    // 2. Favoriten aus der externen favoriten.js suchen
+    // JETZT: Die Daten abrufen (KI im Hintergrund, Favoriten/Wiki sofort)
+    fetchGroqAI(query); // Läuft asynchron weiter
     sucheInEigenerListe(query);
-
-    // 3. Wikipedia
     await searchWikipedia(query, 'de');
 
-    // 4. Web-Suche
+    // Web-Suche (SearXNG)
     const searxInstances = ["https://search.mdl.solutions", "https://searx.work"];
-    // ... (restlicher Fetch-Code für SearXNG)
+    // ... dein restlicher Fetch-Code ...
 
     loader.style.display = "none";
-}
-
-function sucheInEigenerListe(query) {
-    const q = query.toLowerCase();
-    const treffer = meineLieblingsSeiten.filter(seite => 
-        seite.title.toLowerCase().includes(q) || 
-        seite.desc.toLowerCase().includes(q)
-    );
-
-    treffer.forEach(seite => {
-        renderResult(seite.title, seite.desc, seite.url, "fav");
-    });
 }
 
 function renderResult(title, text, url, type = "web") {
