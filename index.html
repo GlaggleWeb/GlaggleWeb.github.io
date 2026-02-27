@@ -320,28 +320,21 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI-Zusammenfassung Box erstellen
+    // 1. KI-Box sofort anzeigen
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // 2. Favoriten (Eigene Projekte) verarbeiten
-        const favs = await getAiProcessedFavs(query);
-        favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+        // 2. Parallel ausführen: KI-Zusammenfassung (selbstständig) & Favoriten
+        await Promise.all([
+            fetchGroqAI(query), // Die KI denkt jetzt wieder völlig frei nach
+            (async () => {
+                const favs = await getAiProcessedFavs(query);
+                favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+            })()
+        ]);
 
-        // 3. ECHTE Wikipedia-Daten für Kontext holen
-        const wikiData = await fetchWikipediaRaw(query);
-        
-        // 4. KI-Zusammenfassung basierend auf Wikipedia-Daten starten
-        if (wikiData.length > 0) {
-            fetchGroqAIWithContext(query, wikiData);
-        } else {
-            document.getElementById('ai-text').innerText = "Keine direkten Informationen gefunden.";
-        }
-
-        // 5. Wikipedia-Ergebnisse als normale Suchergebnisse rendern
-        wikiData.forEach(item => {
-            renderResult(item.title, item.snippet, item.url, "wiki");
-        });
+        // 3. Wikipedia-Ergebnisse für die Weblinks darunter laden
+        await searchWikipedia(query, 'de');
 
     } catch (e) {
         console.error("Suche fehlgeschlagen:", e);
@@ -365,22 +358,29 @@ async function fetchWikipediaRaw(query) {
 }
 
 // KI nutzt nun die Wikipedia-Daten als "Spickzettel"
-async function fetchGroqAIWithContext(query, wikiContext) {
+async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
-    const contextString = wikiContext.slice(0, 3).map(w => `Quelle ${w.title}: ${w.snippet}`).join("\n");
-
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: `Du bist Glaggle AI. Erstelle eine kurze Zusammenfassung auf Deutsch NUR basierend auf diesem Kontext:\n${contextString}\n\nFalls der Nutzer nach Glame fragt, erwähne dass es ein Glaggle Chatbot ist. Bleib sachlich.` },
-                    { role: "user", content: `Suchanfrage: ${query}` }
-                ]
+                    { 
+                        role: "system", 
+                        content: "Du bist Glaggle AI, eine extrem schlaue Suchmaschine. Erkläre das gesuchte Thema präzise, hilfreich und modern auf Deutsch. Nutze dein gesamtes Wissen. Wenn es um 'Glame' geht, erwähne, dass es der offizielle Glaggle-Chatbot ist." 
+                    },
+                    { role: "user", content: query }
+                ] 
             })
         });
+
+        if (!res.ok) throw new Error("API Fehler");
+
         const data = await res.json();
         const antwort = data.choices[0].message.content;
 
@@ -393,12 +393,12 @@ async function fetchGroqAIWithContext(query, wikiContext) {
                 currentText += antwort.charAt(i);
                 aiTextElement.innerHTML = marked.parse(currentText);
                 i++;
-                setTimeout(type, 3);
+                setTimeout(type, 3); // Schneller Schreib-Effekt
             }
         }
         type();
     } catch (e) {
-        aiTextElement.innerText = "KI Zusammenfassung momentan nicht verfügbar.";
+        aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar.";
     }
 }
 
