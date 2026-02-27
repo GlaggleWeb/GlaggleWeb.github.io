@@ -11,6 +11,7 @@
     
     <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
     <link rel="canonical" href="https://glaggle.ch">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
     :root {
@@ -150,6 +151,24 @@
         .nav-center { display: none; }
         .navbar { padding: 0 15px; }
     }
+
+/* Markdown Styling für die KI Box */
+#ai-text ul, #ai-text ol {
+    text-align: left;
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+#ai-text code {
+    background: rgba(112, 196, 247, 0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+#ai-text strong {
+    color: var(--link-color);
+}
 </style>
 </head>
 <body>
@@ -324,23 +343,23 @@ async function fetchGroqAI(query) {
         if (!res.ok) throw new Error("API Fehler");
 
         const data = await res.json();
-        const antwort = data.choices[0].message.content;
-        const aiTextElement = document.getElementById('ai-text');
-        
-        aiTextElement.innerText = "";
-        aiTextElement.style.fontStyle = "normal";
-        
-        // Typewriter Effekt (wie in Glame)
-        let i = 0;
-        function type() {
-            if (i < antwort.length) {
-                aiTextElement.innerHTML += antwort.charAt(i);
-                i++;
-                setTimeout(type, 5);
-            }
-        }
-        type();
+const antwort = data.choices[0].message.content;
+const aiTextElement = document.getElementById('ai-text');
 
+aiTextElement.style.fontStyle = "normal";
+let i = 0;
+let currentText = "";
+
+function type() {
+    if (i < antwort.length) {
+        currentText += antwort.charAt(i);
+        // marked.parse() verwandelt Markdown in HTML
+        aiTextElement.innerHTML = marked.parse(currentText);
+        i++;
+        setTimeout(type, 5);
+    }
+}
+type();
     } catch (e) {
         document.getElementById('ai-text').innerText = "KI momentan nicht verfügbar. (CORS oder API Limit)";
         console.error("Fehler:", e);
