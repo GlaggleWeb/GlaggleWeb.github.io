@@ -169,6 +169,38 @@
 #ai-text strong {
     color: var(--link-color);
 }
+
+/* Den Standard-Cursor unsichtbar machen */
+#glaggleQuery {
+    caret-color: transparent;
+}
+
+/* Der neue, animierte Cursor */
+.custom-caret {
+    position: absolute;
+    width: 2px;
+    height: 24px; /* Höhe an deine Schrift anpassen */
+    background: linear-gradient(45deg, #70C4F7, #ff00ff, #00ff88);
+    background-size: 200% 200%;
+    pointer-events: none;
+    display: none;
+    transition: all 0.3s ease-out; /* Das sorgt für das sanfte Gleiten wie in Word */
+    animation: caretBlink 0.8s infinite, caretColor 3s infinite linear;
+    z-index: 1001;
+}
+
+/* Sanftes Blinken */
+@keyframes caretBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Dauerhafter Farbverlauf-Wechsel */
+@keyframes caretColor {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 </style>
 </head>
 <body>
