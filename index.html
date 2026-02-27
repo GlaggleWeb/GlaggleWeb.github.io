@@ -503,29 +503,53 @@ inputField.addEventListener('focus', moveCaret);
 inputField.addEventListener('blur', () => { fakeCaret.style.opacity = "0"; });
 window.addEventListener('resize', moveCaret);
 
-// --- Such-Optimierer ---
 async function optimizeSearch() {
     const input = document.getElementById('glaggleQuery');
     const query = input.value.trim();
     const magicBtn = document.querySelector('.ai-magic-btn');
+
     if (!query) return;
 
     magicBtn.innerText = "⏳";
+    magicBtn.style.pointerEvents = "none";
+
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages: [{ role: "system", content: "Optimiere die Suche auf 1-2 Schlagworte. Antworte NUR mit dem Ergebnis." }, { role: "user", content: query }]
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "Du bist ein Suchbegriff-Kürzer. Deine Aufgabe: Wandle lange Texte in EIN bis MAXIMAL DREI präzise Schlagwörter um. Beispiel: 'Was ist eigentlich künstliche intelligenz' -> 'Künstliche Intelligenz'. Beispiel: 'Wie baue ich ein Haus aus Holz' -> 'Holzhaus Bau'. Antworte NUR mit den Schlagwörtern, ohne Satzzeichen oder Erklärung." 
+                    },
+                    { role: "user", content: query }
+                ] 
             })
         });
-        const data = await res.json();
-        input.value = data.choices[0].message.content.replace(/"/g, '');
-        moveCaret();
-        magicBtn.innerText = "✅";
-        setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
-    } catch (e) { magicBtn.innerText = "✨"; }
+
+        if (res.ok) {
+            const data = await res.json();
+            // Wir säubern die Antwort von Anführungszeichen und unnötigen Punkten
+            const optimizedQuery = data.choices[0].message.content.replace(/["'.]/g, '').trim();
+            
+            input.value = optimizedQuery;
+            moveCaret(); // Cursor an neue Position setzen
+            
+            magicBtn.innerText = "✅";
+            setTimeout(() => { magicBtn.innerText = "✨"; }, 2000);
+        }
+    } catch (e) {
+        console.error("KI Fehler beim Optimieren", e);
+        magicBtn.innerText = "❌";
+        setTimeout(() => { magicBtn.innerText = "✨"; }, 2000);
+    } finally {
+        magicBtn.style.pointerEvents = "auto";
+    }
 }
 </script>
 </script>
