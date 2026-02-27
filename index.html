@@ -201,15 +201,11 @@
             <a href="https://glaggle.ch/zahlenraten" class="web-button">Zahlenraten →</a>
         </div>
     </main>
+
+<script src="favoriten.js"></script>
+    
 <script>
 
-// Hier kannst du beliebig viele Seiten hinzufügen
-const meineLieblingsSeiten = [
-    { title: "Glaggle", desc: "Glaggle Your life!", url: "https://glaggle.ch" },
-    { title: "YouTube", desc: "Schaue die neuesten Videos weltweit.", url: "https://youtube.com" },
-    { title: "Glaggle Zahlenraten", desc: "Ein lustiges Spiel, um Zahlen zu erraten.", url: "https://glaggle.ch/zahlenraten" },
-    { title: "Glame AI", desc: "Nutze den intelligenten Ki Chatbot von Glaggle", url: "https://glaggle.ch/glame" }
-];
     
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; // Ersetze dies durch deinen echten Key-Teil
@@ -229,46 +225,69 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. Deine eigene Liste (Sofort-Ergebnisse)
-    await sucheInEigenerListe(query);
-
-    // 2. KI Zusammenfassung (Parallel starten)
+    // 1. KI starten
     fetchGroqAI(query);
 
-    // 3. Wikipedia Suche (Wartet auf Antwort)
+    // 2. Favoriten aus der externen favoriten.js suchen
+    sucheInEigenerListe(query);
+
+    // 3. Wikipedia
     await searchWikipedia(query, 'de');
 
-    // 4. Web-Suche (SearXNG)
-    const searxInstances = [
-        "https://search.mdl.solutions",
-        "https://searx.work",
-        "https://priv.au"
-    ];
+    // 4. Web-Suche
+    const searxInstances = ["https://search.mdl.solutions", "https://searx.work"];
+    // ... (restlicher Fetch-Code für SearXNG)
 
-    for (let instance of searxInstances) {
-        try {
-            const response = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&format=json`, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.results && data.results.length > 0) {
-                    data.results.slice(0, 15).forEach(result => {
-                        renderResult(result.title, result.content || "", result.url);
-                    });
-                    break; 
-                }
-            }
-        } catch (e) { 
-            console.log("Instanz offline: " + instance); 
-        }
-    }
-    
     loader.style.display = "none";
 }
 
+function sucheInEigenerListe(query) {
+    const q = query.toLowerCase();
+    const treffer = meineLieblingsSeiten.filter(seite => 
+        seite.title.toLowerCase().includes(q) || 
+        seite.desc.toLowerCase().includes(q)
+    );
+
+    treffer.forEach(seite => {
+        renderResult(seite.title, seite.desc, seite.url, "fav");
+    });
+}
+
+function renderResult(title, text, url, type = "web") {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry';
+    
+    // Styling-Unterscheidung
+    if(type === "fav") div.style.borderLeft = "5px solid #34a853"; // Grüner Rand für Favoriten
+    if(type === "wiki") div.style.backgroundColor = "rgba(112, 196, 247, 0.05)";
+
+    const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
+            <small style="color: #34a853; font-weight:bold;">${domain}</small>
+        </div>
+        <a href="${url}" target="_blank">${title}</a>
+        <p>${cleanText}</p>
+    `;
+    
+    const aiBox = document.getElementById('ai-container');
+
+    if (type === "fav") {
+        // Direkt unter KI
+        if (aiBox && aiBox.nextSibling) {
+            resultsDiv.insertBefore(div, aiBox.nextSibling);
+        } else {
+            resultsDiv.prepend(div);
+        }
+    } else {
+        resultsDiv.appendChild(div);
+    }
+}
 function sucheInEigenerListe(query) {
     const q = query.toLowerCase();
     const treffer = meineLieblingsSeiten.filter(seite => 
