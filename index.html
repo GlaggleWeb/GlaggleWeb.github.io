@@ -178,7 +178,7 @@
 /* Der neue "Glaggle-Cursor" */
 /* Der bunte Glaggle-Cursor */
 .custom-caret {
-    position: fixed;
+    position: absolute;
     width: 3px;
     height: 24px;
     /* Glaggle-Farben: Blau, Rot, Gelb, Grün, Orange */
@@ -388,15 +388,17 @@ async function fetchGroqAIWithContext(query, wikiContext) {
 }
 
 async function getAiProcessedFavs(query) {
-    const q = query.toLowerCase();
-    const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}, URL: ${s.url}`).join(" | ");
-    
-    // Manueller Boost für Glame
-    if (q.includes("glame") || q.includes("ai")) {
-        const glame = meineLieblingsSeiten.find(s => s.title.toLowerCase().includes("glame"));
-        if (glame) return [glame];
-    }
+    const q = query.toLowerCase().trim();
+    if (q.length < 3) return []; // Erst ab 3 Buchstaben
 
+    // 1. Manueller Check (Sofort-Ergebnis für Geschwindigkeit)
+    const sofortTreffer = meineLieblingsSeiten.filter(s => 
+        s.title.toLowerCase().includes(q) || q.includes(s.title.toLowerCase())
+    );
+
+    // 2. KI-Check für schlaue Zuordnung
+    const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
+    
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -405,17 +407,26 @@ async function getAiProcessedFavs(query) {
                 model: "llama-3.1-8b-instant",
                 messages: [{ 
                     role: "system", 
-                    content: `Du suchst in: [${context}]. Wenn die Anfrage passt, gib das JSON zurück. Sonst [].` 
+                    content: `Suche in: [${context}]. Wenn die Anfrage '${q}' passt, gib das App-Objekt als JSON zurück. Sonst [].` 
                 },
-                { role: "user", content: query }]
+                { role: "user", content: q }]
             })
         });
         const data = await res.json();
         const content = data.choices[0].message.content;
-        return JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
-    } catch(e) { return []; }
+        const aiFavs = JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
+        
+        // Kombiniere manuelle Treffer und KI-Treffer ohne Duplikate
+        const gesamt = [...sofortTreffer];
+        aiFavs.forEach(af => {
+            if(!gesamt.find(g => g.title === af.title)) gesamt.push(af);
+        });
+        return gesamt;
+    } catch(e) { 
+        return sofortTreffer; // Fallback auf manuelle Liste
+    }
 }
-
+    
 function renderResult(title, text, url, type = "web") {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
@@ -433,10 +444,10 @@ function renderResult(title, text, url, type = "web") {
     div.innerHTML = `
         <div class="result-header">
             <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "OFFIZIELLES GLAGGLE PROJEKT" : domain}</small>
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "OFFIZIELLES GLAGGLE PROJEKT" : "WEB-RESULTAT"}</small>
         </div>
         <a href="${url}" target="_blank">${title}</a>
-        <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
+        <p>${text}</p>
     `;
     
     const aiBox = document.getElementById('ai-container');
@@ -456,12 +467,16 @@ function moveCaret() {
         fakeCaret.style.display = "none";
         return;
     }
+
     const rect = inputField.getBoundingClientRect();
     const style = window.getComputedStyle(inputField);
     const paddingLeft = parseFloat(style.paddingLeft);
     
+    // Hilfselement zum Messen der Textbreite
     const helper = document.createElement("span");
-    helper.style.visibility = "hidden"; helper.style.position = "absolute"; helper.style.whiteSpace = "pre";
+    helper.style.visibility = "hidden";
+    helper.style.position = "absolute";
+    helper.style.whiteSpace = "pre";
     helper.style.font = `${style.fontSize} ${style.fontFamily}`;
     helper.textContent = inputField.value.substring(0, inputField.selectionStart);
     document.body.appendChild(helper);
@@ -469,10 +484,16 @@ function moveCaret() {
     const caretPosInText = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
+    // Berechnung relativ zum Dokument (damit es mitscrollt)
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
     fakeCaret.style.display = "block";
     fakeCaret.style.opacity = "1";
-    fakeCaret.style.left = (rect.left + paddingLeft + caretPosInText - inputField.scrollLeft) + "px";
-    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
+    
+    // rect.left/top + scroll sorgt dafür, dass die Position stabil bleibt beim Scrollen
+    fakeCaret.style.left = (rect.left + paddingLeft + caretPosInText - inputField.scrollLeft + scrollX) + "px";
+    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12 + scrollY) + "px";
 }
 
 inputField.addEventListener('input', moveCaret);
