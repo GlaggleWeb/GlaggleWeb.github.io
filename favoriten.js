@@ -435,6 +435,106 @@ const meineLieblingsSeiten = [
 // --- COMMUNITY & DISKUSSION ---
 { title: "Discord Bots", desc: "Bot-Verzeichnis für Discord-Server.", url: "https://top.gg" },
 { title: "Meetup", desc: "Lokale Events & Communities.", url: "https://meetup.com" },
-{ title: "Internations", desc: "Community für Expats weltweit.", url: "https://internations.org" }
+{ title: "Internations", desc: "Community für Expats weltweit.", url: "https://internations.org" },
+// ============================================
+// 🇨🇭 SCHWEIZ PREMIUM – BUND (ADMIN)
+// ============================================
+
+{ title: "admin.ch", desc: "Offizielle Website der Schweizerischen Eidgenossenschaft.", url: "https://admin.ch" },
+{ title: "Bundesrat", desc: "Informationen zur Schweizer Regierung.", url: "https://bundesrat.admin.ch" },
+{ title: "Parlament", desc: "National- und Ständerat.", url: "https://parlament.ch" },
+{ title: "Bundesgericht", desc: "Oberstes Gericht der Schweiz.", url: "https://bger.ch" },
+{ title: "Fedlex", desc: "Amtliche Sammlung des Bundesrechts.", url: "https://fedlex.admin.ch" },
+{ title: "Swiss Post", desc: "Postdienste & Online-Services.", url: "https://post.ch" },
+{ title: "Swiss Federal Railways", desc: "Bundesbahnen & Mobilität.", url: "https://sbb.ch" },
+{ title: "Swissmedic", desc: "Schweizerisches Heilmittelinstitut.", url: "https://swissmedic.ch" },
+{ title: "FINMA", desc: "Finanzmarktaufsicht Schweiz.", url: "https://finma.ch" },
+{ title: "BAG", desc: "Bundesamt für Gesundheit.", url: "https://bag.admin.ch" },
+{ title: "EDA", desc: "Eidgenössisches Departement für auswärtige Angelegenheiten.", url: "https://eda.admin.ch" },
+{ title: "SECO", desc: "Staatssekretariat für Wirtschaft.", url: "https://seco.admin.ch" },
+{ title: "MeteoSchweiz", desc: "Offizielle Wetterprognosen.", url: "https://meteoschweiz.admin.ch" },
+{ title: "Swisstopo", desc: "Landesvermessung & Karten.", url: "https://swisstopo.admin.ch" },
+{ title: "Open Data Schweiz", desc: "Offizielle Open-Data-Plattform.", url: "https://opendata.swiss" },
+
+// ============================================
+// 🇨🇭 KANTONE – OFFIZIELLE PORTALE
+// ============================================
+
+{ title: "Kanton Zürich", desc: "Offizielle Website des Kantons.", url: "https://zh.ch" },
+{ title: "Kanton Bern", desc: "Behördenportal Bern.", url: "https://be.ch" },
+{ title: "Kanton Luzern", desc: "Verwaltung Luzern.", url: "https://lu.ch" },
+{ title: "Kanton Uri", desc: "Offizielles Kantonsportal.", url: "https://ur.ch" },
+{ title: "Kanton Schwyz", desc: "Verwaltung Schwyz.", url: "https://sz.ch" },
+{ title: "Kanton Obwalden", desc: "Offizielle Seite.", url: "https://ow.ch" },
+{ title: "Kanton Nidwalden", desc: "Behördenportal.", url: "https://nw.ch" },
+{ title: "Kanton Glarus", desc: "Kantonsverwaltung.", url: "https://gl.ch" },
+{ title: "Kanton Zug", desc: "Kantonale Verwaltung.", url: "https://zg.ch" },
+{ title: "Kanton Freiburg", desc: "Etat de Fribourg.", url: "https://fr.ch" },
+{ title: "Kanton Solothurn", desc: "Kantonales Portal.", url: "https://so.ch" },
+{ title: "Kanton Basel-Stadt", desc: "Regierung BS.", url: "https://bs.ch" },
+{ title: "Kanton Basel-Landschaft", desc: "BL Verwaltung.", url: "https://bl.ch" },
+{ title: "Kanton Schaffhausen", desc: "Offizielle Seite.", url: "https://sh.ch" },
+{ title: "Kanton Appenzell A.Rh.", desc: "Kantonsverwaltung.", url: "https://ar.ch" },
+{ title: "Kanton Appenzell I.Rh.", desc: "Kantonale Dienste.", url: "https://ai.ch" },
+{ title: "Kanton St. Gallen", desc: "Behördenportal SG.", url: "https://sg.ch" },
+{ title: "Kanton Graubünden", desc: "Amtliches Portal.", url: "https://gr.ch" },
+{ title: "Kanton Aargau", desc: "Verwaltung AG.", url: "https://ag.ch" },
+{ title: "Kanton Thurgau", desc: "Behörden TG.", url: "https://tg.ch" },
+{ title: "Kanton Tessin", desc: "Cantone Ticino.", url: "https://ti.ch" },
+{ title: "Kanton Waadt", desc: "Etat de Vaud.", url: "https://vd.ch" },
+{ title: "Kanton Wallis", desc: "Canton du Valais.", url: "https://vs.ch" },
+{ title: "Kanton Neuenburg", desc: "République et Canton.", url: "https://ne.ch" },
+{ title: "Kanton Genf", desc: "République et Canton de Genève.", url: "https://ge.ch" },
+{ title: "Kanton Jura", desc: "République et Canton du Jura.", url: "https://ju.ch" },
+
+// ============================================
+// 🇨🇭 STEUERN & VERWALTUNG
+// ============================================
+
+{ title: "ESTV", desc: "Eidgenössische Steuerverwaltung.", url: "https://estv.admin.ch" },
+{ title: "AHV/IV", desc: "Sozialversicherungen Schweiz.", url: "https://ahv-iv.ch" },
+{ title: "ch.ch", desc: "Behördenwegweiser Schweiz.", url: "https://ch.ch" },
+{ title: "EasyGov", desc: "Online-Schalter für Unternehmen.", url: "https://easygov.swiss" },
+{ title: "Handelsregister Zefix", desc: "Firmenregister Schweiz.", url: "https://zefix.admin.ch" },
+
+// ============================================
+// 🇨🇭 BILDUNG & UNIVERSITÄTEN
+// ============================================
+
+{ title: "ETH Zürich", desc: "Technische Hochschule Zürich.", url: "https://ethz.ch" },
+{ title: "EPFL", desc: "École polytechnique fédérale de Lausanne.", url: "https://epfl.ch" },
+{ title: "Universität Zürich", desc: "Größte Uni der Schweiz.", url: "https://uzh.ch" },
+{ title: "Universität Bern", desc: "Uni Bern.", url: "https://unibe.ch" },
+{ title: "Universität Basel", desc: "Älteste Universität der Schweiz.", url: "https://unibas.ch" },
+{ title: "Universität Genf", desc: "Université de Genève.", url: "https://unige.ch" },
+{ title: "Universität Lausanne", desc: "Université de Lausanne.", url: "https://unil.ch" },
+{ title: "Universität Luzern", desc: "Uni Luzern.", url: "https://unilu.ch" },
+{ title: "Universität St. Gallen", desc: "HSG – Wirtschaftsuniversität.", url: "https://unisg.ch" },
+
+// ============================================
+// 🇨🇭 WIRTSCHAFT & FINANZEN
+// ============================================
+
+{ title: "SIX Group", desc: "Betreiber der Schweizer Börse.", url: "https://six-group.com" },
+{ title: "Swiss National Bank", desc: "Schweizerische Nationalbank.", url: "https://snb.ch" },
+{ title: "Economiesuisse", desc: "Wirtschaftsverband Schweiz.", url: "https://economiesuisse.ch" },
+{ title: "Swissmem", desc: "Industrieverband.", url: "https://swissmem.ch" },
+{ title: "Switzerland Global Enterprise", desc: "Exportförderung.", url: "https://s-ge.com" },
+
+// ============================================
+// 🇨🇭 SICHERHEIT & JUSTIZ
+// ============================================
+
+{ title: "fedpol", desc: "Bundesamt für Polizei.", url: "https://fedpol.admin.ch" },
+{ title: "NCSC", desc: "Nationales Zentrum für Cybersicherheit.", url: "https://ncsc.admin.ch" },
+{ title: "Zivilschutz Schweiz", desc: "Bevölkerungsschutz.", url: "https://bevoelkerungsschutz.admin.ch" },
+
+// ============================================
+// 🇨🇭 TOURISMUS & KULTUR
+// ============================================
+
+{ title: "MySwitzerland", desc: "Offizielle Tourismusplattform.", url: "https://myswitzerland.com" },
+{ title: "Pro Helvetia", desc: "Schweizer Kulturstiftung.", url: "https://prohelvetia.ch" },
+{ title: "Swissinfo", desc: "Internationale News der Schweiz.", url: "https://swissinfo.ch" }
 ]; // <-- Das ist die wichtigste Zeile!
     
