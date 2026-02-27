@@ -405,7 +405,6 @@ const inputField = document.getElementById('glaggleQuery');
 const fakeCaret = document.getElementById('fakeCaret');
 
 function moveCaret() {
-    // Falls das Feld nicht aktiv ist, Cursor ausblenden
     if (document.activeElement !== inputField) {
         fakeCaret.style.display = "none";
         return;
@@ -414,24 +413,32 @@ function moveCaret() {
     const rect = inputField.getBoundingClientRect();
     const style = window.getComputedStyle(inputField);
     const paddingLeft = parseFloat(style.paddingLeft);
+    const paddingRight = parseFloat(style.paddingRight); // Wichtig für die Grenze
     const fontSize = style.fontSize;
     const fontName = style.fontFamily;
 
-    // Hilfselement zum Messen der Textbreite
+    // Hilfselement zum Messen
     const helper = document.createElement("span");
     helper.style.visibility = "hidden";
     helper.style.position = "absolute";
     helper.style.whiteSpace = "pre";
     helper.style.font = `${fontSize} ${fontName}`;
-    
-    // Text bis zur aktuellen Cursor-Position messen
     helper.textContent = inputField.value.substring(0, inputField.selectionStart);
     document.body.appendChild(helper);
     
-    const textWidth = helper.getBoundingClientRect().width;
+    let textWidth = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
-    // Positionierung (Fixed orientiert sich am Viewport)
+    // BERECHNUNG DER GRENZE:
+    // Wir berechnen, wie viel Platz im Feld maximal für Text ist (Input-Breite minus Padding rechts)
+    const maxAllowedWidth = rect.width - paddingLeft - paddingRight - 10; // -10 als kleiner Puffer zur Lupe
+
+    // Wenn der Text breiter als das Feld wird, stoppen wir den Cursor am rechten Rand
+    if (textWidth > maxAllowedWidth) {
+        textWidth = maxAllowedWidth;
+    }
+
+    // Positionierung
     fakeCaret.style.display = "block";
     fakeCaret.style.opacity = "1";
     fakeCaret.style.left = (rect.left + paddingLeft + textWidth) + "px";
