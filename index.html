@@ -170,41 +170,39 @@
     color: var(--link-color);
 }
 
-/* Den Standard-Cursor unsichtbar machen */
+/* Den echten Strich unsichtbar machen */
 #glaggleQuery {
     caret-color: transparent;
 }
 
-/* Der neue, animierte Cursor */
+/* Der neue "Glaggle-Cursor" */
 .custom-caret {
-    position: absolute;
-    width: 2px;
-    height: 24px; /* Höhe an deine Schrift anpassen */
-    background: linear-gradient(45deg, #70C4F7, #ff00ff, #00ff88);
-    background-size: 200% 200%;
-    pointer-events: none;
+    position: fixed; /* Fixed sorgt dafür, dass er über allem schwebt */
+    width: 3px; /* Etwas dicker für besseren Effekt */
+    height: 24px;
+    background: linear-gradient(180deg, #70C4F7, #ff00ff, #00ff88);
+    background-size: 100% 200%;
+    pointer-events: none; /* Man kann nicht darauf klicken */
+    z-index: 9999;
+    border-radius: 2px;
+    transition: left 0.1s ease-out, top 0.1s ease-out; /* Der Word-Effekt */
+    animation: caretBlink 0.8s infinite step-end, caretColor 3s infinite linear;
     display: none;
-    transition: all 0.3s ease-out; /* Das sorgt für das sanfte Gleiten wie in Word */
-    animation: caretBlink 0.8s infinite, caretColor 3s infinite linear;
-    z-index: 1001;
 }
 
-/* Sanftes Blinken */
 @keyframes caretBlink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
 }
 
-/* Dauerhafter Farbverlauf-Wechsel */
 @keyframes caretColor {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
 }
 </style>
 </head>
 <body>
-
+<div id="fakeCaret" class="custom-caret"></div>
     <nav class="navbar">
         <div class="nav-left">
             <a href="https://glaggle.ch"><img src="glagglelogo.png" class="logo-img" alt="Logo"></a>
@@ -396,6 +394,46 @@ function renderResult(title, text, url, type = "web") {
         resultsDiv.appendChild(div);
     }
 }
+
+const inputField = document.getElementById('glaggleQuery');
+const fakeCaret = document.getElementById('fakeCaret');
+
+function moveCaret() {
+    const rect = inputField.getBoundingClientRect();
+    const style = window.getComputedStyle(inputField);
+    const paddingLeft = parseFloat(style.paddingLeft);
+    const fontSize = style.fontSize;
+    const fontName = style.fontFamily;
+
+    // Erstelle ein unsichtbares Element, um die Textbreite zu messen
+    const helper = document.createElement("span");
+    helper.style.visibility = "hidden";
+    helper.style.position = "absolute";
+    helper.style.whiteSpace = "pre";
+    helper.style.font = `${fontSize} ${fontName}`;
+    
+    // Wir messen nur den Text BIS zur Cursor-Position
+    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
+    document.body.appendChild(helper);
+    
+    const textWidth = helper.getBoundingClientRect().width;
+    document.body.removeChild(helper);
+
+    // Positionierung des Fake-Cursors
+    fakeCaret.style.display = "block";
+    fakeCaret.style.left = (rect.left + paddingLeft + textWidth) + "px";
+    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
+}
+
+// Events für die Bewegung
+inputField.addEventListener('input', moveCaret);
+inputField.addEventListener('click', moveCaret);
+inputField.addEventListener('keyup', moveCaret);
+inputField.addEventListener('focus', () => fakeCaret.style.opacity = "1");
+inputField.addEventListener('blur', () => fakeCaret.style.opacity = "0");
+
+// Falls du das Fenster verkleinerst
+window.addEventListener('resize', moveCaret);
 </script>
 </body>
 </html>
