@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle+</title>
+    <title>Glaggle</title>
     
     <meta name="description" content="Glaggle your life!">
     <meta name="keywords" content="Glaggle, Zahlenraten, Glame AI">
@@ -303,20 +303,25 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI-Zusammenfassung
+    // 1. KI-Zusammenfassung Box erstellen
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // 2. Deine Glaggle-Projekte (Favoriten) verarbeiten
-        // Die KI prüft: Passt die Suche zu einer deiner Apps?
-        const favResults = await getAiProcessedFavs(query);
-        favResults.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+        // 2. ALLE Aufgaben parallel starten (Favoriten, Web-KI, Zusammenfassung und Wiki)
+        // Wir warten auf die Favoriten und die Zusammenfassung zuerst
+        await Promise.all([
+            fetchGroqAI(query), // Füllt jetzt aktiv das "Glaggle denkt nach..."
+            (async () => {
+                const favs = await getAiProcessedFavs(query);
+                favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+            })(),
+            (async () => {
+                const webAi = await getAiGeneratedWebResults(query);
+                webAi.forEach(res => renderResult(res.title, res.desc, res.url, "ai-web"));
+            })()
+        ]);
 
-        // 3. Allgemeine KI-Web-Resultate generieren
-        const additionalResults = await getAiGeneratedWebResults(query);
-        additionalResults.forEach(res => renderResult(res.title, res.desc, res.url, "ai-web"));
-
-        // 4. Wikipedia als Backup
+        // 3. Wikipedia erst am Ende anhängen
         await searchWikipedia(query, 'de');
 
     } catch (e) {
@@ -648,27 +653,23 @@ async function getAiGeneratedWebResults(query) {
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
                 messages: [{ 
                     role: "system", 
-                    content: `Du bist ein Websuch-Generator. Erfinde 3 realistische und hilfreiche Suchergebnisse (Titel, kurze Beschreibung, echte URL) für die Anfrage des Nutzers. Antworte NUR als JSON-Array: [{"title": "..", "desc": "..", "url": ".."}]` 
+                    content: `Du bist ein hochpräziser Websuch-Simulator. 
+                    Erstelle 3 echte, existierende Web-Ergebnisse für die Anfrage. 
+                    KEINE erfundenen Bibliotheken. 
+                    Antworte NUR als JSON-Array: [{"title": "..", "desc": "..", "url": ".."}]` 
                 },
                 { role: "user", content: query }]
             })
         });
         const data = await res.json();
         let content = data.choices[0].message.content;
-        // Extrahiert das JSON-Array, falls die KI Text drumherum schreibt
         return JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
-    } catch(e) { 
-        console.error("KI Web-Ergebnisse Fehler", e);
-        return []; 
-    }
+    } catch(e) { return []; }
 }
 </script>
 </body>
