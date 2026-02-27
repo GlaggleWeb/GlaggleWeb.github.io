@@ -394,7 +394,7 @@ const inputField = document.getElementById('glaggleQuery');
 const fakeCaret = document.getElementById('fakeCaret');
 
 function moveCaret() {
-    // Falls das Feld nicht im Fokus ist, Cursor verstecken
+    // Falls das Feld nicht aktiv ist, Cursor ausblenden
     if (document.activeElement !== inputField) {
         fakeCaret.style.display = "none";
         return;
@@ -411,7 +411,7 @@ function moveCaret() {
     helper.style.visibility = "hidden";
     helper.style.position = "absolute";
     helper.style.whiteSpace = "pre";
-    helper.style.font = fontSize + " " + fontName;
+    helper.style.font = `${fontSize} ${fontName}`;
     
     // Text bis zur aktuellen Cursor-Position messen
     helper.textContent = inputField.value.substring(0, inputField.selectionStart);
@@ -420,34 +420,32 @@ function moveCaret() {
     const textWidth = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
-    // Positionierung berechnen
+    // Positionierung (Fixed orientiert sich am Viewport)
     fakeCaret.style.display = "block";
     fakeCaret.style.opacity = "1";
-    
-    // Wir nutzen das Rect des Inputs für die exakte Platzierung
-    const caretLeft = rect.left + paddingLeft + textWidth;
-    const caretTop = rect.top + (rect.height / 2) - 12;
-
-    fakeCaret.style.left = caretLeft + "px";
-    fakeCaret.style.top = caretTop + "px";
+    fakeCaret.style.left = (rect.left + paddingLeft + textWidth) + "px";
+    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
 }
 
-// Events für die Bewegung und Sichtbarkeit
+// Events für die Bewegung
 inputField.addEventListener('input', moveCaret);
 inputField.addEventListener('click', moveCaret);
 inputField.addEventListener('keyup', moveCaret);
 
-// Fokus-Handling: Cursor zeigen/verstecken
+// Zeigt den Cursor sofort beim Klick/Tab ins Feld
 inputField.addEventListener('focus', () => {
-    moveCaret(); // Sofort positionieren beim Klick
+    moveCaret();
 });
 
+// Sanftes Ausblenden beim Verlassen
 inputField.addEventListener('blur', () => {
     fakeCaret.style.opacity = "0";
-    setTimeout(() => { fakeCaret.style.display = "none"; }, 300);
+    setTimeout(() => { 
+        if(document.activeElement !== inputField) fakeCaret.style.display = "none"; 
+    }, 100);
 });
 
-// Bei Fensteränderungen neu berechnen
+// WICHTIG: Korrektur bei Scrollen und Fensteränderung
 window.addEventListener('resize', moveCaret);
 window.addEventListener('scroll', moveCaret);
 </script>
