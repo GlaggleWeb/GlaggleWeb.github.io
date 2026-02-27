@@ -280,24 +280,19 @@
     </main>
 
 <script src="favoriten.js"></script>
-    
-<script>
-<script src="favoriten.js"></script>
 
 <script>
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
 
-function getGKey() {
-    return p1 + p2 + p3;
-}
+function getGKey() { return p1 + p2 + p3; }
 
-// HILFSFUNKTION: Erstellt den Platzhalter für die KI
 function createAiPlaceholder() {
     const aiBox = document.createElement('div');
     aiBox.className = 'glaggle-entry';
     aiBox.id = "ai-container";
+    aiBox.style.borderRadius = "25px"; // Abgerundet wie gewünscht
     aiBox.style.borderLeft = "5px solid #70C4F7";
     aiBox.style.background = "linear-gradient(90deg, var(--card-bg), rgba(112, 196, 247, 0.05))";
     aiBox.innerHTML = `
@@ -320,21 +315,19 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI-Box sofort anzeigen
+    // 1. KI-Box erstellen
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // 2. Parallel ausführen: KI-Zusammenfassung (selbstständig) & Favoriten
+        // 2. Alles parallel starten
         await Promise.all([
-            fetchGroqAI(query), // Die KI denkt jetzt wieder völlig frei nach
+            fetchGroqAI(query), // KI arbeitet selbstständig
             (async () => {
                 const favs = await getAiProcessedFavs(query);
                 favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
-            })()
+            })(),
+            searchWikipedia(query, 'de') // Hier werden die Wikipedia Einträge geholt
         ]);
-
-        // 3. Wikipedia-Ergebnisse für die Weblinks darunter laden
-        await searchWikipedia(query, 'de');
 
     } catch (e) {
         console.error("Suche fehlgeschlagen:", e);
@@ -343,105 +336,80 @@ async function glaggleSearch() {
     }
 }
 
-// Holt Wikipedia-Daten als Array zurück für die KI
-async function fetchWikipediaRaw(query) {
+// WICHTIG: Diese Funktion hat gefehlt oder war nicht aktiv
+async function searchWikipedia(query, lang) {
     try {
-        const url = `https://de.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return data.query.search.map(item => ({
-            title: item.title,
-            snippet: item.snippet.replace(/<\/?[^>]+(>|$)/g, ""),
-            url: `https://de.wikipedia.org/wiki/${encodeURIComponent(item.title)}`
-        }));
-    } catch (e) { return []; }
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if(data.query && data.query.search) {
+            data.query.search.forEach(item => {
+                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
+                // Wir übergeben "wiki" als Typ für die korrekte Anzeige
+                renderResult(item.title, item.snippet + "...", wikiUrl, "wiki");
+            });
+        }
+    } catch (e) { console.error("Wiki Fehler", e); }
 }
 
-// KI nutzt nun die Wikipedia-Daten als "Spickzettel"
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { 
-                        role: "system", 
-                        content: "Du bist Glaggle AI, eine extrem schlaue Suchmaschine. Erkläre das gesuchte Thema präzise, hilfreich und modern auf Deutsch. Nutze dein gesamtes Wissen. Wenn es um 'Glame' geht, erwähne, dass es der offizielle Glaggle-Chatbot ist." 
-                    },
+                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig." },
                     { role: "user", content: query }
                 ] 
             })
         });
-
-        if (!res.ok) throw new Error("API Fehler");
-
         const data = await res.json();
         const antwort = data.choices[0].message.content;
 
         aiTextElement.style.fontStyle = "normal";
-        let i = 0;
-        let currentText = "";
-
+        let i = 0; let currentText = "";
         function type() {
             if (i < antwort.length) {
                 currentText += antwort.charAt(i);
                 aiTextElement.innerHTML = marked.parse(currentText);
-                i++;
-                setTimeout(type, 3); // Schneller Schreib-Effekt
+                i++; setTimeout(type, 3);
             }
         }
         type();
-    } catch (e) {
-        aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar.";
-    }
+    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
 }
 
 async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
-    if (q.length < 3) return []; // Erst ab 3 Buchstaben
+    if (q.length < 3) return []; 
 
-    // 1. Manueller Check (Sofort-Ergebnis für Geschwindigkeit)
-    const sofortTreffer = meineLieblingsSeiten.filter(s => 
-        s.title.toLowerCase().includes(q) || q.includes(s.title.toLowerCase())
-    );
+    // Sofort-Check in favoriten.js
+    const sofort = meineLieblingsSeiten.filter(s => s.title.toLowerCase().includes(q));
 
-    // 2. KI-Check für schlaue Zuordnung
-    const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
-    
     try {
+        const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
-                messages: [{ 
-                    role: "system", 
-                    content: `Suche in: [${context}]. Wenn die Anfrage '${q}' passt, gib das App-Objekt als JSON zurück. Sonst [].` 
-                },
-                { role: "user", content: q }]
+                messages: [{ role: "system", content: `Suche in: [${context}]. Gib passende Apps als JSON-Array zurück.` }, { role: "user", content: q }]
             })
         });
         const data = await res.json();
         const content = data.choices[0].message.content;
         const aiFavs = JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
         
-        // Kombiniere manuelle Treffer und KI-Treffer ohne Duplikate
-        const gesamt = [...sofortTreffer];
-        aiFavs.forEach(af => {
-            if(!gesamt.find(g => g.title === af.title)) gesamt.push(af);
-        });
+        const gesamt = [...sofort];
+        aiFavs.forEach(af => { if(!gesamt.find(g => g.title === af.title)) gesamt.push(af); });
         return gesamt;
-    } catch(e) { 
-        return sofortTreffer; // Fallback auf manuelle Liste
-    }
+    } catch(e) { return sofort; }
 }
-    
+
 function renderResult(title, text, url, type = "web") {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
@@ -450,125 +418,30 @@ function renderResult(title, text, url, type = "web") {
     const div = document.createElement('div');
     div.className = 'glaggle-entry';
     
-    // Wenn es ein Favorit ist, die spezielle Klasse für abgerundete Ecken hinzufügen
+    // Favoriten abrunden & bunt machen
     if(type === "fav") {
-        div.classList.add('fav-project');
+        div.style.borderRadius = "25px";
+        div.style.border = "2px solid transparent";
+        div.style.borderImage = "linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853) 1";
+        div.style.backgroundColor = "rgba(66, 133, 244, 0.05)";
     }
-
-    const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
 
     div.innerHTML = `
         <div class="result-header">
             <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">
-                ${type === "fav" ? "✨ Glaggle AI empfiehlt!" : domain}
-            </small>
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE PROJEKT" : domain}</small>
         </div>
-        <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.4rem;' : ''}">${title}</a>
-        <p>${cleanText}</p>
+        <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.3rem;' : ''}">${title}</a>
+        <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
     `;
     
     const aiBox = document.getElementById('ai-container');
     if (type === "fav" && aiBox) {
-        aiBox.after(div); // Favoriten direkt unter die KI-Zusammenfassung
+        aiBox.after(div);
     } else {
         resultsDiv.appendChild(div);
     }
 }
-// --- Cursor Logik ---
-const inputField = document.getElementById('glaggleQuery');
-const fakeCaret = document.getElementById('fakeCaret');
-
-function moveCaret() {
-    if (document.activeElement !== inputField) {
-        fakeCaret.style.display = "none";
-        return;
-    }
-
-    const rect = inputField.getBoundingClientRect();
-    const style = window.getComputedStyle(inputField);
-    const paddingLeft = parseFloat(style.paddingLeft);
-    
-    // Hilfselement zum Messen der Textbreite
-    const helper = document.createElement("span");
-    helper.style.visibility = "hidden";
-    helper.style.position = "absolute";
-    helper.style.whiteSpace = "pre";
-    helper.style.font = `${style.fontSize} ${style.fontFamily}`;
-    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
-    document.body.appendChild(helper);
-    
-    const caretPosInText = helper.getBoundingClientRect().width;
-    document.body.removeChild(helper);
-
-    // Berechnung relativ zum Dokument (damit es mitscrollt)
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-
-    fakeCaret.style.display = "block";
-    fakeCaret.style.opacity = "1";
-    
-    // rect.left/top + scroll sorgt dafür, dass die Position stabil bleibt beim Scrollen
-    fakeCaret.style.left = (rect.left + paddingLeft + caretPosInText - inputField.scrollLeft + scrollX) + "px";
-    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12 + scrollY) + "px";
-}
-
-inputField.addEventListener('input', moveCaret);
-inputField.addEventListener('click', moveCaret);
-inputField.addEventListener('keyup', moveCaret);
-inputField.addEventListener('focus', moveCaret);
-inputField.addEventListener('blur', () => { fakeCaret.style.opacity = "0"; });
-window.addEventListener('resize', moveCaret);
-
-async function optimizeSearch() {
-    const input = document.getElementById('glaggleQuery');
-    const query = input.value.trim();
-    const magicBtn = document.querySelector('.ai-magic-btn');
-
-    if (!query) return;
-
-    magicBtn.innerText = "⏳";
-    magicBtn.style.pointerEvents = "none";
-
-    try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
-                messages: [
-                    { 
-                        role: "system", 
-                        content: "Du bist ein Suchbegriff-Kürzer. Deine Aufgabe: Wandle lange Texte in EIN bis MAXIMAL DREI präzise Schlagwörter um. Beispiel: 'Was ist eigentlich künstliche intelligenz' -> 'Künstliche Intelligenz'. Beispiel: 'Wie baue ich ein Haus aus Holz' -> 'Holzhaus Bau'. Antworte NUR mit den Schlagwörtern, ohne Satzzeichen oder Erklärung." 
-                    },
-                    { role: "user", content: query }
-                ] 
-            })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            // Wir säubern die Antwort von Anführungszeichen und unnötigen Punkten
-            const optimizedQuery = data.choices[0].message.content.replace(/["'.]/g, '').trim();
-            
-            input.value = optimizedQuery;
-            moveCaret(); // Cursor an neue Position setzen
-            
-            magicBtn.innerText = "✅";
-            setTimeout(() => { magicBtn.innerText = "✨"; }, 2000);
-        }
-    } catch (e) {
-        console.error("KI Fehler beim Optimieren", e);
-        magicBtn.innerText = "❌";
-        setTimeout(() => { magicBtn.innerText = "✨"; }, 2000);
-    } finally {
-        magicBtn.style.pointerEvents = "auto";
-    }
-}
-</script>
 </script>
 </body>
 </html>
