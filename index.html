@@ -303,22 +303,29 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. KI-Box als Platzhalter ganz oben einfügen
-    const aiBox = createAiPlaceholder();
-    resultsDiv.appendChild(aiBox);
+    // 1. KI-Zusammenfassung
+    resultsDiv.appendChild(createAiPlaceholder());
 
-    // 2. Suche in Favoriten (Mindestens 4 Buchstaben)
-    sucheInEigenerListe(query);
+    try {
+        // 2. Deine Glaggle-Projekte (Favoriten) verarbeiten
+        // Die KI prüft: Passt die Suche zu einer deiner Apps?
+        const favResults = await getAiProcessedFavs(query);
+        favResults.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
 
-    // 3. Wikipedia & KI starten (Parallel)
-    Promise.all([
-        fetchGroqAI(query),
-        searchWikipedia(query, 'de')
-    ]).finally(() => {
+        // 3. Allgemeine KI-Web-Resultate generieren
+        const additionalResults = await getAiGeneratedWebResults(query);
+        additionalResults.forEach(res => renderResult(res.title, res.desc, res.url, "ai-web"));
+
+        // 4. Wikipedia als Backup
+        await searchWikipedia(query, 'de');
+
+    } catch (e) {
+        console.error("Suche fehlgeschlagen:", e);
+    } finally {
         loader.style.display = "none";
-    });
+    }
 }
-
+    
 async function sucheInEigenerListe(query) {
     const q = query.toLowerCase().trim();
     
@@ -607,6 +614,32 @@ async function optimizeSearch() {
     } finally {
         magicBtn.style.pointerEvents = "auto";
     }
+}
+
+async function getAiProcessedFavs(query) {
+    const context = meineLieblingsSeiten.map(s => `App-Name: ${s.title}, Zweck: ${s.desc}, URL: ${s.url}`).join(" | ");
+    
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [{ 
+                role: "system", 
+                content: `Du bist der Navigator für das Glaggle-Ecosystem. 
+                Hier sind die offiziellen Glaggle-Apps: [${context}]. 
+                Wenn die Suchanfrage zu einer dieser Apps passt, gib sie als Priorität aus. 
+                Schreibe eine kurze, begeisterte Beschreibung, warum diese App perfekt für die Suche ist. 
+                Antworte NUR als JSON-Array: [{"title": "..", "desc": "..", "url": ".."}]` 
+            },
+            { role: "user", content: query }]
+        })
+    });
+    const data = await res.json();
+    try { 
+        let content = data.choices[0].message.content;
+        return JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1)); 
+    } catch(e) { return []; }
 }
 </script>
 </body>
