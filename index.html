@@ -229,6 +229,21 @@
 .search-bar-container {
     gap: 5px;
 }
+
+/* Spezielles Styling für offizielle Projekte */
+.glaggle-entry.fav-project {
+    border-radius: 25px !important; /* Schön abgerundete Ecken */
+    border: 2px solid transparent !important;
+    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box; /* Bunter Glaggle-Rand */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.glaggle-entry.fav-project:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 30px rgba(112, 196, 247, 0.3);
+}
         
 </style>
 </head>
@@ -435,29 +450,31 @@ function renderResult(title, text, url, type = "web") {
     const div = document.createElement('div');
     div.className = 'glaggle-entry';
     
+    // Wenn es ein Favorit ist, die spezielle Klasse für abgerundete Ecken hinzufügen
     if(type === "fav") {
-        div.style.borderLeft = "5px solid transparent";
-        div.style.borderImage = "linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853) 1";
-        div.style.backgroundColor = "rgba(66, 133, 244, 0.05)";
+        div.classList.add('fav-project');
     }
+
+    const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
 
     div.innerHTML = `
         <div class="result-header">
             <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "OFFIZIELLES GLAGGLE PROJEKT" : "WEB-RESULTAT"}</small>
+            <small style="color: #34a853; font-weight:bold;">
+                ${type === "fav" ? "✨ Glaggle AI empfiehlt!" : domain}
+            </small>
         </div>
-        <a href="${url}" target="_blank">${title}</a>
-        <p>${text}</p>
+        <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.4rem;' : ''}">${title}</a>
+        <p>${cleanText}</p>
     `;
     
     const aiBox = document.getElementById('ai-container');
     if (type === "fav" && aiBox) {
-        aiBox.after(div);
+        aiBox.after(div); // Favoriten direkt unter die KI-Zusammenfassung
     } else {
         resultsDiv.appendChild(div);
     }
 }
-
 // --- Cursor Logik ---
 const inputField = document.getElementById('glaggleQuery');
 const fakeCaret = document.getElementById('fakeCaret');
