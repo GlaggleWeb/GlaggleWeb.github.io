@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle</title>
+    <title>Glaggle+</title>
     
     <meta name="description" content="Glaggle your life!">
     <meta name="keywords" content="Glaggle, Zahlenraten, Glame AI">
@@ -267,7 +267,9 @@
 <script src="favoriten.js"></script>
     
 <script>
+<script src="favoriten.js"></script>
 
+<script>
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
@@ -307,22 +309,24 @@ async function glaggleSearch() {
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // 2. ALLE Aufgaben parallel starten (Favoriten, Web-KI, Zusammenfassung und Wiki)
-        // Wir warten auf die Favoriten und die Zusammenfassung zuerst
-        await Promise.all([
-            fetchGroqAI(query), // Füllt jetzt aktiv das "Glaggle denkt nach..."
-            (async () => {
-                const favs = await getAiProcessedFavs(query);
-                favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
-            })(),
-            (async () => {
-                const webAi = await getAiGeneratedWebResults(query);
-                webAi.forEach(res => renderResult(res.title, res.desc, res.url, "ai-web"));
-            })()
-        ]);
+        // 2. Favoriten (Eigene Projekte) verarbeiten
+        const favs = await getAiProcessedFavs(query);
+        favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
 
-        // 3. Wikipedia erst am Ende anhängen
-        await searchWikipedia(query, 'de');
+        // 3. ECHTE Wikipedia-Daten für Kontext holen
+        const wikiData = await fetchWikipediaRaw(query);
+        
+        // 4. KI-Zusammenfassung basierend auf Wikipedia-Daten starten
+        if (wikiData.length > 0) {
+            fetchGroqAIWithContext(query, wikiData);
+        } else {
+            document.getElementById('ai-text').innerText = "Keine direkten Informationen gefunden.";
+        }
+
+        // 5. Wikipedia-Ergebnisse als normale Suchergebnisse rendern
+        wikiData.forEach(item => {
+            renderResult(item.title, item.snippet, item.url, "wiki");
+        });
 
     } catch (e) {
         console.error("Suche fehlgeschlagen:", e);
@@ -330,103 +334,38 @@ async function glaggleSearch() {
         loader.style.display = "none";
     }
 }
-    
-async function sucheInEigenerListe(query) {
-    const q = query.toLowerCase().trim();
-    
-    // Wir lassen die Suche jetzt schon ab 2 Buchstaben zu
-    if (q.length < 2) return; 
 
-    // 1. Klassische Vor-Filterung (schnell)
-    // Wir nehmen Seiten, die den Text enthalten ODER lassen die KI später entscheiden
-    const potenzielleTreffer = meineLieblingsSeiten.filter(seite => 
-        seite.title.toLowerCase().includes(q) || 
-        seite.desc.toLowerCase().includes(q)
-    );
-
-    // 2. KI-Unterstützung für "schlaue" Zuordnung
-    // Wir fragen die KI, welche unserer Favoriten zur Anfrage passen
+// Holt Wikipedia-Daten als Array zurück für die KI
+async function fetchWikipediaRaw(query) {
     try {
-        const seitenListeString = meineLieblingsSeiten.map(s => s.title).join(", ");
-        
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
-                messages: [
-                    { role: "system", content: `Du bist ein Filter-System. Ich gebe dir eine Liste von Seitentiteln: [${seitenListeString}]. 
-                    Prüfe, welche dieser Titel zur Suchanfrage passt (auch semantisch). 
-                    Antworte NUR mit den passenden Titeln, getrennt durch Komma. Wenn nichts passt, antworte 'KEINE'.` },
-                    { role: "user", content: `Suche: ${q}` }
-                ] 
-            })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            const kiAntwort = data.choices[0].message.content;
-
-            if (kiAntwort !== "KEINE") {
-                // Die KI-Treffer mit unseren Daten abgleichen und anzeigen
-                meineLieblingsSeiten.forEach(seite => {
-                    if (kiAntwort.includes(seite.title)) {
-                        // Verhindern, dass wir Duplikate anzeigen, falls die klassische Suche schon denselben Treffer hat
-                        if (!potenzielleTreffer.find(p => p.title === seite.title)) {
-                            renderResult(seite.title, seite.desc, seite.url, "fav");
-                        }
-                    }
-                });
-            }
-        }
-    } catch (e) {
-        console.error("KI-Favoriten-Filter Fehler", e);
-    }
-
-    // Die klassischen Treffer trotzdem sofort anzeigen (Geschwindigkeit)
-    potenzielleTreffer.forEach(seite => {
-        renderResult(seite.title, seite.desc, seite.url, "fav");
-    });
+        const url = `https://de.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.query.search.map(item => ({
+            title: item.title,
+            snippet: item.snippet.replace(/<\/?[^>]+(>|$)/g, ""),
+            url: `https://de.wikipedia.org/wiki/${encodeURIComponent(item.title)}`
+        }));
+    } catch (e) { return []; }
 }
 
-async function searchWikipedia(query, lang) {
-    try {
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if(data.query && data.query.search) {
-            data.query.search.forEach(item => {
-                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
-                renderResult(item.title, item.snippet + "...", wikiUrl, "wiki");
-            });
-        }
-    } catch (e) { console.error("Wiki Fehler", e); }
-} 
-
-async function fetchGroqAI(query) {
+// KI nutzt nun die Wikipedia-Daten als "Spickzettel"
+async function fetchGroqAIWithContext(query, wikiContext) {
     const aiTextElement = document.getElementById('ai-text');
+    const contextString = wikiContext.slice(0, 3).map(w => `Quelle ${w.title}: ${w.snippet}`).join("\n");
+
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und auf Deutsch. Du bist wie die Suchzussamenfassung von Google. Du gibst also Zussamenfassungen auf Suchanfragen" },
-                    { role: "user", content: `Erkläre kurz: ${query}` }
-                ] 
+                    { role: "system", content: `Du bist Glaggle AI. Erstelle eine kurze Zusammenfassung auf Deutsch NUR basierend auf diesem Kontext:\n${contextString}\n\nFalls der Nutzer nach Glame fragt, erwähne dass es ein Glaggle Chatbot ist. Bleib sachlich.` },
+                    { role: "user", content: `Suchanfrage: ${query}` }
+                ]
             })
         });
-
-        if (!res.ok) throw new Error("API Fehler");
-
         const data = await res.json();
         const antwort = data.choices[0].message.content;
 
@@ -444,212 +383,20 @@ async function fetchGroqAI(query) {
         }
         type();
     } catch (e) {
-        aiTextElement.innerText = "KI momentan nicht verfügbar.";
-    }
-}
-
-// EINZIGE renderResult Funktion (geputzt)
-function renderResult(title, text, url, type = "web") {
-    const resultsDiv = document.getElementById('glaggleResults');
-    const domain = new URL(url).hostname.replace('www.', '');
-    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    
-    const div = document.createElement('div');
-    div.className = 'glaggle-entry';
-    div.setAttribute('data-type', type); // Wichtig für CSS-Styling!
-    
-    // Styling-Logik
-    if(type === "fav") {
-        div.style.borderLeft = "5px solid transparent";
-        div.style.borderImage = "linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853) 1";
-        div.style.backgroundColor = "rgba(66, 133, 244, 0.05)";
-    } else if(type === "ai-web") {
-        div.style.borderLeft = "5px solid #8cc9f5";
-    }
-
-    const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
-
-    div.innerHTML = `
-        <div class="result-header">
-            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "OFFIZIELLES GLAGGLE PROJEKT" : domain}</small>
-        </div>
-        <a href="${url}" target="_blank">${title}</a>
-        <p>${cleanText}</p>
-    `;
-    
-    // Sortierung: Favoriten direkt nach der KI-Box, alles andere darunter
-    const aiBox = document.getElementById('ai-container');
-    if (type === "fav" && aiBox) {
-        aiBox.after(div);
-    } else {
-        resultsDiv.appendChild(div);
-    }
-}
-
-const inputField = document.getElementById('glaggleQuery');
-const fakeCaret = document.getElementById('fakeCaret');
-
-function moveCaret() {
-    if (document.activeElement !== inputField) {
-        fakeCaret.style.display = "none";
-        return;
-    }
-
-    const rect = inputField.getBoundingClientRect();
-    const style = window.getComputedStyle(inputField);
-    const paddingLeft = parseFloat(style.paddingLeft);
-    const paddingRight = parseFloat(style.paddingRight);
-    
-    // 1. Wir messen die gesamte Breite des Textes im Input
-    const helper = document.createElement("span");
-    helper.style.visibility = "hidden";
-    helper.style.position = "absolute";
-    helper.style.whiteSpace = "pre";
-    helper.style.font = `${style.fontSize} ${style.fontFamily}`;
-    helper.textContent = inputField.value; // Den kompletten Text messen
-    document.body.appendChild(helper);
-    
-    const totalTextWidth = helper.getBoundingClientRect().width;
-    
-    // 2. Wir messen den Text bis zur Cursor-Position
-    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
-    const caretPosInText = helper.getBoundingClientRect().width;
-    document.body.removeChild(helper);
-
-    // 3. Die magische Berechnung:
-    // Wir nehmen die tatsächliche Position des Text-Endes im Input-Feld
-    // und ziehen den Versatz ab.
-    let finalLeft;
-    const availableWidth = rect.width - paddingLeft - paddingRight;
-
-    if (totalTextWidth <= availableWidth) {
-        // Fall A: Text passt noch komplett ins Feld
-        finalLeft = rect.left + paddingLeft + caretPosInText;
-    } else {
-        // Fall B: Text wird gescrollt (Feld ist voll)
-        // Der Browser hält den Cursor bei langen Eingaben meist ganz rechts
-        finalLeft = rect.right - paddingRight;
-        
-        // Kleiner Check: Wenn der User im langen Text nach links navigiert
-        const scrollOffset = inputField.scrollLeft;
-        const relativePos = paddingLeft + caretPosInText - scrollOffset;
-        finalLeft = rect.left + relativePos;
-
-        // "Stoppschild" Lupe:
-        const maxRight = rect.right - paddingRight;
-        if (finalLeft > maxRight) finalLeft = maxRight;
-        
-        // "Stoppschild" Links (beim Zurücknavigieren):
-        const minLeft = rect.left + paddingLeft;
-        if (finalLeft < minLeft) finalLeft = minLeft;
-    }
-
-    // Positionierung
-    fakeCaret.style.display = "block";
-    fakeCaret.style.opacity = "1";
-    fakeCaret.style.left = finalLeft + "px";
-    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
-}
-// Events für die Bewegung
-inputField.addEventListener('input', moveCaret);
-inputField.addEventListener('click', moveCaret);
-inputField.addEventListener('keyup', moveCaret);
-
-// Zeigt den Cursor sofort beim Klick/Tab ins Feld
-inputField.addEventListener('focus', () => {
-    moveCaret();
-});
-
-// Sanftes Ausblenden beim Verlassen
-inputField.addEventListener('blur', () => {
-    fakeCaret.style.opacity = "0";
-    setTimeout(() => { 
-        if(document.activeElement !== inputField) fakeCaret.style.display = "none"; 
-    }, 100);
-});
-
-// WICHTIG: Korrektur bei Scrollen und Fensteränderung
-window.addEventListener('resize', moveCaret);
-window.addEventListener('scroll', moveCaret);
-
-async function optimizeSearch() {
-    const input = document.getElementById('glaggleQuery');
-    const query = input.value.trim();
-    const magicBtn = document.querySelector('.ai-magic-btn');
-
-    if (!query) return;
-
-    // Kleiner visueller Effekt während des Wartens
-    magicBtn.innerText = "⏳";
-    magicBtn.style.pointerEvents = "none";
-
-    try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
-                messages: [
-                    { role: "system", content: "Du bist ein Suchmaschinen-Experte. Optimiere die folgende Suchanfrage für bessere Ergebnisse. Antworte NUR mit der verbesserten Anfrage, kein Text drumherum. Du probierst die Wörter auf 1-2 zu begrenzen. Auch soll der Hauptfokus behalten werden (also wenn der Nutzer zb. nach KI fragt änderst du es auf Künstliche Intelligenz oder ähnlich und nicht zb. KI Technologien oder so.)" },
-                    { role: "user", content: query }
-                ] 
-            })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Entfernt eventuelle Anführungszeichen
-            
-            // Text im Feld ersetzen
-            input.value = optimizedQuery;
-            
-            // Den bunten Cursor aktualisieren
-            moveCaret();
-            
-            // Kurzer Erfolgseffekt
-            magicBtn.innerText = "✅";
-            setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
-        }
-    } catch (e) {
-        console.error("KI Fehler beim Optimieren", e);
-        magicBtn.innerText = "❌";
-        setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
-    } finally {
-        magicBtn.style.pointerEvents = "auto";
+        aiTextElement.innerText = "KI Zusammenfassung momentan nicht verfügbar.";
     }
 }
 
 async function getAiProcessedFavs(query) {
-    const context = meineLieblingsSeiten.map(s => `App-Name: ${s.title}, Zweck: ${s.desc}, URL: ${s.url}`).join(" | ");
+    const q = query.toLowerCase();
+    const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}, URL: ${s.url}`).join(" | ");
     
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
-        body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
-            messages: [{ 
-                role: "system", 
-                content: `Du bist der Navigator für das Glaggle-Ecosystem. 
-                Hier sind die offiziellen Glaggle-Apps: [${context}]. 
-                Wenn die Suchanfrage zu einer dieser Apps passt, gib sie als Priorität aus. 
-                Schreibe eine kurze, begeisterte Beschreibung, warum diese App perfekt für die Suche ist. 
-                Antworte NUR als JSON-Array: [{"title": "..", "desc": "..", "url": ".."}]` 
-            },
-            { role: "user", content: query }]
-        })
-    });
-    const data = await res.json();
-    try { 
-        let content = data.choices[0].message.content;
-        return JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1)); 
-    } catch(e) { return []; }
-}
+    // Manueller Boost für Glame
+    if (q.includes("glame") || q.includes("ai")) {
+        const glame = meineLieblingsSeiten.find(s => s.title.toLowerCase().includes("glame"));
+        if (glame) return [glame];
+    }
 
-async function getAiGeneratedWebResults(query) {
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -658,19 +405,108 @@ async function getAiGeneratedWebResults(query) {
                 model: "llama-3.1-8b-instant",
                 messages: [{ 
                     role: "system", 
-                    content: `Du bist ein hochpräziser Websuch-Simulator. 
-                    Erstelle 3 echte, existierende Web-Ergebnisse für die Anfrage. 
-                    KEINE erfundenen Bibliotheken. 
-                    Antworte NUR als JSON-Array: [{"title": "..", "desc": "..", "url": ".."}]` 
+                    content: `Du suchst in: [${context}]. Wenn die Anfrage passt, gib das JSON zurück. Sonst [].` 
                 },
                 { role: "user", content: query }]
             })
         });
         const data = await res.json();
-        let content = data.choices[0].message.content;
+        const content = data.choices[0].message.content;
         return JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
     } catch(e) { return []; }
 }
+
+function renderResult(title, text, url, type = "web") {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry';
+    
+    if(type === "fav") {
+        div.style.borderLeft = "5px solid transparent";
+        div.style.borderImage = "linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853) 1";
+        div.style.backgroundColor = "rgba(66, 133, 244, 0.05)";
+    }
+
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "OFFIZIELLES GLAGGLE PROJEKT" : domain}</small>
+        </div>
+        <a href="${url}" target="_blank">${title}</a>
+        <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
+    `;
+    
+    const aiBox = document.getElementById('ai-container');
+    if (type === "fav" && aiBox) {
+        aiBox.after(div);
+    } else {
+        resultsDiv.appendChild(div);
+    }
+}
+
+// --- Cursor Logik ---
+const inputField = document.getElementById('glaggleQuery');
+const fakeCaret = document.getElementById('fakeCaret');
+
+function moveCaret() {
+    if (document.activeElement !== inputField) {
+        fakeCaret.style.display = "none";
+        return;
+    }
+    const rect = inputField.getBoundingClientRect();
+    const style = window.getComputedStyle(inputField);
+    const paddingLeft = parseFloat(style.paddingLeft);
+    
+    const helper = document.createElement("span");
+    helper.style.visibility = "hidden"; helper.style.position = "absolute"; helper.style.whiteSpace = "pre";
+    helper.style.font = `${style.fontSize} ${style.fontFamily}`;
+    helper.textContent = inputField.value.substring(0, inputField.selectionStart);
+    document.body.appendChild(helper);
+    
+    const caretPosInText = helper.getBoundingClientRect().width;
+    document.body.removeChild(helper);
+
+    fakeCaret.style.display = "block";
+    fakeCaret.style.opacity = "1";
+    fakeCaret.style.left = (rect.left + paddingLeft + caretPosInText - inputField.scrollLeft) + "px";
+    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
+}
+
+inputField.addEventListener('input', moveCaret);
+inputField.addEventListener('click', moveCaret);
+inputField.addEventListener('keyup', moveCaret);
+inputField.addEventListener('focus', moveCaret);
+inputField.addEventListener('blur', () => { fakeCaret.style.opacity = "0"; });
+window.addEventListener('resize', moveCaret);
+
+// --- Such-Optimierer ---
+async function optimizeSearch() {
+    const input = document.getElementById('glaggleQuery');
+    const query = input.value.trim();
+    const magicBtn = document.querySelector('.ai-magic-btn');
+    if (!query) return;
+
+    magicBtn.innerText = "⏳";
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [{ role: "system", content: "Optimiere die Suche auf 1-2 Schlagworte. Antworte NUR mit dem Ergebnis." }, { role: "user", content: query }]
+            })
+        });
+        const data = await res.json();
+        input.value = data.choices[0].message.content.replace(/"/g, '');
+        moveCaret();
+        magicBtn.innerText = "✅";
+        setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
+    } catch (e) { magicBtn.innerText = "✨"; }
+}
+</script>
 </script>
 </body>
 </html>
