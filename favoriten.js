@@ -341,6 +341,100 @@ const meineLieblingsSeiten = [
 { title: "Remove.bg", desc: "Hintergrund automatisch entfernen.", url: "https://remove.bg" },
 { title: "ILovePDF", desc: "PDF-Dateien bearbeiten & konvertieren.", url: "https://ilovepdf.com" },
 { title: "Speedtest", desc: "Internetgeschwindigkeit testen.", url: "https://speedtest.net" },
-{ title: "DownDetector", desc: "Prüfen, ob Dienste aktuell Probleme haben.", url: "https://downdetector.com" }
+{ title: "DownDetector", desc: "Prüfen, ob Dienste aktuell Probleme haben.", url: "https://downdetector.com" },
+
+// --- KI & MACHINE LEARNING ---
+{ title: "Anthropic", desc: "Claude KI und AI-Sicherheitsforschung.", url: "https://anthropic.com" },
+{ title: "Stability AI", desc: "Entwickler von Stable Diffusion.", url: "https://stability.ai" },
+{ title: "Midjourney", desc: "KI-Bildgenerierung über Discord.", url: "https://midjourney.com" },
+{ title: "Replicate", desc: "KI-Modelle per API ausführen.", url: "https://replicate.com" },
+{ title: "Papers with Code", desc: "Forschungspapiere mit Code verknüpft.", url: "https://paperswithcode.com" },
+{ title: "Kaggle", desc: "Data-Science-Wettbewerbe & Datensätze.", url: "https://kaggle.com" },
+{ title: "Fast.ai", desc: "Deep Learning Kurse & Bibliothek.", url: "https://fast.ai" },
+
+// --- STARTUPS & TECH ---
+{ title: "Product Hunt", desc: "Neue Tech-Produkte entdecken.", url: "https://producthunt.com" },
+{ title: "AngelList", desc: "Startup Jobs & Investoren.", url: "https://wellfound.com" },
+{ title: "Crunchbase", desc: "Datenbank für Startups & Firmen.", url: "https://crunchbase.com" },
+{ title: "YC Hacker News", desc: "Tech-News & Diskussionen.", url: "https://news.ycombinator.com" },
+{ title: "Indie Hackers", desc: "Community für Solo-Gründer.", url: "https://indiehackers.com" },
+
+// --- DESIGN & UI ---
+{ title: "Awwwards", desc: "Die besten Webdesigns weltweit.", url: "https://awwwards.com" },
+{ title: "UI8", desc: "Premium UI Kits & Design Assets.", url: "https://ui8.net" },
+{ title: "Mobbin", desc: "UI-Design Inspiration für Apps.", url: "https://mobbin.com" },
+{ title: "LottieFiles", desc: "Animationen für Apps & Web.", url: "https://lottiefiles.com" },
+{ title: "Icons8", desc: "Icons, Illustrationen & Musik.", url: "https://icons8.com" },
+
+// --- DATEN & STATISTIK ---
+{ title: "Statista", desc: "Marktdaten & Statistiken.", url: "https://statista.com" },
+{ title: "World Bank Data", desc: "Globale Wirtschaftsdaten.", url: "https://data.worldbank.org" },
+{ title: "OECD Data", desc: "Internationale Vergleichsdaten.", url: "https://data.oecd.org" },
+{ title: "Gapminder", desc: "Interaktive Datenvisualisierung.", url: "https://gapminder.org" },
+
+// --- CYBER & PRIVACY ---
+{ title: "Proton", desc: "Schweizer E-Mail & VPN.", url: "https://proton.me" },
+{ title: "NordVPN", desc: "VPN-Dienst für Privatsphäre.", url: "https://nordvpn.com" },
+{ title: "PrivacyTools", desc: "Empfehlungen für digitale Sicherheit.", url: "https://privacyguides.org" },
+
+// --- WISSENSCHAFT & SPACE ---
+{ title: "CERN", desc: "Europäische Organisation für Kernforschung.", url: "https://cern.ch" },
+{ title: "ESO", desc: "Europäische Südsternwarte.", url: "https://eso.org" },
+{ title: "SETI Institute", desc: "Suche nach außerirdischem Leben.", url: "https://seti.org" },
+{ title: "Planetary Society", desc: "Raumfahrtorganisation von Bill Nye.", url: "https://planetary.org" },
+
+// --- FINTECH & KRYPTOWELT ---
+{ title: "Binance", desc: "Kryptobörse weltweit.", url: "https://binance.com" },
+{ title: "Kraken", desc: "Krypto-Handelsplattform.", url: "https://kraken.com" },
+{ title: "CoinGecko", desc: "Krypto-Marktdaten.", url: "https://coingecko.com" },
+{ title: "Glassnode", desc: "Blockchain-Analyseplattform.", url: "https://glassnode.com" },
+
+// --- ENTWICKLER POWER ---
+{ title: "Stack Exchange", desc: "Netzwerk spezialisierter Q&A Communities.", url: "https://stackexchange.com" },
+{ title: "DevDocs", desc: "API-Dokumentationen offline nutzbar.", url: "https://devdocs.io" },
+{ title: "Roadmap.sh", desc: "Karrierepfade für Entwickler.", url: "https://roadmap.sh" },
+{ title: "Overleaf", desc: "LaTeX online schreiben.", url: "https://overleaf.com" },
+
+// --- LERNEN & WISSEN ---
+{ title: "MasterClass", desc: "Kurse von weltbekannten Experten.", url: "https://masterclass.com" },
+{ title: "FutureLearn", desc: "Online-Kurse von Universitäten.", url: "https://futurelearn.com" },
+{ title: "Saylor Academy", desc: "Kostenlose Hochschulkurse.", url: "https://saylor.org" },
+
+// --- VIDEO & CONTENT CREATION ---
+{ title: "CapCut", desc: "Beliebter Online-Videoeditor.", url: "https://capcut.com" },
+{ title: "Descript", desc: "Audio & Video durch Text bearbeiten.", url: "https://descript.com" },
+{ title: "Streamlabs", desc: "Tools für Streamer.", url: "https://streamlabs.com" },
+{ title: "Patreon", desc: "Creator finanziell unterstützen.", url: "https://patreon.com" },
+
+// --- TECH NEWS ---
+{ title: "Ars Technica", desc: "Technologie & Wissenschaft.", url: "https://arstechnica.com" },
+{ title: "ZDNet", desc: "IT-News & Business Tech.", url: "https://zdnet.com" },
+{ title: "9to5Mac", desc: "Apple News & Leaks.", url: "https://9to5mac.com" },
+{ title: "Android Authority", desc: "Android News & Reviews.", url: "https://androidauthority.com" },
+
+// --- GEOGRAPHIE & KARTEN ---
+{ title: "OpenStreetMap", desc: "Freie Weltkarte.", url: "https://openstreetmap.org" },
+{ title: "GeoGuessr", desc: "Errate Orte weltweit anhand von Street View.", url: "https://geoguessr.com" },
+{ title: "Windy", desc: "Live-Wetterkarten weltweit.", url: "https://windy.com" },
+
+// --- MUSIK & AUDIO ---
+{ title: "Bandcamp", desc: "Musik direkt von Künstlern kaufen.", url: "https://bandcamp.com" },
+{ title: "Genius", desc: "Songtexte & Interpretationen.", url: "https://genius.com" },
+{ title: "Last.fm", desc: "Musiktracking & Empfehlungen.", url: "https://last.fm" },
+
+// --- GAMING INDUSTRY ---
+{ title: "SteamDB", desc: "Statistiken & Preisverläufe für Steam.", url: "https://steamdb.info" },
+{ title: "IsThereAnyDeal", desc: "Spielepreisvergleich.", url: "https://isthereanydeal.com" },
+{ title: "Backloggd", desc: "Spiele bewerten & tracken.", url: "https://backloggd.com" },
+
+// --- PRODUKTIVITÄT PRO ---
+{ title: "Readwise", desc: "Markierungen aus Büchern sammeln.", url: "https://readwise.io" },
+{ title: "Freedom", desc: "Ablenkende Websites blockieren.", url: "https://freedom.to" },
+{ title: "RescueTime", desc: "Zeitanalyse deiner digitalen Nutzung.", url: "https://rescuetime.com" },
+
+// --- COMMUNITY & DISKUSSION ---
+{ title: "Discord Bots", desc: "Bot-Verzeichnis für Discord-Server.", url: "https://top.gg" },
+{ title: "Meetup", desc: "Lokale Events & Communities.", url: "https://meetup.com" },
+{ title: "Internations", desc: "Community für Expats weltweit.", url: "https://internations.org" }
 ]; // <-- Das ist die wichtigste Zeile!
     
