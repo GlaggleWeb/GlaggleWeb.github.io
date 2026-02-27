@@ -194,7 +194,7 @@
     pointer-events: none;
     z-index: 9999;
     border-radius: 5px;
-    transition: left 0.3s ease-out, top 0.3s ease-out;
+    transition: left 0.1s ease-out, top 0.1s ease-out;
     /* Animation lässt die Farben im Strich fließen */
     animation: glaggleFlow 3s infinite alternate ease-in-out;
     display: none;
@@ -413,7 +413,6 @@ function moveCaret() {
     const rect = inputField.getBoundingClientRect();
     const style = window.getComputedStyle(inputField);
     const paddingLeft = parseFloat(style.paddingLeft);
-    const paddingRight = parseFloat(style.paddingRight); // Wichtig für die Grenze
     const fontSize = style.fontSize;
     const fontName = style.fontFamily;
 
@@ -426,25 +425,28 @@ function moveCaret() {
     helper.textContent = inputField.value.substring(0, inputField.selectionStart);
     document.body.appendChild(helper);
     
-    let textWidth = helper.getBoundingClientRect().width;
+    const textWidth = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
-    // BERECHNUNG DER GRENZE:
-    // Wir berechnen, wie viel Platz im Feld maximal für Text ist (Input-Breite minus Padding rechts)
-    const maxAllowedWidth = rect.width - paddingLeft - paddingRight - 10; // -10 als kleiner Puffer zur Lupe
+    // DER TRICK: Wir ziehen den Scroll-Wert des Inputs ab!
+    // inputField.scrollLeft ist der Teil des Textes, der links verschwunden ist.
+    const scrollOffset = inputField.scrollLeft;
 
-    // Wenn der Text breiter als das Feld wird, stoppen wir den Cursor am rechten Rand
-    if (textWidth > maxAllowedWidth) {
-        textWidth = maxAllowedWidth;
+    // Die finale Position auf dem Bildschirm
+    let finalLeft = rect.left + paddingLeft + textWidth - scrollOffset;
+
+    // SICHERHEITS-CHECK: Er darf nicht über die Lupe (rechts) hinaus
+    const maxRight = rect.right - 45; // 45px Platz für die Lupe lassen
+    if (finalLeft > maxRight) {
+        finalLeft = maxRight;
     }
 
     // Positionierung
     fakeCaret.style.display = "block";
     fakeCaret.style.opacity = "1";
-    fakeCaret.style.left = (rect.left + paddingLeft + textWidth) + "px";
+    fakeCaret.style.left = finalLeft + "px";
     fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
 }
-
 // Events für die Bewegung
 inputField.addEventListener('input', moveCaret);
 inputField.addEventListener('click', moveCaret);
