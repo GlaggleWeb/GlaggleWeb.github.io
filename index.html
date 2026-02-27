@@ -205,6 +205,31 @@
     0% { background-position: 0% 0%; }
     100% { background-position: 0% 100%; }
 }
+
+/* Styling für den KI-Optimierer Button */
+.ai-magic-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    filter: grayscale(0.5);
+}
+
+.ai-magic-btn:hover {
+    transform: scale(1.2) rotate(10deg);
+    filter: grayscale(0);
+}
+
+/* Verhindert, dass der Button das Layout zerschießt */
+.search-bar-container {
+    gap: 5px;
+}
+        
 </style>
 </head>
 <body>
@@ -226,8 +251,9 @@
         <div class="search-section">
             <div class="search-bar-container">
                 <input type="text" id="glaggleQuery" placeholder="Glaggle das Internet..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+                <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
                 <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
-            </div>
+        </div>
             <div class="loader" id="glaggleLoader"></div>
             <div id="glaggleResults" class="results-container"></div>
         </div>
@@ -486,6 +512,56 @@ inputField.addEventListener('blur', () => {
 // WICHTIG: Korrektur bei Scrollen und Fensteränderung
 window.addEventListener('resize', moveCaret);
 window.addEventListener('scroll', moveCaret);
+
+async function optimizeSearch() {
+    const input = document.getElementById('glaggleQuery');
+    const query = input.value.trim();
+    const magicBtn = document.querySelector('.ai-magic-btn');
+
+    if (!query) return;
+
+    // Kleiner visueller Effekt während des Wartens
+    magicBtn.innerText = "⏳";
+    magicBtn.style.pointerEvents = "none";
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: "Du bist ein Suchmaschinen-Experte. Optimiere die folgende Suchanfrage für bessere Ergebnisse. Antworte NUR mit der verbesserten Anfrage, kein Text drumherum." },
+                    { role: "user", content: query }
+                ] 
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Entfernt eventuelle Anführungszeichen
+            
+            // Text im Feld ersetzen
+            input.value = optimizedQuery;
+            
+            // Den bunten Cursor aktualisieren
+            moveCaret();
+            
+            // Kurzer Erfolgseffekt
+            magicBtn.innerText = "✅";
+            setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
+        }
+    } catch (e) {
+        console.error("KI Fehler beim Optimieren", e);
+        magicBtn.innerText = "❌";
+        setTimeout(() => { magicBtn.innerText = "✨"; }, 1000);
+    } finally {
+        magicBtn.style.pointerEvents = "auto";
+    }
+}
 </script>
 </body>
 </html>
