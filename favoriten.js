@@ -268,6 +268,79 @@ const meineLieblingsSeiten = [
     { title: "Coolors", desc: "Der superschnelle Farbschema-Generator.", url: "https://coolors.co" },
     { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" },
     { title: "Coolors", desc: "Der superschnelle Farbschema-Generator.", url: "https://coolors.co" },
-    { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" }
+    { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" },
+    // --- BILDUNG & ONLINE-KURSE ---
+{ title: "Coursera", desc: "Online-Kurse von Universitäten weltweit.", url: "https://coursera.org" },
+{ title: "edX", desc: "Hochwertige Kurse von Harvard, MIT & Co.", url: "https://edx.org" },
+{ title: "Udemy", desc: "Praxisnahe Videokurse zu fast jedem Thema.", url: "https://udemy.com" },
+{ title: "Khan Academy", desc: "Kostenlose Lernplattform für Schüler und Studenten.", url: "https://khanacademy.org" },
+{ title: "Brilliant", desc: "Interaktives Lernen für Mathe & Wissenschaft.", url: "https://brilliant.org" },
+{ title: "Duolingo", desc: "Sprachen lernen spielerisch.", url: "https://duolingo.com" },
+{ title: "OpenLearn", desc: "Kostenlose Kurse der Open University.", url: "https://open.edu/openlearn" },
+
+// --- PROGRAMMIEREN & ENTWICKLUNG ---
+{ title: "MDN Web Docs", desc: "Die beste Dokumentation für Webentwicklung.", url: "https://developer.mozilla.org" },
+{ title: "W3Schools", desc: "Einsteigerfreundliche Tutorials für Web-Technologien.", url: "https://w3schools.com" },
+{ title: "CodePen", desc: "Frontend-Code direkt im Browser testen.", url: "https://codepen.io" },
+{ title: "Replit", desc: "Programmieren direkt im Browser.", url: "https://replit.com" },
+{ title: "Glitch", desc: "Web-Apps online erstellen und hosten.", url: "https://glitch.com" },
+{ title: "HackerRank", desc: "Programmier-Challenges & Wettbewerbe.", url: "https://hackerrank.com" },
+{ title: "LeetCode", desc: "Coding-Interviews trainieren.", url: "https://leetcode.com" },
+{ title: "Codewars", desc: "Programmieraufgaben im Kata-Stil.", url: "https://codewars.com" },
+
+// --- WISSENSCHAFT & FORSCHUNG ---
+{ title: "arXiv", desc: "Preprints aus Physik, Mathe & Informatik.", url: "https://arxiv.org" },
+{ title: "Google Scholar", desc: "Wissenschaftliche Literatur finden.", url: "https://scholar.google.com" },
+{ title: "ResearchGate", desc: "Netzwerk für Wissenschaftler.", url: "https://researchgate.net" },
+{ title: "Our World in Data", desc: "Globale Statistiken & Datenvisualisierungen.", url: "https://ourworldindata.org" },
+{ title: "Wolfram Alpha", desc: "Computational Knowledge Engine.", url: "https://wolframalpha.com" },
+
+// --- PRODUKTIVITÄT ---
+{ title: "Todoist", desc: "Intelligente Aufgabenverwaltung.", url: "https://todoist.com" },
+{ title: "TickTick", desc: "ToDo-Liste mit Kalender & Gewohnheitstracker.", url: "https://ticktick.com" },
+{ title: "Evernote", desc: "Notizen und Organisation.", url: "https://evernote.com" },
+{ title: "ClickUp", desc: "All-in-One Projektmanagement.", url: "https://clickup.com" },
+{ title: "Obsidian", desc: "Wissensdatenbank mit Markdown.", url: "https://obsidian.md" },
+
+// --- CLOUD & HOSTING ---
+{ title: "Vercel", desc: "Frontend-Hosting für moderne Webapps.", url: "https://vercel.com" },
+{ title: "Netlify", desc: "Deploy von statischen Websites in Sekunden.", url: "https://netlify.com" },
+{ title: "DigitalOcean", desc: "Cloud-Server einfach bereitstellen.", url: "https://digitalocean.com" },
+{ title: "Heroku", desc: "Cloud-Plattform für Entwickler.", url: "https://heroku.com" },
+
+// --- CYBERSECURITY ---
+{ title: "Have I Been Pwned", desc: "Prüfe, ob deine E-Mail geleakt wurde.", url: "https://haveibeenpwned.com" },
+{ title: "VirusTotal", desc: "Dateien und URLs auf Malware prüfen.", url: "https://virustotal.com" },
+{ title: "Shodan", desc: "Suchmaschine für vernetzte Geräte.", url: "https://shodan.io" },
+
+// --- KI & ZUKUNFT ---
+{ title: "Hugging Face", desc: "Open-Source-Modelle für KI.", url: "https://huggingface.co" },
+{ title: "OpenAI", desc: "Forschung und KI-Modelle.", url: "https://openai.com" },
+{ title: "Runway ML", desc: "KI-Tools für Kreative.", url: "https://runwayml.com" },
+{ title: "Leonardo AI", desc: "KI-Bildgenerierung.", url: "https://leonardo.ai" },
+
+// --- FINANZEN ---
+{ title: "TradingView", desc: "Charts & Marktanalyse für Trader.", url: "https://tradingview.com" },
+{ title: "CoinMarketCap", desc: "Kryptowährungen verfolgen.", url: "https://coinmarketcap.com" },
+{ title: "Yahoo Finance", desc: "Aktienkurse & Wirtschaftsnachrichten.", url: "https://finance.yahoo.com" },
+{ title: "JustETF", desc: "ETF-Vergleich für Europa.", url: "https://justetf.com" },
+
+// --- ENTERTAINMENT ---
+{ title: "IMDb", desc: "Die größte Filmdatenbank der Welt.", url: "https://imdb.com" },
+{ title: "Letterboxd", desc: "Filme bewerten & entdecken.", url: "https://letterboxd.com" },
+{ title: "Crunchyroll", desc: "Anime-Streaming.", url: "https://crunchyroll.com" },
+{ title: "SoundCloud", desc: "Musik entdecken & teilen.", url: "https://soundcloud.com" },
+
+// --- LERNTHEMEN & WISSEN ---
+{ title: "TED", desc: "Inspirierende Vorträge weltweit.", url: "https://ted.com" },
+{ title: "Project Gutenberg", desc: "Kostenlose klassische Literatur.", url: "https://gutenberg.org" },
+{ title: "Internet Archive", desc: "Digitale Bibliothek & Wayback Machine.", url: "https://archive.org" },
+
+// --- NÜTZLICHE TOOLS ---
+{ title: "TinyPNG", desc: "Bilder ohne Qualitätsverlust komprimieren.", url: "https://tinypng.com" },
+{ title: "Remove.bg", desc: "Hintergrund automatisch entfernen.", url: "https://remove.bg" },
+{ title: "ILovePDF", desc: "PDF-Dateien bearbeiten & konvertieren.", url: "https://ilovepdf.com" },
+{ title: "Speedtest", desc: "Internetgeschwindigkeit testen.", url: "https://speedtest.net" },
+{ title: "DownDetector", desc: "Prüfen, ob Dienste aktuell Probleme haben.", url: "https://downdetector.com" }
 ]; // <-- Das ist die wichtigste Zeile!
     
