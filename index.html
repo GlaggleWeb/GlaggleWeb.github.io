@@ -399,41 +399,62 @@ const inputField = document.getElementById('glaggleQuery');
 const fakeCaret = document.getElementById('fakeCaret');
 
 function moveCaret() {
+    // Falls das Feld nicht im Fokus ist, Cursor verstecken
+    if (document.activeElement !== inputField) {
+        fakeCaret.style.display = "none";
+        return;
+    }
+
     const rect = inputField.getBoundingClientRect();
     const style = window.getComputedStyle(inputField);
     const paddingLeft = parseFloat(style.paddingLeft);
     const fontSize = style.fontSize;
     const fontName = style.fontFamily;
 
-    // Erstelle ein unsichtbares Element, um die Textbreite zu messen
+    // Hilfselement zum Messen der Textbreite
     const helper = document.createElement("span");
     helper.style.visibility = "hidden";
     helper.style.position = "absolute";
     helper.style.whiteSpace = "pre";
-    helper.style.font = `${fontSize} ${fontName}`;
+    helper.style.font = fontSize + " " + fontName;
     
-    // Wir messen nur den Text BIS zur Cursor-Position
+    // Text bis zur aktuellen Cursor-Position messen
     helper.textContent = inputField.value.substring(0, inputField.selectionStart);
     document.body.appendChild(helper);
     
     const textWidth = helper.getBoundingClientRect().width;
     document.body.removeChild(helper);
 
-    // Positionierung des Fake-Cursors
+    // Positionierung berechnen
     fakeCaret.style.display = "block";
-    fakeCaret.style.left = (rect.left + paddingLeft + textWidth) + "px";
-    fakeCaret.style.top = (rect.top + (rect.height / 2) - 12) + "px";
+    fakeCaret.style.opacity = "1";
+    
+    // Wir nutzen das Rect des Inputs für die exakte Platzierung
+    const caretLeft = rect.left + paddingLeft + textWidth;
+    const caretTop = rect.top + (rect.height / 2) - 12;
+
+    fakeCaret.style.left = caretLeft + "px";
+    fakeCaret.style.top = caretTop + "px";
 }
 
-// Events für die Bewegung
+// Events für die Bewegung und Sichtbarkeit
 inputField.addEventListener('input', moveCaret);
 inputField.addEventListener('click', moveCaret);
 inputField.addEventListener('keyup', moveCaret);
-inputField.addEventListener('focus', () => fakeCaret.style.opacity = "1");
-inputField.addEventListener('blur', () => fakeCaret.style.opacity = "0");
 
-// Falls du das Fenster verkleinerst
+// Fokus-Handling: Cursor zeigen/verstecken
+inputField.addEventListener('focus', () => {
+    moveCaret(); // Sofort positionieren beim Klick
+});
+
+inputField.addEventListener('blur', () => {
+    fakeCaret.style.opacity = "0";
+    setTimeout(() => { fakeCaret.style.display = "none"; }, 300);
+});
+
+// Bei Fensteränderungen neu berechnen
 window.addEventListener('resize', moveCaret);
+window.addEventListener('scroll', moveCaret);
 </script>
 </body>
 </html>
