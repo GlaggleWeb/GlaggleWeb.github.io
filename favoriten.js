@@ -269,7 +269,6 @@ const meineLieblingsSeiten = [
     { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" },
     { title: "Coolors", desc: "Der superschnelle Farbschema-Generator.", url: "https://coolors.co" },
     { title: "Dafont", desc: "Riesiges Archiv für ausgefallene Gratis-Schriftarten.", url: "https://dafont.com" },
-    // --- BILDUNG & ONLINE-KURSE ---
 { title: "Coursera", desc: "Online-Kurse von Universitäten weltweit.", url: "https://coursera.org" },
 { title: "edX", desc: "Hochwertige Kurse von Harvard, MIT & Co.", url: "https://edx.org" },
 { title: "Udemy", desc: "Praxisnahe Videokurse zu fast jedem Thema.", url: "https://udemy.com" },
@@ -277,8 +276,6 @@ const meineLieblingsSeiten = [
 { title: "Brilliant", desc: "Interaktives Lernen für Mathe & Wissenschaft.", url: "https://brilliant.org" },
 { title: "Duolingo", desc: "Sprachen lernen spielerisch.", url: "https://duolingo.com" },
 { title: "OpenLearn", desc: "Kostenlose Kurse der Open University.", url: "https://open.edu/openlearn" },
-
-// --- PROGRAMMIEREN & ENTWICKLUNG ---
 { title: "MDN Web Docs", desc: "Die beste Dokumentation für Webentwicklung.", url: "https://developer.mozilla.org" },
 { title: "W3Schools", desc: "Einsteigerfreundliche Tutorials für Web-Technologien.", url: "https://w3schools.com" },
 { title: "CodePen", desc: "Frontend-Code direkt im Browser testen.", url: "https://codepen.io" },
@@ -287,63 +284,43 @@ const meineLieblingsSeiten = [
 { title: "HackerRank", desc: "Programmier-Challenges & Wettbewerbe.", url: "https://hackerrank.com" },
 { title: "LeetCode", desc: "Coding-Interviews trainieren.", url: "https://leetcode.com" },
 { title: "Codewars", desc: "Programmieraufgaben im Kata-Stil.", url: "https://codewars.com" },
-
-// --- WISSENSCHAFT & FORSCHUNG ---
 { title: "arXiv", desc: "Preprints aus Physik, Mathe & Informatik.", url: "https://arxiv.org" },
 { title: "Google Scholar", desc: "Wissenschaftliche Literatur finden.", url: "https://scholar.google.com" },
 { title: "ResearchGate", desc: "Netzwerk für Wissenschaftler.", url: "https://researchgate.net" },
 { title: "Our World in Data", desc: "Globale Statistiken & Datenvisualisierungen.", url: "https://ourworldindata.org" },
 { title: "Wolfram Alpha", desc: "Computational Knowledge Engine.", url: "https://wolframalpha.com" },
-
-// --- PRODUKTIVITÄT ---
 { title: "Todoist", desc: "Intelligente Aufgabenverwaltung.", url: "https://todoist.com" },
 { title: "TickTick", desc: "ToDo-Liste mit Kalender & Gewohnheitstracker.", url: "https://ticktick.com" },
 { title: "Evernote", desc: "Notizen und Organisation.", url: "https://evernote.com" },
 { title: "ClickUp", desc: "All-in-One Projektmanagement.", url: "https://clickup.com" },
 { title: "Obsidian", desc: "Wissensdatenbank mit Markdown.", url: "https://obsidian.md" },
-
-// --- CLOUD & HOSTING ---
 { title: "Vercel", desc: "Frontend-Hosting für moderne Webapps.", url: "https://vercel.com" },
 { title: "Netlify", desc: "Deploy von statischen Websites in Sekunden.", url: "https://netlify.com" },
 { title: "DigitalOcean", desc: "Cloud-Server einfach bereitstellen.", url: "https://digitalocean.com" },
 { title: "Heroku", desc: "Cloud-Plattform für Entwickler.", url: "https://heroku.com" },
-
-// --- CYBERSECURITY ---
 { title: "Have I Been Pwned", desc: "Prüfe, ob deine E-Mail geleakt wurde.", url: "https://haveibeenpwned.com" },
 { title: "VirusTotal", desc: "Dateien und URLs auf Malware prüfen.", url: "https://virustotal.com" },
 { title: "Shodan", desc: "Suchmaschine für vernetzte Geräte.", url: "https://shodan.io" },
-
-// --- KI & ZUKUNFT ---
 { title: "Hugging Face", desc: "Open-Source-Modelle für KI.", url: "https://huggingface.co" },
 { title: "OpenAI", desc: "Forschung und KI-Modelle.", url: "https://openai.com" },
 { title: "Runway ML", desc: "KI-Tools für Kreative.", url: "https://runwayml.com" },
 { title: "Leonardo AI", desc: "KI-Bildgenerierung.", url: "https://leonardo.ai" },
-
-// --- FINANZEN ---
 { title: "TradingView", desc: "Charts & Marktanalyse für Trader.", url: "https://tradingview.com" },
 { title: "CoinMarketCap", desc: "Kryptowährungen verfolgen.", url: "https://coinmarketcap.com" },
 { title: "Yahoo Finance", desc: "Aktienkurse & Wirtschaftsnachrichten.", url: "https://finance.yahoo.com" },
 { title: "JustETF", desc: "ETF-Vergleich für Europa.", url: "https://justetf.com" },
-
-// --- ENTERTAINMENT ---
 { title: "IMDb", desc: "Die größte Filmdatenbank der Welt.", url: "https://imdb.com" },
 { title: "Letterboxd", desc: "Filme bewerten & entdecken.", url: "https://letterboxd.com" },
 { title: "Crunchyroll", desc: "Anime-Streaming.", url: "https://crunchyroll.com" },
 { title: "SoundCloud", desc: "Musik entdecken & teilen.", url: "https://soundcloud.com" },
-
-// --- LERNTHEMEN & WISSEN ---
 { title: "TED", desc: "Inspirierende Vorträge weltweit.", url: "https://ted.com" },
 { title: "Project Gutenberg", desc: "Kostenlose klassische Literatur.", url: "https://gutenberg.org" },
 { title: "Internet Archive", desc: "Digitale Bibliothek & Wayback Machine.", url: "https://archive.org" },
-
-// --- NÜTZLICHE TOOLS ---
 { title: "TinyPNG", desc: "Bilder ohne Qualitätsverlust komprimieren.", url: "https://tinypng.com" },
 { title: "Remove.bg", desc: "Hintergrund automatisch entfernen.", url: "https://remove.bg" },
 { title: "ILovePDF", desc: "PDF-Dateien bearbeiten & konvertieren.", url: "https://ilovepdf.com" },
 { title: "Speedtest", desc: "Internetgeschwindigkeit testen.", url: "https://speedtest.net" },
 { title: "DownDetector", desc: "Prüfen, ob Dienste aktuell Probleme haben.", url: "https://downdetector.com" },
-
-// --- KI & MACHINE LEARNING ---
 { title: "Anthropic", desc: "Claude KI und AI-Sicherheitsforschung.", url: "https://anthropic.com" },
 { title: "Stability AI", desc: "Entwickler von Stable Diffusion.", url: "https://stability.ai" },
 { title: "Midjourney", desc: "KI-Bildgenerierung über Discord.", url: "https://midjourney.com" },
@@ -351,95 +328,61 @@ const meineLieblingsSeiten = [
 { title: "Papers with Code", desc: "Forschungspapiere mit Code verknüpft.", url: "https://paperswithcode.com" },
 { title: "Kaggle", desc: "Data-Science-Wettbewerbe & Datensätze.", url: "https://kaggle.com" },
 { title: "Fast.ai", desc: "Deep Learning Kurse & Bibliothek.", url: "https://fast.ai" },
-
-// --- STARTUPS & TECH ---
 { title: "Product Hunt", desc: "Neue Tech-Produkte entdecken.", url: "https://producthunt.com" },
 { title: "AngelList", desc: "Startup Jobs & Investoren.", url: "https://wellfound.com" },
 { title: "Crunchbase", desc: "Datenbank für Startups & Firmen.", url: "https://crunchbase.com" },
 { title: "YC Hacker News", desc: "Tech-News & Diskussionen.", url: "https://news.ycombinator.com" },
 { title: "Indie Hackers", desc: "Community für Solo-Gründer.", url: "https://indiehackers.com" },
-
-// --- DESIGN & UI ---
 { title: "Awwwards", desc: "Die besten Webdesigns weltweit.", url: "https://awwwards.com" },
 { title: "UI8", desc: "Premium UI Kits & Design Assets.", url: "https://ui8.net" },
 { title: "Mobbin", desc: "UI-Design Inspiration für Apps.", url: "https://mobbin.com" },
 { title: "LottieFiles", desc: "Animationen für Apps & Web.", url: "https://lottiefiles.com" },
 { title: "Icons8", desc: "Icons, Illustrationen & Musik.", url: "https://icons8.com" },
-
-// --- DATEN & STATISTIK ---
 { title: "Statista", desc: "Marktdaten & Statistiken.", url: "https://statista.com" },
 { title: "World Bank Data", desc: "Globale Wirtschaftsdaten.", url: "https://data.worldbank.org" },
 { title: "OECD Data", desc: "Internationale Vergleichsdaten.", url: "https://data.oecd.org" },
 { title: "Gapminder", desc: "Interaktive Datenvisualisierung.", url: "https://gapminder.org" },
-
-// --- CYBER & PRIVACY ---
 { title: "Proton", desc: "Schweizer E-Mail & VPN.", url: "https://proton.me" },
 { title: "NordVPN", desc: "VPN-Dienst für Privatsphäre.", url: "https://nordvpn.com" },
 { title: "PrivacyTools", desc: "Empfehlungen für digitale Sicherheit.", url: "https://privacyguides.org" },
-
-// --- WISSENSCHAFT & SPACE ---
 { title: "CERN", desc: "Europäische Organisation für Kernforschung.", url: "https://cern.ch" },
 { title: "ESO", desc: "Europäische Südsternwarte.", url: "https://eso.org" },
 { title: "SETI Institute", desc: "Suche nach außerirdischem Leben.", url: "https://seti.org" },
 { title: "Planetary Society", desc: "Raumfahrtorganisation von Bill Nye.", url: "https://planetary.org" },
-
-// --- FINTECH & KRYPTOWELT ---
 { title: "Binance", desc: "Kryptobörse weltweit.", url: "https://binance.com" },
 { title: "Kraken", desc: "Krypto-Handelsplattform.", url: "https://kraken.com" },
 { title: "CoinGecko", desc: "Krypto-Marktdaten.", url: "https://coingecko.com" },
 { title: "Glassnode", desc: "Blockchain-Analyseplattform.", url: "https://glassnode.com" },
-
-// --- ENTWICKLER POWER ---
 { title: "Stack Exchange", desc: "Netzwerk spezialisierter Q&A Communities.", url: "https://stackexchange.com" },
 { title: "DevDocs", desc: "API-Dokumentationen offline nutzbar.", url: "https://devdocs.io" },
 { title: "Roadmap.sh", desc: "Karrierepfade für Entwickler.", url: "https://roadmap.sh" },
 { title: "Overleaf", desc: "LaTeX online schreiben.", url: "https://overleaf.com" },
-
-// --- LERNEN & WISSEN ---
 { title: "MasterClass", desc: "Kurse von weltbekannten Experten.", url: "https://masterclass.com" },
 { title: "FutureLearn", desc: "Online-Kurse von Universitäten.", url: "https://futurelearn.com" },
 { title: "Saylor Academy", desc: "Kostenlose Hochschulkurse.", url: "https://saylor.org" },
-
-// --- VIDEO & CONTENT CREATION ---
 { title: "CapCut", desc: "Beliebter Online-Videoeditor.", url: "https://capcut.com" },
 { title: "Descript", desc: "Audio & Video durch Text bearbeiten.", url: "https://descript.com" },
 { title: "Streamlabs", desc: "Tools für Streamer.", url: "https://streamlabs.com" },
 { title: "Patreon", desc: "Creator finanziell unterstützen.", url: "https://patreon.com" },
-
-// --- TECH NEWS ---
 { title: "Ars Technica", desc: "Technologie & Wissenschaft.", url: "https://arstechnica.com" },
 { title: "ZDNet", desc: "IT-News & Business Tech.", url: "https://zdnet.com" },
 { title: "9to5Mac", desc: "Apple News & Leaks.", url: "https://9to5mac.com" },
 { title: "Android Authority", desc: "Android News & Reviews.", url: "https://androidauthority.com" },
-
-// --- GEOGRAPHIE & KARTEN ---
 { title: "OpenStreetMap", desc: "Freie Weltkarte.", url: "https://openstreetmap.org" },
 { title: "GeoGuessr", desc: "Errate Orte weltweit anhand von Street View.", url: "https://geoguessr.com" },
 { title: "Windy", desc: "Live-Wetterkarten weltweit.", url: "https://windy.com" },
-
-// --- MUSIK & AUDIO ---
 { title: "Bandcamp", desc: "Musik direkt von Künstlern kaufen.", url: "https://bandcamp.com" },
 { title: "Genius", desc: "Songtexte & Interpretationen.", url: "https://genius.com" },
 { title: "Last.fm", desc: "Musiktracking & Empfehlungen.", url: "https://last.fm" },
-
-// --- GAMING INDUSTRY ---
 { title: "SteamDB", desc: "Statistiken & Preisverläufe für Steam.", url: "https://steamdb.info" },
 { title: "IsThereAnyDeal", desc: "Spielepreisvergleich.", url: "https://isthereanydeal.com" },
 { title: "Backloggd", desc: "Spiele bewerten & tracken.", url: "https://backloggd.com" },
-
-// --- PRODUKTIVITÄT PRO ---
 { title: "Readwise", desc: "Markierungen aus Büchern sammeln.", url: "https://readwise.io" },
 { title: "Freedom", desc: "Ablenkende Websites blockieren.", url: "https://freedom.to" },
 { title: "RescueTime", desc: "Zeitanalyse deiner digitalen Nutzung.", url: "https://rescuetime.com" },
-
-// --- COMMUNITY & DISKUSSION ---
 { title: "Discord Bots", desc: "Bot-Verzeichnis für Discord-Server.", url: "https://top.gg" },
 { title: "Meetup", desc: "Lokale Events & Communities.", url: "https://meetup.com" },
 { title: "Internations", desc: "Community für Expats weltweit.", url: "https://internations.org" },
-// ============================================
-// 🇨🇭 SCHWEIZ PREMIUM – BUND (ADMIN)
-// ============================================
-
 { title: "admin.ch", desc: "Offizielle Website der Schweizerischen Eidgenossenschaft.", url: "https://admin.ch" },
 { title: "Bundesrat", desc: "Informationen zur Schweizer Regierung.", url: "https://bundesrat.admin.ch" },
 { title: "Parlament", desc: "National- und Ständerat.", url: "https://parlament.ch" },
@@ -455,11 +398,6 @@ const meineLieblingsSeiten = [
 { title: "MeteoSchweiz", desc: "Offizielle Wetterprognosen.", url: "https://meteoschweiz.admin.ch" },
 { title: "Swisstopo", desc: "Landesvermessung & Karten.", url: "https://swisstopo.admin.ch" },
 { title: "Open Data Schweiz", desc: "Offizielle Open-Data-Plattform.", url: "https://opendata.swiss" },
-
-// ============================================
-// 🇨🇭 KANTONE – OFFIZIELLE PORTALE
-// ============================================
-
 { title: "Kanton Zürich", desc: "Offizielle Website des Kantons.", url: "https://zh.ch" },
 { title: "Kanton Bern", desc: "Behördenportal Bern.", url: "https://be.ch" },
 { title: "Kanton Luzern", desc: "Verwaltung Luzern.", url: "https://lu.ch" },
@@ -486,21 +424,11 @@ const meineLieblingsSeiten = [
 { title: "Kanton Neuenburg", desc: "République et Canton.", url: "https://ne.ch" },
 { title: "Kanton Genf", desc: "République et Canton de Genève.", url: "https://ge.ch" },
 { title: "Kanton Jura", desc: "République et Canton du Jura.", url: "https://ju.ch" },
-
-// ============================================
-// 🇨🇭 STEUERN & VERWALTUNG
-// ============================================
-
 { title: "ESTV", desc: "Eidgenössische Steuerverwaltung.", url: "https://estv.admin.ch" },
 { title: "AHV/IV", desc: "Sozialversicherungen Schweiz.", url: "https://ahv-iv.ch" },
 { title: "ch.ch", desc: "Behördenwegweiser Schweiz.", url: "https://ch.ch" },
 { title: "EasyGov", desc: "Online-Schalter für Unternehmen.", url: "https://easygov.swiss" },
 { title: "Handelsregister Zefix", desc: "Firmenregister Schweiz.", url: "https://zefix.admin.ch" },
-
-// ============================================
-// 🇨🇭 BILDUNG & UNIVERSITÄTEN
-// ============================================
-
 { title: "ETH Zürich", desc: "Technische Hochschule Zürich.", url: "https://ethz.ch" },
 { title: "EPFL", desc: "École polytechnique fédérale de Lausanne.", url: "https://epfl.ch" },
 { title: "Universität Zürich", desc: "Größte Uni der Schweiz.", url: "https://uzh.ch" },
@@ -510,29 +438,14 @@ const meineLieblingsSeiten = [
 { title: "Universität Lausanne", desc: "Université de Lausanne.", url: "https://unil.ch" },
 { title: "Universität Luzern", desc: "Uni Luzern.", url: "https://unilu.ch" },
 { title: "Universität St. Gallen", desc: "HSG – Wirtschaftsuniversität.", url: "https://unisg.ch" },
-
-// ============================================
-// 🇨🇭 WIRTSCHAFT & FINANZEN
-// ============================================
-
 { title: "SIX Group", desc: "Betreiber der Schweizer Börse.", url: "https://six-group.com" },
 { title: "Swiss National Bank", desc: "Schweizerische Nationalbank.", url: "https://snb.ch" },
 { title: "Economiesuisse", desc: "Wirtschaftsverband Schweiz.", url: "https://economiesuisse.ch" },
 { title: "Swissmem", desc: "Industrieverband.", url: "https://swissmem.ch" },
 { title: "Switzerland Global Enterprise", desc: "Exportförderung.", url: "https://s-ge.com" },
-
-// ============================================
-// 🇨🇭 SICHERHEIT & JUSTIZ
-// ============================================
-
 { title: "fedpol", desc: "Bundesamt für Polizei.", url: "https://fedpol.admin.ch" },
 { title: "NCSC", desc: "Nationales Zentrum für Cybersicherheit.", url: "https://ncsc.admin.ch" },
 { title: "Zivilschutz Schweiz", desc: "Bevölkerungsschutz.", url: "https://bevoelkerungsschutz.admin.ch" },
-
-// ============================================
-// 🇨🇭 TOURISMUS & KULTUR
-// ============================================
-
 { title: "MySwitzerland", desc: "Offizielle Tourismusplattform.", url: "https://myswitzerland.com" },
 { title: "Pro Helvetia", desc: "Schweizer Kulturstiftung.", url: "https://prohelvetia.ch" },
 { title: "Swissinfo", desc: "Internationale News der Schweiz.", url: "https://swissinfo.ch" }
