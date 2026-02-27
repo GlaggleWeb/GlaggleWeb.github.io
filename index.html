@@ -277,14 +277,19 @@ function renderResult(title, text, url, type = "web") {
     }
 }
 function sucheInEigenerListe(query) {
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
+
+    // PRÜFUNG: Mindestens 4 Buchstaben erforderlich
+    if (q.length < 3) {
+        return; // Funktion wird abgebrochen, nichts wird angezeigt
+    }
+
     const treffer = meineLieblingsSeiten.filter(seite => 
         seite.title.toLowerCase().includes(q) || 
         seite.desc.toLowerCase().includes(q)
     );
 
     treffer.forEach(seite => {
-        // Wir nutzen "fav" als Spezial-Typ
         renderResult(seite.title, seite.desc, seite.url, "fav");
     });
 }
