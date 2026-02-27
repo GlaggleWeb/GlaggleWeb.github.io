@@ -186,13 +186,8 @@
     z-index: 9999;
     border-radius: 2px;
     transition: left 0.1s ease-out, top 0.1s ease-out; /* Der Word-Effekt */
-    animation: caretBlink 0.8s infinite step-end, caretColor 3s infinite linear;
+    animation: caretColor 3s infinite linear;
     display: none;
-}
-
-@keyframes caretBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
 }
 
 @keyframes caretColor {
