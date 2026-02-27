@@ -321,8 +321,8 @@ async function glaggleSearch() {
 
 function sucheInEigenerListe(query) {
     const q = query.toLowerCase().trim();
-    // Prüfung auf 4 Buchstaben (wie gewünscht)
-    if (q.length < 3) return; 
+    // Prüfung auf 2 Buchstaben (wie gewünscht)
+    if (q.length < 2) return; 
 
     const treffer = meineLieblingsSeiten.filter(seite => 
         seite.title.toLowerCase().includes(q) || 
@@ -381,7 +381,7 @@ async function fetchGroqAI(query) {
                 currentText += antwort.charAt(i);
                 aiTextElement.innerHTML = marked.parse(currentText);
                 i++;
-                setTimeout(type, 5);
+                setTimeout(type, 3);
             }
         }
         type();
