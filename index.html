@@ -442,6 +442,78 @@ function renderResult(title, text, url, type = "web") {
         resultsDiv.appendChild(div);
     }
 }
+
+// --- 1. LOGIK FÜR DEN GLAUGGLE-CURSOR ---
+const input = document.getElementById('glaggleQuery');
+const fakeCaret = document.getElementById('fakeCaret');
+
+// Hilfsfunktion zur Positionierung des Cursors
+function updateCaret() {
+    if (document.activeElement === input) {
+        fakeCaret.style.display = 'block';
+        
+        // Erstelle ein unsichtbares Element, um die Textbreite zu messen
+        const mirror = document.createElement('span');
+        mirror.style.font = window.getComputedStyle(input).font;
+        mirror.style.visibility = 'hidden';
+        mirror.style.whiteSpace = 'pre';
+        mirror.textContent = input.value.substring(0, input.selectionStart);
+        document.body.appendChild(mirror);
+        
+        const rect = input.getBoundingClientRect();
+        const textWidth = mirror.offsetWidth;
+        
+        // Positioniere den Fake-Caret (Padding von 20px berücksichtigen)
+        fakeCaret.style.left = (rect.left + 20 + textWidth) + 'px';
+        fakeCaret.style.top = (rect.top + 12) + 'px';
+        
+        document.body.removeChild(mirror);
+    } else {
+        fakeCaret.style.display = 'none';
+    }
+}
+
+// Events für den Cursor
+input.addEventListener('input', updateCaret);
+input.addEventListener('click', updateCaret);
+input.addEventListener('keyup', updateCaret);
+input.addEventListener('focus', updateCaret);
+input.addEventListener('blur', () => setTimeout(() => fakeCaret.style.display = 'none', 100));
+
+// --- 2. KI SUCHOPTIMIERUNG ---
+async function optimizeSearch() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    const magicBtn = document.querySelector('.ai-magic-btn');
+    magicBtn.innerText = "⏳"; // Lade-Status
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert. Antworte NUR mit der neuen Anfrage, kein Smalltalk." },
+                    { role: "user", content: query }
+                ] 
+            })
+        });
+        const data = await res.json();
+        const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Anführungszeichen entfernen
+        
+        input.value = optimizedQuery;
+        updateCaret();
+        glaggleSearch(); // Starte Suche direkt mit dem neuen Begriff
+    } catch (e) {
+        console.error("Optimierung fehlgeschlagen", e);
+    } finally {
+        magicBtn.innerText = "✨";
+    }
+}
+
+// Deine bestehenden Funktionen (getGKey, glaggleSearch, etc.) folgen hier...
 </script>
 </body>
 </html>
