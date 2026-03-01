@@ -393,7 +393,7 @@ async function fetchGroqAI(query) {
             if (i < antwort.length) {
                 currentText += antwort.charAt(i);
                 aiTextElement.innerHTML = marked.parse(currentText);
-                i++; setTimeout(type, 3);
+                i++; setTimeout(type, 1);
             }
         }
         type();
