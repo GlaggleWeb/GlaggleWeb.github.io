@@ -460,17 +460,19 @@ function renderResult(title, text, url, type = "web") {
 }
 
 const input = document.getElementById('glaggleQuery');
-const fakeCaret = document.getElementById('fakeCaret');
 const container = document.querySelector('.search-bar-container');
+// Wir suchen gezielt das Caret im Container
+const fakeCaret = container.querySelector('.custom-caret');
 
 function updateCaret() {
-    if (document.activeElement === input && input.value.length > 0) {
+    // Bedingung geändert: Erscheint jetzt auch, wenn das Feld leer ist!
+    if (document.activeElement === input) {
         fakeCaret.style.display = 'block';
         
-        // Erstelle ein Mess-Element
-        const measurementSpan = document.createElement('span');
         const inputStyle = window.getComputedStyle(input);
+        const measurementSpan = document.createElement('span');
         
+        // Stile kopieren für exakte Messung
         measurementSpan.style.font = inputStyle.font;
         measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
         measurementSpan.style.textTransform = inputStyle.textTransform;
@@ -478,15 +480,13 @@ function updateCaret() {
         measurementSpan.style.visibility = 'hidden';
         measurementSpan.style.position = 'absolute';
         
-        // Miss den Text bis zur Cursor-Position
+        // Text bis zur Cursor-Position messen
         measurementSpan.textContent = input.value.substring(0, input.selectionStart);
         document.body.appendChild(measurementSpan);
         
         const textWidth = measurementSpan.offsetWidth;
         
-        // 32px ist der ungefähre Startpunkt (Padding + Icon-Platz)
-        // Wir berechnen die Position relativ zum Container
-        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 20;
+        // Position berechnen: Input-Startpunkt + Textbreite
         fakeCaret.style.left = (input.offsetLeft + textWidth) + 'px';
         
         document.body.removeChild(measurementSpan);
@@ -495,7 +495,7 @@ function updateCaret() {
     }
 }
 
-// Events für präzise Verfolgung
+// Events für die Live-Verfolgung
 ['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
     input.addEventListener(event, updateCaret);
 });
@@ -503,6 +503,9 @@ function updateCaret() {
 input.addEventListener('blur', () => {
     setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
 });
+
+// Initial aufrufen
+updateCaret();
 
 // --- 2. KI SUCHOPTIMIERUNG ---
 async function optimizeSearch() {
