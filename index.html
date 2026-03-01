@@ -450,7 +450,7 @@ function renderResult(title, text, url, type = "web") {
     div.innerHTML = `
         <div class="result-header">
             <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE PROJEKT" : domain}</small>
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE AI EMPFIEHLT!" : domain}</small>
         </div>
         <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.3rem;' : ''}">${title}</a>
         <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
