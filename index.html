@@ -198,7 +198,10 @@
     z-index: 10;
     border-radius: 5px;
     animation: glaggleFlow 3s infinite alternate ease-in-out;
-    display: none; /* Wird per JS aktiviert */
+    display: none;
+    /* Vertikale Zentrierung innerhalb des Containers */
+    top: 50%;
+    transform: translateY(-50%);
 }
 /* Die Farben wandern sanft auf und ab */
 @keyframes glaggleFlow {
@@ -278,7 +281,7 @@
             <div class="search-bar-container">
                <div id="fakeCaret" class="custom-caret"></div>
     
-               <input type="text" id="glaggleQuery" placeholder="   The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+               <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
                <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
                <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
         </div>
@@ -457,54 +460,50 @@ function renderResult(title, text, url, type = "web") {
     }
 }
 
-// --- 1. LOGIK FÜR DEN GLAUGGLE-CURSOR ---
 const input = document.getElementById('glaggleQuery');
 const fakeCaret = document.getElementById('fakeCaret');
+const container = document.querySelector('.search-bar-container');
 
-// Hilfsfunktion zur Positionierung des Cursors
 function updateCaret() {
-    const input = document.getElementById('glaggleQuery');
-    const fakeCaret = document.getElementById('fakeCaret');
-
-    if (document.activeElement === input) {
-        // Wenn das Feld leer ist, Cursor verstecken (stört sonst den Placeholder)
-        if (input.value.length === 0) {
-            fakeCaret.style.display = 'none';
-            return;
-        }
-
+    if (document.activeElement === input && input.value.length > 0) {
         fakeCaret.style.display = 'block';
         
-        // Hilfs-Span zur Breitenmessung des Textes
-        const mirror = document.createElement('span');
-        const style = window.getComputedStyle(input);
-        mirror.style.font = style.font;
-        mirror.style.visibility = 'hidden';
-        mirror.style.whiteSpace = 'pre';
-        mirror.style.position = 'absolute';
+        // Erstelle ein Mess-Element
+        const measurementSpan = document.createElement('span');
+        const inputStyle = window.getComputedStyle(input);
         
-        // Misst den Text bis zum aktuellen Cursor-Punkt
-        mirror.textContent = input.value.substring(0, input.selectionStart);
-        document.body.appendChild(mirror);
+        measurementSpan.style.font = inputStyle.font;
+        measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
+        measurementSpan.style.textTransform = inputStyle.textTransform;
+        measurementSpan.style.whiteSpace = 'pre';
+        measurementSpan.style.visibility = 'hidden';
+        measurementSpan.style.position = 'absolute';
         
-        const textWidth = mirror.offsetWidth;
+        // Miss den Text bis zur Cursor-Position
+        measurementSpan.textContent = input.value.substring(0, input.selectionStart);
+        document.body.appendChild(measurementSpan);
         
-        // Positionierung relativ zum Input-Feld (Input Start + Textbreite + Padding)
-        const inputOffset = input.offsetLeft;
-        fakeCaret.style.left = (inputOffset + textWidth + 2) + 'px'; 
-        fakeCaret.style.top = '15px'; // Vertikal zentriert im Balken
+        const textWidth = measurementSpan.offsetWidth;
         
-        document.body.removeChild(mirror);
+        // 32px ist der ungefähre Startpunkt (Padding + Icon-Platz)
+        // Wir berechnen die Position relativ zum Container
+        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 20;
+        fakeCaret.style.left = (input.offsetLeft + textWidth) + 'px';
+        
+        document.body.removeChild(measurementSpan);
     } else {
         fakeCaret.style.display = 'none';
     }
 }
-// Events für den Cursor
-input.addEventListener('input', updateCaret);
-input.addEventListener('click', updateCaret);
-input.addEventListener('keyup', updateCaret);
-input.addEventListener('focus', updateCaret);
-input.addEventListener('blur', () => setTimeout(() => fakeCaret.style.display = 'none', 100));
+
+// Events für präzise Verfolgung
+['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
+    input.addEventListener(event, updateCaret);
+});
+
+input.addEventListener('blur', () => {
+    setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
+});
 
 // --- 2. KI SUCHOPTIMIERUNG ---
 async function optimizeSearch() {
