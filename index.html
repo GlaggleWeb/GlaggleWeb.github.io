@@ -465,14 +465,13 @@ const container = document.querySelector('.search-bar-container');
 const fakeCaret = container.querySelector('.custom-caret');
 
 function updateCaret() {
-    // Bedingung geändert: Erscheint jetzt auch, wenn das Feld leer ist!
     if (document.activeElement === input) {
         fakeCaret.style.display = 'block';
         
         const inputStyle = window.getComputedStyle(input);
         const measurementSpan = document.createElement('span');
         
-        // Stile kopieren für exakte Messung
+        // Stile kopieren
         measurementSpan.style.font = inputStyle.font;
         measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
         measurementSpan.style.textTransform = inputStyle.textTransform;
@@ -480,14 +479,16 @@ function updateCaret() {
         measurementSpan.style.visibility = 'hidden';
         measurementSpan.style.position = 'absolute';
         
-        // Text bis zur Cursor-Position messen
+        // Text bis zum Cursor
         measurementSpan.textContent = input.value.substring(0, input.selectionStart);
         document.body.appendChild(measurementSpan);
         
         const textWidth = measurementSpan.offsetWidth;
         
-        // Position berechnen: Input-Startpunkt + Textbreite
-        fakeCaret.style.left = (input.offsetLeft + textWidth) + 'px';
+        // BERECHNUNG KORRIGIERT:
+        // Wir nehmen die Position des Inputs + das Padding von links + die Textbreite
+        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
+        fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
         
         document.body.removeChild(measurementSpan);
     } else {
