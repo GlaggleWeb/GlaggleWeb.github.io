@@ -243,9 +243,25 @@
     overflow: hidden;
 }
 
+/* Der Hover-Effekt für offizielle Projekte */
 .glaggle-entry.fav-project:hover {
-    transform: scale(1.03);
-    box-shadow: 0 12px 30px rgba(112, 196, 247, 0.3);
+    transform: translateY(-8px) scale(1.03); /* Etwas höher und größer als normale Ergebnisse */
+    
+    /* Verstärktes buntes Leuchten */
+    box-shadow: 0 15px 35px rgba(66, 133, 244, 0.25), 
+                0 0 15px rgba(234, 67, 53, 0.15);
+    
+    /* Optional: Hintergrund wird bei Hover minimal heller */
+    background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box, 
+                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
+    
+    border-width: 2.5px !important; /* Rand wird minimal dicker */
+    z-index: 20; /* Stellt sicher, dass es über anderen Elementen schwebt */
+}
+
+/* Sanfter Übergang für alle Fav-Projekte */
+.glaggle-entry.fav-project {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
         
 </style>
