@@ -519,7 +519,7 @@ async function optimizeSearch() {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert. Antworte NUR mit der neuen Anfrage, kein Smalltalk." },
+                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert. Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
                     { role: "user", content: query }
                 ] 
             })
