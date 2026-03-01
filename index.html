@@ -175,9 +175,19 @@
     caret-color: transparent;
 }
 
-/* Der neue "Glaggle-Cursor" */
-/* Der bunte Glaggle-Cursor */
-/* Der bunte Glaggle-Cursor */
+.search-bar-container {
+    position: relative; /* WICHTIG: Damit der Cursor im Balken bleibt */
+    display: flex; 
+    align-items: center; 
+    background: var(--input-bg);
+    border: 1px solid #dfe1e5; 
+    border-radius: 30px; 
+    padding: 5px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 60px;
+    transition: all 0.5s ease-in-out;
+}
+
 .custom-caret {
     position: absolute;
     width: 3px;
@@ -185,25 +195,11 @@
     background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853, #FF6D00);
     background-size: 100% 300%;
     pointer-events: none;
-    z-index: 99; /* Hinter der Lupe, aber vor dem Text */
+    z-index: 10;
     border-radius: 5px;
     animation: glaggleFlow 3s infinite alternate ease-in-out;
-    display: none;
-    /* Verhindert das Hinauslaufen über den Container */
-    max-height: 24px;
+    display: none; /* Wird per JS aktiviert */
 }
-
-/* Container relativ machen, damit der Cursor sich daran orientiert */
-.search-bar-container {
-    position: relative; /* WICHTIG */
-    display: flex; 
-    align-items: center; 
-    background: var(--input-bg);
-    border: 1px solid #dfe1e5; 
-    border-radius: 30px; 
-    padding: 5px 20px;
-}
-
 /* Die Farben wandern sanft auf und ab */
 @keyframes glaggleFlow {
     0% { background-position: 0% 0%; }
@@ -269,12 +265,13 @@
         
         <div class="search-section">
             <div class="search-bar-container">
-    <div id="fakeCaret" class="custom-caret"></div>
+               <div id="fakeCaret" class="custom-caret"></div>
     
-    <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
-    <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-    <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
-</div>
+               <input type="text" id="glaggleQuery" placeholder="   The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+               <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+               <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+        </div>
+
         </div>
             <div class="loader" id="glaggleLoader"></div>
             <div id="glaggleResults" class="results-container"></div>
@@ -456,16 +453,19 @@ const fakeCaret = document.getElementById('fakeCaret');
 
 // Hilfsfunktion zur Positionierung des Cursors
 function updateCaret() {
+    const input = document.getElementById('glaggleQuery');
+    const fakeCaret = document.getElementById('fakeCaret');
+
     if (document.activeElement === input) {
-        // Wenn das Feld leer ist, Cursor verstecken oder an den Anfang setzen
-        // Damit er nicht auf dem Placeholder-Text "The AI-Powered..." liegt
+        // Wenn das Feld leer ist, Cursor verstecken (stört sonst den Placeholder)
         if (input.value.length === 0) {
-            fakeCaret.style.display = 'none'; 
+            fakeCaret.style.display = 'none';
             return;
         }
 
         fakeCaret.style.display = 'block';
         
+        // Hilfs-Span zur Breitenmessung des Textes
         const mirror = document.createElement('span');
         const style = window.getComputedStyle(input);
         mirror.style.font = style.font;
@@ -473,32 +473,22 @@ function updateCaret() {
         mirror.style.whiteSpace = 'pre';
         mirror.style.position = 'absolute';
         
-        // Den Text bis zum Cursor messen
+        // Misst den Text bis zum aktuellen Cursor-Punkt
         mirror.textContent = input.value.substring(0, input.selectionStart);
         document.body.appendChild(mirror);
         
         const textWidth = mirror.offsetWidth;
         
-        // Da der Cursor im Container liegt, rechnen wir ab dem Input-Start (20px padding)
-        const inputPaddingLeft = parseInt(style.paddingLeft);
-        const inputOffsetLeft = input.offsetLeft;
-        
-        // Positionierung relativ zum Container
-        let finalLeft = inputOffsetLeft + inputPaddingLeft + textWidth;
-        
-        // Begrenzung: Nicht über die Lupe/Buttons hinauslaufen
-        const maxRight = input.offsetLeft + input.offsetWidth - 10;
-        if (finalLeft > maxRight) finalLeft = maxRight;
-
-        fakeCaret.style.left = finalLeft + 'px';
-        fakeCaret.style.top = "18px"; // Zentriert ihn vertikal im Container
+        // Positionierung relativ zum Input-Feld (Input Start + Textbreite + Padding)
+        const inputOffset = input.offsetLeft;
+        fakeCaret.style.left = (inputOffset + textWidth + 2) + 'px'; 
+        fakeCaret.style.top = '15px'; // Vertikal zentriert im Balken
         
         document.body.removeChild(mirror);
     } else {
         fakeCaret.style.display = 'none';
     }
 }
-
 // Events für den Cursor
 input.addEventListener('input', updateCaret);
 input.addEventListener('click', updateCaret);
