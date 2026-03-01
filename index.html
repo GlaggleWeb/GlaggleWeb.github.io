@@ -231,13 +231,16 @@
 }
 
 /* Spezielles Styling für offizielle Projekte */
+/* Spezielles Styling für offizielle Projekte */
 .glaggle-entry.fav-project {
-    border-radius: 25px !important; /* Schön abgerundete Ecken */
+    border-radius: 25px !important;
     border: 2px solid transparent !important;
-    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
-                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box; /* Bunter Glaggle-Rand */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
+                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
     margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
 }
 
 .glaggle-entry.fav-project:hover {
@@ -420,14 +423,12 @@ function renderResult(title, text, url, type = "web") {
     const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
     
     const div = document.createElement('div');
-    div.className = 'glaggle-entry';
     
-    // Favoriten abrunden & bunt machen
+    // Wenn es ein Favorit ist, weisen wir die spezielle Klasse zu
     if(type === "fav") {
-        div.style.borderRadius = "25px";
-        div.style.border = "2px solid transparent";
-        div.style.borderImage = "linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853) 1";
-        div.style.backgroundColor = "rgba(66, 133, 244, 0.05)";
+        div.className = 'glaggle-entry fav-project';
+    } else {
+        div.className = 'glaggle-entry';
     }
 
     div.innerHTML = `
@@ -440,6 +441,7 @@ function renderResult(title, text, url, type = "web") {
     `;
     
     const aiBox = document.getElementById('ai-container');
+    // Favoriten immer direkt unter der KI-Box anzeigen
     if (type === "fav" && aiBox) {
         aiBox.after(div);
     } else {
