@@ -337,18 +337,21 @@ async function glaggleSearch() {
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
+    // --- NEU: WIDGET CHECK ---
+    const widgetShown = checkWidgets(query);
+
     // 1. KI-Box erstellen
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
         // 2. Alles parallel starten
         await Promise.all([
-            fetchGroqAI(query), // KI arbeitet selbstständig
+            fetchGroqAI(query),
             (async () => {
                 const favs = await getAiProcessedFavs(query);
                 favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
             })(),
-            searchWikipedia(query, 'de') // Hier werden die Wikipedia Einträge geholt
+            searchWikipedia(query, 'de')
         ]);
 
     } catch (e) {
@@ -357,19 +360,26 @@ async function glaggleSearch() {
         loader.style.display = "none";
     }
 }
-
 // WICHTIG: Diese Funktion hat gefehlt oder war nicht aktiv
 async function searchWikipedia(query, lang) {
     try {
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        // Erweiterte URL für Thumbnails und Snippets
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=2&format=json&origin=*`;
+        
         const response = await fetch(url);
         const data = await response.json();
         
-        if(data.query && data.query.search) {
-            data.query.search.forEach(item => {
-                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}`;
-                // Wir übergeben "wiki" als Typ für die korrekte Anzeige
-                renderResult(item.title, item.snippet + "...", wikiUrl, "wiki");
+        if(data.query && data.query.pages) {
+            Object.values(data.query.pages).forEach(page => {
+                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
+                const thumb = page.thumbnail ? page.thumbnail.source : null;
+                
+                // Wir bauen das Bild direkt in den Text ein
+                const content = thumb 
+                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${page.extract}` 
+                    : page.extract;
+
+                renderResult(page.title, content, wikiUrl, "wiki");
             });
         }
     } catch (e) { console.error("Wiki Fehler", e); }
@@ -546,6 +556,100 @@ async function optimizeSearch() {
     }
 }
 
+    function checkWidgets(query) {
+    const q = query.toLowerCase();
+    const resultsDiv = document.getElementById('glaggleResults');
+
+    // --- RECHNER ---
+    // Prüft auf Zahlen und Operatoren (z.B. 5 + 5)
+    if (/^[\d\s\+\-\*\/\(\)\.]+$/.test(q) && /[\+\-\*\/]/.test(q)) {
+        try {
+            const result = eval(q); 
+            renderWidget("🧮 Rechner", `Das Ergebnis von <strong>${q}</strong> ist:`, `<h1 style="margin:0; color:#70C4F7;">${result}</h1>`);
+            return true;
+        } catch(e) {}
+    }
+
+    // --- TIMER ---
+    if (q.includes("timer") || q.includes("stoppuhr")) {
+        const mins = q.match(/\d+/) ? parseInt(q.match(/\d+/)[0]) : 5;
+        renderTimerWidget(mins);
+        return true;
+    }
+
+    // --- WETTER (Simuliert für das Beispiel) ---
+    if (q.includes("wetter")) {
+        const city = q.replace("wetter", "").replace("in", "").trim() || "deinem Standort";
+        renderWidget("☁️ Wetter", `Wetter für <strong>${city}</strong>`, `
+            <div style="display:flex; align-items:center; gap:20px; justify-content:center;">
+                <span style="font-size:3rem;">☀️</span>
+                <span style="font-size:2rem; font-weight:bold;">22°C</span>
+            </div>
+            <p style="margin:5px 0 0 0;">Heiter bis sonnig - Glaggle-Tag!</p>
+        `);
+        return true;
+    }
+
+    return false;
+}
+
+// Universal-Funktion für einfache Widgets
+function renderWidget(title, subtitle, content) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project'; // Dein schöner bunter Rahmen
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <strong style="color:var(--link-color);">${title}</strong>
+        </div>
+        <p style="margin-bottom:15px;">${subtitle}</p>
+        <div style="text-align:center;">${content}</div>
+    `;
+    resultsDiv.prepend(div);
+}
+
+// Spezielles Widget für den Timer
+function renderTimerWidget(minutes) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    let seconds = minutes * 60;
+    
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.innerHTML = `
+        <strong style="color:var(--link-color);">⏱️ Glaggle Timer</strong>
+        <div style="text-align:center; padding:10px;">
+            <h1 id="timer-display" style="font-size:3rem; margin:10px 0;">${minutes}:00</h1>
+            <button id="timer-btn" class="nav-button" style="background:#34A853;">Start</button>
+        </div>
+    `;
+    resultsDiv.prepend(div);
+
+    let interval = null;
+    const btn = div.querySelector('#timer-btn');
+    const display = div.querySelector('#timer-display');
+
+    btn.onclick = () => {
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+            btn.innerText = "Start";
+            btn.style.background = "#34A853";
+        } else {
+            btn.innerText = "Stop";
+            btn.style.background = "#EA4335";
+            interval = setInterval(() => {
+                seconds--;
+                let m = Math.floor(seconds / 60);
+                let s = seconds % 60;
+                display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    alert("Glaggle! Zeit abgelaufen!");
+                }
+            }, 1000);
+        }
+    };
+}
 // Deine bestehenden Funktionen (getGKey, glaggleSearch, etc.) folgen hier...
 </script>
 </body>
