@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Seite nicht gefunden | Glaggle</title>
+    <style>
+        /* DEIN CSS (stark gekürzt für die Übersicht, füge hier dein komplettes CSS ein) */
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --link-color: #2E94D1;
+            --desc-color: #555555; --input-bg: #ffffff;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
+                --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5;
+                --desc-color: #bdc1c6; --input-bg: #3c4043;
+            }
+        }
+        body {
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .main-content { margin-top: 15vh; padding: 20px; text-align: center; width: 100%; max-width: 600px; }
+        
+        /* 404 Spezifisches Styling */
+        .error-code { font-size: 120px; font-weight: bold; margin: 0; color: #70C4F7; opacity: 0.5; }
+        .search-mockup {
+            border: 1px solid #dfe1e5; border-radius: 30px; padding: 15px 25px;
+            background: var(--input-bg); margin-bottom: 30px; display: flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .error-msg { font-size: 1.2rem; margin-bottom: 40px; color: var(--desc-color); }
+        .web-button {
+            display: inline-block; padding: 15px 25px; background-color: #70C4F7;
+            color: white; text-decoration: none; font-weight: bold;
+            border-radius: 50px; transition: 0.5s;
+        }
+        .web-button:hover { background-color: #2E94D1; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="main-content">
+        <p class="error-code">404</p>
+        
+        <h1 style="font-size: 3rem; margin-bottom: 20px;">Glaggle</h1>
+
+        <div class="search-mockup">
+            <span style="color: var(--desc-color);">Diese Seite konnte nicht gefunden werden...</span>
+        </div>
+
+        <p class="error-msg">
+            Es tut uns leid, aber die angeforderte URL wurde auf diesem Server nicht gefunden. 
+            Vielleicht hast du dich vertippt?
+        </p>
+
+        <div class="button-container">
+            <a href="/" class="web-button">Zurück zur Glaggle-Suche</a>
+        </div>
+    </div>
+
+</body>
+</html>
