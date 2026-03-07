@@ -3,125 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 | Glaggle</title>
+    <title>404 - Seite nicht gefunden | Glaggle</title>
     <style>
         :root {
-            /* Apple Tahoe Palette */
-            --bg-gradient: radial-gradient(circle at 50% 50%, #fbfbfd 0%, #f5f5f7 100%);
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --accent-blue: #0071e3;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --link-color: #2E94D1;
+            --desc-color: #555555;
+            --input-bg: #ffffff;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-gradient: radial-gradient(circle at 50% 50%, #161617 0%, #000000 100%);
-                --text-primary: #f5f5f7;
-                --text-secondary: #a1a1a6;
-                --accent-blue: #2997ff;
-                --glass-bg: rgba(28, 28, 30, 0.7);
-                --glass-border: rgba(255, 255, 255, 0.1);
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --card-bg: #303134;
+                --card-border: #444444;
+                --link-color: #8cc9f5;
+                --desc-color: #bdc1c6;
+                --input-bg: #3c4043;
             }
         }
 
         body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
             margin: 0; padding: 0;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; background: var(--bg-gradient);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-primary); overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; text-align: center;
         }
 
-        .glass-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px;
-            padding: 50px 30px;
-            text-align: center;
-            max-width: 450px; width: 90%;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
-            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        /* Glaggle Logo Original-Farben */
-        .glaggle-logo { font-size: 3.5rem; font-weight: bold; margin-bottom: 5px; }
+        /* Glaggle Logo */
+        .glaggle-logo { font-size: 4rem; font-weight: bold; margin-bottom: 5px; }
         .g1 { color: #4285F4; } .l { color: #EA4335; } .a { color: #FBBC05; } 
         .g2 { color: #34A853; } .e { color: #EA4335; }
+        .slogan { font-size: 1.2rem; font-weight: bold; margin-bottom: 40px; }
 
-        .slogan { font-weight: bold; font-size: 1.1rem; margin-bottom: 30px; }
+        /* Suchleiste im Original-Stil */
+        .search-container {
+            width: 90%; max-width: 600px;
+            background: var(--input-bg);
+            border: 1px solid #dfe1e5;
+            border-radius: 30px;
+            padding: 12px 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
 
-        /* Die dynamische Suchleiste */
-        .search-field {
-            background: rgba(0,0,0,0.04);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 25px;
-            font-family: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            transition: all 0.5s ease;
+        .search-text {
+            font-size: 18px;
+            color: var(--text-color);
             white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: sans-serif;
         }
 
-        .description {
-            font-size: 1rem; line-height: 1.5;
-            color: var(--text-secondary); margin-bottom: 35px;
+        .error-msg {
+            max-width: 500px;
+            color: var(--desc-color);
+            line-height: 1.6;
+            margin-bottom: 40px;
         }
 
-        .apple-btn {
+        .web-button {
             display: inline-block;
-            background-color: var(--accent-blue);
-            color: white; padding: 12px 28px;
-            border-radius: 980px;
-            text-decoration: none; font-weight: 500;
-            transition: transform 0.2s;
+            padding: 15px 30px;
+            background-color: #70C4F7;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 50px;
+            transition: 0.3s;
         }
-        .apple-btn:hover { transform: scale(1.03); opacity: 0.9; }
 
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(40px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        .web-button:hover {
+            background-color: #2E94D1;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
 
-    <div class="glass-container">
-        <div class="glaggle-logo">
-            <span class="g1">G</span><span class="l">l</span><span class="a">a</span><span class="g2">g</span><span class="g2">g</span><span class="l">l</span><span class="e">e</span>
-        </div>
-        <div class="slogan">your life!</div>
-        
-        <div class="search-field" id="dynamicPath">
-            glaggle://page-not-found
-        </div>
+    <div class="glaggle-logo">
+        <span class="g1">G</span><span class="l">l</span><span class="a">a</span><span class="g2">g</span><span class="g2">g</span><span class="l">l</span><span class="e">e</span>
+    </div>
+    <div class="slogan">your life!</div>
 
-        <p class="description">
-            Hoppla! Die Seite scheint im digitalen Nirgendwo verschwunden zu sein.
-        </p>
-
-        <a href="/" class="apple-btn">Zur Glaggle Suche</a>
+    <div class="search-container" id="searchBox">
+        <span class="search-text">glaggle.ch<span id="wrongPath"></span></span>
     </div>
 
+    <p class="error-msg">
+        <strong>404.</strong> Das ist ein Fehler. <br>
+        Die angeforderte URL wurde auf diesem Server nicht gefunden. Das ist alles, was wir wissen.
+    </p>
+
+    <a href="/" class="web-button">Zurück zur Glaggle-Suche</a>
+
     <script>
-        // Kleines Skript für den Text-Wechsel
+        // Pfad aus der URL auslesen
+        const path = window.location.pathname;
+        const pathDisplay = document.getElementById('wrongPath');
+        const searchBox = document.getElementById('searchBox');
+
+        // Den Pfad anzeigen
+        pathDisplay.textContent = path;
+
+        // Nach 2 Sekunden den Fehler-Pfad entfernen und die Box blau leuchten lassen
         setTimeout(() => {
-            const pathElement = document.getElementById('dynamicPath');
-            pathElement.style.opacity = '0';
+            searchBox.style.borderColor = '#70C4F7';
+            searchBox.style.boxShadow = '0 4px 15px rgba(112, 196, 247, 0.4)';
+            
+            pathDisplay.style.transition = 'opacity 0.5s';
+            pathDisplay.style.opacity = '0';
             
             setTimeout(() => {
-                // Hier kannst du deinen Website-Namen eintragen
-                pathElement.textContent = 'glaggle://deine-website.de';
-                pathElement.style.opacity = '1';
-                pathElement.style.background = 'rgba(66, 133, 244, 0.1)'; // Sanfter Blau-Ton beim Wechsel
-                pathElement.style.color = '#4285F4';
+                pathDisplay.textContent = '';
+                pathDisplay.style.opacity = '1';
             }, 500);
-        }, 2500); // Wechselt nach 2,5 Sekunden
+        }, 2000);
     </script>
 
 </body>
