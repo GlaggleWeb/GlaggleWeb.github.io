@@ -6,11 +6,10 @@
     <title>404 - Seite nicht gefunden | Glaggle</title>
     <style>
         :root {
+            --glaggle-blue: #70C4F7;
+            --glaggle-dark-blue: #2E94D1;
             --bg-color: #ffffff;
             --text-color: #333333;
-            --card-bg: #fdfdfd;
-            --card-border: #eeeeee;
-            --link-color: #2E94D1;
             --desc-color: #555555;
             --input-bg: #ffffff;
         }
@@ -19,9 +18,6 @@
             :root {
                 --bg-color: #202124;
                 --text-color: #e8eaed;
-                --card-bg: #303134;
-                --card-border: #444444;
-                --link-color: #8cc9f5;
                 --desc-color: #bdc1c6;
                 --input-bg: #3c4043;
             }
@@ -36,23 +32,33 @@
             min-height: 100vh; text-align: center;
         }
 
-        /* Glaggle Logo */
-        .glaggle-logo { font-size: 4rem; font-weight: bold; margin-bottom: 5px; }
-        .g1 { color: #4285F4; } .l { color: #EA4335; } .a { color: #FBBC05; } 
-        .g2 { color: #34A853; } .e { color: #EA4335; }
-        .slogan { font-size: 1.2rem; font-weight: bold; margin-bottom: 40px; }
+        /* Glaggle Logo in Original Blau */
+        .glaggle-logo { 
+            font-size: 4.5rem; 
+            font-weight: bold; 
+            margin-bottom: 0; 
+            color: var(--glaggle-blue);
+            letter-spacing: -2px;
+        }
+        
+        .slogan { 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            margin-bottom: 40px; 
+            color: var(--text-color);
+        }
 
-        /* Suchleiste im Original-Stil */
+        /* Suchleiste im Glaggle-Stil */
         .search-container {
             width: 90%; max-width: 600px;
             background: var(--input-bg);
             border: 1px solid #dfe1e5;
             border-radius: 30px;
-            padding: 12px 25px;
+            padding: 14px 25px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex; align-items: center;
             margin-bottom: 30px;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease-in-out;
         }
 
         .search-text {
@@ -61,7 +67,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         .error-msg {
@@ -69,30 +75,35 @@
             color: var(--desc-color);
             line-height: 1.6;
             margin-bottom: 40px;
+            font-size: 0.95rem;
         }
 
         .web-button {
             display: inline-block;
-            padding: 15px 30px;
-            background-color: #70C4F7;
+            padding: 15px 35px;
+            background-color: var(--glaggle-blue);
             color: white;
             text-decoration: none;
             font-weight: bold;
             border-radius: 50px;
-            transition: 0.3s;
+            transition: 0.3s ease;
         }
 
         .web-button:hover {
-            background-color: #2E94D1;
+            background-color: var(--glaggle-dark-blue);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(112, 196, 247, 0.3);
+        }
+
+        #wrongPath {
+            color: var(--glaggle-blue);
+            font-weight: normal;
         }
     </style>
 </head>
 <body>
 
-    <div class="glaggle-logo">
-        <span class="g1">G</span><span class="l">l</span><span class="a">a</span><span class="g2">g</span><span class="g2">g</span><span class="l">l</span><span class="e">e</span>
-    </div>
+    <div class="glaggle-logo">Glaggle</div>
     <div class="slogan">your life!</div>
 
     <div class="search-container" id="searchBox">
@@ -101,33 +112,35 @@
 
     <p class="error-msg">
         <strong>404.</strong> Das ist ein Fehler. <br>
-        Die angeforderte URL wurde auf diesem Server nicht gefunden. Das ist alles, was wir wissen.
+        Die angeforderte Seite konnte unter <strong>glaggle.ch</strong> nicht gefunden werden.
     </p>
 
-    <a href="/" class="web-button">Zurück zur Glaggle-Suche</a>
+    <a href="/" class="web-button">Zurück zur Suche</a>
 
     <script>
-        // Pfad aus der URL auslesen
+        // Pfad aus der URL auslesen (z.B. /mein-fehler)
         const path = window.location.pathname;
         const pathDisplay = document.getElementById('wrongPath');
         const searchBox = document.getElementById('searchBox');
 
-        // Den Pfad anzeigen
+        // Den eingegebenen Pfad anzeigen
         pathDisplay.textContent = path;
 
-        // Nach 2 Sekunden den Fehler-Pfad entfernen und die Box blau leuchten lassen
+        // Animation: Nach 2 Sekunden wird die Suche "korrigiert"
         setTimeout(() => {
-            searchBox.style.borderColor = '#70C4F7';
-            searchBox.style.boxShadow = '0 4px 15px rgba(112, 196, 247, 0.4)';
+            // Suchleiste bekommt den blauen Fokus-Ring
+            searchBox.style.borderColor = 'var(--glaggle-blue)';
+            searchBox.style.boxShadow = '0 4px 20px rgba(112, 196, 247, 0.25)';
             
-            pathDisplay.style.transition = 'opacity 0.5s';
+            // Der falsche Pfad wird sanft ausgeblendet
+            pathDisplay.style.transition = 'opacity 0.6s ease';
             pathDisplay.style.opacity = '0';
             
             setTimeout(() => {
                 pathDisplay.textContent = '';
                 pathDisplay.style.opacity = '1';
-            }, 500);
-        }, 2000);
+            }, 600);
+        }, 2200);
     </script>
 
 </body>
