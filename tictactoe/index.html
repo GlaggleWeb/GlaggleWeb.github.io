@@ -3,68 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peer2Peer Tic Tac Toe</title>
+    <title>Glaggle Live Tic Tac Toe</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #222; color: white; }
-        .grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
-        .cell { width: 100px; height: 100px; background: #333; border: 2px solid #555; font-size: 3em; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .cell:hover { background: #444; }
-        #status { margin: 20px; font-size: 1.2em; color: #00ffcc; }
-        .hidden { display: none; }
-        input { padding: 8px; width: 300px; border-radius: 5px; border: none; }
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --link-color: #2E94D1;
+            --desc-color: #555555;
+            --input-bg: #ffffff;
+            --accent: #70C4F7;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+                --link-color: #8cc9f5;
+                --desc-color: #bdc1c6;
+                --input-bg: #3c4043;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; transition: background-color 0.3s;
+        }
+
+        /* NAVIGATION (Glaggle Style) */
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 80px; background-color: var(--nav-bg);
+            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
+        }
+        .nav-slogan { font-size: 18px; font-weight: bold; color: var(--accent); }
+
+        /* CONTENT AREA */
+        .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 600px; }
+
+        /* GAME BOARD CARDS */
+        .glaggle-entry {
+            background: var(--card-bg); padding: 25px; 
+            border-radius: 18px; border: 1px solid var(--card-border);
+            text-align: center; transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+        }
+
+        #status { font-weight: bold; margin-bottom: 15px; color: var(--link-color); }
+
+        .grid { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
+            max-width: 320px; margin: 0 auto; 
+        }
+
+        .cell { 
+            aspect-ratio: 1/1; background: var(--input-bg); 
+            border: 1px solid var(--card-border); border-radius: 12px;
+            font-size: 2.5em; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.3s;
+        }
+        .cell:hover { border-color: var(--accent); transform: scale(1.05); }
+
+        /* LINK SECTION */
+        .search-bar-container {
+            display: flex; align-items: center; background: var(--input-bg);
+            border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 20px;
+        }
+        #gameLink { flex: 1; border: none; outline: none; padding: 12px; background: transparent; color: var(--text-color); font-size: 14px; }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 10px 20px; 
+            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Tic Tac Toe <span style="color: #00ffcc;">Live</span></h1>
-    <div id="status">Initialisiere Verbindung...</div>
-
-    <div id="share-area" class="hidden">
-        <p>Sende diesen Link an einen Freund:</p>
-        <input type="text" id="gameLink" readonly onclick="this.select()">
+    <div class="navbar">
+        <div class="nav-left"><span class="nav-slogan">Glaggle Play</span></div>
+        <div class="nav-right"><div class="nav-button">Tic Tac Toe</div></div>
     </div>
 
-    <div class="grid" id="board">
-        <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
-        <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
-        <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
+    <div class="main-content">
+        <div class="glaggle-entry">
+            <div id="status">Initialisiere...</div>
+            <div class="grid" id="board">
+                <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
+                <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
+                <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
+            </div>
+            <button class="btn" onclick="location.search=''">Neues Spiel / Reset</button>
+        </div>
+
+        <div id="share-area" class="glaggle-entry" style="display:none;">
+            <p style="color: var(--desc-color); font-size: 0.9rem;">Gegen einen Kollegen spielen? Link senden:</p>
+            <div class="search-bar-container">
+                <input type="text" id="gameLink" readonly onclick="this.select()">
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
     <script>
         const status = document.getElementById('status');
         const cells = document.querySelectorAll('.cell');
-        const boardDiv = document.getElementById('board');
         const urlParams = new URLSearchParams(window.location.search);
         const joinId = urlParams.get('join');
 
-        let peer = new Peer(); // Erstellt eine zufällige ID
-        let conn;
+        let peer = new Peer();
+        let conn = null;
         let mySymbol = joinId ? "O" : "X";
         let turn = "X";
         let boardState = Array(9).fill("");
+        let isPVP = false;
 
         peer.on('open', (id) => {
             if (!joinId) {
-                // Host-Modus
-                status.innerText = "Warte auf Gegner...";
-                const link = window.location.href + "?join=" + id;
-                document.getElementById('gameLink').value = link;
-                document.getElementById('share-area').classList.remove('hidden');
+                status.innerText = "Gegen Kombi (KI) oder Freund einladen";
+                document.getElementById('gameLink').value = window.location.href + "?join=" + id;
+                document.getElementById('share-area').style.display = 'block';
             } else {
-                // Gast-Modus
-                status.innerText = "Verbinde mit Host...";
+                status.innerText = "Verbinde zu Freund...";
                 conn = peer.connect(joinId);
+                isPVP = true;
                 setupConnection();
             }
         });
 
-        // Wenn jemand uns kontaktiert (Host-Seite)
         peer.on('connection', (c) => {
             conn = c;
-            status.innerText = "Gegner verbunden! X fängt an.";
-            document.getElementById('share-area').classList.add('hidden');
+            isPVP = true;
+            status.innerText = "Freund verbunden! X beginnt.";
+            document.getElementById('share-area').style.display = 'none';
             setupConnection();
         });
 
@@ -79,22 +161,37 @@
         cells.forEach(cell => {
             cell.onclick = () => {
                 const i = cell.getAttribute('data-i');
-                if (boardState[i] === "" && turn === mySymbol && conn) {
-                    boardState[i] = mySymbol;
-                    turn = (mySymbol === "X") ? "O" : "X";
-                    updateUI();
-                    conn.send({ board: boardState, nextTurn: turn });
+                if (boardState[i] === "" && turn === mySymbol) {
+                    makeMove(i, mySymbol);
+                    
+                    if (!isPVP && !checkWinner(boardState)) {
+                        setTimeout(kombiMove, 500); // Kombi zieht nach
+                    }
                 }
             };
         });
 
+        function makeMove(i, symbol) {
+            boardState[i] = symbol;
+            turn = (symbol === "X") ? "O" : "X";
+            updateUI();
+            if (isPVP && conn) {
+                conn.send({ board: boardState, nextTurn: turn });
+            }
+        }
+
+        function kombiMove() {
+            let emptyCells = boardState.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+            if (emptyCells.length > 0) {
+                let randomI = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                makeMove(randomI, "O");
+            }
+        }
+
         function updateUI() {
             boardState.forEach((val, i) => cells[i].innerText = val);
-            if (checkWinner(boardState)) {
-                status.innerText = "Spiel beendet!";
-            } else {
-                status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Gegner ist dran...";
-            }
+            if (checkWinner(boardState)) return;
+            status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Warte auf " + (isPVP ? "Gegner" : "Kombi") + "...";
         }
 
         function checkWinner(b) {
@@ -105,6 +202,7 @@
                     return true;
                 }
             }
+            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; return true; }
             return false;
         }
     </script>
