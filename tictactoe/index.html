@@ -71,7 +71,7 @@
             <div class="btn-group">
                 <button class="btn" onclick="startMode('ki')">🤖 Gegen Kombi (KI)</button>
                 <button class="btn" onclick="startRandom()">🌐 Zufälliger Gegner</button>
-                <button class="btn" onclick="startMode('friend')">🔗 Freund einladen</button>
+                <button class="btn" onclick="prepareFriendLink()">🔗 Freund einladen</button>
             </div>
         </div>
 
@@ -259,56 +259,49 @@
             return false;
         }
 
-    function shareGame() {
+// Diese Funktion wird aufgerufen, wenn du auf "Freund einladen" klickst
+function prepareFriendLink() {
+    // Falls Peer noch nicht bereit ist, initialisieren
+    if (!peer || !peer.id) {
+        initPeer();
+        status.innerText = "Verbindung wird aufgebaut...";
+        setTimeout(prepareFriendLink, 800); // Kurz warten und nochmal versuchen
+        return;
+    }
+
     const modal = document.getElementById('shareModal');
     const input = document.getElementById('shareLinkInput');
     
-    // Aktuellen Link in das Input-Feld schreiben
-    input.value = window.location.href;
+    // Den speziellen Einladungs-Link mit DEINER ID bauen
+    const inviteLink = window.location.origin + window.location.pathname + "?join=" + peer.id;
+    input.value = inviteLink;
     
-    // Modal anzeigen mit sanftem Fade-In
+    // Modal anzeigen
     modal.style.display = "flex";
     setTimeout(() => modal.style.opacity = "1", 10);
+
+    // Den Spielmodus im Hintergrund schon mal auf "Warten" stellen
+    currentMode = 'friend';
+    document.getElementById('setup-menu').classList.add('hidden');
+    document.getElementById('game-area').classList.remove('hidden');
+    status.innerText = "Warte auf Freund...";
 }
 
-function prepareFriendLink() {
-        if (!peer || !peer.id) {
-            initPeer(); // Peer initialisieren, falls noch nicht geschehen
-            status.innerText = "Erstelle Verbindung...";
-            // Kleiner Delay, damit die Peer-ID generiert werden kann
-            setTimeout(prepareFriendLink, 500);
-            return;
-        }
+function closeShare() {
+    const modal = document.getElementById('shareModal');
+    modal.style.opacity = "0";
+    setTimeout(() => modal.style.display = "none", 300);
+}
 
-        const modal = document.getElementById('shareModal');
-        const input = document.getElementById('shareLinkInput');
-        
-        // WICHTIG: Hier wird der Einladungs-Link mit der ID gebaut
-        const inviteLink = window.location.origin + window.location.pathname + "?join=" + peer.id;
-        input.value = inviteLink;
-        
-        // Modal anzeigen
-        modal.style.display = "flex";
-        setTimeout(() => modal.style.opacity = "1", 10);
-
-        // Im Hintergrund schon mal das Spiel-Feld bereitmachen
-        startMode('friend');
-    }
-
-    function closeShare() {
-        const modal = document.getElementById('shareModal');
-        modal.style.opacity = "0";
-        setTimeout(() => modal.style.display = "none", 300);
-    }
-
-    function copyAndClose() {
-        const input = document.getElementById('shareLinkInput');
-        const btn = document.getElementById('copyBtn');
-        
-        input.select();
-        input.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(input.value);
-        
+function copyAndClose() {
+    const input = document.getElementById('shareLinkInput');
+    const btn = document.getElementById('copyBtn');
+    
+    input.select();
+    input.setSelectionRange(0, 99999); // Für Handys
+    
+    // In Zwischenablage kopieren
+    navigator.clipboard.writeText(input.value).then(() => {
         const originalText = btn.innerText;
         btn.innerText = "✅ Kopiert!";
         btn.style.backgroundColor = "#2ecc71"; // Erfolg-Grün
@@ -317,12 +310,8 @@ function prepareFriendLink() {
             btn.innerText = originalText;
             btn.style.backgroundColor = "var(--accent)";
             closeShare();
-            // Sobald kopiert wurde, zeigen wir die Spielfläche
-            document.getElementById('setup-menu').classList.add('hidden');
-            document.getElementById('game-area').classList.remove('hidden');
-            status.innerText = "Warte auf Freund...";
         }, 1000);
-    }
+    });
 }
     </script>
 </body>
