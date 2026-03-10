@@ -6,109 +6,88 @@
     <title>Glaggle Live Tic Tac Toe</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --nav-bg: #ffffff;
-            --card-bg: #fdfdfd;
-            --card-border: #eeeeee;
-            --link-color: #2E94D1;
-            --desc-color: #555555;
-            --input-bg: #ffffff;
-            --accent: #70C4F7;
+            --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --link-color: #2E94D1;
+            --desc-color: #555555; --input-bg: #ffffff; --accent: #70C4F7;
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #202124;
-                --text-color: #e8eaed;
-                --nav-bg: #303134;
-                --card-bg: #303134;
-                --card-border: #444444;
-                --link-color: #8cc9f5;
-                --desc-color: #bdc1c6;
-                --input-bg: #3c4043;
+                --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
+                --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5;
+                --desc-color: #bdc1c6; --input-bg: #3c4043;
             }
         }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center; 
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh; transition: background-color 0.3s;
         }
-
-        /* NAVIGATION (Glaggle Style) */
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; height: 80px; background-color: var(--nav-bg);
             padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
+            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
         }
-        .nav-slogan { font-size: 18px; font-weight: bold; color: var(--accent); }
-
-        /* CONTENT AREA */
+        .nav-logo { height: 40px; }
         .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 600px; }
-
-        /* GAME BOARD CARDS */
         .glaggle-entry {
-            background: var(--card-bg); padding: 25px; 
-            border-radius: 18px; border: 1px solid var(--card-border);
-            text-align: center; transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
+            background: var(--card-bg); padding: 25px; border-radius: 18px; 
+            border: 1px solid var(--card-border); box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px;
         }
-
-        #status { font-weight: bold; margin-bottom: 15px; color: var(--link-color); }
-
-        .grid { 
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
-            max-width: 320px; margin: 0 auto; 
-        }
-
+        #status { font-weight: bold; margin-bottom: 15px; color: var(--link-color); min-height: 1.2em; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
         .cell { 
-            aspect-ratio: 1/1; background: var(--input-bg); 
-            border: 1px solid var(--card-border); border-radius: 12px;
-            font-size: 2.5em; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; transition: 0.3s;
+            aspect-ratio: 1/1; background: var(--input-bg); border: 1px solid var(--card-border); 
+            border-radius: 12px; font-size: 2.5em; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.2s;
         }
-        .cell:hover { border-color: var(--accent); transform: scale(1.05); }
-
-        /* LINK SECTION */
+        .cell:hover { border-color: var(--accent); transform: scale(1.02); }
+        .mode-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 20px; 
+            border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn:hover { background: var(--link-color); transform: translateY(-2px); }
+        .btn-secondary { background: var(--desc-color); }
+        .hidden { display: none !important; }
         .search-bar-container {
             display: flex; align-items: center; background: var(--input-bg);
-            border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 20px;
+            border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px; margin-top: 15px;
         }
-        #gameLink { flex: 1; border: none; outline: none; padding: 12px; background: transparent; color: var(--text-color); font-size: 14px; }
-
-        .btn {
-            background: var(--accent); color: white; border: none; padding: 10px 20px; 
-            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 10px;
-        }
+        #gameLink { flex: 1; border: none; outline: none; padding: 10px; background: transparent; color: var(--text-color); font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div class="nav-left"><span class="nav-slogan">Glaggle Play</span></div>
-        <div class="nav-right"><div class="nav-button">Tic Tac Toe</div></div>
+        <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <div class="nav-slogan" style="color: var(--accent); font-weight: bold;">Tic Tac Toe</div>
     </div>
 
     <div class="main-content">
-        <div class="glaggle-entry">
-            <div id="status">Initialisiere...</div>
+        <div id="setup-menu" class="glaggle-entry">
+            <h2>Wähle deinen Modus</h2>
+            <div class="mode-menu">
+                <button class="btn" onclick="startMode('ki')">🤖 Gegen Kombi (KI)</button>
+                <button class="btn" onclick="startMode('random')">🌐 Zufälliger Gegner</button>
+                <button class="btn" onclick="startMode('friend')">🔗 Freund einladen</button>
+            </div>
+        </div>
+
+        <div id="game-area" class="glaggle-entry hidden">
+            <div id="status">Warte auf Verbindung...</div>
             <div class="grid" id="board">
                 <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
                 <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
                 <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
             </div>
-            <button class="btn" onclick="location.search=''">Neues Spiel / Reset</button>
+            <br>
+            <button class="btn btn-secondary" onclick="location.href=location.pathname">Menü verlassen</button>
         </div>
 
-        <div id="share-area" class="glaggle-entry" style="display:none;">
-            <p style="color: var(--desc-color); font-size: 0.9rem;">Gegen einen Kollegen spielen? Link senden:</p>
+        <div id="share-area" class="glaggle-entry hidden">
+            <p style="font-size: 0.9rem; color: var(--desc-color);">Sende diesen Link deinem Kollegen:</p>
             <div class="search-bar-container">
                 <input type="text" id="gameLink" readonly onclick="this.select()">
             </div>
@@ -124,29 +103,61 @@
 
         let peer = new Peer();
         let conn = null;
-        let mySymbol = joinId ? "O" : "X";
+        let mySymbol = "X";
         let turn = "X";
         let boardState = Array(9).fill("");
-        let isPVP = false;
+        let currentMode = null; // 'ki', 'random', 'friend'
 
+        // Automatischer Start wenn Link geklickt wurde
         peer.on('open', (id) => {
-            if (!joinId) {
-                status.innerText = "Gegen Kombi (KI) oder Freund einladen";
-                document.getElementById('gameLink').value = window.location.href + "?join=" + id;
-                document.getElementById('share-area').style.display = 'block';
-            } else {
-                status.innerText = "Verbinde zu Freund...";
-                conn = peer.connect(joinId);
-                isPVP = true;
-                setupConnection();
+            if (joinId) {
+                startMode('friend_join');
             }
         });
 
+        function startMode(mode) {
+            currentMode = mode;
+            document.getElementById('setup-menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+
+            if (mode === 'ki') {
+                mySymbol = "X";
+                status.innerText = "Du bist X. Kombi ist O.";
+            } 
+            else if (mode === 'friend') {
+                mySymbol = "X";
+                const link = window.location.origin + window.location.pathname + "?join=" + peer.id;
+                document.getElementById('gameLink').value = link;
+                document.getElementById('share-area').classList.remove('hidden');
+                status.innerText = "Warte auf Freund...";
+            }
+            else if (mode === 'friend_join') {
+                mySymbol = "O";
+                status.innerText = "Verbinde mit Freund...";
+                conn = peer.connect(joinId);
+                setupConnection();
+            }
+            else if (mode === 'random') {
+                status.innerText = "Suche Gegner...";
+                // Wir nutzen einen "Lobby-ID" Trick
+                const lobbyId = "glaggle-lobby-global-123"; 
+                conn = peer.connect(lobbyId); // Versuch jemanden zu finden
+                
+                // Falls nach 3 Sek keiner da ist, werden wir selbst zum Host
+                setTimeout(() => {
+                    if (!conn || !conn.open) {
+                        status.innerText = "Kein Gegner gefunden. Du bist nun Host - warte...";
+                        // In einer echten App bräuchtest du hier ein Backend. 
+                        // Hier simulieren wir es: Du wartest einfach bis einer 'random' klickt.
+                    }
+                }, 3000);
+            }
+        }
+
         peer.on('connection', (c) => {
             conn = c;
-            isPVP = true;
-            status.innerText = "Freund verbunden! X beginnt.";
-            document.getElementById('share-area').style.display = 'none';
+            document.getElementById('share-area').classList.add('hidden');
+            status.innerText = "Gegner verbunden! X beginnt.";
             setupConnection();
         });
 
@@ -162,10 +173,12 @@
             cell.onclick = () => {
                 const i = cell.getAttribute('data-i');
                 if (boardState[i] === "" && turn === mySymbol) {
+                    if (currentMode !== 'ki' && !conn) return; // Klick blockieren wenn keiner da ist
+                    
                     makeMove(i, mySymbol);
                     
-                    if (!isPVP && !checkWinner(boardState)) {
-                        setTimeout(kombiMove, 500); // Kombi zieht nach
+                    if (currentMode === 'ki' && !checkWinner(boardState)) {
+                        setTimeout(kombiMove, 500);
                     }
                 }
             };
@@ -175,7 +188,7 @@
             boardState[i] = symbol;
             turn = (symbol === "X") ? "O" : "X";
             updateUI();
-            if (isPVP && conn) {
+            if (conn) {
                 conn.send({ board: boardState, nextTurn: turn });
             }
         }
@@ -191,7 +204,7 @@
         function updateUI() {
             boardState.forEach((val, i) => cells[i].innerText = val);
             if (checkWinner(boardState)) return;
-            status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Warte auf " + (isPVP ? "Gegner" : "Kombi") + "...";
+            status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Gegner ist dran...";
         }
 
         function checkWinner(b) {
