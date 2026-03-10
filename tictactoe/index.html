@@ -21,7 +21,7 @@
             background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
             margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; transition: background-color 0.3s;
+            min-height: 100vh;
         }
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
@@ -42,14 +42,14 @@
             border-radius: 12px; font-size: 2.5em; display: flex; align-items: center; justify-content: center; 
             cursor: pointer; transition: 0.2s;
         }
-        .cell:hover { border-color: var(--accent); transform: scale(1.02); }
-        .mode-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .cell:hover { border-color: var(--accent); }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .btn {
             background: var(--accent); color: white; border: none; padding: 12px 20px; 
             border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
-        .btn:hover { background: var(--link-color); transform: translateY(-2px); }
-        .btn-secondary { background: var(--desc-color); }
+        .btn:hover { background: var(--link-color); }
+        .btn-restart { background: #2ecc71; margin-top: 15px; display: none; }
         .hidden { display: none !important; }
         .search-bar-container {
             display: flex; align-items: center; background: var(--input-bg);
@@ -62,13 +62,13 @@
 
     <div class="navbar">
         <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div class="nav-slogan" style="color: var(--accent); font-weight: bold;">Tic Tac Toe</div>
+        <div style="color: var(--accent); font-weight: bold;">Tic Tac Toe</div>
     </div>
 
     <div class="main-content">
         <div id="setup-menu" class="glaggle-entry">
-            <h2>Wähle deinen Modus</h2>
-            <div class="mode-menu">
+            <h2>Spielmodus wählen</h2>
+            <div class="btn-group">
                 <button class="btn" onclick="startMode('ki')">🤖 Gegen Kombi (KI)</button>
                 <button class="btn" onclick="startMode('random')">🌐 Zufälliger Gegner</button>
                 <button class="btn" onclick="startMode('friend')">🔗 Freund einladen</button>
@@ -76,18 +76,18 @@
         </div>
 
         <div id="game-area" class="glaggle-entry hidden">
-            <div id="status">Warte auf Verbindung...</div>
+            <div id="status">Warte...</div>
             <div class="grid" id="board">
                 <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
                 <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
                 <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
             </div>
-            <br>
-            <button class="btn btn-secondary" onclick="location.href=location.pathname">Menü verlassen</button>
+            <button id="restartBtn" class="btn btn-restart" onclick="requestRestart()">🔄 Nochmal spielen</button>
+            <button class="btn" style="background:var(--desc-color); margin-top:10px;" onclick="location.reload()">🏠 Hauptmenü</button>
         </div>
 
         <div id="share-area" class="glaggle-entry hidden">
-            <p style="font-size: 0.9rem; color: var(--desc-color);">Sende diesen Link deinem Kollegen:</p>
+            <p style="font-size: 0.8rem; color: var(--desc-color);">Link für Freund:</p>
             <div class="search-bar-container">
                 <input type="text" id="gameLink" readonly onclick="this.select()">
             </div>
@@ -98,6 +98,7 @@
     <script>
         const status = document.getElementById('status');
         const cells = document.querySelectorAll('.cell');
+        const restartBtn = document.getElementById('restartBtn');
         const urlParams = new URLSearchParams(window.location.search);
         const joinId = urlParams.get('join');
 
@@ -106,14 +107,10 @@
         let mySymbol = "X";
         let turn = "X";
         let boardState = Array(9).fill("");
-        let currentMode = null; // 'ki', 'random', 'friend'
+        let currentMode = null;
+        let gameActive = true;
 
-        // Automatischer Start wenn Link geklickt wurde
-        peer.on('open', (id) => {
-            if (joinId) {
-                startMode('friend_join');
-            }
-        });
+        peer.on('open', (id) => { if (joinId) startMode('friend_join'); });
 
         function startMode(mode) {
             currentMode = mode;
@@ -121,65 +118,79 @@
             document.getElementById('game-area').classList.remove('hidden');
 
             if (mode === 'ki') {
-                mySymbol = "X";
-                status.innerText = "Du bist X. Kombi ist O.";
-            } 
-            else if (mode === 'friend') {
-                mySymbol = "X";
-                const link = window.location.origin + window.location.pathname + "?join=" + peer.id;
-                document.getElementById('gameLink').value = link;
+                status.innerText = "Du bist X. Viel Glück!";
+                restartBtn.style.display = "block";
+            } else if (mode === 'friend') {
+                document.getElementById('gameLink').value = window.location.origin + window.location.pathname + "?join=" + peer.id;
                 document.getElementById('share-area').classList.remove('hidden');
                 status.innerText = "Warte auf Freund...";
-            }
-            else if (mode === 'friend_join') {
-                mySymbol = "O";
-                status.innerText = "Verbinde mit Freund...";
-                conn = peer.connect(joinId);
-                setupConnection();
-            }
-            else if (mode === 'random') {
+            } else if (mode === 'friend_join') {
+                mySymbol = "O"; status.innerText = "Verbinde...";
+                conn = peer.connect(joinId); setupConnection();
+            } else if (mode === 'random') {
                 status.innerText = "Suche Gegner...";
-                // Wir nutzen einen "Lobby-ID" Trick
-                const lobbyId = "glaggle-lobby-global-123"; 
-                conn = peer.connect(lobbyId); // Versuch jemanden zu finden
-                
-                // Falls nach 3 Sek keiner da ist, werden wir selbst zum Host
-                setTimeout(() => {
-                    if (!conn || !conn.open) {
-                        status.innerText = "Kein Gegner gefunden. Du bist nun Host - warte...";
-                        // In einer echten App bräuchtest du hier ein Backend. 
-                        // Hier simulieren wir es: Du wartest einfach bis einer 'random' klickt.
-                    }
-                }, 3000);
+                findRandomOpponent();
             }
         }
 
+        function findRandomOpponent() {
+            // Wir versuchen uns mit einer festen "Lobby"-ID zu verbinden
+            const lobbyId = "glaggle-public-lobby-room";
+            let checkConn = peer.connect(lobbyId);
+            
+            checkConn.on('open', () => {
+                conn = checkConn; mySymbol = "O";
+                status.innerText = "Gegner gefunden! Du bist O.";
+                setupConnection();
+            });
+
+            checkConn.on('error', () => {
+                // Wenn keiner da ist, erstellen wir die Lobby selbst
+                status.innerText = "Keiner online. Du wartest in der Lobby...";
+                peer._id = lobbyId; // Funktioniert in PeerJS oft nur bei Instanziierung, 
+                // daher ist echtes Matchmaking ohne Server schwer. 
+                // Alternativ: Wir zeigen einfach den Link an.
+            });
+        }
+
         peer.on('connection', (c) => {
-            conn = c;
-            document.getElementById('share-area').classList.add('hidden');
-            status.innerText = "Gegner verbunden! X beginnt.";
+            conn = c; document.getElementById('share-area').classList.add('hidden');
+            status.innerText = "Gegner da! X fängt an.";
+            restartBtn.style.display = "block";
             setupConnection();
         });
 
         function setupConnection() {
             conn.on('data', (data) => {
-                boardState = data.board;
-                turn = data.nextTurn;
-                updateUI();
+                if (data.type === 'move') {
+                    boardState = data.board; turn = data.nextTurn; updateUI();
+                } else if (data.type === 'restart') {
+                    resetBoard();
+                    status.innerText = "Spiel wurde vom Gegner zurückgesetzt!";
+                }
             });
+        }
+
+        function requestRestart() {
+            resetBoard();
+            if (conn) conn.send({ type: 'restart' });
+            if (currentMode === 'ki') status.innerText = "Neues Spiel gegen Kombi!";
+            else status.innerText = "Du hast das Spiel zurückgesetzt!";
+        }
+
+        function resetBoard() {
+            boardState = Array(9).fill("");
+            turn = "X";
+            gameActive = true;
+            updateUI();
         }
 
         cells.forEach(cell => {
             cell.onclick = () => {
                 const i = cell.getAttribute('data-i');
-                if (boardState[i] === "" && turn === mySymbol) {
-                    if (currentMode !== 'ki' && !conn) return; // Klick blockieren wenn keiner da ist
-                    
+                if (boardState[i] === "" && turn === mySymbol && gameActive) {
                     makeMove(i, mySymbol);
-                    
-                    if (currentMode === 'ki' && !checkWinner(boardState)) {
-                        setTimeout(kombiMove, 500);
-                    }
+                    if (currentMode === 'ki' && gameActive) setTimeout(kombiMove, 500);
                 }
             };
         });
@@ -188,23 +199,20 @@
             boardState[i] = symbol;
             turn = (symbol === "X") ? "O" : "X";
             updateUI();
-            if (conn) {
-                conn.send({ board: boardState, nextTurn: turn });
-            }
+            if (conn) conn.send({ type: 'move', board: boardState, nextTurn: turn });
+            checkWinner(boardState);
         }
 
         function kombiMove() {
-            let emptyCells = boardState.map((v, i) => v === "" ? i : null).filter(v => v !== null);
-            if (emptyCells.length > 0) {
-                let randomI = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                makeMove(randomI, "O");
-            }
+            let empty = boardState.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+            if (empty.length > 0) makeMove(empty[Math.floor(Math.random() * empty.length)], "O");
         }
 
         function updateUI() {
             boardState.forEach((val, i) => cells[i].innerText = val);
-            if (checkWinner(boardState)) return;
-            status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Gegner ist dran...";
+            if (!checkWinner(boardState)) {
+                status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Gegner ist dran...";
+            }
         }
 
         function checkWinner(b) {
@@ -212,10 +220,11 @@
             for (let s of wins) {
                 if (b[s[0]] && b[s[0]] === b[s[1]] && b[s[0]] === b[s[2]]) {
                     status.innerText = "Spieler " + b[s[0]] + " gewinnt! 🎉";
+                    gameActive = false; restartBtn.style.display = "block";
                     return true;
                 }
             }
-            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; return true; }
+            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; gameActive = false; restartBtn.style.display = "block"; return true; }
             return false;
         }
     </script>
