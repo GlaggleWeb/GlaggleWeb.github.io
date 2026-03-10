@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peer2Peer Tic Tac Toe</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #222; color: white; }
+        .grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
+        .cell { width: 100px; height: 100px; background: #333; border: 2px solid #555; font-size: 3em; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .cell:hover { background: #444; }
+        #status { margin: 20px; font-size: 1.2em; color: #00ffcc; }
+        .hidden { display: none; }
+        input { padding: 8px; width: 300px; border-radius: 5px; border: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Toe <span style="color: #00ffcc;">Live</span></h1>
+    <div id="status">Initialisiere Verbindung...</div>
+
+    <div id="share-area" class="hidden">
+        <p>Sende diesen Link an einen Freund:</p>
+        <input type="text" id="gameLink" readonly onclick="this.select()">
+    </div>
+
+    <div class="grid" id="board">
+        <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script>
+        const status = document.getElementById('status');
+        const cells = document.querySelectorAll('.cell');
+        const boardDiv = document.getElementById('board');
+        const urlParams = new URLSearchParams(window.location.search);
+        const joinId = urlParams.get('join');
+
+        let peer = new Peer(); // Erstellt eine zufällige ID
+        let conn;
+        let mySymbol = joinId ? "O" : "X";
+        let turn = "X";
+        let boardState = Array(9).fill("");
+
+        peer.on('open', (id) => {
+            if (!joinId) {
+                // Host-Modus
+                status.innerText = "Warte auf Gegner...";
+                const link = window.location.href + "?join=" + id;
+                document.getElementById('gameLink').value = link;
+                document.getElementById('share-area').classList.remove('hidden');
+            } else {
+                // Gast-Modus
+                status.innerText = "Verbinde mit Host...";
+                conn = peer.connect(joinId);
+                setupConnection();
+            }
+        });
+
+        // Wenn jemand uns kontaktiert (Host-Seite)
+        peer.on('connection', (c) => {
+            conn = c;
+            status.innerText = "Gegner verbunden! X fängt an.";
+            document.getElementById('share-area').classList.add('hidden');
+            setupConnection();
+        });
+
+        function setupConnection() {
+            conn.on('data', (data) => {
+                boardState = data.board;
+                turn = data.nextTurn;
+                updateUI();
+            });
+        }
+
+        cells.forEach(cell => {
+            cell.onclick = () => {
+                const i = cell.getAttribute('data-i');
+                if (boardState[i] === "" && turn === mySymbol && conn) {
+                    boardState[i] = mySymbol;
+                    turn = (mySymbol === "X") ? "O" : "X";
+                    updateUI();
+                    conn.send({ board: boardState, nextTurn: turn });
+                }
+            };
+        });
+
+        function updateUI() {
+            boardState.forEach((val, i) => cells[i].innerText = val);
+            if (checkWinner(boardState)) {
+                status.innerText = "Spiel beendet!";
+            } else {
+                status.innerText = (turn === mySymbol) ? "Du bist dran!" : "Gegner ist dran...";
+            }
+        }
+
+        function checkWinner(b) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let s of wins) {
+                if (b[s[0]] && b[s[0]] === b[s[1]] && b[s[0]] === b[s[2]]) {
+                    status.innerText = "Spieler " + b[s[0]] + " gewinnt! 🎉";
+                    return true;
+                }
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>
