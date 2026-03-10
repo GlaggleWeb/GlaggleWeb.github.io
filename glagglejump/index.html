@@ -16,27 +16,49 @@
                 --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5;
             }
         }
+        
+        * { box-sizing: border-box; } /* WICHTIG: Padding wird jetzt nach innen berechnet */
+
         body {
             background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', sans-serif;
             margin: 0; overflow: hidden; touch-action: none;
             display: flex; flex-direction: column; align-items: center;
         }
+
         .navbar {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; height: 60px; background-color: var(--nav-bg);
-            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: fixed; top: 0; z-index: 1000;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 65px; 
+            background-color: var(--nav-bg);
+            padding: 0 30px; /* Mehr Abstand zum Rand */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            z-index: 1000;
         }
-        .main-content { margin-top: 80px; width: 100%; max-width: 500px; padding: 10px; text-align: center; }
+
+        /* Verhindert, dass das Logo zu nah am Rand ist */
+        .logo-link {
+            display: flex;
+            align-items: center;
+            padding-left: 10px; 
+        }
+
+        .nav-logo { height: 35px; display: block; }
+
+        .main-content { margin-top: 90px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
         
+        /* Rest des CSS bleibt gleich ... */
         #game-container {
             position: relative; width: 100%; height: 250px;
             background: var(--card-bg); border: 4px solid var(--card-border);
             border-radius: 20px; overflow: hidden; cursor: pointer;
         }
         canvas { display: block; width: 100%; height: 100%; }
-
         .score-box {
             display: flex; justify-content: space-around; margin-bottom: 15px;
             background: var(--nav-bg); padding: 10px; border-radius: 15px;
@@ -44,7 +66,6 @@
         }
         .score-val { font-size: 14px; color: var(--desc-color); }
         .score-val b { color: var(--accent); font-size: 18px; display: block; }
-
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); color: white;
@@ -61,8 +82,8 @@
 <body>
 
     <div class="navbar">
-        <a href="/"><img src="glagglelogo.png" style="height:30px;" alt="Logo"></a>
-        <div style="color: var(--accent); font-weight: bold;">Glaggle Dash</div>
+        <a href="/" class="logo-link"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <div style="color: var(--accent); font-weight: bold; padding-right: 10px;">Glaggle Jump</div>
     </div>
 
     <div class="main-content">
