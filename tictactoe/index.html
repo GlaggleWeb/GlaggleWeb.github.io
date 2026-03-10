@@ -94,6 +94,19 @@
         </div>
     </div>
 
+    <div id="shareModal" class="overlay" style="display:none; opacity:0; transition: opacity 0.3s;">
+    <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 4px solid var(--accent); text-align: center; max-width: 300px;">
+        <h2 style="margin-top:0; color: var(--accent);">Teilen</h2>
+        <p style="font-size: 0.9rem; color: var(--desc-color);">Kopiere den Link und sende ihn einem Freund!</p>
+        
+        <input type="text" id="shareLinkInput" readonly 
+               style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); margin-bottom: 15px; text-align: center;">
+        
+        <button class="btn" onclick="copyAndClose()" id="copyBtn" style="width: 100%;">Link kopieren</button>
+        <button onclick="closeShare()" style="background:none; border:none; color: var(--desc-color); margin-top: 15px; cursor: pointer; text-decoration: underline;">Schließen</button>
+    </div>
+</div>
+
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
         const status = document.getElementById('status');
@@ -245,6 +258,46 @@
             if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; gameActive = false; return true; }
             return false;
         }
+
+    function shareGame() {
+    const modal = document.getElementById('shareModal');
+    const input = document.getElementById('shareLinkInput');
+    
+    // Aktuellen Link in das Input-Feld schreiben
+    input.value = window.location.href;
+    
+    // Modal anzeigen mit sanftem Fade-In
+    modal.style.display = "flex";
+    setTimeout(() => modal.style.opacity = "1", 10);
+}
+
+function closeShare() {
+    const modal = document.getElementById('shareModal');
+    modal.style.opacity = "0";
+    setTimeout(() => modal.style.display = "none", 300);
+}
+
+function copyAndClose() {
+    const input = document.getElementById('shareLinkInput');
+    const btn = document.getElementById('copyBtn');
+    
+    // Text kopieren
+    input.select();
+    input.setSelectionRange(0, 99999); // Für Handys
+    navigator.clipboard.writeText(input.value);
+    
+    // Feedback im Button
+    const originalText = btn.innerText;
+    btn.innerText = "✅ Kopiert!";
+    btn.style.backgroundColor = "#2E94D1";
+    
+    // Nach kurzer Zeit schließen
+    setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.backgroundColor = "var(--accent)";
+        closeShare();
+    }, 1200);
+}
     </script>
 </body>
 </html>
