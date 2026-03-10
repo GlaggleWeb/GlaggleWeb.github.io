@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Glaggle Jump</title>
+    <title>Glaggle Dash Pro</title>
     <style>
         :root {
             --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
@@ -26,30 +26,36 @@
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; height: 60px; background-color: var(--nav-bg);
             padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+            position: fixed; top: 0; z-index: 1000;
         }
-        .main-content { margin-top: 80px; width: 100%; max-width: 600px; padding: 10px; text-align: center; }
+        .main-content { margin-top: 80px; width: 100%; max-width: 500px; padding: 10px; text-align: center; }
         
         #game-container {
-            position: relative; width: 100%; height: 300px;
+            position: relative; width: 100%; height: 250px;
             background: var(--card-bg); border: 4px solid var(--card-border);
             border-radius: 20px; overflow: hidden; cursor: pointer;
         }
         canvas { display: block; width: 100%; height: 100%; }
 
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+        .score-val { font-size: 14px; color: var(--desc-color); }
+        .score-val b { color: var(--accent); font-size: 18px; display: block; }
+
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); color: white;
+            background: rgba(0,0,0,0.8); color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; transition: opacity 0.3s;
+            z-index: 10;
         }
         .btn {
-            background: var(--accent); color: white; border: none; padding: 15px 40px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); transition: 0.2s;
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        .btn:hover { transform: scale(1.05); background: var(--link-color); }
-        .score-display { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: var(--accent); }
+        .btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -60,38 +66,41 @@
     </div>
 
     <div class="main-content">
-        <div class="score-display">Score: <span id="score">0</span></div>
+        <div class="score-box">
+            <div class="score-val">Punkte <b id="score">0</b></div>
+            <div class="score-val">Bestzeit <b id="highscore">0</b></div>
+        </div>
+
         <div id="game-container" onmousedown="jump()" ontouchstart="jump()">
             <canvas id="dashCanvas"></canvas>
             
             <div id="menu-overlay" class="overlay">
-                <h1 style="margin-bottom:10px;">Glaggle Dash</h1>
-                <p style="margin-bottom:20px;">Klicke oder tippe zum Springen!</p>
-                <button class="btn" onclick="startGame(event)">Start</button>
+                <h2 id="msg">Bereit?</h2>
+                <button class="btn" onclick="startGame(event)">Starten</button>
             </div>
         </div>
-        <p style="margin-top:15px; color: var(--link-color); opacity: 0.7;">Tipp: Je länger du überlebst, desto schneller wird es!</p>
     </div>
 
     <script>
         const canvas = document.getElementById('dashCanvas');
         const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
         const menu = document.getElementById('menu-overlay');
-
+        
         let gameRunning = false;
         let score = 0;
-        let animationId;
+        let highscore = localStorage.getItem('glaggleDashHighscore') || 0;
+        document.getElementById('highscore').innerText = highscore;
 
-        // Player Objekt
+        // Player Physik (angepasst für faireres Springen)
         const glaggle = {
-            x: 50, y: 200, width: 40, height: 40,
-            vy: 0, gravity: 0.6, jumpStrength: -12,
+            x: 60, y: 0, w: 35, h: 35,
+            vy: 0, gravity: 0.5, jumpPower: -10,
             grounded: false
         };
 
         let obstacles = [];
-        let gameSpeed = 5;
+        let nextObstacleTimer = 0;
+        let gameSpeed = 4;
 
         function resize() {
             canvas.width = canvas.offsetWidth;
@@ -102,112 +111,101 @@
 
         function startGame(e) {
             if(e) e.stopPropagation();
-            gameRunning = true;
             score = 0;
-            gameSpeed = 5;
+            gameSpeed = 4;
             obstacles = [];
-            glaggle.y = canvas.height - 60;
+            glaggle.y = canvas.height - 45;
             glaggle.vy = 0;
+            nextObstacleTimer = 0;
+            gameRunning = true;
             menu.style.display = "none";
-            scoreElement.innerText = "0";
-            requestAnimationFrame(update);
+            update();
         }
 
         function jump() {
             if(gameRunning && glaggle.grounded) {
-                glaggle.vy = glaggle.jumpStrength;
+                glaggle.vy = glaggle.jumpPower;
                 glaggle.grounded = false;
             }
         }
 
-        // Tastatur-Support
-        window.addEventListener("keydown", (e) => { if(e.code === "Space") jump(); });
-
-        function createObstacle() {
-            if (Math.random() < 0.02) {
-                obstacles.push({
-                    x: canvas.width,
-                    y: canvas.height - 50,
-                    width: 30,
-                    height: 50
-                });
-            }
-        }
+        window.addEventListener("keydown", (e) => { if(e.code === "Space" || e.key === "w") jump(); });
 
         function update() {
             if(!gameRunning) return;
 
-            // Schwerkraft
+            // Physik
             glaggle.vy += glaggle.gravity;
             glaggle.y += glaggle.vy;
 
-            // Boden-Kollision
-            if(glaggle.y + glaggle.height > canvas.height - 10) {
-                glaggle.y = canvas.height - 10 - glaggle.height;
+            if(glaggle.y + glaggle.h > canvas.height - 10) {
+                glaggle.y = canvas.height - 10 - glaggle.h;
                 glaggle.vy = 0;
                 glaggle.grounded = true;
             }
 
-            // Hindernisse bewegen
-            createObstacle();
-            obstacles.forEach((obs, index) => {
-                obs.x -= gameSpeed;
+            // Hindernis-Spawning (Fairer Abstand)
+            nextObstacleTimer--;
+            if(nextObstacleTimer <= 0) {
+                let height = Math.random() * 30 + 30; // Zufällige Höhe
+                obstacles.push({ x: canvas.width, y: canvas.height - 10 - height, w: 25, h: height });
+                nextObstacleTimer = Math.random() * 50 + (100 / (gameSpeed/4)); // Abstand passt sich Speed an
+            }
 
-                // Kollision prüfen
-                if (glaggle.x < obs.x + obs.width &&
-                    glaggle.x + glaggle.width > obs.x &&
-                    glaggle.y < obs.y + obs.height &&
-                    glaggle.y + glaggle.height > obs.y) {
+            obstacles.forEach((obs, i) => {
+                obs.x -= gameSpeed;
+                
+                // Kollisions-Check
+                if(glaggle.x < obs.x + obs.w && glaggle.x + glaggle.w > obs.x &&
+                   glaggle.y < obs.y + obs.h && glaggle.y + glaggle.h > obs.y) {
                     gameOver();
                 }
 
-                if(obs.x + obs.width < 0) {
-                    obstacles.splice(index, 1);
+                if(obs.x + obs.w < 0) {
+                    obstacles.splice(i, 1);
                     score++;
-                    scoreElement.innerText = score;
-                    gameSpeed += 0.05; // Schwierigkeit steigt
+                    document.getElementById('score').innerText = score;
+                    gameSpeed += 0.03;
                 }
             });
 
             draw();
-            animationId = requestAnimationFrame(update);
+            requestAnimationFrame(update);
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Boden
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
 
-            // Boden zeichnen
-            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height - 10);
-            ctx.lineTo(canvas.width, canvas.height - 10);
-            ctx.stroke();
-
-            // Glaggle zeichnen (Spieler)
+            // Glaggle
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
             ctx.beginPath();
-            ctx.roundRect(glaggle.x, glaggle.y, glaggle.width, glaggle.height, 10);
-            ctx.fill();
-            
-            // Augen (Glaggle Look)
-            ctx.fillStyle = "white";
+            ctx.roundRect(glaggle.x, glaggle.y, glaggle.w, glaggle.h, 8);
             ctx.fill();
 
-            // Hindernisse zeichnen
+            // Hindernisse
             ctx.fillStyle = "#FF6B6B";
             obstacles.forEach(obs => {
                 ctx.beginPath();
-                ctx.roundRect(obs.x, obs.y, obs.width, obs.height, 5);
+                ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 5);
                 ctx.fill();
             });
         }
 
         function gameOver() {
             gameRunning = false;
-            cancelAnimationFrame(animationId);
+            if(score > highscore) {
+                highscore = score;
+                localStorage.setItem('glaggleDashHighscore', highscore);
+                document.getElementById('highscore').innerText = highscore;
+                document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
+            } else {
+                document.getElementById('msg').innerText = "Crash! Score: " + score;
+            }
             menu.style.display = "flex";
-            menu.querySelector('h1').innerText = "Game Over!";
-            menu.querySelector('p').innerText = "Dein Score: " + score;
         }
     </script>
 </body>
