@@ -172,6 +172,88 @@
             flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
+        /* Styling für das Willkommens-Popup */
+#welcome-modal {
+    display: none; 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 85%; 
+    max-width: 350px; /* Begrenzt die Breite auf mobilen Geräten */
+    background: var(--panel); 
+    padding: 30px; 
+    border-radius: 25px; 
+    z-index: 1000; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -45%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#welcome-modal h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 22px;
+}
+
+#welcome-modal input {
+    width: 100%; 
+    padding: 12px; 
+    margin-top: 15px; 
+    border-radius: 20px; 
+    border: 1px solid #ddd; 
+    outline: none;
+    font-size: 14px;
+    box-sizing: border-box; /* Wichtig, damit Padding das Feld nicht sprengt */
+    transition: border 1s;
+}
+
+#welcome-modal input:focus {
+    border: 3px solid var(--primary); 
+}
+
+#welcome-modal .action-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    margin-top: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 1s, background 1s;
+}
+
+#welcome-modal .action-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+/* Overlay-Effekt verstärken */
+.modal-overlay {
+    backdrop-filter: blur(8px);
+}
+
+.reset-btn {
+    background: #d9534f !important; /* Ein kräftiges Rot */
+    margin-top: 5px;
+}
+.reset-btn:hover {
+    background: #c9302c !important;
+}
+
+#user-avatar {
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
         .btn-circle:hover { transform: scale(1.1); }
         .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
 
@@ -180,6 +262,7 @@
         .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
 
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; backdrop-filter: blur(3px); }
         #settings-modal {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 80%; background: var(--panel); padding: 25px; border-radius: 20px; z-index: 100;
@@ -196,6 +279,7 @@
     <div id="chat-header">
         <img src="glagglesonne.png" style="width: 32px; height: 32px; border-radius: 50%;" id="header-logo" onerror="this.src='https://via.placeholder.com/32'">
         <span style="margin-left: 10px;">Glame 3.0</span>
+        <div id="user-avatar" style="margin-left: auto; width: 35px; height: 35px; background: var(--user-bg); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 2px solid rgba(255,255,255,0.2);"></div>
     </div> 
     
     <div id="chat-window">
@@ -212,6 +296,16 @@
         <input type="text" id="user-input" placeholder="Nachricht..." autocomplete="off">
         <button class="btn-circle" id="send-btn" style="font-size: 24px;">➤</button>
     </div>
+
+        <div id="welcome-modal">
+        <h2>Willkommen bei Glame AI! ✨</h2>
+        <p style="font-size: 14px; opacity: 0.8;">Erstelle kurz ein Konto um loszulegen. Eine Sache von 20 Sekunden.</p>
+        <input type="text" id="setup-username" placeholder="Dein Benutzername">
+        <input type="email" id="setup-email" placeholder="Deine E-Mail Adresse">
+        <button class="action-btn" id="start-btn">Jetzt starten 🚀</button>
+    </div>
+
+    <div class="modal-overlay" id="overlay"></div>
 
     <div id="settings-modal">
         <h3 style="margin:0 0 15px 0;">Einstellungen</h3>
@@ -273,12 +367,73 @@
 </div>
 
 <script>
-// Element-Deklarationen
-const settingsModal = document.getElementById("settings-modal");
+// 1. Alle Elemente EINMAL deklarieren
+const welcomeModal = document.getElementById("welcome-modal");
+const settingsModal = document.getElementById("settings-modal"); 
+const overlay = document.getElementById("overlay");
+const setupBtn = document.getElementById("start-btn");
 const chatWindow = document.getElementById("chat-window");
 const userInput = document.getElementById("user-input");
+const userAvatar = document.getElementById("user-avatar");
 
-// Chat-Verlauf initialisieren
+// Willkommens-Logik beim Laden
+// Willkommens-Logik beim Laden
+window.addEventListener('DOMContentLoaded', () => {
+    const userStored = localStorage.getItem('glame_user');
+    
+    if (userStored) {
+        // Falls ein User existiert: Normaler Start
+        const userData = JSON.parse(userStored);
+        updateAvatar(userData.name);
+        
+        const firstMsg = chatWindow.querySelector(".bot-msg");
+        if(firstMsg) {
+            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! ✨`;
+        }
+    } else {
+        // FALLS KEIN USER EXISTIERT: Zeige das Anmelde-Fenster!
+        welcomeModal.style.display = "block";
+        overlay.style.display = "block";
+    }
+});
+    
+// Benutzer registrieren & Begrüßung auslösen
+setupBtn.onclick = () => {
+    const name = document.getElementById("setup-username").value.trim();
+    const email = document.getElementById("setup-email").value.trim();
+
+    if (name && email) {
+        // Daten speichern
+        localStorage.setItem('glame_user', JSON.stringify({ name, email }));
+        
+        // Avatar und UI aktualisieren
+        updateAvatar(name);
+        
+        // Modal schließen
+        welcomeModal.style.display = "none";
+        overlay.style.display = "none";
+
+        // --- NEU: Den Benutzer im Chat willkommen heißen ---
+        const welcomeText = `Schön dich kennenzulernen, **${name}**! ✨ Ich bin bereit. Worüber möchtest du heute sprechen? 🚀`;
+        
+        // Nachricht im Verlauf speichern
+        chatVerlauf.push({ role: "assistant", content: welcomeText });
+
+        // Nachricht visuell hinzufügen
+        const botDiv = document.createElement("div");
+        botDiv.className = "bot-msg";
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        chatWindow.appendChild(botDiv);
+
+        // Mit Typewriter-Effekt anzeigen
+        typeWriter(textSpan, welcomeText);
+    } else {
+        alert("Bitte fülle beide Felder aus, um fortzufahren! 😊");
+    }
+};
+    
 let currentModel = "llama-3.1-8b-instant";
 
 const seelen = {
@@ -307,15 +462,16 @@ const seelen = {
 
 // Initialisierung des Verlaufs mit der Standard-Seele
 let chatVerlauf = [{ role: "system", content: seelen.standard }];
-
 // EINSTELLUNGEN ÖFFNEN
 document.getElementById("open-settings").onclick = () => { 
     settingsModal.style.display = "block"; 
+    overlay.style.display = "block"; 
 };
 
 // EINSTELLUNGEN SPEICHERN
 document.getElementById("save-settings").onclick = () => {
-    settingsModal.style.display = "none";
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
     currentModel = document.getElementById("model-select").value;
     const theme = document.getElementById("theme-select").value;
     document.body.className = (theme === "default") ? "" : theme + "-mode";
@@ -329,7 +485,8 @@ document.getElementById("reset-chat").onclick = () => {
     const selectedSoul = document.getElementById("soul-select").value;
     chatVerlauf = [{ role: "system", content: seelen[selectedSoul] || seelen.standard }];
     chatWindow.innerHTML = '<div class="bot-msg">Verlauf gelöscht. Wie kann ich dir helfen?</div>';
-    settingsModal.style.display = "none";
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
 };
 
 // KOPIER-FUNKTION
@@ -388,6 +545,13 @@ function typeWriter(element, text) {
     process();
 }
 
+function updateAvatar(name) {
+    if (name && userAvatar) {
+        userAvatar.innerText = name.charAt(0).toUpperCase(); // Erster Buchstabe in Groß
+        userAvatar.style.display = "flex";    // Den Kreis sichtbar machen
+    }
+}
+
 // NACHRICHT SENDEN
 async function antwortSenden() {
     const text = userInput.value.trim();
@@ -433,7 +597,7 @@ userInput.onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
 
 document.getElementById("reset-everything").onclick = () => {
     if (confirm("Konto wirklich löschen?")) {
-        localStorage.clear();
+        localStorage.removeItem('glame_user');
         location.reload();
     }
 };
