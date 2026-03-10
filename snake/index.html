@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Glaggle Snake</title>
+    <title>Glaggle Shake - Smooth</title>
     <style>
         :root {
             --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
@@ -21,7 +21,7 @@
             background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
             margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; overflow: hidden; touch-action: manipulation;
+            min-height: 100vh; overflow: hidden; touch-action: none;
         }
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
@@ -29,49 +29,49 @@
             padding: 0 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
         }
-        .nav-logo { height: 30px; }
         .main-content { margin-top: 80px; padding: 10px; text-align: center; width: 100%; max-width: 420px; }
         
         #game-container {
             position: relative; background: var(--card-bg);
             border: 4px solid var(--card-border); border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); line-height: 0; margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;
         }
-        canvas { border-radius: 15px; background-color: var(--input-bg); max-width: 100%; height: auto; }
+        canvas { display: block; background-color: var(--input-bg); width: 100%; height: auto; }
         
-        /* MOBILE CONTROLS */
-        .mobile-controls {
-            display: none; grid-template-columns: repeat(3, 1fr); gap: 10px;
-            margin-top: 20px; width: 220px; margin-left: auto; margin-right: auto;
+        /* UI & BUTTONS */
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 25px; 
+            border-radius: 25px; font-weight: bold; cursor: pointer; width: 180px; 
+            margin: 10px; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(112, 196, 247, 0.3);
         }
-        .ctrl-btn {
-            width: 60px; height: 60px; background: var(--accent); color: white;
-            border: none; border-radius: 50%; font-size: 24px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 0px #57a8d6; active: transform: translateY(2px);
-        }
-        .up { grid-column: 2; }
-        .left { grid-column: 1; }
-        .down { grid-column: 2; }
-        .right { grid-column: 3; }
+        .btn:hover { transform: translateY(-3px) scale(1.05); background: var(--link-color); }
+        .btn:active { transform: translateY(0); }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); color: white;
+            background: rgba(0,0,0,0.8); color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 15px; z-index: 10; padding: 20px; box-sizing: border-box;
+            z-index: 10; transition: opacity 0.5s;
         }
-        .btn {
-            background: var(--accent); color: white; border: none; padding: 12px 25px; 
-            border-radius: 25px; font-weight: bold; cursor: pointer; width: 180px; margin: 5px;
+
+        .mobile-controls {
+            display: none; grid-template-columns: repeat(3, 1fr); gap: 15px;
+            margin-top: 25px; width: 200px;
         }
+        .ctrl-btn {
+            width: 60px; height: 60px; background: var(--card-bg); border: 2px solid var(--accent);
+            border-radius: 50%; font-size: 24px; color: var(--accent); cursor: pointer;
+            transition: 0.1s; display: flex; align-items: center; justify-content: center;
+        }
+        .ctrl-btn:active { background: var(--accent); color: white; transform: scale(0.9); }
+        .up { grid-column: 2; } .left { grid-column: 1; } .down { grid-column: 2; } .right { grid-column: 3; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div style="color: var(--accent); font-weight: bold;">Glaggle Snake</div>
+        <a href="/"><img src="glagglelogo.png" style="height:30px;" alt="Logo"></a>
+        <div style="color: var(--accent); font-weight: bold;">Smooth Shake</div>
     </div>
 
     <div class="main-content">
@@ -79,23 +79,24 @@
             <canvas id="shakeCanvas" width="400" height="400"></canvas>
             
             <div id="start-overlay" class="overlay">
-                <h2 style="margin-bottom: 20px;">Wähle dein Gerät</h2>
-                <button class="btn" onclick="initGame('pc')">💻 PC (Tastatur)</button>
-                <button class="btn" onclick="initGame('mobile')">📱 Handy (Buttons)</button>
+                <h2 style="margin-bottom:10px;">Glaggle Shake</h2>
+                <button class="btn" onclick="initGame('pc')">💻 PC Modus</button>
+                <button class="btn" onclick="initGame('mobile')">📱 Handy Modus</button>
             </div>
 
-            <div id="death-overlay" class="overlay" style="display:none;">
-                <h1 style="color: var(--accent);">Crash! Gut geglaggelt!</h1>
-                <p id="final-score"></p>
-                <button class="btn" onclick="location.reload()">Nochmal</button>
+            <div id="death-overlay" class="overlay" style="display:none; opacity:0;">
+                <h1 style="color: var(--accent); margin-bottom:5px;">Crash!</h1>
+                <p id="final-score" style="font-size: 1.2rem; margin-bottom:20px;"></p>
+                <button class="btn" onclick="resetGame()">Nochmal spielen</button>
+                <button class="btn" style="background:#888" onclick="location.href='/'">Menü</button>
             </div>
         </div>
 
         <div id="mobile-ui" class="mobile-controls">
-            <button class="ctrl-btn up" onclick="setDir('UP')">▲</button>
-            <button class="ctrl-btn left" onclick="setDir('LEFT')">◀</button>
-            <button class="ctrl-btn down" onclick="setDir('DOWN')">▼</button>
-            <button class="ctrl-btn right" onclick="setDir('RIGHT')">▶</button>
+            <button class="ctrl-btn up" ontouchstart="setDir('UP')">▲</button>
+            <button class="ctrl-btn left" ontouchstart="setDir('LEFT')">◀</button>
+            <button class="ctrl-btn down" ontouchstart="setDir('DOWN')">▼</button>
+            <button class="ctrl-btn right" ontouchstart="setDir('RIGHT')">▶</button>
         </div>
     </div>
 
@@ -103,86 +104,111 @@
         const canvas = document.getElementById('shakeCanvas');
         const ctx = canvas.getContext('2d');
         const box = 20;
-        let shake, food, score, d, game;
+        let shake, food, score, d, nextD, gameLoop;
+        let lastMoveTime = 0;
+        const speed = 130; // Millisekunden pro Schritt
 
         const getStyle = (prop) => getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
 
         function initGame(mode) {
             document.getElementById('start-overlay').style.display = "none";
-            if(mode === 'mobile') {
-                document.getElementById('mobile-ui').style.display = "grid";
-            }
-            startGame();
+            if(mode === 'mobile') document.getElementById('mobile-ui').style.display = "grid";
+            resetGame();
+        }
+
+        function resetGame() {
+            shake = [{ x: 10, y: 10 }, { x: 10, y: 11 }, { x: 10, y: 12 }]; // Start-Position (Gittereinheiten)
+            food = { x: Math.floor(Math.random() * 18 + 1), y: Math.floor(Math.random() * 18 + 1) };
+            score = 0;
+            d = "UP";
+            nextD = "UP";
+            document.getElementById('death-overlay').style.display = "none";
+            document.getElementById('death-overlay').style.opacity = "0";
+            
+            if(gameLoop) cancelAnimationFrame(gameLoop);
+            requestAnimationFrame(main);
         }
 
         function setDir(newDir) {
-            if(newDir == "LEFT" && d != "RIGHT") d = "LEFT";
-            if(newDir == "UP" && d != "DOWN") d = "UP";
-            if(newDir == "RIGHT" && d != "LEFT") d = "RIGHT";
-            if(newDir == "DOWN" && d != "UP") d = "DOWN";
+            if(newDir == "LEFT" && d != "RIGHT") nextD = "LEFT";
+            if(newDir == "UP" && d != "DOWN") nextD = "UP";
+            if(newDir == "RIGHT" && d != "LEFT") nextD = "RIGHT";
+            if(newDir == "DOWN" && d != "UP") nextD = "DOWN";
         }
 
-        document.addEventListener("keydown", (e) => {
-            if(e.key === "ArrowLeft" || e.key === "a") setDir("LEFT");
-            if(e.key === "ArrowUp" || e.key === "w") setDir("UP");
-            if(e.key === "ArrowRight" || e.key === "d") setDir("RIGHT");
-            if(e.key === "ArrowDown" || e.key === "s") setDir("DOWN");
+        window.addEventListener("keydown", (e) => {
+            if(["ArrowUp","w"].includes(e.key)) setDir("UP");
+            if(["ArrowDown","s"].includes(e.key)) setDir("DOWN");
+            if(["ArrowLeft","a"].includes(e.key)) setDir("LEFT");
+            if(["ArrowRight","d"].includes(e.key)) setDir("RIGHT");
         });
 
-        function startGame() {
-            shake = [{ x: 9 * box, y: 10 * box }];
-            food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
-            score = 0; d = undefined;
-            if(game) clearInterval(game);
-            game = setInterval(draw, 130);
+        function main(time) {
+            gameLoop = requestAnimationFrame(main);
+            const deltaTime = time - lastMoveTime;
+
+            if (deltaTime > speed) {
+                lastMoveTime = time;
+                update();
+            }
+            render(deltaTime / speed);
         }
 
-        function draw() {
-            ctx.fillStyle = getStyle('--input-bg');
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function update() {
+            d = nextD;
+            let head = { ...shake[0] };
 
-            for(let i = 0; i < shake.length; i++) {
-                ctx.fillStyle = (i == 0) ? getStyle('--accent') : getStyle('--link-color');
-                ctx.beginPath();
-                ctx.roundRect(shake[i].x, shake[i].y, box-1, box-1, 6);
-                ctx.fill();
-            }
+            if(d == "LEFT") head.x -= 1;
+            if(d == "UP") head.y -= 1;
+            if(d == "RIGHT") head.x += 1;
+            if(d == "DOWN") head.y += 1;
 
-            ctx.fillStyle = "#FF6B6B";
-            ctx.beginPath();
-            ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            let shakeX = shake[0].x;
-            let shakeY = shake[0].y;
-
-            if( d == "LEFT") shakeX -= box;
-            if( d == "UP") shakeY -= box;
-            if( d == "RIGHT") shakeX += box;
-            if( d == "DOWN") shakeY += box;
-
-            if(shakeX == food.x && shakeY == food.y) {
+            // Food Check
+            if(head.x == food.x && head.y == food.y) {
                 score++;
-                food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
+                food = { x: Math.floor(Math.random() * 18 + 1), y: Math.floor(Math.random() * 18 + 1) };
             } else {
                 shake.pop();
             }
 
-            let newHead = { x: shakeX, y: shakeY };
-
-            if(shakeX < 0 || shakeX >= canvas.width || shakeY < 0 || shakeY >= canvas.height || collision(newHead, shake)) {
-                clearInterval(game);
-                document.getElementById('final-score').innerText = "Punkte: " + score;
-                document.getElementById('death-overlay').style.display = "flex";
+            // Wall/Self Collision
+            if(head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || collision(head, shake)) {
+                cancelAnimationFrame(gameLoop);
+                showDeath();
             }
-            shake.unshift(newHead);
+            shake.unshift(head);
+        }
+
+        function render(progress) {
+            ctx.fillStyle = getStyle('--input-bg');
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Food
+            ctx.fillStyle = "#FF6B6B";
+            ctx.beginPath();
+            ctx.arc(food.x * box + box/2, food.y * box + box/2, box/2 - 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shake - Interpolation für sanfte Bewegung
+            shake.forEach((part, i) => {
+                ctx.fillStyle = (i == 0) ? getStyle('--accent') : getStyle('--link-color');
+                
+                // Wir zeichnen abgerundete Körperteile
+                ctx.beginPath();
+                ctx.roundRect(part.x * box + 1, part.y * box + 1, box - 2, box - 2, 6);
+                ctx.fill();
+            });
         }
 
         function collision(head, array) {
-            for(let i = 0; i < array.length; i++) {
-                if(head.x == array[i].x && head.y == array[i].y) return true;
-            }
-            return false;
+            return array.some(p => p.x === head.x && p.y === head.y);
+        }
+
+        function showDeath() {
+            const overlay = document.getElementById('death-overlay');
+            document.getElementById('final-score').innerText = "Score: " + score;
+            overlay.style.display = "flex";
+            setTimeout(() => overlay.style.opacity = "1", 10);
         }
     </script>
 </body>
