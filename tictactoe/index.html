@@ -49,7 +49,7 @@
             border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         .btn:hover { background: var(--link-color); }
-        .btn-restart { background: #2ecc71; margin-top: 15px; display: none; }
+        .btn-restart { background: #2ecc71; margin-top: 15px; display: none; width: 100%; }
         .hidden { display: none !important; }
         .search-bar-container {
             display: flex; align-items: center; background: var(--input-bg);
@@ -62,7 +62,7 @@
 
     <div class="navbar">
         <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div style="color: var(--accent); font-weight: bold;">Tic Tac Toe</div>
+        <div style="color: var(--accent); font-weight: bold;">Tic Tac Toe Live</div>
     </div>
 
     <div class="main-content">
@@ -70,24 +70,24 @@
             <h2>Spielmodus wählen</h2>
             <div class="btn-group">
                 <button class="btn" onclick="startMode('ki')">🤖 Gegen Kombi (KI)</button>
-                <button class="btn" onclick="startMode('random')">🌐 Zufälliger Gegner</button>
+                <button class="btn" onclick="startRandom()">🌐 Zufälliger Gegner</button>
                 <button class="btn" onclick="startMode('friend')">🔗 Freund einladen</button>
             </div>
         </div>
 
         <div id="game-area" class="glaggle-entry hidden">
-            <div id="status">Warte...</div>
+            <div id="status">Initialisiere...</div>
             <div class="grid" id="board">
                 <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
                 <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
                 <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
             </div>
             <button id="restartBtn" class="btn btn-restart" onclick="requestRestart()">🔄 Nochmal spielen</button>
-            <button class="btn" style="background:var(--desc-color); margin-top:10px;" onclick="location.reload()">🏠 Hauptmenü</button>
+            <button class="btn" style="background:var(--desc-color); margin-top:10px; width: 100%;" onclick="location.reload()">🏠 Hauptmenü</button>
         </div>
 
         <div id="share-area" class="glaggle-entry hidden">
-            <p style="font-size: 0.8rem; color: var(--desc-color);">Link für Freund:</p>
+            <p style="font-size: 0.8rem; color: var(--desc-color);">Sende diesen Link:</p>
             <div class="search-bar-container">
                 <input type="text" id="gameLink" readonly onclick="this.select()">
             </div>
@@ -102,7 +102,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const joinId = urlParams.get('join');
 
-        let peer = new Peer();
+        let peer = null;
         let conn = null;
         let mySymbol = "X";
         let turn = "X";
@@ -110,55 +110,75 @@
         let currentMode = null;
         let gameActive = true;
 
-        peer.on('open', (id) => { if (joinId) startMode('friend_join'); });
+        // Start bei Link-Beitritt
+        if (joinId) {
+            initPeer();
+            setTimeout(() => startMode('friend_join'), 1000);
+        }
+
+        function initPeer(customId = null) {
+            if (peer) peer.destroy();
+            peer = customId ? new Peer(customId) : new Peer();
+            
+            peer.on('open', (id) => console.log("Meine ID: " + id));
+            
+            peer.on('connection', (c) => {
+                conn = c;
+                document.getElementById('share-area').classList.add('hidden');
+                status.innerText = "Gegner verbunden! X fängt an.";
+                restartBtn.style.display = "block";
+                setupConnection();
+            });
+        }
 
         function startMode(mode) {
             currentMode = mode;
+            if (!peer) initPeer();
             document.getElementById('setup-menu').classList.add('hidden');
             document.getElementById('game-area').classList.remove('hidden');
 
             if (mode === 'ki') {
-                status.innerText = "Du bist X. Viel Glück!";
+                status.innerText = "Modus: Gegen Kombi. Du bist X.";
                 restartBtn.style.display = "block";
             } else if (mode === 'friend') {
-                document.getElementById('gameLink').value = window.location.origin + window.location.pathname + "?join=" + peer.id;
-                document.getElementById('share-area').classList.remove('hidden');
-                status.innerText = "Warte auf Freund...";
+                setTimeout(() => {
+                    document.getElementById('gameLink').value = window.location.origin + window.location.pathname + "?join=" + peer.id;
+                    document.getElementById('share-area').classList.remove('hidden');
+                    status.innerText = "Warte auf Freund...";
+                }, 1000);
             } else if (mode === 'friend_join') {
-                mySymbol = "O"; status.innerText = "Verbinde...";
+                mySymbol = "O"; status.innerText = "Verbinde zu Freund...";
                 conn = peer.connect(joinId); setupConnection();
-            } else if (mode === 'random') {
-                status.innerText = "Suche Gegner...";
-                findRandomOpponent();
             }
         }
 
-        function findRandomOpponent() {
-            // Wir versuchen uns mit einer festen "Lobby"-ID zu verbinden
-            const lobbyId = "glaggle-public-lobby-room";
-            let checkConn = peer.connect(lobbyId);
-            
-            checkConn.on('open', () => {
-                conn = checkConn; mySymbol = "O";
-                status.innerText = "Gegner gefunden! Du bist O.";
-                setupConnection();
+        function startRandom() {
+            currentMode = 'random';
+            document.getElementById('setup-menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            status.innerText = "Suche Gegner...";
+
+            // Matchmaking-Logik: Versuche Lobby-Host zu sein
+            const lobbyId = "glaggle-match-lobby";
+            peer = new Peer(lobbyId);
+
+            peer.on('open', () => {
+                status.innerText = "Du bist in der Lobby... warte auf Gegner.";
             });
 
-            checkConn.on('error', () => {
-                // Wenn keiner da ist, erstellen wir die Lobby selbst
-                status.innerText = "Keiner online. Du wartest in der Lobby...";
-                peer._id = lobbyId; // Funktioniert in PeerJS oft nur bei Instanziierung, 
-                // daher ist echtes Matchmaking ohne Server schwer. 
-                // Alternativ: Wir zeigen einfach den Link an.
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    // Lobby ist schon besetzt? Dann sind wir der Gast!
+                    initPeer();
+                    setTimeout(() => {
+                        conn = peer.connect(lobbyId);
+                        mySymbol = "O";
+                        status.innerText = "Gegner in Lobby gefunden! Du bist O.";
+                        setupConnection();
+                    }, 500);
+                }
             });
         }
-
-        peer.on('connection', (c) => {
-            conn = c; document.getElementById('share-area').classList.add('hidden');
-            status.innerText = "Gegner da! X fängt an.";
-            restartBtn.style.display = "block";
-            setupConnection();
-        });
 
         function setupConnection() {
             conn.on('data', (data) => {
@@ -166,29 +186,28 @@
                     boardState = data.board; turn = data.nextTurn; updateUI();
                 } else if (data.type === 'restart') {
                     resetBoard();
-                    status.innerText = "Spiel wurde vom Gegner zurückgesetzt!";
+                    status.innerText = "Gegner hat Spiel neu gestartet!";
                 }
             });
+            restartBtn.style.display = "block";
         }
 
         function requestRestart() {
             resetBoard();
             if (conn) conn.send({ type: 'restart' });
-            if (currentMode === 'ki') status.innerText = "Neues Spiel gegen Kombi!";
-            else status.innerText = "Du hast das Spiel zurückgesetzt!";
+            status.innerText = "Spiel zurückgesetzt!";
         }
 
         function resetBoard() {
             boardState = Array(9).fill("");
-            turn = "X";
-            gameActive = true;
-            updateUI();
+            turn = "X"; gameActive = true; updateUI();
         }
 
         cells.forEach(cell => {
             cell.onclick = () => {
                 const i = cell.getAttribute('data-i');
                 if (boardState[i] === "" && turn === mySymbol && gameActive) {
+                    if (currentMode !== 'ki' && !conn) return;
                     makeMove(i, mySymbol);
                     if (currentMode === 'ki' && gameActive) setTimeout(kombiMove, 500);
                 }
@@ -220,11 +239,10 @@
             for (let s of wins) {
                 if (b[s[0]] && b[s[0]] === b[s[1]] && b[s[0]] === b[s[2]]) {
                     status.innerText = "Spieler " + b[s[0]] + " gewinnt! 🎉";
-                    gameActive = false; restartBtn.style.display = "block";
-                    return true;
+                    gameActive = false; return true;
                 }
             }
-            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; gameActive = false; restartBtn.style.display = "block"; return true; }
+            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; gameActive = false; return true; }
             return false;
         }
     </script>
