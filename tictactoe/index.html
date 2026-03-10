@@ -93,14 +93,14 @@
             </div>
         </div>
     </div>
-
-    <div id="shareModal" class="overlay" style="display:none; opacity:0; transition: opacity 0.3s;">
-    <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 4px solid var(--accent); text-align: center; max-width: 300px;">
+    
+<div id="shareModal" class="overlay" style="display:none; opacity:0; transition: opacity 0.3s;">
+    <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 4px solid var(--accent); text-align: center; max-width: 320px;">
         <h2 style="margin-top:0; color: var(--accent);">Teilen</h2>
-        <p style="font-size: 0.9rem; color: var(--desc-color);">Kopiere den Link und sende ihn einem Freund!</p>
+        <p style="font-size: 0.9rem; color: var(--desc-color);">Sende diesen Einladungs-Link an einen Freund:</p>
         
         <input type="text" id="shareLinkInput" readonly 
-               style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); margin-bottom: 15px; text-align: center;">
+               style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); margin-bottom: 15px; text-align: center; font-size: 12px;">
         
         <button class="btn" onclick="copyAndClose()" id="copyBtn" style="width: 100%;">Link kopieren</button>
         <button onclick="closeShare()" style="background:none; border:none; color: var(--desc-color); margin-top: 15px; cursor: pointer; text-decoration: underline;">Schließen</button>
@@ -271,32 +271,58 @@
     setTimeout(() => modal.style.opacity = "1", 10);
 }
 
-function closeShare() {
-    const modal = document.getElementById('shareModal');
-    modal.style.opacity = "0";
-    setTimeout(() => modal.style.display = "none", 300);
-}
+function prepareFriendLink() {
+        if (!peer || !peer.id) {
+            initPeer(); // Peer initialisieren, falls noch nicht geschehen
+            status.innerText = "Erstelle Verbindung...";
+            // Kleiner Delay, damit die Peer-ID generiert werden kann
+            setTimeout(prepareFriendLink, 500);
+            return;
+        }
 
-function copyAndClose() {
-    const input = document.getElementById('shareLinkInput');
-    const btn = document.getElementById('copyBtn');
-    
-    // Text kopieren
-    input.select();
-    input.setSelectionRange(0, 99999); // Für Handys
-    navigator.clipboard.writeText(input.value);
-    
-    // Feedback im Button
-    const originalText = btn.innerText;
-    btn.innerText = "✅ Kopiert!";
-    btn.style.backgroundColor = "#2E94D1";
-    
-    // Nach kurzer Zeit schließen
-    setTimeout(() => {
-        btn.innerText = originalText;
-        btn.style.backgroundColor = "var(--accent)";
-        closeShare();
-    }, 1200);
+        const modal = document.getElementById('shareModal');
+        const input = document.getElementById('shareLinkInput');
+        
+        // WICHTIG: Hier wird der Einladungs-Link mit der ID gebaut
+        const inviteLink = window.location.origin + window.location.pathname + "?join=" + peer.id;
+        input.value = inviteLink;
+        
+        // Modal anzeigen
+        modal.style.display = "flex";
+        setTimeout(() => modal.style.opacity = "1", 10);
+
+        // Im Hintergrund schon mal das Spiel-Feld bereitmachen
+        startMode('friend');
+    }
+
+    function closeShare() {
+        const modal = document.getElementById('shareModal');
+        modal.style.opacity = "0";
+        setTimeout(() => modal.style.display = "none", 300);
+    }
+
+    function copyAndClose() {
+        const input = document.getElementById('shareLinkInput');
+        const btn = document.getElementById('copyBtn');
+        
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value);
+        
+        const originalText = btn.innerText;
+        btn.innerText = "✅ Kopiert!";
+        btn.style.backgroundColor = "#2ecc71"; // Erfolg-Grün
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = "var(--accent)";
+            closeShare();
+            // Sobald kopiert wurde, zeigen wir die Spielfläche
+            document.getElementById('setup-menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            status.innerText = "Warte auf Freund...";
+        }, 1000);
+    }
 }
     </script>
 </body>
