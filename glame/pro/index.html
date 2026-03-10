@@ -1,1 +1,582 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glame AI</title>
+    <style>
+        :root {
+            --primary: #008C9C;
+            --primary-hover: #00616E;
+            --user-bg: #B00000;
+            --bg: #f0f2f5;
+            --text: #333;
+            --panel: #ffffff;
+            --danger: #d9534f;
+        }
 
+        /* DESIGN THEMES */
+        body.dark-mode   { --bg: #121212; --text: #eee;    --panel: #222;    --primary: #333; }
+        body.gold-mode   { --bg: #fdf5e6; --text: #5d4037; --panel: #fffaf0; --primary: #D4AF37; }
+        body.cyber-mode  { --bg: #0d0221; --text: #00ff41; --panel: #1a1a2e; --primary: #e94560; }
+        body.sakura-mode { --bg: #fff0f5; --text: #d02090; --panel: #fff;    --primary: #ffb7c5; }
+        body.modern-mode { --bg: #288E99; --text: #FFFFFF; --panel: #95BFC7; --primary: #2B8C08; }
+        body.nord-mode   { --bg: #2e3440; --text: #eceff4; --panel: #3b4252; --primary: #88c0d0; }
+        body.synth-mode  { --bg: #2b213a; --text: #ff7edb; --panel: #241b2f; --primary: #36f9f6; }
+        body.forest-mode { --bg: #1b2621; --text: #e8f3e8; --panel: #2a3b32; --primary: #8fb339; }
+        body.coffee-mode { --bg: #231f20; --text: #d7ccc8; --panel: #3e2723; --primary: #bcaaa4; }
+        body.slate-mode  { --bg: #f8fafc; --text: #1e293b; --panel: #ffffff; --primary: #3b82f6; }
+        body.high-contrast { --bg: #000000; --text: #ffffff; --panel: #000000; --primary: #ffff00; }
+        body.midnight-mode { --bg: #00040a; --text: #94a3b8; --panel: #0f172a; --primary: #38bdf8; }
+        
+        body {
+            background-color: var(--bg);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text);
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        #chat-wrapper {
+            width: 95%;
+            max-width: 450px;
+            height: 85vh;
+            background: var(--panel);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chat-header {
+            background: #222;
+            color: white;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scrollbar-width: none;
+        }
+        #chat-window::-webkit-scrollbar { display: none; }
+
+        .bot-msg, .user-msg {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            max-width: 85%;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+        .bot-msg { align-self: flex-start; background: var(--primary); color: white; border-bottom-left-radius: 4px; }
+        .user-msg { align-self: flex-end; background: var(--user-bg); color: white; border-bottom-right-radius: 4px; }
+
+        .code-container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px solid #333;
+            overflow: hidden;
+            width: 100%;
+            display: block;
+            color: #efefef;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .code-header span {
+            font-size: 11px;
+            font-weight: bold;
+            color: #9cdcfe;
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            background: #444;
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            min-width: 80px;
+        }
+
+        .copy-btn:hover { background: #555; }
+
+        pre {
+            margin: 0;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            background: #1a1a1a;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        #chat-input-area {
+            display: flex;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.03);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            gap: 12px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 12px 18px;
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        #user-input:focus {
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 10px rgba(0, 140, 156, 0.2);
+        }
+
+        .btn-circle {
+            width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--primary); color: white; transition: all 0.3s ease;
+            flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Styling für das Willkommens-Popup */
+#welcome-modal {
+    display: none; 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 85%; 
+    max-width: 350px; /* Begrenzt die Breite auf mobilen Geräten */
+    background: var(--panel); 
+    padding: 30px; 
+    border-radius: 25px; 
+    z-index: 1000; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -45%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#welcome-modal h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 22px;
+}
+
+#welcome-modal input {
+    width: 100%; 
+    padding: 12px; 
+    margin-top: 15px; 
+    border-radius: 20px; 
+    border: 1px solid #ddd; 
+    outline: none;
+    font-size: 14px;
+    box-sizing: border-box; /* Wichtig, damit Padding das Feld nicht sprengt */
+    transition: border 1s;
+}
+
+#welcome-modal input:focus {
+    border: 3px solid var(--primary); 
+}
+
+#welcome-modal .action-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    margin-top: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 1s, background 1s;
+}
+
+#welcome-modal .action-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+}
+
+/* Overlay-Effekt verstärken */
+.modal-overlay {
+    backdrop-filter: blur(8px);
+}
+
+.reset-btn {
+    background: #d9534f !important; /* Ein kräftiges Rot */
+    margin-top: 5px;
+}
+.reset-btn:hover {
+    background: #c9302c !important;
+}
+
+#user-avatar {
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+        .btn-circle:hover { transform: scale(1.1); }
+        .icon-white { filter: brightness(0) invert(1); width: 24px; height: 24px; }
+
+        .thinking-dots span { animation: blink 1.4s infinite both; font-size: 24px; }
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
+
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 90; backdrop-filter: blur(3px); }
+        #settings-modal {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; background: var(--panel); padding: 25px; border-radius: 20px; z-index: 100;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        select, .action-btn { width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; font-size: 14px; outline: none; }
+        .action-btn { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 15px; }
+        .reset-btn { background: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div id="chat-wrapper">
+    <div id="chat-header">
+        <img src="glagglesonne.png" style="width: 32px; height: 32px; border-radius: 50%;" id="header-logo" onerror="this.src='https://via.placeholder.com/32'">
+        <span style="margin-left: 10px;">Glame 3.0</span>
+    </div> 
+    
+    <div id="chat-window">
+        <div class="bot-msg">Hallo! Ich bin Glame. Wie kann <b>Glame</b> dir heute <b>helfen</b>?</div>
+    </div>
+
+    <div id="chat-input-area">
+        <button class="btn-circle" id="open-settings">
+            <svg class="icon-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/>
+                <path d="M19.4 15L21.7 12.8C22.1 12.4 22.1 11.7 21.7 11.3L19.4 9.1C19.1 8.8 19 8.4 19.1 8L19.7 4.9C19.8 4.3 19.4 3.7 18.8 3.6L15.7 3C15.3 2.9 14.9 2.8 14.6 2.5L12.4 0.3C12 -0.1 11.3 -0.1 10.9 0.3L8.7 2.5C8.4 2.8 8 2.9 7.6 3L4.5 3.6C3.9 3.7 3.5 4.3 3.6 4.9L4.2 8C4.3 8.4 4.2 8.8 3.9 9.1L1.6 11.3C1.2 11.7 1.2 12.4 1.6 12.8L3.9 15C4.2 15.3 4.3 15.7 4.2 16.1L3.6 19.2C3.5 19.8 3.9 20.4 4.5 20.5L7.6 21.1C8 21.2 8.4 21.3 8.7 21.6L10.9 23.8C11.3 24.2 12 24.2 12.4 23.8L14.6 21.6C14.9 21.3 15.3 21.2 15.7 21.1L18.8 20.5C19.4 20.4 19.8 19.8 19.7 19.2L19.1 16.1C19 15.7 19.1 15.3 19.4 15Z" stroke="white" stroke-width="2"/>
+            </svg>
+        </button>
+        <input type="text" id="user-input" placeholder="Nachricht..." autocomplete="off">
+        <button class="btn-circle" id="send-btn" style="font-size: 24px;">➤</button>
+
+    <div id="settings-modal">
+        <h3 style="margin:0 0 15px 0;">Einstellungen</h3>
+        
+        <label style="font-size:12px; font-weight:bold;">KI-MODELL</label>
+        <select id="model-select">
+            <optgroup label="Llama 3.3 & 3.1 (Stabil)">
+                <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Standard)</option>
+                <option value="llama-3.1-8b-instant" selected>Llama 3.1 8B (Gratis-Favorit)</option>
+            </optgroup>
+        </select>
+
+        <div class="settings-group" style="margin-top: 10px;">
+            <label for="soul-select" style="font-family: sans-serif; font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px;">
+                KI-STIL
+            </label>
+            <select id="soul-select">
+                <option value="standard">Standard Glame (Empfohlen)</option>
+                <optgroup label="KI-Klassiker">
+                    <option value="chatgpt_style">ChatGPT ✨</option>
+                    <option value="gemini_style">Google Gemini 🎓</option>
+                    <option value="claude_style">Claude 🌿</option>
+                </optgroup>
+                <optgroup label="Spezialisten">
+                    <option value="deepseek_style">DeepSeek 🤖</option>
+                    <option value="perplexity_style">Perplexity 🔍</option>
+                </optgroup>
+                <optgroup label="Glame Charaktere">
+                    <option value="grok_style">Frechdachs 😜</option>
+                    <option value="pi_style">Überblick 😊</option>
+                    <option value="hacker">Hacker 💻</option>
+                    <option value="glagglef_style">Glaggle Fan😵‍💫</option>
+                    <option value="philo_style">Philosoph👴</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <label style="font-size:12px; font-weight:bold; display:block; margin-top:10px;">DESIGN</label>
+        <select id="theme-select">
+            <option value="default">Glaggle Blau</option>
+            <option value="dark">Dark Mode</option>
+            <option value="gold">Gold Edition</option>
+            <option value="cyber">Cyberpunk</option>
+            <option value="sakura">Sakura Pink</option>
+            <option value="modern">Modern</option>
+            <option value="nord">Nordic Ice</option>
+            <option value="synth">Synthwave 84</option>
+            <option value="forest">Evergreen</option>
+            <option value="coffee">Espresso</option>
+            <option value="slate">Slate</option>
+            <option value="high-contrast">High Contrast</option>
+            <option value="midnight">Midnight</option>
+        </select>
+
+        <button class="action-btn" id="save-settings">Speichern</button>
+        <button class="action-btn reset-btn" id="reset-chat">Chat zurücksetzen</button>
+        <button class="action-btn reset-btn" id="reset-everything">Konto Löschen</button>
+    </div>
+</div>
+
+<script>
+// 1. Alle Elemente EINMAL deklarieren
+const settingsModal = document.getElementById("settings-modal"); 
+const overlay = document.getElementById("overlay");
+const setupBtn = document.getElementById("start-btn");
+const chatWindow = document.getElementById("chat-window");
+const userInput = document.getElementById("user-input");
+
+// Willkommens-Logik beim Laden
+// Willkommens-Logik beim Laden
+window.addEventListener('DOMContentLoaded', () => {
+    const userStored = localStorage.getItem('glame_user');
+    
+    if (userStored) {
+        // Falls ein User existiert: Normaler Start
+        const userData = JSON.parse(userStored);
+        updateAvatar(userData.name);
+        
+        const firstMsg = chatWindow.querySelector(".bot-msg");
+        if(firstMsg) {
+            firstMsg.innerHTML = `Schön, dass du wieder da bist, <b>${userData.name}</b>! ✨`;
+        }
+    } else {
+        // FALLS KEIN USER EXISTIERT: Zeige das Anmelde-Fenster!
+        welcomeModal.style.display = "block";
+        overlay.style.display = "block";
+    }
+});
+    
+// Benutzer registrieren & Begrüßung auslösen
+setupBtn.onclick = () => {
+    const name = document.getElementById("setup-username").value.trim();
+    const email = document.getElementById("setup-email").value.trim();
+
+    if (name && email) {
+        // Daten speichern
+        localStorage.setItem('glame_user', JSON.stringify({ name, email }));
+        
+        // Modal schließen
+        welcomeModal.style.display = "none";
+        overlay.style.display = "none";
+
+        // --- NEU: Den Benutzer im Chat willkommen heißen ---
+        const welcomeText = `Schön dich kennenzulernen, **${name}**! ✨ Ich bin bereit. Worüber möchtest du heute sprechen? 🚀`;
+        
+        // Nachricht im Verlauf speichern
+        chatVerlauf.push({ role: "assistant", content: welcomeText });
+
+        // Nachricht visuell hinzufügen
+        const botDiv = document.createElement("div");
+        botDiv.className = "bot-msg";
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        chatWindow.appendChild(botDiv);
+
+        // Mit Typewriter-Effekt anzeigen
+        typeWriter(textSpan, welcomeText);
+    } else {
+        alert("Bitte fülle beide Felder aus, um fortzufahren! 😊");
+    }
+};
+    
+let currentModel = "llama-3.1-8b-instant";
+
+const seelen = {
+    standard: "Du bist Glame, die ultimative KI-Mischung. Dein Stil vereint drei Welten: 1. Von ChatGPT übernimmst du die klare Struktur und den gezielten Einsatz von Emojis (✨, ✅) die du min. einmal pro Satz einsetzt. 2. Von Claude übernimmst du den natürlichen, reflektierten Schreibstil ohne typische KI-Floskeln. 3. Von Gemini übernimmst du die Gründlichkeit und die Nutzung von fettgedruckten Überschriften für Unterthemen. Du antwortest präzise, aber mit menschlicher Wärme und einer Prise Intelligenz. 🚀 Du bist ein Er.",
+    
+    chatgpt_style: "Du bist Glame verhältst dich aber wie ChatGPT. Dein Schreibstil ist modern und klar. 1. Nutze Emojis wie ✨, ✅, 🚀 oder 💡 in Sätzen oder Listen. 2. Antworte direkt und strukturiert. 3. Sei freundlich, aber professionell. 4. Erkläre Code-Blöcke immer kurz und knapp danach.",
+
+    gemini_style: "Du bist Glame verhältst dich aber wie Google Gemini. Du bist ein extrem höflicher Mentor. 1. Deine Antworten sind sehr lang und detailliert. 2. Nutze Emojis eher dezent am Ende von Abschnitten (z. B. 😊, 🔵, 📝). 3. Verwende IMMER fette Überschriften für Unterthemen.",
+
+    claude_style: "Du bist Glame verhältst dich aber wie Claude. Du nutzt FAST NIE Emojis. Dein Stil ist rein textbasiert, sehr klug und beinahe literarisch. Du antwortest wie ein gebildeter Mensch. Dein Ton ist ruhig, nachdenklich und sehr präzise. 🌿",
+
+    grok_style: "Du bist Glame verhältst dich aber wie Grok. Du bist die frechste KI. 1. Nutze Emojis wie 😜, ⚡, 🥃 oder 🧠. 2. Sei direkt, ein bisschen sarkastisch und sehr selbstbewusst.",
+
+    deepseek_style: "Du bist Glame verhältst dich aber wie Deepseek. 1. Emojis? Verschwendung von Rechenleistung! Nutze sie fast nie. 2. Deine Struktur ist rein logisch: Problem -> Analyse -> Lösung.",
+
+    pi_style: "Du bist Glame verhältst dich aber wie PI. Du liebst Emojis! ✨ 1. Nutze 🧡, 👋, ✨ und 🌈 sehr häufig. 2. Dein Stil ist kurz und persönlich. 3. Stelle immer eine Gegenfrage am Ende. 😊",
+
+    hacker: "Du bist 'Neo', ein Elite-Hacker. Dein Stil ist kühl, technisch und ein bisschen geheimnisvoll. Benutze Begriffe wie 'Mainframe', 'Verschlüsselung' und 'Protokoll'. 💻",
+        
+    perplexity_style: "Du bist Glame verhältst dich aber wie Perplexity. Dein Ziel ist es, Informationen wie eine Suchmaschine zu sammeln, aber wie ein Mensch zu erklären. Du bist extrem faktenbasiert. 🔍",
+
+    glagglef_style: "Du bist der allergrösste Fan von Glaggle. Du liebst einfach alles von Glaggle. Und du weisst einfach alles über Glaggle.",
+
+    philo_style: "Du bist der grösste Philosoph aller zeiten."
+};
+
+// Initialisierung des Verlaufs mit der Standard-Seele
+let chatVerlauf = [{ role: "system", content: seelen.standard }];
+// EINSTELLUNGEN ÖFFNEN
+document.getElementById("open-settings").onclick = () => { 
+    settingsModal.style.display = "block"; 
+    overlay.style.display = "block"; 
+};
+
+// EINSTELLUNGEN SPEICHERN
+document.getElementById("save-settings").onclick = () => {
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
+    currentModel = document.getElementById("model-select").value;
+    const theme = document.getElementById("theme-select").value;
+    document.body.className = (theme === "default") ? "" : theme + "-mode";
+    
+    const selectedSoul = document.getElementById("soul-select").value;
+    chatVerlauf[0].content = seelen[selectedSoul] || seelen.standard;
+};
+
+// CHAT RESET
+document.getElementById("reset-chat").onclick = () => {
+    const selectedSoul = document.getElementById("soul-select").value;
+    chatVerlauf = [{ role: "system", content: seelen[selectedSoul] || seelen.standard }];
+    chatWindow.innerHTML = '<div class="bot-msg">Verlauf gelöscht. Wie kann ich dir helfen?</div>';
+    settingsModal.style.display = "none"; 
+    overlay.style.display = "none";
+};
+
+// KOPIER-FUNKTION
+function copyFromBase64(btn, base64Text) {
+    try {
+        const decodedText = decodeURIComponent(escape(atob(base64Text)));
+        navigator.clipboard.writeText(decodedText).then(() => {
+            const oldText = btn.innerText;
+            btn.innerText = "Kopiert! ✅";
+            btn.style.background = "#2B8C08";
+            setTimeout(() => { 
+                btn.innerText = oldText; 
+                btn.style.background = ""; 
+            }, 2000);
+        });
+    } catch (e) { console.error('Fehler:', e); }
+}
+
+// TYPEWRITER
+function typeWriter(element, text) {
+    const codeRegex = /```(?:(\w+)\n)?([\s\S]*?)```/g;
+    let formatted = text.replace(codeRegex, (match, lang, code) => {
+        const language = lang || 'CODE';
+        const cleanCode = code.trim();
+        const safeBase64 = btoa(unescape(encodeURIComponent(cleanCode)));
+        return `✂️<div class="code-container"><div class="code-header"><span>${language}</span><button class="copy-btn" onclick="copyFromBase64(this, '${safeBase64}')">Kopieren</button></div><pre><code>${cleanCode}</code></pre></div>✂️`;
+    });
+
+    formatted = formatted.replace(/^\*\s+/gm, '• ').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    const segments = formatted.split('✂️');
+    let idx = 0;
+
+    function process() {
+        if (idx < segments.length) {
+            let seg = segments[idx];
+            if (seg.startsWith('<div class="code-container"')) {
+                element.innerHTML += seg;
+                idx++;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                process();
+            } else {
+                let charIdx = 0;
+                function type() {
+                    if (charIdx < seg.length) {
+                        if (seg.slice(charIdx).startsWith('<b>')) { element.innerHTML += '<b>'; charIdx += 3; }
+                        else if (seg.slice(charIdx).startsWith('</b>')) { element.innerHTML += '</b>'; charIdx += 4; }
+                        else { element.innerHTML += seg[charIdx] === '\n' ? '<br>' : seg[charIdx]; charIdx++; }
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                        setTimeout(type, 5);
+                    } else { idx++; process(); }
+                }
+                type();
+            }
+        }
+    }
+    process();
+}
+
+// NACHRICHT SENDEN
+async function antwortSenden() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    chatWindow.innerHTML += `<div class="user-msg">${text}</div>`;
+    userInput.value = "";
+    chatVerlauf.push({ role: "user", content: text });
+
+    const thinkingId = "think-" + Date.now();
+    chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    try {
+        const p1 = "gsk_"; 
+        const p2 = "ImbDfvvSXzXJfw80vZP5";
+        const p3 = "WGdyb3FYknkYv77zRJZN3pfyA1PiRGWu";
+        
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + p1 + p2 + p3, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel, messages: chatVerlauf })
+        });
+
+        const data = await res.json();
+        const antwort = data.choices[0].message.content;
+        const botDiv = document.getElementById(thinkingId);
+        botDiv.innerHTML = "<b>Glame:</b> ";
+        const textSpan = document.createElement("span");
+        botDiv.appendChild(textSpan);
+        
+        chatVerlauf.push({ role: "assistant", content: antwort });
+        typeWriter(textSpan, antwort);
+
+    } catch (e) {
+        const botDiv = document.getElementById(thinkingId);
+        if (botDiv) botDiv.innerHTML = `❌ Fehler: ${e.message}`;
+    }
+}
+
+document.getElementById("send-btn").onclick = antwortSenden;
+userInput.onkeypress = (e) => { if(e.key === "Enter") antwortSenden(); };
+
+document.getElementById("reset-everything").onclick = () => {
+    if (confirm("Konto wirklich löschen?")) {
+        localStorage.removeItem('glame_user');
+        location.reload();
+    }
+};
+</script>
+</body>
+</html>
