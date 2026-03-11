@@ -56,6 +56,27 @@
             border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px; margin-top: 15px;
         }
         #gameLink { flex: 1; border: none; outline: none; padding: 10px; background: transparent; color: var(--text-color); font-size: 13px; }
+
+        /* Coin Styles */
+#coin-container {
+    position: fixed; bottom: 20px; right: 20px; 
+    background: var(--card-bg); border: 2px solid var(--accent); 
+    padding: 10px 20px; border-radius: 50px; 
+    display: flex; align-items: center; gap: 10px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; 
+}
+@keyframes coin-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); background-color: #FFD700; }
+    100% { transform: scale(1); }
+}
+.coin-animation { animation: coin-pop 0.5s ease-out; }
+
+/* Das Overlay für das Modal (war im HTML teils abgeschnitten) */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
     </style>
 </head>
 <body>
@@ -105,6 +126,11 @@
         <button class="btn" onclick="copyAndClose()" id="copyBtn" style="width: 100%;">Link kopieren</button>
         <button onclick="closeShare()" style="background:none; border:none; color: var(--desc-color); margin-top: 15px; cursor: pointer; text-decoration: underline;">Schließen</button>
     </div>
+</div>
+
+<div id="coin-container">
+    <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+    <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
 </div>
 
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -247,18 +273,47 @@
             }
         }
 
-        function checkWinner(b) {
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            for (let s of wins) {
-                if (b[s[0]] && b[s[0]] === b[s[1]] && b[s[0]] === b[s[2]]) {
-                    status.innerText = "Spieler " + b[s[0]] + " gewinnt! 🎉";
-                    gameActive = false; return true;
-                }
-            }
-            if (!b.includes("")) { status.innerText = "Unentschieden! 😐"; gameActive = false; return true; }
-            return false;
-        }
+        // Coins beim Laden anzeigen
+window.addEventListener('load', () => {
+    document.getElementById('coin-count').innerText = localStorage.getItem('glaggleCoins') || 0;
+});
 
+function earnCoin() {
+    let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    coins++;
+    localStorage.setItem('glaggleCoins', coins);
+
+    const container = document.getElementById('coin-container');
+    const display = document.getElementById('coin-count');
+    if(display) display.innerText = coins;
+    
+    container.classList.remove('coin-animation');
+    void container.offsetWidth; // Restart animation
+    container.classList.add('coin-animation');
+}
+
+function checkWinner(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (let s of wins) {
+        if (b[s[0]] && b[s[0]] === b[s[1]] && b[s[0]] === b[s[2]]) {
+            const winner = b[s[0]];
+            status.innerText = "Spieler " + winner + " gewinnt! 🎉";
+            gameActive = false;
+
+            // Belohnung: Wenn DU (mySymbol) gewonnen hast!
+            if (winner === mySymbol) {
+                earnCoin();
+            }
+            return true;
+        }
+    }
+    if (!b.includes("")) { 
+        status.innerText = "Unentschieden! 😐"; 
+        gameActive = false; 
+        return true; 
+    }
+    return false;
+}
 // Diese Funktion wird aufgerufen, wenn du auf "Freund einladen" klickst
 function prepareFriendLink() {
     // Falls Peer noch nicht bereit ist, initialisieren
