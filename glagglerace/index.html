@@ -118,10 +118,10 @@
         <div class="btn" id="rightBtn">R</div>
     </div>
 
-    <div class="coin-status" id="coin-container">
-        <span style="font-size: 20px;"<img src="coin.png" style="width:24px; height:24px;">
-        <span id="coin-count">0</span>
-    </div>
+    <div id="coin-container" style="position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; transition: all 0.3s ease;">
+    <img src="coin.png" style="width:24px; height:24px;" alt="Coin"> 
+    <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
+</div>
 
     <script>
         const container = document.getElementById('game-container');
