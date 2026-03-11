@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Racing</title>
+    <style>
+        /* Deine bestehenden Variablen */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --accent: #70C4F7;
+            --card-bg: #fdfdfd;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --card-bg: #303134;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0; overflow: hidden; touch-action: manipulation;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 300px;
+            height: 500px;
+            background: #444; /* Straße */
+            border-left: 5px dashed white;
+            border-right: 5px dashed white;
+            margin-top: 50px;
+            overflow: hidden;
+        }
+
+        /* Fahrbahnen Markierung */
+        .lane-line {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        #player {
+            position: absolute;
+            bottom: 20px;
+            width: 60px;
+            height: 90px;
+            background: var(--accent);
+            border-radius: 10px;
+            transition: left 0.2s ease;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 40px;
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #ff4444;
+            border-radius: 5px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px;
+        }
+
+        #ui {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Mobile Controls */
+        .controls {
+            display: flex; gap: 50px; margin-top: 20px;
+        }
+        .btn {
+            padding: 20px 40px;
+            background: var(--accent);
+            color: white;
+            border-radius: 15px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Coin & Highscore Styles */
+        .coin-status {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--card-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px;
+        }
+        @keyframes coin-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); background: gold; }
+            100% { transform: scale(1); }
+        }
+        .coin-animation { animation: coin-pop 0.5s ease-out; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div>Score: <span id="score">0</span> | Best: <span id="best">0</span></div>
+    </div>
+
+    <div id="game-container">
+        <div class="lane-line" style="left: 100px;"></div>
+        <div class="lane-line" style="left: 200px;"></div>
+        <div id="player">🚗</div>
+    </div>
+
+    <div class="controls">
+        <div class="btn" id="leftBtn">L</div>
+        <div class="btn" id="rightBtn">R</div>
+    </div>
+
+    <div class="coin-status" id="coin-container">
+        <span style="font-size: 20px;">🪙</span>
+        <span id="coin-count">0</span>
+    </div>
+
+    <script>
+        const container = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const scoreEl = document.getElementById('score');
+        const bestEl = document.getElementById('best');
+        const coinCountEl = document.getElementById('coin-count');
+
+        let currentLane = 1; // 0, 1, 2
+        let score = 0;
+        let speed = 5;
+        let gameActive = true;
+        let bestScore = localStorage.getItem('racingBest') || 0;
+        bestEl.innerText = bestScore;
+        coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
+
+        const lanes = [20, 120, 220]; // Left positions
+
+        // Steuerung
+        function move(dir) {
+            if(!gameActive) return;
+            currentLane = Math.max(0, Math.min(2, currentLane + dir));
+            player.style.left = lanes[currentLane] + 'px';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowLeft") move(-1);
+            if(e.key === "ArrowRight") move(1);
+        });
+
+        document.getElementById('leftBtn').onclick = () => move(-1);
+        document.getElementById('rightBtn').onclick = () => move(1);
+
+        // Hindernisse erstellen
+        function createObstacle() {
+            if(!gameActive) return;
+            const obs = document.createElement('div');
+            obs.className = 'obstacle';
+            obs.innerHTML = '🚧';
+            const lane = Math.floor(Math.random() * 3);
+            obs.style.left = (lanes[lane] + 5) + 'px';
+            obs.style.top = '-100px';
+            container.appendChild(obs);
+
+            let pos = -100;
+            const interval = setInterval(() => {
+                if(!gameActive) { clearInterval(interval); return; }
+                pos += speed;
+                obs.style.top = pos + 'px';
+
+                // Collision Check
+                if(pos > 380 && pos < 470 && lane === currentLane) {
+                    gameOver();
+                }
+
+                // Punkt erzielt
+                if(pos > 500) {
+                    score++;
+                    scoreEl.innerText = score;
+                    speed += 0.1; // Wird schneller
+                    obs.remove();
+                    clearInterval(interval);
+                }
+            }, 20);
+        }
+
+        let obsSpawner = setInterval(createObstacle, 1500);
+
+        function gameOver() {
+            gameActive = false;
+            clearInterval(obsSpawner);
+            
+            // Bestzeit / Highscore speichern
+            if(score > bestScore) {
+                localStorage.setItem('racingBest', score);
+                alert("Neuer Rekord: " + score);
+            }
+
+            // COIN LOGIK: Mindestens 5 Punkte
+            if(score >= 5) {
+                earnCoin();
+            } else {
+                alert("Game Over! (Sammle 5 Punkte für einen Coin)");
+            }
+            
+            location.reload();
+        }
+
+        function earnCoin() {
+            let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+            coins++;
+            localStorage.setItem('glaggleCoins', coins);
+            
+            const coinContainer = document.getElementById('coin-container');
+            coinCountEl.innerText = coins;
+            coinContainer.classList.add('coin-animation');
+            
+            setTimeout(() => {
+                alert("Glückwunsch! Du hast einen Glaggle Coin verdient!");
+            }, 100);
+        }
+    </script>
+</body>
+</html>
