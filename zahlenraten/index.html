@@ -63,6 +63,21 @@
 
         #message { min-height: 30px; margin: 15px 0; font-weight: bold; }
 
+        /* Coin Styles */
+        #coin-container {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: var(--card-bg); border: 2px solid var(--accent); 
+            padding: 10px 20px; border-radius: 50px; 
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        @keyframes coin-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); background-color: #FFD700; }
+            100% { transform: scale(1); }
+        }
+        .coin-animation { animation: coin-pop 0.5s ease-out; }
+
         /* Overlay System */
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -101,6 +116,11 @@
         </div>
     </div>
 
+    <div id="coin-container">
+        <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+        <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
+    </div>
+
     <div id="shareModal" class="overlay">
         <div class="modal-content">
             <h2 style="margin-top:0; color: var(--accent);">Teilen</h2>
@@ -117,6 +137,11 @@
         let attempts = 0;
         let highscore = localStorage.getItem('glaggleGuessRecord') || null;
         
+        // Coins beim Start laden
+        window.addEventListener('load', () => {
+            document.getElementById('coin-count').innerText = localStorage.getItem('glaggleCoins') || 0;
+        });
+
         if(highscore) document.getElementById('highscore').innerText = highscore;
 
         function initGame() {
@@ -126,6 +151,21 @@
             document.getElementById('message').innerText = "Viel Glück!";
             document.getElementById('message').style.color = "inherit";
             document.getElementById('guessInput').value = "";
+        }
+
+        function earnCoin() {
+            let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+            coins++;
+            localStorage.setItem('glaggleCoins', coins);
+
+            const container = document.getElementById('coin-container');
+            const display = document.getElementById('coin-count');
+            
+            if(display) display.innerText = coins;
+            
+            container.classList.remove('coin-animation');
+            void container.offsetWidth; // Reset Animation
+            container.classList.add('coin-animation');
         }
 
         function checkGuess() {
@@ -144,6 +184,12 @@
             if (userGuess === secretNum) {
                 msg.innerText = "🎉 Richtig! Gefunden!";
                 msg.style.color = "var(--success)";
+                
+                // COIN LOGIK: Unter 15 Versuchen?
+                if (attempts < 15) {
+                    earnCoin();
+                }
+                
                 saveHighscore();
                 setTimeout(() => { if(confirm("Noch eine Runde?")) initGame(); }, 1000);
             } else if (userGuess < secretNum) {
@@ -165,7 +211,6 @@
             }
         }
 
-        // Teilen Logik
         function shareGame() {
             const modal = document.getElementById('shareModal');
             document.getElementById('shareLinkInput').value = window.location.href;
@@ -188,7 +233,6 @@
             setTimeout(() => { btn.innerText = "Link kopieren"; closeShare(); }, 1000);
         }
 
-        // Enter-Taste unterstützen
         document.getElementById("guessInput").addEventListener("keypress", function(e) {
             if (e.key === "Enter") checkGuess();
         });
