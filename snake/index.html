@@ -75,6 +75,16 @@
             display: flex; align-items: center; justify-content: center;
         }
         .up { grid-column: 2; } .left { grid-column: 1; } .down { grid-column: 2; } .right { grid-column: 3; }
+
+        @keyframes coin-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); background-color: #FFD700; border-color: #DAA520; }
+    100% { transform: scale(1); }
+}
+
+.coin-animation {
+    animation: coin-pop 0.5s ease-out;
+}
     </style>
 </head>
 <body>
@@ -210,16 +220,49 @@
         }
 
         function gameOver() {
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem('glaggleShakeHighscore', highscore);
-                document.getElementById('highscore').innerText = highscore;
-                document.getElementById('final-msg').innerText = "Neuer Rekord! 🎉";
-            } else {
-                document.getElementById('final-msg').innerText = "Score: " + score;
-            }
-            document.getElementById('death-overlay').style.display = "flex";
-        }
+    // NEU: Coin-Check
+    if (score >= 5) {
+        earnCoin();
+    }
+
+    // Dein restlicher Code (Highscore speichern etc.)
+    if(score > highscore) {
+        highscore = score;
+        localStorage.setItem('glaggleShakeHighscore', highscore);
+        document.getElementById('highscore').innerText = highscore;
+        document.getElementById('final-msg').innerText = "Neuer Rekord! 🎉";
+    } else {
+        document.getElementById('final-msg').innerText = "Score: " + score;
+    }
+    document.getElementById('death-overlay').style.display = "flex";
+}
+
+        function earnCoin() {
+    // 1. Wert aus Speicher holen & erhöhen
+    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    glaggleCoins++;
+    localStorage.setItem('glaggleCoins', glaggleCoins);
+
+    // 2. UI finden und animieren
+    const container = document.getElementById('coin-container');
+    const countElement = document.getElementById('coin-count');
+
+    if (container && countElement) {
+        countElement.innerText = glaggleCoins;
+        
+        // Animation triggern
+        container.classList.remove('coin-animation'); // Reset, falls man schnell nacheinander gewinnt
+        void container.offsetWidth; // Trick, um CSS-Animation neu zu starten
+        container.classList.add('coin-animation');
+    }
+}
+
+// Stellt sicher, dass die Coins beim Seitenladen angezeigt werden
+window.addEventListener('load', () => {
+    const currentCoins = localStorage.getItem('glaggleCoins') || 0;
+    const display = document.getElementById('coin-count');
+    if(display) display.innerText = currentCoins;
+});
     </script>
 </body>
 </html>
