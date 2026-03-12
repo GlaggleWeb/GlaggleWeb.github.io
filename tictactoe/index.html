@@ -2,284 +2,274 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Glaggle Racing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Tic Tac Toe</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --accent: #70C4F7;
-            --card-bg: #fdfdfd;
-            --nav-bg: #ffffff;
-            --card-border: #eeeeee;
+            --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --accent: #70C4F7;
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #202124;
-                --text-color: #e8eaed;
-                --card-bg: #303134;
-                --nav-bg: #303134;
-                --card-border: #444444;
+                --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
+                --card-bg: #303134; --card-border: #444444;
             }
         }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Arial Rounded MT Bold', sans-serif;
-            margin: 0; overflow: hidden; touch-action: none;
-            display: flex; flex-direction: column; align-items: center;
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif; margin: 0;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-
-        /* Navbar wie bei Snake */
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; height: 80px; background-color: var(--nav-bg);
-            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+            padding: 0 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); box-sizing: border-box;
         }
         .nav-logo { height: 40px; }
-
-        .main-content {
-            margin-top: 100px;
-            display: flex; flex-direction: column; align-items: center;
+        .main-content { margin-top: 100px; padding: 20px; text-align: center; width: 100%; max-width: 400px; }
+        .glaggle-entry { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--card-border); }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px auto; }
+        .cell { 
+            aspect-ratio: 1/1; background: var(--bg-color); border: 2px solid var(--card-border);
+            border-radius: 12px; font-size: 2.5em; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.2s;
         }
-
-        #game-container {
-            position: relative;
-            width: 300px;
-            height: 500px;
-            background: #444;
-            border-left: 5px dashed white;
-            border-right: 5px dashed white;
-            overflow: hidden;
-            border-radius: 10px;
+        .cell:hover { border-color: var(--accent); }
+        
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px; 
+            border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0;
         }
+        .hidden { display: none !important; }
 
-        .lane-line {
-            position: absolute;
-            top: 0; bottom: 0;
-            width: 2px;
-            background: rgba(255,255,255,0.3);
-        }
-
-        #player {
-            position: absolute;
-            bottom: 20px;
-            width: 60px; height: 90px;
-            background: var(--accent);
-            border-radius: 10px;
-            transition: left 0.15s ease-out;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 40px; z-index: 10;
-        }
-
-        .obstacle {
-            position: absolute;
-            width: 50px; height: 50px;
-            background: #ff4444;
-            border-radius: 5px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 30px;
-        }
-
-        /* Touch Zonen */
-        .touch-zone {
-            position: absolute;
-            top: 0; width: 50%; height: 100%; z-index: 20;
-        }
-        #left-zone { left: 0; }
-        #right-zone { right: 0; }
-
-        /* Glaggle Popups */
+        /* Popups */
         #glaggle-popup {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none; align-items: center; justify-content: center;
-            z-index: 3000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 3000;
         }
-        .popup-content {
-            background: var(--card-bg);
-            padding: 30px; border-radius: 25px;
-            border: 4px solid var(--accent);
-            text-align: center; max-width: 250px;
-        }
-        .btn-retry {
-            background: var(--accent); color: white; border: none;
-            padding: 12px 25px; border-radius: 15px;
-            font-weight: bold; cursor: pointer; margin-top: 15px;
-            width: 100%;
-        }
+        .popup-content { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 4px solid var(--accent); text-align: center; width: 80%; max-width: 300px; }
 
         #coin-container {
-            position: fixed; bottom: 20px; right: 20px; 
-            background: var(--card-bg); border: 2px solid var(--accent); 
-            padding: 10px 20px; border-radius: 50px; 
-            display: flex; align-items: center; gap: 10px; z-index: 1000;
+            position: fixed; bottom: 20px; right: 20px; background: var(--card-bg);
+            border: 2px solid var(--accent); padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        @keyframes pop { 0% {transform: scale(1);} 50% {transform: scale(1.3);} 100% {transform: scale(1);} }
-        .coin-animation { animation: pop 0.4s ease; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div id="score-display" style="font-weight: bold; color: var(--accent);">Score: 0 | Best: 0</div>
+        <div style="font-weight: bold; color: var(--accent);">Tic Tac Toe</div>
     </div>
 
     <div class="main-content">
-        <div id="game-container">
-            <div id="left-zone" class="touch-zone"></div>
-            <div id="right-zone" class="touch-zone"></div>
-            <div class="lane-line" style="left: 100px;"></div>
-            <div class="lane-line" style="left: 200px;"></div>
-            <div id="player">🚗</div>
+        <div id="menu" class="glaggle-entry">
+            <h3>Modus wählen</h3>
+            <button class="btn" onclick="startKI('easy')">👶 Dulli KI (Einfach)</button>
+            <button class="btn" onclick="startKI('hard')" style="background: #e74c3c;">🤖 Ultra KI (Unbesiegbar)</button>
+            <hr style="opacity: 0.2; margin: 15px 0;">
+            <button class="btn" onclick="inviteFriend()" style="background: #2ecc71;">🔗 Freund einladen</button>
         </div>
-    </div>
 
-    <div id="coin-container">
-        <img src="coin.png" style="width:24px; height:24px;" alt="Coin"> 
-        <span id="coin-count">0</span>
+        <div id="game-area" class="glaggle-entry hidden">
+            <div id="status">Bereit...</div>
+            <div class="grid" id="board">
+                <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
+                <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
+                <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
+            </div>
+            <button class="btn" onclick="resetGame()">Neustart</button>
+            <button class="btn" style="background:#888" onclick="location.href=window.location.pathname">Menü</button>
+        </div>
     </div>
 
     <div id="glaggle-popup">
         <div class="popup-content">
-            <h2 id="popup-title" style="margin-top: 0; color: var(--accent);">Crash!</h2>
-            <p id="popup-text">Leider verloren.</p>
-            <button class="btn-retry" onclick="resetGame()">Nochmal!</button>
-            <button class="btn-retry" style="background: #888;" onclick="window.location.href='/'">Menü</button>
+            <h2 id="popup-title">Sieg!</h2>
+            <p id="popup-text"></p>
+            <input type="text" id="shareLink" readonly class="hidden" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ccc;">
+            <button class="btn" id="popup-btn" onclick="closePopup()">OK</button>
         </div>
     </div>
 
+    <div id="coin-container">
+        <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+        <b id="coin-count">0</b>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
-        const container = document.getElementById('game-container');
-        const player = document.getElementById('player');
-        const scoreDisplay = document.getElementById('score-display');
-        const coinCountEl = document.getElementById('coin-count');
-        const popup = document.getElementById('glaggle-popup');
-        const popupText = document.getElementById('popup-text');
-        const popupTitle = document.getElementById('popup-title');
+        let peer, conn, mySymbol = "X", turn = "X", board = Array(9).fill(""), active = true, gameMode = "";
+        const cells = document.querySelectorAll('.cell');
 
-        const lanes = [20, 120, 220]; 
-        let currentLane = 1;
-        let score = 0;
-        let speed = 5;
-        let gameActive = true;
-        let bestScore = localStorage.getItem('racingBest') || 0;
-        let activeObstacles = [];
-        let obsSpawner;
+        window.onload = () => {
+            document.getElementById('coin-count').innerText = localStorage.getItem('glaggleCoins') || 0;
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('join')) joinFriend(urlParams.get('join'));
+        };
 
-        // Init
-        function init() {
-            player.style.left = lanes[currentLane] + 'px';
-            updateScoreUI();
-            coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
-            obsSpawner = setInterval(createObstacle, 1400);
+        function showPopup(title, text, isLink = false) {
+            document.getElementById('popup-title').innerText = title;
+            document.getElementById('popup-text').innerText = text;
+            const linkInput = document.getElementById('shareLink');
+            const popup = document.getElementById('glaggle-popup');
+            
+            if(isLink) {
+                linkInput.classList.remove('hidden');
+                linkInput.value = text;
+                document.getElementById('popup-text').innerText = "Schicke diesen Link deinem Freund:";
+                document.getElementById('popup-btn').innerText = "Link kopieren";
+                document.getElementById('popup-btn').onclick = () => {
+                    linkInput.select(); navigator.clipboard.writeText(linkInput.value);
+                    closePopup();
+                };
+            } else {
+                linkInput.classList.add('hidden');
+                document.getElementById('popup-btn').innerText = "OK";
+                document.getElementById('popup-btn').onclick = closePopup;
+            }
+            popup.style.display = "flex";
         }
 
-        function updateScoreUI() {
-            scoreDisplay.innerText = `Score: ${score} | Best: ${bestScore}`;
+        function closePopup() { document.getElementById('glaggle-popup').style.display = "none"; }
+
+        // KI Modus
+        function startKI(level) {
+            gameMode = level; mySymbol = "X";
+            document.getElementById('menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('status').innerText = "Du bist X. Leg los!";
         }
 
-        function move(dir) {
-            if(!gameActive) return;
-            currentLane = Math.max(0, Math.min(2, currentLane + dir));
-            player.style.left = lanes[currentLane] + 'px';
+        // Online Modus (Freund)
+        function inviteFriend() {
+            gameMode = "friend";
+            peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, path: '/', secure: true });
+            peer.on('open', (id) => {
+                const link = window.location.origin + window.location.pathname + "?join=" + id;
+                showPopup("Freund einladen", link, true);
+            });
+            peer.on('connection', (c) => {
+                conn = c; mySymbol = "X"; setupOnlineGame();
+            });
         }
 
-        // Steuerung: Tippen & Pfeiltasten
-        document.getElementById('left-zone').onclick = () => move(-1);
-        document.getElementById('right-zone').onclick = () => move(1);
-        document.addEventListener('keydown', (e) => {
-            if(e.key === "ArrowLeft") move(-1);
-            if(e.key === "ArrowRight") move(1);
+        function joinFriend(id) {
+            gameMode = "online"; mySymbol = "O";
+            peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, path: '/', secure: true });
+            setTimeout(() => {
+                conn = peer.connect(id);
+                setupOnlineGame();
+            }, 1000);
+        }
+
+        function setupOnlineGame() {
+            document.getElementById('menu').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('status').innerText = "Verbunden!";
+            conn.on('data', (data) => {
+                if(data.type === 'move') { board = data.b; turn = data.t; updateUI(); checkEnd(); }
+                if(data.type === 'reset') { resetLogic(); }
+            });
+        }
+
+        // Game Logic
+        cells.forEach(c => c.onclick = () => {
+            let i = c.dataset.i;
+            if(!active || board[i] !== "" || turn !== mySymbol) return;
+            makeMove(i, mySymbol);
+            if(!checkEnd() && (gameMode === 'easy' || gameMode === 'hard')) {
+                setTimeout(aiMove, 500);
+            }
         });
 
-        function createObstacle() {
-            if(!gameActive) return;
-            const obs = document.createElement('div');
-            obs.className = 'obstacle';
-            obs.innerHTML = '🚧';
-            const lane = Math.floor(Math.random() * 3);
-            obs.style.left = (lanes[lane] + 5) + 'px';
-            obs.style.top = '-100px';
-            container.appendChild(obs);
-
-            let pos = -100;
-            const interval = setInterval(() => {
-                if(!gameActive) { clearInterval(interval); return; }
-                pos += speed;
-                obs.style.top = pos + 'px';
-
-                if(pos > 380 && pos < 470 && lane === currentLane) gameOver();
-
-                if(pos > 500) {
-                    score++;
-                    updateScoreUI();
-                    speed += 0.08;
-                    obs.remove();
-                    clearInterval(interval);
-                }
-            }, 20);
-            activeObstacles.push({element: obs, interval: interval});
+        function makeMove(i, symbol) {
+            board[i] = symbol;
+            turn = (symbol === "X") ? "O" : "X";
+            updateUI();
+            if(conn) conn.send({type:'move', b:board, t:turn});
+            checkEnd();
         }
 
-        function gameOver() {
-            gameActive = false;
-            clearInterval(obsSpawner);
-            if(score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('racingBest', score);
-            }
-
-            if(score >= 5) {
-                earnCoin();
+        function aiMove() {
+            let move;
+            if(gameMode === 'easy') {
+                let available = board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+                move = available[Math.floor(Math.random() * available.length)];
             } else {
-                showGlaggleMessage("Crash!", `Score: ${score}. Brauchst 5 für einen Coin!`);
+                move = getBestMove();
+            }
+            makeMove(move, "O");
+        }
+
+        function getBestMove() {
+            let bestScore = -Infinity, move;
+            for(let i=0; i<9; i++) {
+                if(board[i] === "") {
+                    board[i] = "O";
+                    let score = minimax(board, 0, false);
+                    board[i] = "";
+                    if(score > bestScore) { bestScore = score; move = i; }
+                }
+            }
+            return move;
+        }
+
+        function minimax(b, depth, isMax) {
+            let res = checkWinStatic(b);
+            if(res === "O") return 10; if(res === "X") return -10; if(res === "tie") return 0;
+            if(isMax) {
+                let best = -Infinity;
+                for(let i=0; i<9; i++) if(b[i]==="") { b[i]="O"; best = Math.max(best, minimax(b, depth+1, false)); b[i]=""; }
+                return best;
+            } else {
+                let best = Infinity;
+                for(let i=0; i<9; i++) if(b[i]==="") { b[i]="X"; best = Math.min(best, minimax(b, depth+1, true)); b[i]=""; }
+                return best;
             }
         }
 
-        function resetGame() {
-            // Spielfeld säubern ohne Reload
-            gameActive = true;
-            score = 0;
-            speed = 5;
-            currentLane = 1;
-            player.style.left = lanes[currentLane] + 'px';
-            
-            // Alle alten Hindernisse entfernen
-            document.querySelectorAll('.obstacle').forEach(o => o.remove());
-            activeObstacles = [];
-            
-            popup.style.display = 'none';
-            updateScoreUI();
-            
-            // Spawner neu starten
-            clearInterval(obsSpawner);
-            obsSpawner = setInterval(createObstacle, 1400);
+        function checkWinStatic(b) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for(let s of wins) if(b[s[0]] && b[s[0]]===b[s[1]] && b[s[0]]===b[s[2]]) return b[s[0]];
+            return b.includes("") ? null : "tie";
         }
 
-        function showGlaggleMessage(title, text) {
-            popupTitle.innerText = title;
-            popupText.innerText = text;
-            popup.style.display = 'flex';
+        function updateUI() { 
+            board.forEach((v, i) => cells[i].innerText = v);
+            document.getElementById('status').innerText = (turn === mySymbol) ? "Du bist dran" : "Gegner denkt...";
+        }
+
+        function checkEnd() {
+            let res = checkWinStatic(board);
+            if(res) {
+                active = false;
+                if(res === "tie") showPopup("Unentschieden", "Keiner hat gewonnen.");
+                else {
+                    showPopup(res === mySymbol ? "Sieg!" : "Verloren", res === mySymbol ? "Du hast 1 Coin verdient!" : "Vielleicht beim nächsten Mal.");
+                    if(res === mySymbol) earnCoin();
+                }
+                return true;
+            }
+            return false;
         }
 
         function earnCoin() {
-            let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-            coins++;
-            localStorage.setItem('glaggleCoins', coins);
-            coinCountEl.innerText = coins;
-            document.getElementById('coin-container').classList.add('coin-animation');
-            setTimeout(() => {
-                document.getElementById('coin-container').classList.remove('coin-animation');
-            }, 500);
-            showGlaggleMessage("Sieg!", `Score: ${score}. Du hast 1 Coin verdient!`);
+            let c = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+            c++; localStorage.setItem('glaggleCoins', c);
+            document.getElementById('coin-count').innerText = c;
         }
 
-        init();
+        function resetGame() {
+            resetLogic();
+            if(conn) conn.send({type:'reset'});
+        }
+
+        function resetLogic() {
+            board = Array(9).fill(""); turn = "X"; active = true; updateUI();
+        }
     </script>
 </body>
 </html>
