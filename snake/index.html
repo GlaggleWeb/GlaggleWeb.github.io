@@ -41,18 +41,24 @@
         }
         canvas { display: block; background-color: var(--input-bg); width: 100%; height: auto; }
         
-        /* Highscore & Coin Box kombiniert */
         .score-box {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;
-            background: var(--nav-bg); padding: 12px; border-radius: 15px;
-            border: 1px solid var(--card-border); align-items: center;
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
         }
-        .score-val { font-size: 13px; color: var(--desc-color); }
+        .score-val { font-size: 14px; color: var(--desc-color); }
         .score-val b { color: var(--accent); font-size: 18px; display: block; }
 
-        /* Coin Anzeige speziell */
-        #coin-display { color: #DAA520 !important; }
-        
+        /* Coin Container unten rechts */
+        #coin-container {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: var(--card-bg); border: 2px solid var(--accent); 
+            padding: 10px 20px; border-radius: 50px; 
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         .btn {
             background: var(--accent); color: white; border: none; padding: 12px 25px; 
             border-radius: 25px; font-weight: bold; cursor: pointer; width: 180px; 
@@ -66,27 +72,19 @@
             z-index: 10;
         }
 
-        /* JOYSTICK UNTEN */
+        /* JOYSTICK */
         #joystick-wrapper {
             display: none; width: 130px; height: 130px;
             background: rgba(128, 128, 128, 0.1);
-            border-radius: 50%; margin: 25px auto;
+            border-radius: 50%; margin: 20px auto;
             position: relative; touch-action: none;
             border: 3px solid var(--card-border);
         }
         #joystick-knob {
-            width: 55px; height: 55px; background: var(--accent);
+            width: 50px; height: 50px; background: var(--accent);
             border-radius: 50%; position: absolute;
-            top: 37.5px; left: 37.5px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: transform 0.1s ease-out;
+            top: 40px; left: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-
-        @keyframes coin-pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.4); color: #FFD700; }
-            100% { transform: scale(1); }
-        }
-        .coin-animation { display: inline-block; animation: coin-pop 0.5s ease-out; }
     </style>
 </head>
 <body>
@@ -99,7 +97,6 @@
     <div class="main-content">
         <div class="score-box">
             <div class="score-val">Punkte <b id="score">0</b></div>
-            <div class="score-val">GlaggleCoins <b id="coin-display">🪙 <span id="coin-count">0</span></b></div>
             <div class="score-val">Rekord <b id="highscore">0</b></div>
         </div>
 
@@ -123,6 +120,11 @@
         <div id="joystick-wrapper">
             <div id="joystick-knob"></div>
         </div>
+    </div>
+
+    <div id="coin-container">
+        <img src="coin.png" id="coin-img" style="width:28px; height:28px; object-fit: contain;" alt="Coin"> 
+        <span id="coin-count" style="font-weight: bold; color: var(--text-color); font-size: 18px;">0</span>
     </div>
 
     <script>
@@ -156,7 +158,6 @@
             requestAnimationFrame(main);
         }
 
-        // Joystick-Steuerung
         function setupJoystick() {
             const wrapper = document.getElementById('joystick-wrapper');
             const knob = document.getElementById('joystick-knob');
@@ -166,15 +167,15 @@
                 if(!active) return;
                 const rect = wrapper.getBoundingClientRect();
                 const touch = e.touches ? e.touches[0] : e;
-                const x = touch.clientX - rect.left - rect.width / 2;
-                const y = touch.clientY - rect.top - rect.height / 2;
+                const x = touch.clientX - rect.left - rect.width/2;
+                const y = touch.clientY - rect.top - rect.height/2;
 
                 if (Math.abs(x) > Math.abs(y)) {
-                    if (x > 10 && d !== "LEFT") nextD = "RIGHT";
-                    else if (x < -10 && d !== "RIGHT") nextD = "LEFT";
+                    if(x > 15 && d != "LEFT") nextD = "RIGHT";
+                    else if(x < -15 && d != "RIGHT") nextD = "LEFT";
                 } else {
-                    if (y > 10 && d !== "UP") nextD = "DOWN";
-                    else if (y < -10 && d !== "DOWN") nextD = "UP";
+                    if(y > 15 && d != "UP") nextD = "DOWN";
+                    else if(y < -15 && d != "DOWN") nextD = "UP";
                 }
 
                 const dist = Math.min(Math.sqrt(x*x + y*y), 35);
@@ -183,23 +184,19 @@
             };
 
             wrapper.addEventListener('touchstart', (e) => { active = true; handleMove(e); e.preventDefault(); });
-            window.addEventListener('touchmove', (e) => { handleMove(e); }, { passive: false });
-            window.addEventListener('touchend', () => { 
-                active = false; 
-                knob.style.transform = `translate(0,0)`;
-            });
-        }
-
-        function setDir(newDir) {
-            if(newDir == "LEFT" && d != "RIGHT") nextD = "LEFT";
-            if(newDir == "UP" && d != "DOWN") nextD = "UP";
-            if(newDir == "RIGHT" && d != "LEFT") nextD = "RIGHT";
-            if(newDir == "DOWN" && d != "UP") nextD = "DOWN";
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', () => { active = false; knob.style.transform = "translate(0,0)"; });
         }
 
         window.addEventListener("keydown", (e) => {
             const keys = { "ArrowUp":"UP","w":"UP", "ArrowDown":"DOWN","s":"DOWN", "ArrowLeft":"LEFT","a":"LEFT", "ArrowRight":"RIGHT","d":"RIGHT" };
-            if(keys[e.key]) setDir(keys[e.key]);
+            if(keys[e.key]) {
+                const newD = keys[e.key];
+                if(newD == "LEFT" && d != "RIGHT") nextD = "LEFT";
+                if(newD == "UP" && d != "DOWN") nextD = "UP";
+                if(newD == "RIGHT" && d != "LEFT") nextD = "RIGHT";
+                if(newD == "DOWN" && d != "UP") nextD = "DOWN";
+            }
         });
 
         function main(time) {
@@ -223,7 +220,7 @@
                 score++;
                 document.getElementById('score').innerText = score;
                 food = { x: Math.floor(Math.random() * 18 + 1), y: Math.floor(Math.random() * 18 + 1) };
-                if (score % 5 === 0) earnCoin(); // Belohnung alle 5 Punkte
+                if(score % 5 === 0) earnCoin(); // Belohnung alle 5 Punkte
             } else {
                 shake.pop();
             }
@@ -272,12 +269,13 @@
             glaggleCoins++;
             localStorage.setItem('glaggleCoins', glaggleCoins);
 
-            const display = document.getElementById('coin-count');
-            if (display) {
-                display.innerText = glaggleCoins;
-                display.classList.remove('coin-animation');
-                void display.offsetWidth;
-                display.classList.add('coin-animation');
+            const container = document.getElementById('coin-container');
+            const countDisplay = document.getElementById('coin-count');
+
+            if (countDisplay && container) {
+                countDisplay.innerText = glaggleCoins;
+                container.style.transform = "scale(1.2)";
+                setTimeout(() => container.style.transform = "scale(1)", 200);
             }
         }
 
