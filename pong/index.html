@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg-color: #ffffff; --text-color: #333333; --accent: #70C4F7;
-            --nav-bg: #ffffff; --card-border: #eeeeee;
+            --nav-bg: #ffffff; --card-border: #eeeeee; --success: #4CAF50;
         }
         @media (prefers-color-scheme: dark) {
             :root { --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134; --card-border: #444444; }
@@ -24,15 +24,25 @@
         }
         canvas {
             background: var(--bg-color); border: 4px solid var(--accent);
-            border-radius: 20px; margin-top: 20px; max-width: 95vw; max-height: 70vh;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 20px; margin-top: 10px; max-width: 95vw; max-height: 60vh;
         }
-        .score { font-size: 32px; font-weight: bold; margin-top: 10px; color: var(--accent); }
-        .controls-hint { font-size: 14px; opacity: 0.6; margin-top: 10px; text-align: center; }
-        .btn {
-            background: var(--accent); color: white; border: none; padding: 12px 25px;
-            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 15px;
+        .info-bar { display: flex; gap: 20px; margin-top: 10px; font-weight: bold; }
+        .score { font-size: 32px; color: var(--accent); margin: 5px 0; }
+        
+        #coin-container {
+            position: fixed; bottom: 20px; right: 20px; background: var(--nav-bg);
+            border: 2px solid var(--accent); padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+
+        /* Overlay */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 2000; color: white; text-align: center;
+        }
+        .modal { background: var(--nav-bg); padding: 30px; border-radius: 25px; border: 4px solid var(--accent); color: var(--text-color); width: 80%; max-width: 300px; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; }
     </style>
 </head>
 <body>
@@ -43,146 +53,165 @@
         <div style="width: 40px;"></div>
     </div>
 
+    <div class="info-bar">
+        <span>Zeit: <span id="timerDisplay">0.0</span>s</span>
+        <span>Rekord: <span id="recordDisplay">--</span>s</span>
+    </div>
+
     <div class="score"><span id="p1Score">0</span> : <span id="p2Score">0</span></div>
     
     <canvas id="pongCanvas"></canvas>
 
-    <div class="controls-hint">PC: Pfeiltasten | Handy: Wischen oder Tippen</div>
-    <button class="btn" onclick="resetGame()">Spiel Neustarten</button>
+    <div id="coin-container">
+        <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+        <b id="coin-count">0</b>
+    </div>
+
+    <div id="endOverlay" class="overlay">
+        <div class="modal">
+            <h2 id="endTitle">Spiel Ende</h2>
+            <p id="endText"></p>
+            <button class="btn" onclick="resetGame()">Nochmal spielen</button>
+        </div>
+    </div>
 
     <script>
         const canvas = document.getElementById("pongCanvas");
         const ctx = canvas.getContext("2d");
+        canvas.width = 600; canvas.height = 400;
 
-        // Spielfeld-Größe
-        canvas.width = 600;
-        canvas.height = 400;
+        let p1Y, p2Y, p1Score, p2Score, ballX, ballY, ballSpeedX, ballSpeedY;
+        let startTime, timerInterval, isRunning = false;
+        const paddleWidth = 12, paddleHeight = 80, ballRadius = 8;
+        
+        // Laden der Daten
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        let record = localStorage.getItem('glagglePongRecord') || null;
+        
+        document.getElementById('coin-count').innerText = coins;
+        if(record) document.getElementById('recordDisplay').innerText = record;
 
-        const paddleWidth = 10, paddleHeight = 80;
-        let p1Y = (canvas.height - paddleHeight) / 2;
-        let p2Y = (canvas.height - paddleHeight) / 2;
-        let p1Score = 0, p2Score = 0;
+        function initGame() {
+            p1Y = p2Y = (canvas.height - paddleHeight) / 2;
+            p1Score = p2Score = 0;
+            ballX = canvas.width / 2; ballY = canvas.height / 2;
+            ballSpeedX = 5; ballSpeedY = 5;
+            isRunning = true;
+            startTime = Date.now();
+            updateScores();
+            
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 100);
+            
+            document.getElementById('endOverlay').style.display = "none";
+        }
 
-        let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 4, ballSpeedY = 4;
-        const ballRadius = 8;
+        function updateTimer() {
+            if(!isRunning) return;
+            let elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timerDisplay').innerText = elapsed;
+        }
 
-        // Steuerung
+        function updateScores() {
+            document.getElementById("p1Score").innerText = p1Score;
+            document.getElementById("p2Score").innerText = p2Score;
+        }
+
+        function earnCoin() {
+            coins++;
+            localStorage.setItem('glaggleCoins', coins);
+            document.getElementById('coin-count').innerText = coins;
+        }
+
+        function checkWin() {
+            if (p1Score >= 10 || p2Score >= 10) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                let finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                let title = p1Score >= 10 ? "Sieg! 🎉" : "Verloren ☹️";
+                let text = `Zeit: ${finalTime}s`;
+
+                if (p1Score >= 10) {
+                    earnCoin();
+                    text += "<br>+1 Glaggle Coin erhalten!";
+                    
+                    // Rekord Logik
+                    if (!record || parseFloat(finalTime) < parseFloat(record)) {
+                        record = finalTime;
+                        localStorage.setItem('glagglePongRecord', record);
+                        document.getElementById('recordDisplay').innerText = record;
+                        text += "<br><b>Neuer Rekord!</b>";
+                    }
+                }
+
+                document.getElementById('endTitle').innerText = title;
+                document.getElementById('endText').innerHTML = text;
+                document.getElementById('endOverlay').style.display = "flex";
+            }
+        }
+
+        // Steuerung (Touch & Keyboard wie gehabt)
         let upPressed = false, downPressed = false;
-
-        // Event Listener PC
-        document.addEventListener("keydown", (e) => {
-            if(e.key === "ArrowUp") upPressed = true;
-            if(e.key === "ArrowDown") downPressed = true;
-        });
-        document.addEventListener("keyup", (e) => {
-            if(e.key === "ArrowUp") upPressed = false;
-            if(e.key === "ArrowDown") downPressed = false;
-        });
-
-        // Event Listener Handy (Touch)
-        canvas.addEventListener("touchmove", (e) => {
+        document.addEventListener("keydown", e => { if(e.key === "ArrowUp") upPressed = true; if(e.key === "ArrowDown") downPressed = true; });
+        document.addEventListener("keyup", e => { if(e.key === "ArrowUp") upPressed = false; if(e.key === "ArrowDown") downPressed = false; });
+        canvas.addEventListener("touchmove", e => {
             e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const root = document.documentElement;
-            let touchY = e.touches[0].clientY - rect.top - root.scrollTop;
-            p1Y = touchY - paddleHeight / 2;
+            let rect = canvas.getBoundingClientRect();
+            p1Y = (e.touches[0].clientY - rect.top) * (canvas.height / rect.height) - paddleHeight / 2;
         }, { passive: false });
 
-        function resetBall() {
-            ballX = canvas.width / 2;
-            ballY = canvas.height / 2;
-            ballSpeedX = -ballSpeedX;
-            ballSpeedY = (Math.random() > 0.5 ? 4 : -4);
-        }
-
-        function resetGame() {
-            p1Score = 0; p2Score = 0;
-            document.getElementById("p1Score").innerText = "0";
-            document.getElementById("p2Score").innerText = "0";
-            resetBall();
-        }
-
         function update() {
-            // Spieler-Paddel Bewegung (PC)
-            if(upPressed && p1Y > 0) p1Y -= 7;
-            if(downPressed && p1Y < canvas.height - paddleHeight) p1Y += 7;
+            if(!isRunning) return;
 
-            // Einfache KI für Gegner (Rechts)
+            if(upPressed && p1Y > 0) p1Y -= 8;
+            if(downPressed && p1Y < canvas.height - paddleHeight) p1Y += 8;
+
+            // KI
             let p2Center = p2Y + paddleHeight / 2;
-            if (p2Center < ballY - 10) p2Y += 4;
-            else if (p2Center > ballY + 10) p2Y -= 4;
+            if (p2Center < ballY - 15) p2Y += 5.5; 
+            else if (p2Center > ballY + 15) p2Y -= 5.5;
 
-            // Ball Bewegung
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
+            ballX += ballSpeedX; ballY += ballSpeedY;
 
-            // Kollision Wand (Oben/Unten)
-            if(ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
-                ballSpeedY = -ballSpeedY;
-            }
+            if(ballY + ballRadius > canvas.height || ballY - ballRadius < 0) ballSpeedY = -ballSpeedY;
 
-            // Kollision Paddel Links
             if(ballX - ballRadius < paddleWidth) {
                 if(ballY > p1Y && ballY < p1Y + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
-                    ballSpeedX *= 1.05; // Schneller werden
+                    ballSpeedX = -ballSpeedX * 1.05;
                 } else {
-                    p2Score++;
-                    document.getElementById("p2Score").innerText = p2Score;
-                    resetBall();
+                    p2Score++; updateScores(); resetBall(); checkWin();
                 }
             }
-
-            // Kollision Paddel Rechts
             if(ballX + ballRadius > canvas.width - paddleWidth) {
                 if(ballY > p2Y && ballY < p2Y + paddleHeight) {
-                    ballSpeedX = -ballSpeedX;
+                    ballSpeedX = -ballSpeedX * 1.05;
                 } else {
-                    p1Score++;
-                    document.getElementById("p1Score").innerText = p1Score;
-                    resetBall();
+                    p1Score++; updateScores(); resetBall(); checkWin();
                 }
             }
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2; ballY = canvas.height / 2;
+            ballSpeedX = ballSpeedX > 0 ? -5 : 5;
+            ballSpeedY = (Math.random() - 0.5) * 10;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Mittellinie
-            ctx.strokeStyle = "rgba(112, 196, 247, 0.2)";
-            ctx.setLineDash([10, 10]);
-            ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, 0);
-            ctx.lineTo(canvas.width / 2, canvas.height);
-            ctx.stroke();
-
-            // Paddel Spieler
             ctx.fillStyle = "#70C4F7";
-            ctx.beginPath();
-            ctx.roundRect(0, p1Y, paddleWidth, paddleHeight, 5);
-            ctx.fill();
-
-            // Paddel Gegner
+            ctx.beginPath(); ctx.roundRect(0, p1Y, paddleWidth, paddleHeight, 5); ctx.fill();
             ctx.fillStyle = "#FF6B6B";
-            ctx.beginPath();
-            ctx.roundRect(canvas.width - paddleWidth, p2Y, paddleWidth, paddleHeight, 5);
-            ctx.fill();
-
-            // Ball
+            ctx.beginPath(); ctx.roundRect(canvas.width - paddleWidth, p2Y, paddleWidth, paddleHeight, 5); ctx.fill();
             ctx.fillStyle = "#70C4F7";
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2); ctx.fill();
         }
 
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
+        function resetGame() { initGame(); }
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
+        initGame();
+        loop();
     </script>
 </body>
 </html>
