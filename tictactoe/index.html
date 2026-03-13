@@ -59,16 +59,16 @@
 </head>
 <body>
 
-    <div class="navbar">
-        <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div style="font-weight: bold; color: var(--accent);">Tic Tac Toe</div>
-    </div>
+<div class="navbar">
+    <a href="glaggle.ch/gamecenter" style="text-decoration: none; color: var(--accent); font-weight: bold;">◀</a>
+    <div style="font-weight: bold; color: var(--accent);">Tic Tac Toe</div>
+</div>
 
     <div class="main-content">
         <div id="menu" class="glaggle-entry">
             <h3>Modus wählen</h3>
-            <button class="btn" onclick="startKI('easy')">👶 Dulli KI (Einfach)</button>
-            <button class="btn" onclick="startKI('hard')" style="background: #e74c3c;">🤖 Ultra KI (Unbesiegbar)</button>
+            <button class="btn" onclick="startKI('easy')">Dulli KI</button>
+            <button class="btn" onclick="startKI('hard')" style="background: #e74c3c;">Ultra KI</button>
             <hr style="opacity: 0.2; margin: 15px 0;">
             <button class="btn" onclick="inviteFriend()" style="background: #2ecc71;">🔗 Freund einladen</button>
         </div>
@@ -242,19 +242,29 @@
             document.getElementById('status').innerText = (turn === mySymbol) ? "Du bist dran" : "Gegner denkt...";
         }
 
-        function checkEnd() {
-            let res = checkWinStatic(board);
-            if(res) {
-                active = false;
-                if(res === "tie") showPopup("Unentschieden", "Keiner hat gewonnen.");
-                else {
-                    showPopup(res === mySymbol ? "Sieg!" : "Verloren", res === mySymbol ? "Du hast 1 Coin verdient!" : "Vielleicht beim nächsten Mal.");
-                    if(res === mySymbol) earnCoin();
+       function checkEnd() {
+    let res = checkWinStatic(board);
+    if(res) {
+        active = false;
+        if(res === "tie") {
+            showPopup("Unentschieden", "Keiner hat gewonnen.");
+        } else {
+            let winText = "Vielleicht beim nächsten Mal.";
+            if (res === mySymbol) {
+                // Nur Coins geben, wenn es NICHT die einfache KI ist
+                if (gameMode !== 'easy') {
+                    winText = "Du hast 1 Coin verdient!";
+                    earnCoin();
+                } else {
+                    winText = "Sieg! (Gegen Dulli gibt's aber keine Coins 😉)";
                 }
-                return true;
             }
-            return false;
+            showPopup(res === mySymbol ? "Sieg!" : "Verloren", winText);
         }
+        return true;
+    }
+    return false;
+}
 
         function earnCoin() {
             let c = parseInt(localStorage.getItem('glaggleCoins')) || 0;
