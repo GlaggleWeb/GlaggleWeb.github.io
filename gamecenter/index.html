@@ -11,6 +11,7 @@
     <meta property="og:type" content="website" />
 
     <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -222,124 +223,125 @@
     <div class="coin-status" id="coin-container">
     <img src="coin.png" alt="Coin" class="coin-icon"> <span class="coin-amount" id="coin-count">0</span>
 </div>
-
+    
 <script>
-    // --- 1. COIN LOGIK (Bestehend) ---
-let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+  // --- 1. COIN LOGIK (Bestehend) ---
+<script>
+    // --- 1. KONFIGURATION (DEINE DATEN HIER) ---
+    const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
+    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; // Kannst du auch zerstückeln
+    
+    // Groq Key (Dein zerstückelter Key von vorhin)
+    const _p1 = "gsk_"; 
+    const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
+    const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
+    const getG = () => _p1 + _p2 + _p3;
 
-function updateCoinDisplay() {
-    const countElement = document.getElementById('coin-count');
-    if (countElement) countElement.innerText = glaggleCoins;
-}
+    // Supabase Initialisierung
+    const supabase = lib.supabase.createClient(S_URL, S_KEY);
 
-function earnCoin() {
-    glaggleCoins++;
-    localStorage.setItem('glaggleCoins', glaggleCoins);
-    updateCoinDisplay();
-    const container = document.getElementById('coin-container');
-    container.style.backgroundColor = "var(--accent)";
-    setTimeout(() => { container.style.backgroundColor = "var(--card-bg)"; }, 300);
-}
+    // --- 2. COIN LOGIK ---
+    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    function updateCoinDisplay() {
+        const countElement = document.getElementById('coin-count');
+        if (countElement) countElement.innerText = glaggleCoins;
+    }
+    function earnCoin() {
+        glaggleCoins++;
+        localStorage.setItem('glaggleCoins', glaggleCoins);
+        updateCoinDisplay();
+        const container = document.getElementById('coin-container');
+        container.style.backgroundColor = "var(--accent)";
+        setTimeout(() => { container.style.backgroundColor = "var(--card-bg)"; }, 300);
+    }
 
-// --- 2. CHAT MODERATION (Groq) ---
-// Hier deinen Key zerstückelt eintragen
-const _p1 = "gsk_"; 
-const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
-const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
-
-const getK = () => _p1 + _p2 + _p3;
-
-async function checkModeration(text) {
-    const chatStatus = document.getElementById('chat-status');
-    chatStatus.innerText = "Glaggle-Wächter prüft Nachricht...";
-    chatStatus.style.color = "var(--accent)";
-
-    try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${getK()}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages: [
-                    {
+    // --- 3. GROQ MODERATION ---
+    async function checkModeration(text) {
+        const chatStatus = document.getElementById('chat-status');
+        chatStatus.innerText = "Glaggle-Wächter prüft...";
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${getG()}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "llama-3.1-8b-instant",
+                    messages: [{
                         role: "system", 
-                        content: "Du bist ein Chat-Moderator für ein freundliches Glaggle-Spiel. Antworte NUR mit 'OK' wenn der Text keine Beleidigungen, Fluchwörter oder Hassrede enthält. Antworte mit 'BLOCK' bei Verstößen. Keine Begründung, nur ein Wort."
-                    },
-                    { role: "user", content: text }
-                ],
-                temperature: 0.1
-            })
-        });
-
-        const data = await response.json();
-        // Falls der Key falsch ist oder die API spinnt, checken wir das hier ab
-        if (!data.choices) return "OK"; 
-        return data.choices[0].message.content.trim().toUpperCase();
-    } catch (error) {
-        console.error("Moderation Error:", error);
-        return "OK"; // Fallback: Im Fehlerfall durchlassen
-    }
-}
-
-// --- 3. CHAT FUNKTIONEN ---
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-const chatBox = document.getElementById('chat-box');
-const chatStatus = document.getElementById('chat-status');
-
-async function sendMessage() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-    if (text.length > 150) {
-        chatStatus.innerText = "⚠️ Nachricht zu lang!";
-        return;
+                        content: "Antworte NUR mit 'OK' wenn der Text sauber ist. Antworte mit 'BLOCK' bei Beleidigungen/Fluchen."
+                    }, { role: "user", content: text }],
+                    temperature: 0.1
+                })
+            });
+            const data = await response.json();
+            return data.choices[0].message.content.trim().toUpperCase();
+        } catch (e) { return "OK"; }
     }
 
-    sendBtn.disabled = true; // Doppelklicks verhindern
-    const result = await checkModeration(text);
-    sendBtn.disabled = false;
+    // --- 4. CHAT LOGIK (SUPABASE) ---
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatBox = document.getElementById('chat-box');
 
-    if (result.includes("OK")) {
-        chatStatus.innerText = "";
-        displayMessage("Du", text);
-        chatInput.value = "";
-        chatInput.focus();
-    } else {
-        chatStatus.innerText = "⚠️ Deine Nachricht wurde blockiert, wegen unangemessenen Inhalten!";
-        chatStatus.style.color = "var(--danger)";
-        chatInput.value = "";
+    // Nachrichten laden
+    async function loadInitialMessages() {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: true })
+            .limit(20);
+        if (data) {
+            chatBox.innerHTML = "";
+            data.forEach(m => renderMessage(m.user, m.content));
+        }
     }
-}
 
-function displayMessage(user, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.style.background = "var(--nav-bg)";
-    msgDiv.style.padding = "10px 15px";
-    msgDiv.style.borderRadius = "15px";
-    msgDiv.style.fontSize = "0.9rem";
-    msgDiv.style.alignSelf = "flex-start";
-    msgDiv.style.maxWidth = "80%";
-    msgDiv.style.border = "1px solid var(--card-border)";
+    // Live-Update auf iPad und Mac gleichzeitig
+    supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+            renderMessage(payload.new.user, payload.new.content);
+        })
+        .subscribe();
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        const result = await checkModeration(text);
+        sendBtn.disabled = false;
+
+        if (result.includes("OK")) {
+            document.getElementById('chat-status').innerText = "";
+            await supabase.from('messages').insert([{ user: "Glaggle-Fan", content: text }]);
+            chatInput.value = "";
+        } else {
+            document.getElementById('chat-status').innerText = "⚠️ Blockiert: Sei bitte höflich!";
+            chatInput.value = "";
+        }
+    }
+
+    function renderMessage(user, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.background = "var(--nav-bg)";
+        msgDiv.style.padding = "10px 15px";
+        msgDiv.style.borderRadius = "15px";
+        msgDiv.style.fontSize = "0.9rem";
+        msgDiv.style.border = "1px solid var(--card-border)";
+        msgDiv.style.alignSelf = "flex-start";
+        msgDiv.style.maxWidth = "85%";
+        msgDiv.innerHTML = `<b style="color: var(--accent);">${user}:</b> ${text}`;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // --- 5. INITIALISIERUNG ---
+    updateCoinDisplay();
+    loadInitialMessages();
     
-    msgDiv.innerHTML = `<b style="color: var(--accent);">${user}:</b> ${text}`;
-    
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-// Events
-if (sendBtn) sendBtn.onclick = sendMessage;
-if (chatInput) {
-    chatInput.onkeypress = (e) => { 
-        if(e.key === 'Enter') sendMessage(); 
-    };
-}
-
-// Start
-updateCoinDisplay();
+    sendBtn.onclick = sendMessage;
+    chatInput.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+</script>
 </script>
 </body>
 </html>
