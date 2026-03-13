@@ -63,7 +63,6 @@
 
         #message { min-height: 30px; margin: 15px 0; font-weight: bold; }
 
-        /* Coin Styles */
         #coin-container {
             position: fixed; bottom: 20px; right: 20px; 
             background: var(--card-bg); border: 2px solid var(--accent); 
@@ -80,21 +79,21 @@
 
         /* Overlay System */
         .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); color: white;
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 2000; position: fixed; opacity: 0; transition: opacity 0.3s;
+            z-index: 2000; opacity: 0; transition: opacity 0.3s;
         }
         .modal-content {
             background: var(--card-bg); padding: 30px; border-radius: 20px;
-            border: 4px solid var(--accent); text-align: center; max-width: 320px; color: var(--text-color);
+            border: 4px solid var(--accent); text-align: center; width: 90%; max-width: 320px; color: var(--text-color);
         }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <a href="/" class="logo-link"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <a href="https://glaggle.ch/gamecenter" class="logo-link"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
         <div style="color: var(--accent); font-weight: bold;">Glaggle Zahlenraten</div>
     </div>
 
@@ -109,16 +108,25 @@
             <p style="color: var(--text-color); opacity: 0.7;">Ich suche eine Zahl zwischen 1 und 100.</p>
             
             <input type="number" id="guessInput" placeholder="?" min="1" max="100">
-            <button class="btn" onclick="checkGuess()">Raten</button>
+            <button class="btn" id="guessBtn" onclick="checkGuess()">Raten</button>
             <div id="message">Gib eine Zahl ein!</div>
             
             <button class="btn" onclick="shareGame()" style="background: #25D366; margin-top: 10px; font-size: 0.9rem;">🔗 Herausfordern</button>
+            <button class="btn" onclick="location.href='https://glaggle.ch/gamecenter'" style="background: #95a5a6; margin-top: 5px; font-size: 0.8rem;">🏠 Game Center</button>
         </div>
     </div>
 
     <div id="coin-container">
         <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
         <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
+    </div>
+
+    <div id="winModal" class="overlay">
+        <div class="modal-content">
+            <h2 style="margin-top:0; color: var(--success);">🎉 Gewonnen!</h2>
+            <p id="winText">Du hast die Zahl gefunden!</p>
+            <button class="btn" onclick="closeWinAndRestart()">Noch eine Runde</button>
+        </div>
     </div>
 
     <div id="shareModal" class="overlay">
@@ -135,9 +143,9 @@
     <script>
         let secretNum;
         let attempts = 0;
+        let isGameOver = false;
         let highscore = localStorage.getItem('glaggleGuessRecord') || null;
         
-        // Coins beim Start laden
         window.addEventListener('load', () => {
             document.getElementById('coin-count').innerText = localStorage.getItem('glaggleCoins') || 0;
         });
@@ -147,28 +155,30 @@
         function initGame() {
             secretNum = Math.floor(Math.random() * 100) + 1;
             attempts = 0;
+            isGameOver = false;
             document.getElementById('attempts').innerText = "0";
             document.getElementById('message').innerText = "Viel Glück!";
             document.getElementById('message').style.color = "inherit";
             document.getElementById('guessInput').value = "";
+            document.getElementById('guessBtn').disabled = false;
+            document.getElementById('guessBtn').style.opacity = "1";
         }
 
         function earnCoin() {
             let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
             coins++;
             localStorage.setItem('glaggleCoins', coins);
-
+            document.getElementById('coin-count').innerText = coins;
+            
             const container = document.getElementById('coin-container');
-            const display = document.getElementById('coin-count');
-            
-            if(display) display.innerText = coins;
-            
             container.classList.remove('coin-animation');
-            void container.offsetWidth; // Reset Animation
+            void container.offsetWidth; 
             container.classList.add('coin-animation');
         }
 
         function checkGuess() {
+            if(isGameOver) return;
+
             const input = document.getElementById("guessInput");
             const userGuess = parseInt(input.value);
             const msg = document.getElementById("message");
@@ -182,16 +192,22 @@
             document.getElementById('attempts').innerText = attempts;
 
             if (userGuess === secretNum) {
-                msg.innerText = "🎉 Richtig! Gefunden!";
+                isGameOver = true;
+                document.getElementById('guessBtn').disabled = true;
+                document.getElementById('guessBtn').style.opacity = "0.5";
+                
+                msg.innerText = "🎉 Richtig!";
                 msg.style.color = "var(--success)";
                 
-                // COIN LOGIK: Unter 15 Versuchen?
+                let winMessage = `Du hast ${attempts} Versuche gebraucht.`;
                 if (attempts < 15) {
                     earnCoin();
+                    winMessage += "<br><b>+1 Glaggle Coin verdient!</b>";
                 }
                 
                 saveHighscore();
-                setTimeout(() => { if(confirm("Noch eine Runde?")) initGame(); }, 1000);
+                showWinModal(winMessage);
+
             } else if (userGuess < secretNum) {
                 msg.innerText = "🧐 Zu klein! Höher...";
                 msg.style.color = "var(--danger)";
@@ -201,6 +217,22 @@
             }
             input.value = "";
             input.focus();
+        }
+
+        function showWinModal(txt) {
+            const modal = document.getElementById('winModal');
+            document.getElementById('winText').innerHTML = txt;
+            modal.style.display = "flex";
+            setTimeout(() => modal.style.opacity = "1", 10);
+        }
+
+        function closeWinAndRestart() {
+            const modal = document.getElementById('winModal');
+            modal.style.opacity = "0";
+            setTimeout(() => {
+                modal.style.display = "none";
+                initGame();
+            }, 300);
         }
 
         function saveHighscore() {
