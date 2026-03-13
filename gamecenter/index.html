@@ -253,7 +253,7 @@
         setTimeout(() => { container.style.backgroundColor = "var(--card-bg)"; }, 300);
     }
 
-    // --- 3. GROQ MODERATION ---
+  // --- 3. GROQ MODERATION ---
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
         chatStatus.innerText = "Glaggle-Wächter prüft...";
@@ -265,16 +265,18 @@
                     model: "llama-3.1-8b-instant",
                     messages: [{
                         role: "system", 
-                        content: "Antworte NUR mit 'OK' wenn der Text sauber ist. Antworte mit 'BLOCK' bei Beleidigungen/Fluchen."
+                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text harmlos ist. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen oder Schimpfwörter enthält."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
             });
             const data = await response.json();
-            return data.choices[0].message.content.trim().toUpperCase();
+            const aiReply = data.choices[0].message.content.trim().toUpperCase();
+            console.log("KI Urteil:", aiReply); // Zum Debuggen in der Konsole
+            return aiReply;
         } catch (e) { 
             console.error("Moderation Error:", e);
-            return "OK"; 
+            return "OK"; // Falls KI down ist, Nachricht erlauben
         }
     }
 
@@ -295,7 +297,6 @@
         }
     }
 
-    // Realtime Listener
     supabaseClient
         .channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
@@ -311,17 +312,23 @@
         const result = await checkModeration(text);
         sendBtn.disabled = false;
 
+        // Wir prüfen, ob "OK" irgendwo in der Antwort vorkommt
         if (result.includes("OK")) {
             document.getElementById('chat-status').innerText = "";
             const { error } = await supabaseClient
                 .from('messages')
                 .insert([{ user: "Glaggle-Fan", content: text }]);
             
-            if(error) console.error("Supabase Error:", error);
+            if(error) {
+                console.error("Supabase Error:", error);
+                document.getElementById('chat-status').innerText = "Datenbank-Fehler!";
+            }
             chatInput.value = "";
         } else {
             document.getElementById('chat-status').innerText = "⚠️ Blockiert: Sei bitte höflich!";
             chatInput.value = "";
+            // Kurzes Delay, dann Warnung löschen
+            setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
         }
     }
 
@@ -339,12 +346,13 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Initialisierung
+    // --- 5. INITIALISIERUNG ---
     updateCoinDisplay();
     loadInitialMessages();
     
     sendBtn.onclick = sendMessage;
-    chatInput.ononkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+    // Korrektur: onkeydown statt ononkeydown
+    chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 </script>
 </body>
 </html>
