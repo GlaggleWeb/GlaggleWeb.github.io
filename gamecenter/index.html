@@ -225,20 +225,18 @@
 </div>
     
 <script>
-  // --- 1. COIN LOGIK (Bestehend) ---
-<script>
-    // --- 1. KONFIGURATION (DEINE DATEN HIER) ---
+    // --- 1. KONFIGURATION ---
     const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
-    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; // Kannst du auch zerstückeln
+    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
     
-    // Groq Key (Dein zerstückelter Key von vorhin)
+    // Groq Key (Zerstückelt)
     const _p1 = "gsk_"; 
     const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
     const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
     const getG = () => _p1 + _p2 + _p3;
 
-    // Supabase Initialisierung
-    const supabase = lib.supabase.createClient(S_URL, S_KEY);
+    // Supabase Initialisierung (Korrektur: supabase.createClient statt lib.supabase)
+    const supabaseClient = supabase.createClient(S_URL, S_KEY);
 
     // --- 2. COIN LOGIK ---
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
@@ -274,30 +272,32 @@
             });
             const data = await response.json();
             return data.choices[0].message.content.trim().toUpperCase();
-        } catch (e) { return "OK"; }
+        } catch (e) { 
+            console.error("Moderation Error:", e);
+            return "OK"; 
+        }
     }
 
-    // --- 4. CHAT LOGIK (SUPABASE) ---
+    // --- 4. CHAT LOGIK ---
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
     const chatBox = document.getElementById('chat-box');
 
-    // Nachrichten laden
     async function loadInitialMessages() {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('messages')
             .select('*')
             .order('created_at', { ascending: true })
             .limit(20);
         if (data) {
-            chatBox.innerHTML = "";
+            chatBox.innerHTML = '<div style="font-style: italic; opacity: 0.5; font-size: 0.8rem;">Willkommen im Chat!</div>';
             data.forEach(m => renderMessage(m.user, m.content));
         }
     }
 
-    // Live-Update auf iPad und Mac gleichzeitig
-    supabase
-        .channel('schema-db-changes')
+    // Realtime Listener
+    supabaseClient
+        .channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
             renderMessage(payload.new.user, payload.new.content);
         })
@@ -313,7 +313,11 @@
 
         if (result.includes("OK")) {
             document.getElementById('chat-status').innerText = "";
-            await supabase.from('messages').insert([{ user: "Glaggle-Fan", content: text }]);
+            const { error } = await supabaseClient
+                .from('messages')
+                .insert([{ user: "Glaggle-Fan", content: text }]);
+            
+            if(error) console.error("Supabase Error:", error);
             chatInput.value = "";
         } else {
             document.getElementById('chat-status').innerText = "⚠️ Blockiert: Sei bitte höflich!";
@@ -335,13 +339,12 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // --- 5. INITIALISIERUNG ---
+    // Initialisierung
     updateCoinDisplay();
     loadInitialMessages();
     
     sendBtn.onclick = sendMessage;
-    chatInput.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
-</script>
+    chatInput.ononkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 </script>
 </body>
 </html>
