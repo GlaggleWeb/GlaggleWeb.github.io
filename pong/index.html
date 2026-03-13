@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Pong</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --accent: #70C4F7;
+            --nav-bg: #ffffff; --card-border: #eeeeee;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134; --card-border: #444444; }
+        }
+        body {
+            margin: 0; background-color: var(--bg-color); color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            display: flex; flex-direction: column; align-items: center; overflow: hidden; touch-action: none;
+        }
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 65px; background-color: var(--nav-bg);
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; box-sizing: border-box;
+        }
+        canvas {
+            background: var(--bg-color); border: 4px solid var(--accent);
+            border-radius: 20px; margin-top: 20px; max-width: 95vw; max-height: 70vh;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .score { font-size: 32px; font-weight: bold; margin-top: 10px; color: var(--accent); }
+        .controls-hint { font-size: 14px; opacity: 0.6; margin-top: 10px; text-align: center; }
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 25px;
+            border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="https://glaggle.ch/gamecenter" style="text-decoration: none; color: var(--accent); font-weight: bold; font-size: 1.2rem;">◀ Back</a>
+        <div style="font-weight: bold; color: var(--accent);">Glaggle Pong</div>
+        <div style="width: 40px;"></div>
+    </div>
+
+    <div class="score"><span id="p1Score">0</span> : <span id="p2Score">0</span></div>
+    
+    <canvas id="pongCanvas"></canvas>
+
+    <div class="controls-hint">PC: Pfeiltasten | Handy: Wischen oder Tippen</div>
+    <button class="btn" onclick="resetGame()">Spiel Neustarten</button>
+
+    <script>
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Spielfeld-Größe
+        canvas.width = 600;
+        canvas.height = 400;
+
+        const paddleWidth = 10, paddleHeight = 80;
+        let p1Y = (canvas.height - paddleHeight) / 2;
+        let p2Y = (canvas.height - paddleHeight) / 2;
+        let p1Score = 0, p2Score = 0;
+
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 4, ballSpeedY = 4;
+        const ballRadius = 8;
+
+        // Steuerung
+        let upPressed = false, downPressed = false;
+
+        // Event Listener PC
+        document.addEventListener("keydown", (e) => {
+            if(e.key === "ArrowUp") upPressed = true;
+            if(e.key === "ArrowDown") downPressed = true;
+        });
+        document.addEventListener("keyup", (e) => {
+            if(e.key === "ArrowUp") upPressed = false;
+            if(e.key === "ArrowDown") downPressed = false;
+        });
+
+        // Event Listener Handy (Touch)
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const root = document.documentElement;
+            let touchY = e.touches[0].clientY - rect.top - root.scrollTop;
+            p1Y = touchY - paddleHeight / 2;
+        }, { passive: false });
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = -ballSpeedX;
+            ballSpeedY = (Math.random() > 0.5 ? 4 : -4);
+        }
+
+        function resetGame() {
+            p1Score = 0; p2Score = 0;
+            document.getElementById("p1Score").innerText = "0";
+            document.getElementById("p2Score").innerText = "0";
+            resetBall();
+        }
+
+        function update() {
+            // Spieler-Paddel Bewegung (PC)
+            if(upPressed && p1Y > 0) p1Y -= 7;
+            if(downPressed && p1Y < canvas.height - paddleHeight) p1Y += 7;
+
+            // Einfache KI für Gegner (Rechts)
+            let p2Center = p2Y + paddleHeight / 2;
+            if (p2Center < ballY - 10) p2Y += 4;
+            else if (p2Center > ballY + 10) p2Y -= 4;
+
+            // Ball Bewegung
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Kollision Wand (Oben/Unten)
+            if(ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Kollision Paddel Links
+            if(ballX - ballRadius < paddleWidth) {
+                if(ballY > p1Y && ballY < p1Y + paddleHeight) {
+                    ballSpeedX = -ballSpeedX;
+                    ballSpeedX *= 1.05; // Schneller werden
+                } else {
+                    p2Score++;
+                    document.getElementById("p2Score").innerText = p2Score;
+                    resetBall();
+                }
+            }
+
+            // Kollision Paddel Rechts
+            if(ballX + ballRadius > canvas.width - paddleWidth) {
+                if(ballY > p2Y && ballY < p2Y + paddleHeight) {
+                    ballSpeedX = -ballSpeedX;
+                } else {
+                    p1Score++;
+                    document.getElementById("p1Score").innerText = p1Score;
+                    resetBall();
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Mittellinie
+            ctx.strokeStyle = "rgba(112, 196, 247, 0.2)";
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            // Paddel Spieler
+            ctx.fillStyle = "#70C4F7";
+            ctx.beginPath();
+            ctx.roundRect(0, p1Y, paddleWidth, paddleHeight, 5);
+            ctx.fill();
+
+            // Paddel Gegner
+            ctx.fillStyle = "#FF6B6B";
+            ctx.beginPath();
+            ctx.roundRect(canvas.width - paddleWidth, p2Y, paddleWidth, paddleHeight, 5);
+            ctx.fill();
+
+            // Ball
+            ctx.fillStyle = "#70C4F7";
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
