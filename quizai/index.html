@@ -91,61 +91,80 @@
     const s3 = "uvDgzX0ufZbPwvnqxDZ9JNI";
     const getK = () => s1 + s2 + s3;
 
-    let currentQuiz = [];
+    // Diese Variable speichert die aktuellen Antworten des Nutzers zwischen
+let userAnswersCache = {};
 
-    async function generateQuestions(append = false) {
-        const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
-        const count = document.getElementById('q-count').value;
-        const level = document.getElementById('difficulty').value;
-        const loader = document.getElementById('loader');
+async function generateQuestions(append = false) {
+    const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
+    const count = document.getElementById('q-count').value;
+    const level = document.getElementById('difficulty').value;
+    const loader = document.getElementById('loader');
+    
+    // Vor dem Hinzufügen: Aktuelle Antworten sichern
+    if (append) {
+        currentQuiz.forEach((_, i) => {
+            const radio = document.querySelector(`input[name="r${i}"]:checked`);
+            const other = document.getElementById(`ans${i}`);
+            if (radio) userAnswersCache[i] = radio.value;
+            else if (other) userAnswersCache[i] = other.value;
+        });
+    } else {
+        userAnswersCache = {}; // Bei neuem Quiz Cache leeren
+    }
+
+    loader.style.display = "block";
+
+    try {
+        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${getK()}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [{
+                    role: "system",
+                    content: `Erstelle ${count} Fragen zum Thema "${topic}". Schwierigkeit: ${level}. 
+                    Format: JSON. Typen: 'choice', 'text', 'slider'. 
+                    Nur JSON: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}]}`
+                }]
+            })
+        });
+
+        const data = await resp.json();
+        const rawText = data.choices[0].message.content;
+        const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
+        const newQs = JSON.parse(cleanJson).qs;
+
+        currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
+        render();
         
-        loader.style.display = "block";
+        // Nach dem Rendern: Antworten wiederherstellen
+        restoreAnswers();
 
-        try {
-            const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${getK()}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{
-                        role: "system",
-                        content: `Du bist ein Quiz-Experte. Erstelle ${count} Fragen zum Thema "${topic}". 
-                        SCHWIERIGKEITSGRAD: ${level}. (Bei 'extrem schwer' stelle Fragen, die nur Experten wissen bei leicht welche die einfach sind und ein normaler Mensch beantworten kann.).
-                        Format: JSON. Typen: 'choice', 'text', 'slider'.
-                        Bei SLIDER: Setze 'min' und 'max' passend zur Antwort.
-                        Nur JSON antworten: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 1000, "correct": 750}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
-                    }]
-                })
-            });
+    } catch (e) { 
+        alert("Fehler: " + e.message); 
+    } finally {
+        loader.style.display = "none";
+    }
+}
 
-            const data = await resp.json();
-            if (!data.choices) throw new Error("API-Fehler. Key korrekt?");
-
-            const rawText = data.choices[0].message.content;
-            const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
-            const newQs = JSON.parse(cleanJson).qs;
-
-            currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
-            render();
-        } catch (e) { 
-            alert("Fehler: " + e.message); 
-        } finally {
-            loader.style.display = "none";
+function restoreAnswers() {
+    Object.keys(userAnswersCache).forEach(i => {
+        const val = userAnswersCache[i];
+        // Radio Buttons wiederherstellen
+        const radio = document.querySelector(`input[name="r${i}"][value="${val}"]`);
+        if (radio) radio.checked = true;
+        // Text/Slider wiederherstellen
+        const other = document.getElementById(`ans${i}`);
+        if (other) {
+            other.value = val;
+            // Falls es ein Slider ist, die Anzeige updaten
+            if (other.type === "range") {
+                const display = other.nextElementSibling;
+                if (display) display.innerText = val;
+            }
         }
-    }
-
-    function render() {
-        const display = document.getElementById('quiz-display');
-        display.innerHTML = currentQuiz.map((q, i) => `
-            <div class="glaggle-card">
-                <h4>${i + 1}. ${q.q}</h4>
-                <div>${renderInput(q, i)}</div>
-                <div id="feedback-${i}" style="margin-top:10px; font-weight:bold; display:none; padding:10px; border-radius:10px;"></div>
-            </div>
-        `).join('');
-        document.getElementById('action-area').style.display = "block";
-    }
-
+    });
+}
     function renderInput(q, i) {
         if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
         if (q.type === 'slider') {
