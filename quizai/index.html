@@ -57,8 +57,8 @@
         </div>
         <div class="btn-row">
             <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
-            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Mehr Fragen hinzufügen</button>
-            <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Datei öffnen</button>
+            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Fragen hinzufügen</button>
+            <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
         </div>
         <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
         <div id="loader" class="loader"></div>
@@ -68,17 +68,17 @@
 
     <div id="action-area" style="display:none; margin-bottom: 50px;">
         <div class="btn-row">
-            <button class="btn" style="background:#34A853" onclick="evaluateQuiz()">Quiz auswerten ✨</button>
-            <button class="btn" style="background:#EA4335" onclick="saveQuiz()">💾 JSON speichern</button>
+            <button class="btn" style="background:#34A853" onclick="evaluateQuiz()">Auswerten</button>
+            <button class="btn" style="background:#EA4335" onclick="saveQuiz()">💾 Speichern</button>
         </div>
         <div id="eval-markdown" class="glaggle-card" style="display:none"></div>
     </div>
 </div>
 
 <script>
-    // --- API KEY ZERSTÜCKELUNG (Setze deine Teile hier ein) ---
+    // --- API KEY ZERSTÜCKELUNG ---
     const s1 = "gsk_"; 
-    const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG1"; 
+    const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; // Hier den Rest einfügen
     const s3 = "uvDgzX0ufZbPwvnqxDZ9JNI";
     const getK = () => s1 + s2 + s3;
 
@@ -88,6 +88,7 @@
         const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
         const count = document.getElementById('q-count').value;
         const loader = document.getElementById('loader');
+        
         loader.style.display = "block";
 
         try {
@@ -98,30 +99,41 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{
                         role: "system",
-                        content: `Erstelle genau ${count} Quizfragen als JSON. 
+                        content: `Erstelle genau ${count} Fragen zum Thema als JSON. 
                         Typen: 'choice', 'text', 'slider'. 
-                        WICHTIG für SLIDER: Setze 'min' und 'max' passend zur Antwort (z.B. Geschwindigkeit ICE: min 0, max 400). 
-                        Antworte NUR mit JSON: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 500, "correct": 300}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
-                    }, { role: "user", content: `Thema: ${topic}` }]
+                        WICHTIG für SLIDER: Setze 'min' und 'max' sinnvoll passend zur Antwort.
+                        Gib NUR das JSON-Objekt zurück: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 400, "correct": 300}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
+                    }, { role: "user", content: `Erstelle Fragen zu: ${topic}` }]
                 })
             });
 
             const data = await resp.json();
-            const cleanJson = data.choices[0].message.content.match(/\{[\s\S]*\}/)[0];
+            
+            // Prüfung: Hat die API Daten geliefert?
+            if (!data.choices || !data.choices[0]) {
+                throw new Error(data.error ? data.error.message : "Keine Antwort von der KI erhalten. Key prüfen!");
+            }
+
+            const rawText = data.choices[0].message.content;
+            const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
             const newQs = JSON.parse(cleanJson).qs;
 
             currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
             render();
-        } catch (e) { alert("API Fehler: " + e.message); }
-        loader.style.display = "none";
+        } catch (e) { 
+            alert("API Fehler: " + e.message); 
+            console.error(e);
+        } finally {
+            loader.style.display = "none";
+        }
     }
 
     function render() {
         const display = document.getElementById('quiz-display');
         display.innerHTML = currentQuiz.map((q, i) => `
-            <div class="glaggle-card" id="card-${i}">
+            <div class="glaggle-card">
                 <h4>${i + 1}. ${q.q}</h4>
-                <div id="input-area-${i}">${renderInput(q, i)}</div>
+                <div>${renderInput(q, i)}</div>
                 <div id="feedback-${i}" style="margin-top:10px; font-weight:bold; display:none; padding:10px; border-radius:10px;"></div>
             </div>
         `).join('');
@@ -131,11 +143,13 @@
     function renderInput(q, i) {
         if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
         if (q.type === 'slider') {
-            const startVal = Math.floor((q.min + q.max) / 2);
+            const min = q.min ?? 0;
+            const max = q.max ?? 100;
+            const start = Math.floor((min + max) / 2);
             return `<div class="slider-box">
-                        <input type="range" id="ans${i}" min="${q.min}" max="${q.max}" value="${startVal}" oninput="this.nextElementSibling.innerText = this.value"> 
-                        <b style="font-size:1.2rem; color:var(--accent)">${startVal}</b>
-                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:5px;"><span>Min: ${q.min}</span><span>Max: ${q.max}</span></div>
+                        <input type="range" id="ans${i}" min="${min}" max="${max}" value="${start}" oninput="this.nextElementSibling.innerText = this.value"> 
+                        <b style="color:var(--accent)">${start}</b>
+                        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px;"><span>Min: ${min}</span><span>Max: ${max}</span></div>
                     </div>`;
         }
         return `<input type="text" id="ans${i}" placeholder="Deine Antwort...">`;
@@ -152,14 +166,13 @@
             const isCorrect = String(userAns).toLowerCase().trim() === String(q.correct).toLowerCase().trim();
             feedback.style.display = "block";
             feedback.style.background = isCorrect ? "rgba(52, 168, 83, 0.1)" : "rgba(234, 67, 53, 0.1)";
-            feedback.innerHTML = isCorrect ? "✅ Richtig!" : `❌ Falsch! Korrekt wäre: ${q.correct}`;
+            feedback.innerHTML = isCorrect ? "✅ Richtig!" : `❌ Falsch! Lösung: ${q.correct}`;
             feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
             if(isCorrect) score++;
         });
-
         const evalBox = document.getElementById('eval-markdown');
         evalBox.style.display = "block";
-        evalBox.innerHTML = marked.parse(`### 🎉 Ergebnis\nDu hast **${score} von ${currentQuiz.length}** Fragen richtig beantwortet!`);
+        evalBox.innerHTML = marked.parse(`### 🎉 Ergebnis\nDu hast **${score} von ${currentQuiz.length}** Fragen gelöst!`);
     }
 
     function saveQuiz() {
@@ -176,7 +189,7 @@
             try {
                 currentQuiz = JSON.parse(e.target.result);
                 render();
-            } catch(err) { alert("Datei beschädigt!"); }
+            } catch(err) { alert("Fehler beim Laden!"); }
         };
         reader.readAsText(event.target.files[0]);
     }
