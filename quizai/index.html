@@ -230,14 +230,28 @@
         evalBox.innerHTML = marked.parse(`### 🎉 Dein Score: ${score} / ${currentQuiz.length}`);
     }
 
-    function saveQuiz() {
-        const blob = new Blob([JSON.stringify(currentQuiz, null, 2)], {type : 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "glaggle_quiz.json";
-        a.click();
+   function saveQuiz() {
+    // 1. Hole den Namen aus dem Eingabefeld
+    let fileName = document.getElementById('quiz-filename').value.trim();
+    
+    // 2. Falls das Feld leer ist, nimm einen Standardnamen
+    if (!fileName) {
+        fileName = "glaggle_quiz";
     }
 
+    // 3. Sicherstellen, dass die Dateiendung .json vorhanden ist
+    if (!fileName.toLowerCase().endsWith(".json")) {
+        fileName += ".json";
+    }
+
+    // 4. Den Download auslösen
+    const blob = new Blob([JSON.stringify(currentQuiz, null, 2)], {type : 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName; // Hier wird nun dein Name verwendet!
+    a.click();
+}
+    
     function loadQuizFile(event) {
     const file = event.target.files[0];
     if (!file) return;
