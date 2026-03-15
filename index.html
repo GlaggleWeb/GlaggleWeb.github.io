@@ -161,17 +161,30 @@
     }
 
     .search-icon-btn {
-        background: none; border: none; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; padding: 10px;
-    }
-    .search-icon-btn::before {
-        content: ""; display: inline-block; width: 24px; height: 24px;
-        background-color: #70C4F7;
-        -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-        mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-        mask-size: contain; -webkit-mask-size: contain;
-    }
+    background: none; 
+    border: none; 
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 15px; /* Vergrößert die Klick-Fläche */
+    min-width: 44px; /* Apple/Google Standard für Touch-Ziele */
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent; /* Verhindert hässlichen blauen Kasten beim Tippen */
+}
 
+/* Sicherstellen, dass die Lupe zentriert bleibt */
+.search-icon-btn::before {
+    content: ""; 
+    width: 24px; 
+    height: 24px;
+    flex-shrink: 0; /* Verhindert, dass die Lupe gequetscht wird */
+    background-color: #70C4F7;
+    -webkit-mask: url("data:image/svg+xml;...") no-repeat center;
+    mask: url("data:image/svg+xml;...") no-repeat center;
+    mask-size: contain;
+    -webkit-mask-size: contain;
+}
     .results-container {
         display: flex;
         flex-direction: column;
@@ -479,14 +492,14 @@
         
         <div class="search-section">
             <div class="search-bar-container">
-               <div id="fakeCaret" class="custom-caret"></div>
+                <div id="fakeCaret" class="custom-caret"></div>
+                <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
     
-               <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
-               <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-               <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
-        </div>
-
-        </div>
+                <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+    
+                <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+            </div>
+        
             <div class="loader" id="glaggleLoader"></div>
             <div id="glaggleResults" class="results-container"></div>
         </div>
