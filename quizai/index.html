@@ -3,247 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Quiz Studio AI</title>
+    <title>Glaggle Quiz Studio Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --card-bg: #fdfdfd;
-            --card-border: #eeeeee;
-            --accent-color: #70C4F7;
+            --bg-color: #ffffff; --text-color: #333333;
+            --card-bg: #fdfdfd; --card-border: #eeeeee;
+            --accent: #70C4F7;
             --accent-gradient: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
         }
-
         @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #202124;
-                --text-color: #e8eaed;
-                --card-bg: #303134;
-                --card-border: #444444;
-            }
+            :root { --bg-color: #202124; --text-color: #e8eaed; --card-bg: #303134; --card-border: #444444; }
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
-            margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
-
+        body { background: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { width: 100%; max-width: 800px; text-align: center; }
-
-        /* Glaggle Card Style */
+        
         .glaggle-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: left;
-            transition: transform 0.3s ease;
+            background: var(--card-bg); border-radius: 20px; padding: 25px; margin-bottom: 20px;
+            border: 1px solid var(--card-border); text-align: left; position: relative;
         }
+        .special-card { border: 2px solid transparent; background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--accent-gradient) border-box; }
 
-        .special-card {
-            border: 2px solid transparent;
-            background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--accent-gradient) border-box;
-        }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
+        
+        .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn-sec { background: #6c757d; }
 
-        /* Inputs */
-        input[type="text"], select {
-            width: 100%; padding: 12px; margin: 10px 0;
-            border-radius: 12px; border: 1px solid var(--card-border);
-            background: var(--bg-color); color: var(--text-color);
-            box-sizing: border-box; font-size: 1rem;
-        }
+        .option-label { display: block; padding: 12px; margin: 8px 0; background: rgba(112, 196, 247, 0.1); border-radius: 12px; cursor: pointer; }
+        .correct-ans { border: 2px solid #34A853; background: rgba(52, 168, 83, 0.1); }
+        .wrong-ans { border: 2px solid #EA4335; background: rgba(234, 67, 53, 0.1); }
 
-        .btn {
-            background: var(--accent-color); color: white; border: none;
-            padding: 12px 25px; border-radius: 50px; font-weight: bold;
-            cursor: pointer; transition: 0.3s; margin-top: 10px;
-        }
-
-        .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
-
-        /* Quiz Elemente */
-        .option-label {
-            display: block; padding: 10px; margin: 5px 0;
-            background: rgba(112, 196, 247, 0.1); border-radius: 10px; cursor: pointer;
-        }
-
-        .slider-container { display: flex; align-items: center; gap: 15px; }
-        input[type="range"] { flex: 1; accent-color: var(--accent-color); }
-
-        /* Loader */
-        .loader {
-            display: none; width: 40px; height: 40px;
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color);
-            border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        #evaluation-result {
-            margin-top: 30px; padding: 25px; border-radius: 20px;
-            background: rgba(112, 196, 247, 0.05); border: 1px dashed var(--accent-color);
-        }
+        .loader { display: none; width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>✨ Glaggle Quiz Studio</h1>
-    
+    <h1>✨ Glaggle Quiz Studio Pro</h1>
+
     <div class="glaggle-card special-card">
-        <h3>Neues Quiz erstellen</h3>
-        <input type="text" id="quiz-topic" placeholder="Thema (z.B. Minecraft, Geschichte, Kochen...)">
-        <select id="question-count">
-            <option value="3">3 Fragen</option>
-            <option value="5">5 Fragen</option>
-            <option value="8">8 Fragen</option>
-        </select>
-        <button class="btn" onclick="generateQuiz()">KI-Quiz generieren</button>
+        <h3>Steuerung</h3>
+        <input type="text" id="quiz-topic" placeholder="Thema für neue Fragen...">
+        <div class="btn-row">
+            <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
+            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Fragen hinzufügen</button>
+            <button class="btn btn-sec" onclick="document.getElementById('file-input').click()">📂 Datei öffnen</button>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
+        <div id="loader" class="loader"></div>
     </div>
 
-    <div id="loader" class="loader"></div>
     <div id="quiz-display"></div>
 
-    <div id="evaluation-area" style="display:none;">
-        <button class="btn" style="background: #34A853;" onclick="evaluateAnswers()">Quiz auswerten ✨</button>
-        <div id="evaluation-result"></div>
-        <button class="btn" style="background: #ea4335; margin-top: 20px;" onclick="saveQuizToFile()">💾 Quiz herunterladen</button>
+    <div id="action-area" style="display:none; margin-bottom: 50px;">
+        <div class="btn-row">
+            <button class="btn" style="background:#34A853" onclick="evaluateQuiz()">Auswerten</button>
+            <button class="btn" style="background:#EA4335" onclick="saveQuiz()">💾 Speichern</button>
+        </div>
+        <div id="eval-markdown" class="glaggle-card" style="display:none"></div>
     </div>
 </div>
 
 <script>
     // --- API KEY ZERSTÜCKELUNG ---
-    // Ersetze diese Teile durch deinen echten Groq Key
-    const k1 = "gsk_"; 
-    const k2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; // <--- Teil 1
-    const k3 = "uvDgzX0ufZbPwvnqxDZ9JNI"; // <--- Teil 2
-    const getCnf = () => k1 + k2 + k3;
+    const s1 = "gsk_"; 
+    const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; // Hier Teil 1 einfugen
+    const s3 = "uvDgzX0ufZbPwvnqxDZ9JNI"; // Hier Teil 2 einfugen
+    const getK = () => s1 + s2 + s3;
 
-    let quizData = [];
+    let currentQuiz = [];
 
-    async function generateQuiz() {
-        const topic = document.getElementById('quiz-topic').value;
-        const count = document.getElementById('question-count').value;
+    async function generateQuestions(append = false) {
+        const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
         const loader = document.getElementById('loader');
-        const display = document.getElementById('quiz-display');
-
-        if (!topic) return alert("Bitte Thema eingeben!");
-
         loader.style.display = "block";
-        display.innerHTML = "";
-        document.getElementById('evaluation-area').style.display = "none";
 
         try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${getCnf()}`,
-                    "Content-Type": "application/json"
-                },
+                headers: { "Authorization": `Bearer ${getK()}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [{
                         role: "system",
-                        content: "Du bist ein Quiz-Generator. Erstelle ein Quiz im JSON-Format. Nutze 'choice' (3 Optionen), 'text' (offen) und 'slider' (Skala 1-10). Struktur: {'questions': [{'type': 'choice', 'q': '...', 'options': ['A','B','C']}, {'type': 'text', 'q': '...'}, {'type': 'slider', 'q': '...', 'min': 1, 'max': 10}]}"
-                    }, {
-                        role: "user",
-                        content: `Erstelle ein Quiz mit ${count} Fragen zum Thema ${topic}.`
-                    }]
+                        content: "Erstelle 3 Quizfragen als JSON. Typen: 'choice' (3 Optionen), 'text', 'slider' (1-100). LÖSUNG IMMER MITLIEFERN! Struktur: {'qs': [{'type': 'choice', 'q': '...', 'opts': ['A','B','C'], 'correct': 'A'}, {'type': 'text', 'q': '...', 'correct': 'Antwortwort'}, {'type': 'slider', 'q': '...', 'correct': 50}]}"
+                    }, { role: "user", content: `Thema: ${topic}` }]
                 })
             });
 
-            const raw = await response.json();
-            const content = JSON.parse(raw.choices[0].message.content);
-            quizData = content.questions;
-            renderQuiz();
-        } catch (err) {
-            alert("Fehler bei der API: " + err.message);
-        } finally {
-            loader.style.display = "none";
-        }
+            const data = await resp.json();
+            const cleanJson = data.choices[0].message.content.match(/\{[\s\S]*\}/)[0];
+            const newQs = JSON.parse(cleanJson).qs;
+
+            if (append) currentQuiz = [...currentQuiz, ...newQs];
+            else currentQuiz = newQs;
+
+            render();
+        } catch (e) { alert("API Fehler: " + e.message); }
+        loader.style.display = "none";
     }
 
-    function renderQuiz() {
+    function render() {
         const display = document.getElementById('quiz-display');
-        display.innerHTML = quizData.map((q, i) => `
-            <div class="glaggle-card">
+        display.innerHTML = currentQuiz.map((q, i) => `
+            <div class="glaggle-card" id="card-${i}">
                 <h4>${i + 1}. ${q.q}</h4>
-                ${renderInput(q, i)}
+                <div id="input-area-${i}">${renderInput(q, i)}</div>
+                <div id="feedback-${i}" style="margin-top:10px; font-weight:bold; display:none"></div>
             </div>
         `).join('');
-        document.getElementById('evaluation-area').style.display = "block";
+        document.getElementById('action-area').style.display = "block";
     }
 
     function renderInput(q, i) {
-        if (q.type === 'choice') {
-            return q.options.map(opt => `
-                <label class="option-label">
-                    <input type="radio" name="q${i}" value="${opt}"> ${opt}
-                </label>
-            `).join('');
-        } else if (q.type === 'slider') {
-            return `
-                <div class="slider-container">
-                    <span>${q.min}</span>
-                    <input type="range" id="ans${i}" min="${q.min}" max="${q.max}" value="${Math.round(q.max/2)}">
-                    <span>${q.max}</span>
-                </div>
-            `;
-        } else {
-            return `<input type="text" id="ans${i}" placeholder="Deine Antwort hier...">`;
-        }
+        if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
+        if (q.type === 'slider') return `<input type="range" id="ans${i}" min="1" max="100" oninput="this.nextElementSibling.innerText = this.value"> <b>50</b>`;
+        return `<input type="text" id="ans${i}" placeholder="Antwort...">`;
     }
 
-    async function evaluateAnswers() {
-        const resultDiv = document.getElementById('evaluation-result');
-        resultDiv.innerHTML = "KI wertet aus... ⏳";
+    function evaluateQuiz() {
+        let score = 0;
+        currentQuiz.forEach((q, i) => {
+            const feedback = document.getElementById(`feedback-${i}`);
+            let userAns = "";
+            if (q.type === 'choice') userAns = document.querySelector(`input[name="r${i}"]:checked`)?.value;
+            else userAns = document.getElementById(`ans${i}`).value;
 
-        const answers = quizData.map((q, i) => {
-            if (q.type === 'choice') return document.querySelector(`input[name="q${i}"]:checked`)?.value || "Keine Antwort";
-            return document.getElementById(`ans${i}`).value;
+            const isCorrect = String(userAns).toLowerCase().trim() === String(q.correct).toLowerCase().trim();
+            feedback.style.display = "block";
+            feedback.innerHTML = isCorrect ? "✅ Richtig!" : `❌ Falsch! Lösung: ${q.correct}`;
+            feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
+            if(isCorrect) score++;
         });
 
-        try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${getCnf()}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [{
-                        role: "system",
-                        content: "Werte die Quiz-Antworten des Users aus. Nutze Markdown für die Formatierung. Sei ein cooler, motivierender Mentor. Gib Punktzahlen."
-                    }, {
-                        role: "user",
-                        content: `Fragen: ${JSON.stringify(quizData)} \n User-Antworten: ${JSON.stringify(answers)}`
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            resultDiv.innerHTML = marked.parse(data.choices[0].message.content);
-        } catch (err) {
-            resultDiv.innerHTML = "Fehler bei der Auswertung.";
-        }
+        const evalBox = document.getElementById('eval-markdown');
+        evalBox.style.display = "block";
+        evalBox.innerHTML = marked.parse(`### Auswertung\nDu hast **${score} von ${currentQuiz.length}** Punkten erreicht! ✨`);
     }
 
-    function saveQuizToFile() {
-        const blob = new Blob([JSON.stringify(quizData, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "glaggle-quiz.json";
-        a.click();
+    function saveQuiz() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentQuiz));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", "glaggle_quiz.json");
+        dl.click();
+    }
+
+    function loadQuizFile(event) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentQuiz = JSON.parse(e.target.result);
+            render();
+        };
+        reader.readAsText(event.target.files[0]);
     }
 </script>
-
 </body>
 </html>
