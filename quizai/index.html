@@ -32,7 +32,19 @@
 
         input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
         
-        .control-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .control-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; /* Zwei Spalten nebeneinander */
+    gap: 10px; 
+    margin-bottom: 15px; 
+}
+
+/* Auf größeren Bildschirmen alle 4 nebeneinander */
+@media (min-width: 600px) {
+    .control-grid { 
+        grid-template-columns: 2fr 2fr 1fr 1fr; 
+    }
+}
         .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
         .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn:hover { transform: scale(1.05); opacity: 0.9; }
@@ -49,15 +61,35 @@
 <div class="container">
     <h1>✨ Glaggle Quiz Studio Pro</h1>
 
-    <div class="glaggle-card special-card">
-        <h3>Steuerung</h3>
-        <div class="control-grid">
-            <input type="text" id="quiz-topic" placeholder="Thema...">
-            <select id="q-count">
-                <option value="1">1 Frage</option>
-                <option value="3" selected>3 Fragen</option>
-                <option value="5">5 Fragen</option>
-            </select>
+   <div class="glaggle-card special-card">
+    <h3>Steuerung</h3>
+    <div class="control-grid">
+        <input type="text" id="quiz-topic" placeholder="Thema für neue Fragen...">
+        
+        <input type="text" id="quiz-filename" placeholder="Quiz-Name (z.B. Mein_Super_Quiz)">
+        
+        <select id="q-count">
+            <option value="1">1 Frage</option>
+            <option value="3" selected>3 Fragen</option>
+            <option value="5">5 Fragen</option>
+            <option value="10">10 Fragen</option>
+        </select>
+
+        <select id="difficulty">
+            <option value="leicht">Leicht</option>
+            <option value="mittel" selected>Mittel</option>
+            <option value="extrem schwer">Extrem Schwer</option>
+        </select>
+    </div>
+    
+    <div class="btn-row">
+        <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
+        <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Fragen hinzufügen (+)</button>
+        <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
+    </div>
+    <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
+    <div id="loader" class="loader"></div>
+</div>
             <select id="difficulty">
                 <option value="leicht">Leicht</option>
                 <option value="mittel" selected>Mittel</option>
@@ -221,13 +253,21 @@
     }
 
     function loadQuizFile(event) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Setzt den Namen der geladenen Datei direkt ins Namens-Feld
+    document.getElementById('quiz-filename').value = file.name;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
             currentQuiz = JSON.parse(e.target.result);
             render();
-        };
-        reader.readAsText(event.target.files[0]);
-    }
+        } catch(err) { alert("Fehler beim Laden!"); }
+    };
+    reader.readAsText(file);
+}
 </script>
 </body>
 </html>
