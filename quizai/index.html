@@ -87,84 +87,78 @@
 <script>
     // --- API KEY ZERSTÜCKELUNG ---
     const s1 = "gsk_"; 
-    const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; // Hier den Rest einfügen
+    const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; 
     const s3 = "uvDgzX0ufZbPwvnqxDZ9JNI";
     const getK = () => s1 + s2 + s3;
 
-    // Diese Variable speichert die aktuellen Antworten des Nutzers zwischen
-let userAnswersCache = {};
+    let currentQuiz = [];
+    let userAnswersCache = {};
 
-async function generateQuestions(append = false) {
-    const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
-    const count = document.getElementById('q-count').value;
-    const level = document.getElementById('difficulty').value;
-    const loader = document.getElementById('loader');
-    
-    // Vor dem Hinzufügen: Aktuelle Antworten sichern
-    if (append) {
-        currentQuiz.forEach((_, i) => {
-            const radio = document.querySelector(`input[name="r${i}"]:checked`);
-            const other = document.getElementById(`ans${i}`);
-            if (radio) userAnswersCache[i] = radio.value;
-            else if (other) userAnswersCache[i] = other.value;
-        });
-    } else {
-        userAnswersCache = {}; // Bei neuem Quiz Cache leeren
-    }
-
-    loader.style.display = "block";
-
-    try {
-        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${getK()}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [{
-                    role: "system",
-                    content: `Erstelle ${count} Fragen zum Thema "${topic}". Schwierigkeit: ${level}. 
-                    Format: JSON. Typen: 'choice', 'text', 'slider'. 
-                    Nur JSON: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}]}`
-                }]
-            })
-        });
-
-        const data = await resp.json();
-        const rawText = data.choices[0].message.content;
-        const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
-        const newQs = JSON.parse(cleanJson).qs;
-
-        currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
-        render();
+    async function generateQuestions(append = false) {
+        const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
+        const count = document.getElementById('q-count').value;
+        const level = document.getElementById('difficulty').value;
+        const loader = document.getElementById('loader');
         
-        // Nach dem Rendern: Antworten wiederherstellen
-        restoreAnswers();
-
-    } catch (e) { 
-        alert("Fehler: " + e.message); 
-    } finally {
-        loader.style.display = "none";
-    }
-}
-
-function restoreAnswers() {
-    Object.keys(userAnswersCache).forEach(i => {
-        const val = userAnswersCache[i];
-        // Radio Buttons wiederherstellen
-        const radio = document.querySelector(`input[name="r${i}"][value="${val}"]`);
-        if (radio) radio.checked = true;
-        // Text/Slider wiederherstellen
-        const other = document.getElementById(`ans${i}`);
-        if (other) {
-            other.value = val;
-            // Falls es ein Slider ist, die Anzeige updaten
-            if (other.type === "range") {
-                const display = other.nextElementSibling;
-                if (display) display.innerText = val;
-            }
+        // Antworten sichern
+        if (append) {
+            currentQuiz.forEach((_, i) => {
+                const radio = document.querySelector(`input[name="r${i}"]:checked`);
+                const other = document.getElementById(`ans${i}`);
+                if (radio) userAnswersCache[i] = radio.value;
+                else if (other) userAnswersCache[i] = other.value;
+            });
+        } else {
+            userAnswersCache = {};
+            currentQuiz = [];
         }
-    });
-}
+
+        loader.style.display = "block";
+
+        try {
+            const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${getK()}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [{
+                        role: "system",
+                        content: `Erstelle ${count} Fragen zum Thema "${topic}". Schwierigkeit: ${level}. 
+                        Format: JSON. Typen: 'choice' (3 Optionen), 'text', 'slider'. 
+                        WICHTIG für Slider: min/max sinnvoll anpassen.
+                        Antworte NUR mit JSON: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 500, "correct": 250}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
+                    }]
+                })
+            });
+
+            const data = await resp.json();
+            const rawText = data.choices[0].message.content;
+            const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
+            const newQs = JSON.parse(cleanJson).qs;
+
+            currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
+            render();
+            restoreAnswers();
+
+        } catch (e) { 
+            alert("Fehler: " + e.message); 
+        } finally {
+            loader.style.display = "none";
+        }
+    }
+
+    function render() {
+        const display = document.getElementById('quiz-display');
+        display.innerHTML = currentQuiz.map((q, i) => `
+            <div class="glaggle-card">
+                <h4>${i + 1}. ${q.q}</h4>
+                <div id="input-container-${i}">${renderInput(q, i)}</div>
+                <div id="feedback-${i}" style="margin-top:10px; font-weight:bold; display:none; padding:10px; border-radius:10px;"></div>
+            </div>
+        `).join('');
+        document.getElementById('action-area').style.display = "block";
+    }
+
     function renderInput(q, i) {
         if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
         if (q.type === 'slider') {
@@ -178,13 +172,33 @@ function restoreAnswers() {
         return `<input type="text" id="ans${i}" placeholder="Antwort...">`;
     }
 
+    function restoreAnswers() {
+        Object.keys(userAnswersCache).forEach(i => {
+            const val = userAnswersCache[i];
+            const radio = document.querySelector(`input[name="r${i}"][value="${val}"]`);
+            if (radio) radio.checked = true;
+            const other = document.getElementById(`ans${i}`);
+            if (other) {
+                other.value = val;
+                if (other.type === "range") {
+                    const display = other.nextElementSibling;
+                    if (display) display.innerText = val;
+                }
+            }
+        });
+    }
+
     function evaluateQuiz() {
         let score = 0;
         currentQuiz.forEach((q, i) => {
             const feedback = document.getElementById(`feedback-${i}`);
             let userAns = "";
-            if (q.type === 'choice') userAns = document.querySelector(`input[name="r${i}"]:checked`)?.value;
-            else userAns = document.getElementById(`ans${i}`).value;
+            if (q.type === 'choice') {
+                const checked = document.querySelector(`input[name="r${i}"]:checked`);
+                userAns = checked ? checked.value : "";
+            } else {
+                userAns = document.getElementById(`ans${i}`).value;
+            }
 
             const isCorrect = String(userAns).toLowerCase().trim() === String(q.correct).toLowerCase().trim();
             feedback.style.display = "block";
