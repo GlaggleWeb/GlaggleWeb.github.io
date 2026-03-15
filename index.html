@@ -487,33 +487,33 @@
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
     </nav>
 
-    <main class="main-content">
-        <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
-        
-        <div class="search-section">
-            <div class="search-bar-container">
-                <div id="fakeCaret" class="custom-caret"></div>
-                <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+   <main class="main-content">
+    <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
     
-                <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
-    
-                <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-            </div>
-        
-            <div class="loader" id="glaggleLoader"></div>
-            <div id="glaggleResults" class="results-container"></div>
+    <div class="search-section">
+        <div class="search-bar-container">
+            <div id="fakeCaret" class="custom-caret"></div>
+
+            <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+
+            <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+
+            <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
         </div>
 
-        <div class="button-container" id="quickButtons">
-            <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
-            <a href="https://glaggle.ch/gamecenter" class="web-button">Gamecenter →</a>
-        </div>
-    </main>
+        <div class="loader" id="glaggleLoader"></div>
+        <div id="glaggleResults" class="results-container"></div>
+    </div>
 
-    <footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
-        &copy; 2026 Glaggle — Glaggle your life!
-    </footer>
+    <div class="button-container" id="quickButtons">
+        <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
+        <a href="https://glaggle.ch/gamecenter" class="web-button">Gamecenter →</a>
+    </div>
+</main>
 
+<footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
+    &copy; 2026 Glaggle — Glaggle your life!
+</footer>
 <script src="favoriten.js"></script>
 
 <script>
