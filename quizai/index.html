@@ -105,7 +105,7 @@
                     messages: [{
                         role: "system",
                         content: `Du bist ein Quiz-Experte. Erstelle ${count} Fragen zum Thema "${topic}". 
-                        SCHWIERIGKEITSGRAD: ${level}. (Bei 'extrem schwer' stelle Fragen, die nur Experten wissen).
+                        SCHWIERIGKEITSGRAD: ${level}. (Bei 'extrem schwer' stelle Fragen, die nur Experten wissen bei leicht welche die einfach sind und ein normaler Mensch beantworten kann.).
                         Format: JSON. Typen: 'choice', 'text', 'slider'.
                         Bei SLIDER: Setze 'min' und 'max' passend zur Antwort.
                         Nur JSON antworten: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 1000, "correct": 750}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
