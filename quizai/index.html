@@ -90,20 +90,6 @@
     <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
     <div id="loader" class="loader"></div>
 </div>
-            <select id="difficulty">
-                <option value="leicht">Leicht</option>
-                <option value="mittel" selected>Mittel</option>
-                <option value="extrem schwer">Extrem Schwer</option>
-            </select>
-        </div>
-        <div class="btn-row">
-            <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
-            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Mehr Fragen (+)</button>
-            <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
-        </div>
-        <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
-        <div id="loader" class="loader"></div>
-    </div>
 
     <div id="quiz-display"></div>
 
