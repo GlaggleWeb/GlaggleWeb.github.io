@@ -27,7 +27,7 @@
 
         input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
         
-        .control-row { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .control-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
         .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn:hover { transform: scale(1.05); opacity: 0.9; }
@@ -46,18 +46,22 @@
 
     <div class="glaggle-card special-card">
         <h3>Steuerung</h3>
-        <div class="control-row">
-            <input type="text" id="quiz-topic" placeholder="Thema (z.B. Züge, Erdkunde...)">
+        <div class="control-grid">
+            <input type="text" id="quiz-topic" placeholder="Thema...">
             <select id="q-count">
                 <option value="1">1 Frage</option>
                 <option value="3" selected>3 Fragen</option>
                 <option value="5">5 Fragen</option>
-                <option value="10">10 Fragen</option>
+            </select>
+            <select id="difficulty">
+                <option value="leicht">Leicht</option>
+                <option value="mittel" selected>Mittel</option>
+                <option value="extrem schwer">Extrem Schwer</option>
             </select>
         </div>
         <div class="btn-row">
             <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
-            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Fragen hinzufügen</button>
+            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Mehr Fragen (+)</button>
             <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
         </div>
         <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
@@ -68,7 +72,7 @@
 
     <div id="action-area" style="display:none; margin-bottom: 50px;">
         <div class="btn-row">
-            <button class="btn" style="background:#34A853" onclick="evaluateQuiz()">Auswerten</button>
+            <button class="btn" style="background:#34A853" onclick="evaluateQuiz()">Auswerten ✨</button>
             <button class="btn" style="background:#EA4335" onclick="saveQuiz()">💾 Speichern</button>
         </div>
         <div id="eval-markdown" class="glaggle-card" style="display:none"></div>
@@ -87,6 +91,7 @@
     async function generateQuestions(append = false) {
         const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
         const count = document.getElementById('q-count').value;
+        const level = document.getElementById('difficulty').value;
         const loader = document.getElementById('loader');
         
         loader.style.display = "block";
@@ -99,20 +104,17 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{
                         role: "system",
-                        content: `Erstelle genau ${count} Fragen zum Thema als JSON. 
-                        Typen: 'choice', 'text', 'slider'. 
-                        WICHTIG für SLIDER: Setze 'min' und 'max' sinnvoll passend zur Antwort.
-                        Gib NUR das JSON-Objekt zurück: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 400, "correct": 300}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
-                    }, { role: "user", content: `Erstelle Fragen zu: ${topic}` }]
+                        content: `Du bist ein Quiz-Experte. Erstelle ${count} Fragen zum Thema "${topic}". 
+                        SCHWIERIGKEITSGRAD: ${level}. (Bei 'extrem schwer' stelle Fragen, die nur Experten wissen).
+                        Format: JSON. Typen: 'choice', 'text', 'slider'.
+                        Bei SLIDER: Setze 'min' und 'max' passend zur Antwort.
+                        Nur JSON antworten: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 1000, "correct": 750}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
+                    }]
                 })
             });
 
             const data = await resp.json();
-            
-            // Prüfung: Hat die API Daten geliefert?
-            if (!data.choices || !data.choices[0]) {
-                throw new Error(data.error ? data.error.message : "Keine Antwort von der KI erhalten. Key prüfen!");
-            }
+            if (!data.choices) throw new Error("API-Fehler. Key korrekt?");
 
             const rawText = data.choices[0].message.content;
             const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
@@ -121,8 +123,7 @@
             currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
             render();
         } catch (e) { 
-            alert("API Fehler: " + e.message); 
-            console.error(e);
+            alert("Fehler: " + e.message); 
         } finally {
             loader.style.display = "none";
         }
@@ -143,16 +144,14 @@
     function renderInput(q, i) {
         if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
         if (q.type === 'slider') {
-            const min = q.min ?? 0;
-            const max = q.max ?? 100;
-            const start = Math.floor((min + max) / 2);
+            const min = q.min ?? 0; const max = q.max ?? 100;
             return `<div class="slider-box">
-                        <input type="range" id="ans${i}" min="${min}" max="${max}" value="${start}" oninput="this.nextElementSibling.innerText = this.value"> 
-                        <b style="color:var(--accent)">${start}</b>
-                        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px;"><span>Min: ${min}</span><span>Max: ${max}</span></div>
+                        <input type="range" id="ans${i}" min="${min}" max="${max}" value="${min}" oninput="this.nextElementSibling.innerText = this.value"> 
+                        <b style="color:var(--accent)">${min}</b>
+                        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px;"><span>${min}</span><span>${max}</span></div>
                     </div>`;
         }
-        return `<input type="text" id="ans${i}" placeholder="Deine Antwort...">`;
+        return `<input type="text" id="ans${i}" placeholder="Antwort...">`;
     }
 
     function evaluateQuiz() {
@@ -166,13 +165,13 @@
             const isCorrect = String(userAns).toLowerCase().trim() === String(q.correct).toLowerCase().trim();
             feedback.style.display = "block";
             feedback.style.background = isCorrect ? "rgba(52, 168, 83, 0.1)" : "rgba(234, 67, 53, 0.1)";
-            feedback.innerHTML = isCorrect ? "✅ Richtig!" : `❌ Falsch! Lösung: ${q.correct}`;
+            feedback.innerHTML = isCorrect ? "✅ Korrekt!" : `❌ Falsch! Lösung: ${q.correct}`;
             feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
             if(isCorrect) score++;
         });
         const evalBox = document.getElementById('eval-markdown');
         evalBox.style.display = "block";
-        evalBox.innerHTML = marked.parse(`### 🎉 Ergebnis\nDu hast **${score} von ${currentQuiz.length}** Fragen gelöst!`);
+        evalBox.innerHTML = marked.parse(`### 🎉 Dein Score: ${score} / ${currentQuiz.length}`);
     }
 
     function saveQuiz() {
@@ -186,10 +185,8 @@
     function loadQuizFile(event) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            try {
-                currentQuiz = JSON.parse(e.target.result);
-                render();
-            } catch(err) { alert("Fehler beim Laden!"); }
+            currentQuiz = JSON.parse(e.target.result);
+            render();
         };
         reader.readAsText(event.target.files[0]);
     }
