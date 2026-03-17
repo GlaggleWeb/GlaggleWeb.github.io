@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Quiz Studio Pro</title>
-    <meta property="og:title" content="Glaggle Quiz Studio Pro" />
-    <meta property="og:description" content="Erstelle in Glaggle Quiz Studio Pro dein eigenes Quiz mit KI." />
-    <meta property="og:image" content="https://glaggle.ch/glagglelogo.png" />
-    <meta property="og:url" content="https://glaggle.ch/quizai" />
-    <meta property="og:type" content="website" />
+    <title>Glaggle Quiz Studio Pro v2</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
@@ -22,74 +17,69 @@
         }
 
         body { background: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 800px; text-align: center; }
+        .container { width: 100%; max-width: 800px; }
         
         .glaggle-card {
             background: var(--card-bg); border-radius: 20px; padding: 25px; margin-bottom: 20px;
-            border: 1px solid var(--card-border); text-align: left; transition: 0.3s;
+            border: 1px solid var(--card-border); transition: 0.3s;
         }
         .special-card { border: 2px solid transparent; background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--accent-gradient) border-box; }
 
         input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
         
-        .control-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; /* Zwei Spalten nebeneinander */
-    gap: 10px; 
-    margin-bottom: 15px; 
-}
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        @media (min-width: 600px) { .control-grid { grid-template-columns: 2fr 2fr 1fr 1fr; } }
 
-/* Auf größeren Bildschirmen alle 4 nebeneinander */
-@media (min-width: 600px) {
-    .control-grid { 
-        grid-template-columns: 2fr 2fr 1fr 1fr; 
-    }
-}
         .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
         .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn:hover { transform: scale(1.05); opacity: 0.9; }
 
         .option-label { display: block; padding: 12px; margin: 8px 0; background: rgba(112, 196, 247, 0.1); border-radius: 12px; cursor: pointer; }
         .slider-box { background: rgba(0,0,0,0.03); padding: 15px; border-radius: 15px; margin-top: 10px; }
+        .slider-input-sync { width: 80px; text-align: center; font-weight: bold; border-color: var(--accent); margin-left: 10px; display: inline-block; }
 
         .loader { display: none; width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* PDF / Druck-Optimierung */
+        @media print {
+            .btn-row, .loader, .special-card, #action-area { display: none !important; }
+            body { background: white; color: black; }
+            .glaggle-card { border: 1px solid #ccc; break-inside: avoid; }
+            .option-label { border: 1px solid #eee; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>✨ Glaggle Quiz Studio Pro</h1>
+    <h1 style="text-align: center;">✨ Glaggle Quiz Studio Pro</h1>
 
-   <div class="glaggle-card special-card">
-    <h3>Steuerung</h3>
-    <div class="control-grid">
-        <input type="text" id="quiz-topic" placeholder="Thema für neue Fragen...">
-        
-        <input type="text" id="quiz-filename" placeholder="Quiz-Name (z.B. Mein_Super_Quiz)">
-        
-        <select id="q-count">
-            <option value="1">1 Frage</option>
-            <option value="3" selected>3 Fragen</option>
-            <option value="5">5 Fragen</option>
-            <option value="10">10 Fragen</option>
-        </select>
-
-        <select id="difficulty">
-            <option value="leicht">Leicht</option>
-            <option value="mittel" selected>Mittel</option>
-            <option value="extrem schwer">Extrem Schwer</option>
-        </select>
+    <div class="glaggle-card special-card">
+        <h3>Steuerung</h3>
+        <div class="control-grid">
+            <input type="text" id="quiz-topic" placeholder="Thema...">
+            <input type="text" id="quiz-filename" placeholder="Name">
+            <select id="q-count">
+                <option value="3">3 Fragen</option>
+                <option value="5" selected>5 Fragen</option>
+                <option value="10">10 Fragen</option>
+            </select>
+            <select id="difficulty">
+                <option value="leicht">Leicht</option>
+                <option value="mittel" selected>Mittel</option>
+                <option value="extrem schwer">Extrem Schwer</option>
+            </select>
+        </div>
+        <div class="btn-row">
+            <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
+            <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Hinzufügen (+)</button>
+            <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
+            <button class="btn" style="background:#000" onclick="window.print()">🖨️ PDF / Drucken</button>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
+        <div id="loader" class="loader"></div>
     </div>
-    
-    <div class="btn-row">
-        <button class="btn" onclick="generateQuestions(false)">Neues Quiz</button>
-        <button class="btn" style="background:#FBBC05" onclick="generateQuestions(true)">Fragen hinzufügen (+)</button>
-        <button class="btn" style="background:#6c757d" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
-    </div>
-    <input type="file" id="file-input" style="display:none" accept=".json" onchange="loadQuizFile(event)">
-    <div id="loader" class="loader"></div>
-</div>
 
     <div id="quiz-display"></div>
 
@@ -103,14 +93,12 @@
 </div>
 
 <script>
-    // --- API KEY ZERSTÜCKELUNG ---
     const s1 = "gsk_"; 
     const s2 = "GpVmwabGZMyCM3QbwLbJWGdyb3FYG"; 
     const s3 = "uvDgzX0ufZbPwvnqxDZ9JNI";
     const getK = () => s1 + s2 + s3;
 
     let currentQuiz = [];
-    let userAnswersCache = {};
 
     async function generateQuestions(append = false) {
         const topic = document.getElementById('quiz-topic').value || "Allgemeinwissen";
@@ -118,19 +106,6 @@
         const level = document.getElementById('difficulty').value;
         const loader = document.getElementById('loader');
         
-        // Antworten sichern
-        if (append) {
-            currentQuiz.forEach((_, i) => {
-                const radio = document.querySelector(`input[name="r${i}"]:checked`);
-                const other = document.getElementById(`ans${i}`);
-                if (radio) userAnswersCache[i] = radio.value;
-                else if (other) userAnswersCache[i] = other.value;
-            });
-        } else {
-            userAnswersCache = {};
-            currentQuiz = [];
-        }
-
         loader.style.display = "block";
 
         try {
@@ -141,28 +116,25 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [{
                         role: "system",
-                        content: `Erstelle ${count} Fragen zum Thema "${topic}". Schwierigkeit: ${level}. 
-                        Format: JSON. Typen: 'choice' (3 Optionen), 'text', 'slider'. 
-                        WICHTIG für Slider: min/max sinnvoll anpassen.
-                        Antworte NUR mit JSON: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A"}, {"type": "slider", "q": "..", "min": 0, "max": 500, "correct": 250}, {"type": "text", "q": "..", "correct": "Antwort"}]}`
+                        content: `Erstelle ${count} Fragen zu "${topic}" (${level}).
+                        REGELN:
+                        1. Bevorzuge Typ 'choice' (70% der Fragen).
+                        2. 'slider' nur bei Zahlen. Gib immer ein "range": [min_korrekt, max_korrekt] an.
+                        3. 'text' nur für kurze Begriffe. Gib bei 'correct' alternative Schreibweisen mit Komma getrennt an (z.B. "Eiffelturm, Eiffel Turm").
+                        4. Jede Frage MUSS ein Feld "desc" haben mit einer 2-3 sätzigen Erklärung der Lösung.
+                        FORMAT: {"qs": [{"type": "choice", "q": "..", "opts": ["A","B","C"], "correct": "A", "desc": ".."}, {"type": "slider", "q": "..", "min": 0, "max": 100, "range": [40, 50], "correct": 45, "desc": ".."}, {"type": "text", "q": "..", "correct": "Wort1, Wort2", "desc": ".."}]}`
                     }]
                 })
             });
 
             const data = await resp.json();
-            const rawText = data.choices[0].message.content;
-            const cleanJson = rawText.match(/\{[\s\S]*\}/)[0];
+            const cleanJson = data.choices[0].message.content.match(/\{[\s\S]*\}/)[0];
             const newQs = JSON.parse(cleanJson).qs;
 
             currentQuiz = append ? [...currentQuiz, ...newQs] : newQs;
             render();
-            restoreAnswers();
-
-        } catch (e) { 
-            alert("Fehler: " + e.message); 
-        } finally {
-            loader.style.display = "none";
-        }
+        } catch (e) { alert("Fehler: " + e.message); }
+        finally { loader.style.display = "none"; }
     }
 
     function render() {
@@ -170,8 +142,8 @@
         display.innerHTML = currentQuiz.map((q, i) => `
             <div class="glaggle-card">
                 <h4>${i + 1}. ${q.q}</h4>
-                <div id="input-container-${i}">${renderInput(q, i)}</div>
-                <div id="feedback-${i}" style="margin-top:10px; font-weight:bold; display:none; padding:10px; border-radius:10px;"></div>
+                <div>${renderInput(q, i)}</div>
+                <div id="feedback-${i}" style="margin-top:10px; display:none; padding:15px; border-radius:12px;"></div>
             </div>
         `).join('');
         document.getElementById('action-area').style.display = "block";
@@ -180,30 +152,13 @@
     function renderInput(q, i) {
         if (q.type === 'choice') return q.opts.map(o => `<label class="option-label"><input type="radio" name="r${i}" value="${o}"> ${o}</label>`).join('');
         if (q.type === 'slider') {
-            const min = q.min ?? 0; const max = q.max ?? 100;
             return `<div class="slider-box">
-                        <input type="range" id="ans${i}" min="${min}" max="${max}" value="${min}" oninput="this.nextElementSibling.innerText = this.value"> 
-                        <b style="color:var(--accent)">${min}</b>
-                        <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px;"><span>${min}</span><span>${max}</span></div>
-                    </div>`;
+                <input type="range" id="range${i}" min="${q.min}" max="${q.max}" value="${q.min}" oninput="document.getElementById('ans${i}').value = this.value">
+                Wert: <input type="number" id="ans${i}" class="slider-input-sync" value="${q.min}" oninput="document.getElementById('range${i}').value = this.value">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${q.min}</span><span>${q.max}</span></div>
+            </div>`;
         }
-        return `<input type="text" id="ans${i}" placeholder="Antwort...">`;
-    }
-
-    function restoreAnswers() {
-        Object.keys(userAnswersCache).forEach(i => {
-            const val = userAnswersCache[i];
-            const radio = document.querySelector(`input[name="r${i}"][value="${val}"]`);
-            if (radio) radio.checked = true;
-            const other = document.getElementById(`ans${i}`);
-            if (other) {
-                other.value = val;
-                if (other.type === "range") {
-                    const display = other.nextElementSibling;
-                    if (display) display.innerText = val;
-                }
-            }
-        });
+        return `<input type="text" id="ans${i}" placeholder="Antwort eintippen...">`;
     }
 
     function evaluateQuiz() {
@@ -215,59 +170,49 @@
                 const checked = document.querySelector(`input[name="r${i}"]:checked`);
                 userAns = checked ? checked.value : "";
             } else {
-                userAns = document.getElementById(`ans${i}`).value;
+                userAns = document.getElementById(`ans${i}`).value.trim();
             }
 
-            const isCorrect = String(userAns).toLowerCase().trim() === String(q.correct).toLowerCase().trim();
+            let isCorrect = false;
+            if (q.type === 'slider' && q.range) {
+                const val = parseFloat(userAns);
+                isCorrect = val >= q.range[0] && val <= q.range[1];
+            } else {
+                const acceptable = q.correct.split(',').map(v => v.trim().toLowerCase());
+                isCorrect = acceptable.includes(userAns.toLowerCase());
+            }
+
             feedback.style.display = "block";
             feedback.style.background = isCorrect ? "rgba(52, 168, 83, 0.1)" : "rgba(234, 67, 53, 0.1)";
-            feedback.innerHTML = isCorrect ? "✅ Korrekt!" : `❌ Falsch! Lösung: ${q.correct}`;
             feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
+            feedback.innerHTML = `<strong>${isCorrect ? "✅ Korrekt!" : "❌ Falsch!"}</strong><br>
+                                  <small>Lösung: ${q.correct}</small><br>
+                                  <p style="color:var(--text-color); font-size:0.9rem; margin-top:5px;">${q.desc || ""}</p>`;
             if(isCorrect) score++;
         });
-        const evalBox = document.getElementById('eval-markdown');
-        evalBox.style.display = "block";
-        evalBox.innerHTML = marked.parse(`### 🎉 Dein Score: ${score} / ${currentQuiz.length}`);
+        document.getElementById('eval-markdown').style.display = "block";
+        document.getElementById('eval-markdown').innerHTML = `### 🎉 Ergebnis: ${score} von ${currentQuiz.length} richtig!`;
     }
 
-   function saveQuiz() {
-    // 1. Hole den Namen aus dem Eingabefeld
-    let fileName = document.getElementById('quiz-filename').value.trim();
-    
-    // 2. Falls das Feld leer ist, nimm einen Standardnamen
-    if (!fileName) {
-        fileName = "glaggle_quiz";
+    function saveQuiz() {
+        let fileName = (document.getElementById('quiz-filename').value || "quiz") + ".json";
+        const blob = new Blob([JSON.stringify(currentQuiz, null, 2)], {type : 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        a.click();
     }
 
-    // 3. Sicherstellen, dass die Dateiendung .json vorhanden ist
-    if (!fileName.toLowerCase().endsWith(".json")) {
-        fileName += ".json";
-    }
-
-    // 4. Den Download auslösen
-    const blob = new Blob([JSON.stringify(currentQuiz, null, 2)], {type : 'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName; // Hier wird nun dein Name verwendet!
-    a.click();
-}
-    
     function loadQuizFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Setzt den Namen der geladenen Datei direkt ins Namens-Feld
-    document.getElementById('quiz-filename').value = file.name;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
             currentQuiz = JSON.parse(e.target.result);
             render();
-        } catch(err) { alert("Fehler beim Laden!"); }
-    };
-    reader.readAsText(file);
-}
+        };
+        reader.readAsText(file);
+    }
 </script>
 </body>
 </html>
