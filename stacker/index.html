@@ -7,18 +7,16 @@
     <style>
         :root {
             --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
-            --card-bg: #fdfdfd; --card-border: #eeeeee; --link-color: #2E94D1;
-            --accent: #70C4F7; --danger: #FF6B6B;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --accent: #70C4F7;
         }
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
-                --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5;
+                --card-bg: #18191c; --card-border: #444444;
             }
         }
         
         * { box-sizing: border-box; }
-
         body {
             background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Arial Rounded MT Bold', sans-serif;
@@ -33,15 +31,15 @@
             position: fixed; top: 0; left: 0; z-index: 1000;
         }
 
-        .logo-link { display: flex; align-items: center; padding-left: 10px; }
-        .nav-logo { height: 35px; display: block; }
+        .nav-logo { height: 35px; }
 
-        .main-content { margin-top: 90px; width: 100%; max-width: 450px; padding: 15px; text-align: center; }
+        .main-content { margin-top: 85px; width: 100%; max-width: 450px; padding: 15px; text-align: center; }
         
         #game-container {
-            position: relative; width: 100%; height: 60vh;
+            position: relative; width: 100%; height: 65vh;
             background: var(--card-bg); border: 4px solid var(--card-border);
             border-radius: 20px; overflow: hidden; cursor: pointer;
+            transition: background 0.5s ease;
         }
 
         canvas { display: block; width: 100%; height: 100%; }
@@ -51,68 +49,80 @@
             background: var(--nav-bg); padding: 10px; border-radius: 15px;
             border: 1px solid var(--card-border);
         }
-        .score-val { font-size: 14px; color: var(--text-color); }
         .score-val b { color: var(--accent); font-size: 18px; display: block; }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); color: white;
+            background: rgba(0,0,0,0.85); color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10;
+            z-index: 10; padding: 20px;
         }
+
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            margin-bottom: 20px; width: 100%;
+        }
+        .shop-btn {
+            background: #444; color: white; border: none; padding: 8px 4px; 
+            border-radius: 10px; font-size: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .shop-btn.owned { border: 1px solid var(--accent); }
+        .shop-btn.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
         .btn {
-            background: var(--accent); color: white; border: none; padding: 12px 35px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px;
+            background: var(--accent); color: white; border: none; padding: 12px 40px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px;
         }
-        .btn:hover { transform: scale(1.05); }
 
-        /* Coin UI */
         #coin-container {
             position: fixed; bottom: 20px; right: 20px; 
-            background: var(--card-bg); border: 2px solid var(--accent); 
+            background: var(--nav-bg); border: 2px solid var(--accent); 
             padding: 10px 20px; border-radius: 50px; 
-            display: flex; align-items: center; gap: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000;
+            display: flex; align-items: center; gap: 10px; z-index: 1000;
         }
 
         @keyframes coin-pop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.4); background-color: #FFD700; }
+            50% { transform: scale(1.3); }
             100% { transform: scale(1); }
         }
-        .coin-animation { animation: coin-pop 0.5s ease-out; }
+        .coin-animation { animation: coin-pop 0.4s ease; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <a href="/" class="logo-link"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div style="color: var(--accent); font-weight: bold; padding-right: 10px;">Glaggle Tower</div>
+        <a href="/" style="display:flex; align-items:center;"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Tower</div>
     </div>
 
     <div class="main-content">
         <div class="score-box">
             <div class="score-val">Höhe <b id="score">0</b></div>
-            <div class="score-val">Bestleistung <b id="highscore">0</b></div>
+            <div class="score-val">Rekord <b id="highscore">0</b></div>
         </div>
 
         <div id="game-container" onclick="placeBlock()">
             <canvas id="towerCanvas"></canvas>
             
             <div id="menu-overlay" class="overlay">
-                <h2 id="msg">Turm bauen!</h2>
+                <h2 id="msg" style="margin-top:0">Bereit?</h2>
+                <div class="shop-grid">
+                    <button class="shop-btn" id="btn-default" onclick="buyTheme('default',0,event)">Standard</button>
+                    <button class="shop-btn" id="btn-space" onclick="buyTheme('space',10,event)">Space</button>
+                    <button class="shop-btn" id="btn-sunset" onclick="buyTheme('sunset',15,event)">Sunset</button>
+                    <button class="shop-btn" id="btn-emerald" onclick="buyTheme('emerald',20,event)">Emerald</button>
+                    <button class="shop-btn" id="btn-gold" onclick="buyTheme('gold',50,event)">Gold</button>
+                    <button class="shop-btn" id="btn-lava" onclick="buyTheme('lava',30,event)">Lava</button>
+                </div>
                 <button class="btn" onclick="initGame(event)">Starten</button>
-                <button class="btn" onclick="window.location.href='https://glaggle.ch/gamecenter'" style="background: transparent; border: 2px solid var(--accent);">
-                    Gamecenter 🏠
-                </button>
             </div>
         </div>
     </div>
 
     <div id="coin-container">
-        <img src="coin.png" style="width:24px; height:24px;" alt="Coin"> 
-        <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
+        <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+        <span id="coin-count" style="font-weight: bold;">0</span>
     </div>
 
     <script>
@@ -122,27 +132,60 @@
         const highscoreEl = document.getElementById('highscore');
         const menu = document.getElementById('menu-overlay');
         
-        let blocks = [];
-        let currentBlock = {};
-        let gameRunning = false;
-        let speed = 2;
-        let direction = 1;
+        let blocks = [], currentBlock = {}, gameRunning = false;
+        let speed = 2, direction = 1, score = 0, flash = 0;
         const blockHeight = 35;
-        let score = 0;
-        let highscore = localStorage.getItem('glaggleTowerHighscore') || 0;
-        highscoreEl.innerText = highscore;
+
+        const themes = {
+            default: { bg: '#18191c', hue: 200, name: "Standard" },
+            space: { bg: '#050a12', hue: 220, name: "Space" },
+            sunset: { bg: '#2d142c', hue: 330, name: "Sunset" },
+            emerald: { bg: '#0a1a0a', hue: 140, name: "Emerald" },
+            gold: { bg: '#1a1605', hue: 45, name: "Gold" },
+            lava: { bg: '#2b0a0a', hue: 10, name: "Lava" }
+        };
+
+        let currentTheme = localStorage.getItem('glaggleTowerTheme') || 'default';
+        let ownedThemes = JSON.parse(localStorage.getItem('glaggleOwnedThemes')) || ['default'];
 
         function resize() {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
+            updateShopUI();
         }
         window.onresize = resize;
         resize();
 
+        function buyTheme(name, price, e) {
+            e.stopPropagation();
+            let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+            if (ownedThemes.includes(name)) {
+                currentTheme = name;
+            } else if (coins >= price) {
+                coins -= price;
+                localStorage.setItem('glaggleCoins', coins);
+                ownedThemes.push(name);
+                currentTheme = name;
+                document.getElementById('coin-count').innerText = coins;
+            } else { return; }
+            localStorage.setItem('glaggleTowerTheme', currentTheme);
+            localStorage.setItem('glaggleOwnedThemes', JSON.stringify(ownedThemes));
+            updateShopUI();
+        }
+
+        function updateShopUI() {
+            Object.keys(themes).forEach(t => {
+                const btn = document.getElementById('btn-' + t);
+                if (!btn) return;
+                btn.className = "shop-btn" + (ownedThemes.includes(t) ? " owned" : "") + (currentTheme === t ? " active" : "");
+                if (!ownedThemes.includes(t)) btn.innerText = btn.innerText.split(' ')[0] + " (" + (t==='gold'?50:t==='sunset'?15:t==='emerald'?20:t==='lava'?30:10) + "🪙)";
+            });
+            document.getElementById('game-container').style.background = themes[currentTheme].bg;
+        }
+
         function initGame(e) {
             if(e) e.stopPropagation();
-            score = 0;
-            scoreEl.innerText = "0";
+            score = 0; scoreEl.innerText = "0";
             blocks = [{ x: (canvas.width-120)/2, y: canvas.height - blockHeight, w: 120, color: '#70C4F7' }];
             newBlock();
             gameRunning = true;
@@ -153,114 +196,89 @@
         function newBlock() {
             const lastBlock = blocks[blocks.length - 1];
             currentBlock = {
-                x: 0,
-                y: lastBlock.y - blockHeight,
-                w: lastBlock.w,
-                color: `hsl(${blocks.length * 20 % 360}, 70%, 60%)`
+                x: 0, y: lastBlock.y - blockHeight, w: lastBlock.w,
+                color: `hsl(${(blocks.length * 15 + themes[currentTheme].hue) % 360}, 70%, 60%)`
             };
-            speed = 2 + (blocks.length * 0.15);
+            if(currentTheme === 'gold') currentBlock.color = '#FFD700';
+            speed = 2.2 + (blocks.length * 0.12);
             direction = Math.random() > 0.5 ? 1 : -1;
             if(direction === -1) currentBlock.x = canvas.width - currentBlock.w;
         }
 
         function placeBlock() {
             if(!gameRunning) return;
-
             const lastBlock = blocks[blocks.length - 1];
             const delta = currentBlock.x - lastBlock.x;
+            
+            // Perfekt-Check (Toleranz 4 Pixel)
+            if (Math.abs(delta) < 4) {
+                currentBlock.x = lastBlock.x;
+                flash = 15; // Weißes Aufleuchten
+                if(currentBlock.w < 150) currentBlock.w += 5; // Kleiner Bonus
+            }
+
             const overlap = currentBlock.w - Math.abs(delta);
 
-            if (overlap <= 0) {
-                gameOver();
-                return;
-            }
+            if (overlap <= 0) { gameOver(); return; }
 
             const newX = delta > 0 ? currentBlock.x : lastBlock.x;
             blocks.push({ x: newX, y: currentBlock.y, w: overlap, color: currentBlock.color });
-            
             score = blocks.length - 1;
             scoreEl.innerText = score;
-            
-            // Kamera-Scroll-Effekt
-            if(blocks.length > 4) {
-                blocks.forEach(b => b.y += blockHeight);
-            }
-
+            if(blocks.length > 5) blocks.forEach(b => b.y += blockHeight);
             newBlock();
         }
 
         function gameOver() {
             gameRunning = false;
-            
-            // Coin verdienen ab Höhe 10
-            if (score >= 10) {
-                earnCoin();
-            }
-
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem('glaggleTowerHighscore', highscore);
-                highscoreEl.innerText = highscore;
+            if (score >= 10) earnCoin();
+            let high = localStorage.getItem('glaggleTowerHighscore') || 0;
+            if(score > high) {
+                localStorage.setItem('glaggleTowerHighscore', score);
+                highscoreEl.innerText = score;
                 document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
             } else {
-                document.getElementById('msg').innerText = "Eingestürzt! Höhe: " + score;
+                document.getElementById('msg').innerText = "Crash! Höhe: " + score;
             }
-            
             menu.style.display = 'flex';
         }
 
         function earnCoin() {
-            let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-            glaggleCoins++;
-            localStorage.setItem('glaggleCoins', glaggleCoins);
-
-            const container = document.getElementById('coin-container');
-            const countElement = document.getElementById('coin-count');
-
-            if (countElement) {
-                countElement.innerText = glaggleCoins;
-                container.classList.add('coin-animation');
-                setTimeout(() => container.classList.remove('coin-animation'), 500);
-            }
+            let coins = (parseInt(localStorage.getItem('glaggleCoins')) || 0) + 1;
+            localStorage.setItem('glaggleCoins', coins);
+            document.getElementById('coin-count').innerText = coins;
+            document.getElementById('coin-container').classList.add('coin-animation');
+            setTimeout(() => document.getElementById('coin-container').classList.remove('coin-animation'), 400);
         }
 
         function animate() {
             if(!gameRunning) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Boden/Plattform zeichnen
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
-            ctx.fillRect(0, canvas.height - 5, canvas.width, 5);
-
-            // Alle Blöcke
+            
             blocks.forEach(b => {
                 ctx.fillStyle = b.color;
                 ctx.beginPath();
-                ctx.roundRect(b.x, b.y, b.w, blockHeight - 3, 5);
+                ctx.roundRect(b.x, b.y, b.w, blockHeight - 2, 6);
                 ctx.fill();
             });
 
-            // Aktueller Block
             currentBlock.x += speed * direction;
-            if(currentBlock.x + currentBlock.w > canvas.width || currentBlock.x < 0) {
-                direction *= -1;
-            }
+            if(currentBlock.x + currentBlock.w > canvas.width || currentBlock.x < 0) direction *= -1;
 
-            ctx.fillStyle = currentBlock.color;
+            ctx.fillStyle = flash > 0 ? `rgba(255,255,255,${flash/15})` : currentBlock.color;
+            if(flash > 0) flash--;
+            
             ctx.beginPath();
-            ctx.roundRect(currentBlock.x, currentBlock.y, currentBlock.w, blockHeight - 3, 5);
+            ctx.roundRect(currentBlock.x, currentBlock.y, currentBlock.w, blockHeight - 2, 6);
             ctx.fill();
-
+            
             requestAnimationFrame(animate);
         }
 
-        window.addEventListener('keydown', (e) => { 
-            if(e.code === 'Space') placeBlock(); 
-        });
-
         window.addEventListener('load', () => {
-            const startCoins = localStorage.getItem('glaggleCoins') || 0;
-            document.getElementById('coin-count').innerText = startCoins;
+            document.getElementById('coin-count').innerText = localStorage.getItem('glaggleCoins') || 0;
+            highscoreEl.innerText = localStorage.getItem('glaggleTowerHighscore') || 0;
+            updateShopUI();
         });
     </script>
 </body>
