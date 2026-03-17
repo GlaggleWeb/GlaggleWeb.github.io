@@ -242,7 +242,8 @@
     const getG = () => _p1 + _p2 + _p3;
 
     // Supabase Initialisierung (Korrektur: supabase.createClient statt lib.supabase)
-    const supabaseClient = supabase.createClient(S_URL, S_KEY);
+    // Ersetze die alte Initialisierung durch diese:
+    const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
     // --- 2. COIN LOGIK ---
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
