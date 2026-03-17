@@ -462,6 +462,70 @@
         font-size: 1rem !important;
     }
 }
+
+    /* Sidebar Styling - Basis beibehalten */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: var(--nav-bg);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* --- NEU: Styling für Unterkategorien --- */
+
+.sidebar-category {
+    border-bottom: 1px solid var(--card-border);
+}
+
+.sidebar-category summary {
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    cursor: pointer;
+    list-style: none; /* Entfernt Standard-Pfeil */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.sidebar-category summary:hover {
+    background-color: var(--card-bg);
+    color: var(--link-color);
+}
+
+/* Ein kleiner schicker Pfeil rechts */
+.sidebar-category summary::after {
+    content: '›'; 
+    font-size: 1.5rem;
+    transition: transform 0.3s;
+}
+
+/* Dreht den Pfeil, wenn ausgeklappt */
+.sidebar-category[open] summary::after {
+    transform: rotate(90deg);
+}
+
+/* Die Links innerhalb der Kategorie */
+.sidebar-category .sidebar-link {
+    padding: 12px 20px 12px 40px; /* Weiter nach rechts eingerückt */
+    font-size: 1rem;
+    border-bottom: none; /* Entfernt die Linie zwischen Unterpunkten */
+    display: block;
+    background-color: rgba(0,0,0,0.05); /* Leichte Abhebung */
+}
+
+/* Entfernt den Standard-Pfeil im Safari */
+.sidebar-category summary::-webkit-details-marker {
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -483,9 +547,9 @@
     
     <div class="sidebar-content">
         <details class="sidebar-category">
-            <summary>Künstliche Intelligenz</summary>
+            <summary>KI Tools</summary>
             <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
-            <a href="https://glaggle.ch/quizai" class="sidebar-link">Glaggle Quiz Studio Pro</a>
+            <a href="https://glaggle.ch/quizai" class="sidebar-link">Quiz Studio Pro</a>
         </details>
 
         <details class="sidebar-category">
@@ -493,10 +557,7 @@
             <a href="https://glaggle.ch/gamecenter" class="sidebar-link">Gamecenter</a>
         </details>
 
-        <details class="sidebar-category">
-            <summary>Info</summary>
-            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ</a>
-        </details>
+        <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ</a>
     </div>
 </div>
 
