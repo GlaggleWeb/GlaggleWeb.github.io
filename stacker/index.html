@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Glaggle Tower</title>
+    <title>Glaggle Tower Pro</title>
     <style>
         :root {
             --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
@@ -27,7 +27,7 @@
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; height: 65px; background-color: var(--nav-bg);
-            padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: fixed; top: 0; left: 0; z-index: 1000;
         }
 
@@ -36,7 +36,7 @@
         .main-content { margin-top: 85px; width: 100%; max-width: 450px; padding: 15px; text-align: center; }
         
         #game-container {
-            position: relative; width: 100%; height: 65vh;
+            position: relative; width: 100%; height: 60vh;
             background: var(--card-bg); border: 4px solid var(--card-border);
             border-radius: 20px; overflow: hidden; cursor: pointer;
             transition: background 0.5s ease;
@@ -45,7 +45,7 @@
         canvas { display: block; width: 100%; height: 100%; }
 
         .score-box {
-            display: flex; justify-content: space-around; margin-bottom: 15px;
+            display: flex; justify-content: space-around; margin-bottom: 10px;
             background: var(--nav-bg); padding: 10px; border-radius: 15px;
             border: 1px solid var(--card-border);
         }
@@ -53,32 +53,36 @@
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); color: white;
+            background: rgba(0,0,0,0.9); color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 10; padding: 20px;
         }
 
         .shop-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-            margin-bottom: 20px; width: 100%;
+            margin: 15px 0; width: 100%;
         }
         .shop-btn {
-            background: #444; color: white; border: none; padding: 8px 4px; 
-            border-radius: 10px; font-size: 10px; cursor: pointer; transition: 0.2s;
+            background: #333; color: white; border: 2px solid transparent; padding: 10px 5px; 
+            border-radius: 12px; font-size: 11px; cursor: pointer; transition: 0.2s;
         }
-        .shop-btn.owned { border: 1px solid var(--accent); }
-        .shop-btn.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .shop-btn.selected { border-color: var(--accent); background: #444; }
+        .shop-btn.owned { color: #aaa; }
 
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 80%; }
+        
         .btn {
-            background: var(--accent); color: white; border: none; padding: 12px 40px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px;
+            background: var(--accent); color: white; border: none; padding: 12px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px;
         }
+        .btn-buy { background: #FFD700; color: #000; }
+        .btn-buy:disabled { background: #555; color: #888; cursor: not-allowed; }
 
         #coin-container {
             position: fixed; bottom: 20px; right: 20px; 
             background: var(--nav-bg); border: 2px solid var(--accent); 
-            padding: 10px 20px; border-radius: 50px; 
-            display: flex; align-items: center; gap: 10px; z-index: 1000;
+            padding: 10px 18px; border-radius: 50px; 
+            display: flex; align-items: center; gap: 8px; z-index: 1000;
         }
 
         @keyframes coin-pop {
@@ -92,8 +96,11 @@
 <body>
 
     <div class="navbar">
-        <a href="/" style="display:flex; align-items:center;"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
-        <div style="color: var(--accent); font-weight: bold;">Glaggle Tower</div>
+        <a href="/"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <button onclick="window.location.href='https://glaggle.ch/gamecenter'" 
+                style="background:transparent; border:1px solid var(--accent); color:var(--accent); border-radius:10px; padding:6px 12px; cursor:pointer; font-weight:bold;">
+            Gamecenter
+        </button>
     </div>
 
     <div class="main-content">
@@ -106,22 +113,33 @@
             <canvas id="towerCanvas"></canvas>
             
             <div id="menu-overlay" class="overlay">
-                <h2 id="msg" style="margin-top:0">Bereit?</h2>
-                <div class="shop-grid">
-                    <button class="shop-btn" id="btn-default" onclick="buyTheme('default',0,event)">Standard</button>
-                    <button class="shop-btn" id="btn-space" onclick="buyTheme('space',10,event)">Space</button>
-                    <button class="shop-btn" id="btn-sunset" onclick="buyTheme('sunset',15,event)">Sunset</button>
-                    <button class="shop-btn" id="btn-emerald" onclick="buyTheme('emerald',20,event)">Emerald</button>
-                    <button class="shop-btn" id="btn-gold" onclick="buyTheme('gold',50,event)">Gold</button>
-                    <button class="shop-btn" id="btn-lava" onclick="buyTheme('lava',30,event)">Lava</button>
+                <h2 id="msg" style="margin:0 0 10px 0;">Glaggle Tower</h2>
+                
+                <div style="font-size: 13px; display: flex; align-items: center; gap: 5px;">
+                    <span>🛍️ Designs</span>
                 </div>
-                <button class="btn" onclick="initGame(event)">Starten</button>
+
+                <div class="shop-grid">
+                    <button class="shop-btn" id="btn-default" onclick="selectTheme('default',0,event)">Standard</button>
+                    <button class="shop-btn" id="btn-space" onclick="selectTheme('space',10,event)">Space</button>
+                    <button class="shop-btn" id="btn-sunset" onclick="selectTheme('sunset',15,event)">Sunset</button>
+                    <button class="shop-btn" id="btn-emerald" onclick="selectTheme('emerald',20,event)">Emerald</button>
+                    <button class="shop-btn" id="btn-gold" onclick="selectTheme('gold',50,event)">Gold</button>
+                    <button class="shop-btn" id="btn-lava" onclick="selectTheme('lava',30,event)">Lava</button>
+                </div>
+
+                <div class="btn-group">
+                    <button id="buy-action-btn" class="btn btn-buy" onclick="confirmPurchase(event)">
+                        Kaufen für 10 <img src="coin.png" style="width:14px; vertical-align:middle;">
+                    </button>
+                    <button class="btn" onclick="initGame(event)">Starten</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="coin-container">
-        <img src="coin.png" style="width:24px; height:24px;" alt="Coin">
+        <img src="coin.png" style="width:22px; height:22px;" alt="Coin">
         <span id="coin-count" style="font-weight: bold;">0</span>
     </div>
 
@@ -131,21 +149,23 @@
         const scoreEl = document.getElementById('score');
         const highscoreEl = document.getElementById('highscore');
         const menu = document.getElementById('menu-overlay');
+        const buyBtn = document.getElementById('buy-action-btn');
         
         let blocks = [], currentBlock = {}, gameRunning = false;
         let speed = 2, direction = 1, score = 0, flash = 0;
         const blockHeight = 35;
 
         const themes = {
-            default: { bg: '#18191c', hue: 200, name: "Standard" },
-            space: { bg: '#050a12', hue: 220, name: "Space" },
-            sunset: { bg: '#2d142c', hue: 330, name: "Sunset" },
-            emerald: { bg: '#0a1a0a', hue: 140, name: "Emerald" },
-            gold: { bg: '#1a1605', hue: 45, name: "Gold" },
-            lava: { bg: '#2b0a0a', hue: 10, name: "Lava" }
+            default: { bg: '#18191c', hue: 200, price: 0 },
+            space: { bg: '#050a12', hue: 220, price: 10 },
+            sunset: { bg: '#2d142c', hue: 330, price: 15 },
+            emerald: { bg: '#0a1a0a', hue: 140, price: 20 },
+            gold: { bg: '#1a1605', hue: 45, price: 50 },
+            lava: { bg: '#2b0a0a', hue: 10, price: 30 }
         };
 
         let currentTheme = localStorage.getItem('glaggleTowerTheme') || 'default';
+        let selectedTheme = currentTheme;
         let ownedThemes = JSON.parse(localStorage.getItem('glaggleOwnedThemes')) || ['default'];
 
         function resize() {
@@ -156,18 +176,29 @@
         window.onresize = resize;
         resize();
 
-        function buyTheme(name, price, e) {
-            e.stopPropagation();
+        function selectTheme(name, price, e) {
+            if(e) e.stopPropagation();
+            selectedTheme = name;
+            // Vorschau im Hintergrund
+            document.getElementById('game-container').style.background = themes[name].bg;
+            updateShopUI();
+        }
+
+        function confirmPurchase(e) {
+            if(e) e.stopPropagation();
             let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-            if (ownedThemes.includes(name)) {
-                currentTheme = name;
+            const price = themes[selectedTheme].price;
+
+            if (ownedThemes.includes(selectedTheme)) {
+                currentTheme = selectedTheme;
             } else if (coins >= price) {
                 coins -= price;
                 localStorage.setItem('glaggleCoins', coins);
-                ownedThemes.push(name);
-                currentTheme = name;
+                ownedThemes.push(selectedTheme);
+                currentTheme = selectedTheme;
                 document.getElementById('coin-count').innerText = coins;
-            } else { return; }
+            }
+            
             localStorage.setItem('glaggleTowerTheme', currentTheme);
             localStorage.setItem('glaggleOwnedThemes', JSON.stringify(ownedThemes));
             updateShopUI();
@@ -177,14 +208,34 @@
             Object.keys(themes).forEach(t => {
                 const btn = document.getElementById('btn-' + t);
                 if (!btn) return;
-                btn.className = "shop-btn" + (ownedThemes.includes(t) ? " owned" : "") + (currentTheme === t ? " active" : "");
-                if (!ownedThemes.includes(t)) btn.innerText = btn.innerText.split(' ')[0] + " (" + (t==='gold'?50:t==='sunset'?15:t==='emerald'?20:t==='lava'?30:10) + "🪙)";
+                btn.className = "shop-btn" + 
+                    (selectedTheme === t ? " selected" : "") + 
+                    (ownedThemes.includes(t) ? " owned" : "");
             });
-            document.getElementById('game-container').style.background = themes[currentTheme].bg;
+
+            const isOwned = ownedThemes.includes(selectedTheme);
+            const price = themes[selectedTheme].price;
+
+            if (isOwned) {
+                buyBtn.innerText = "Design Ausgewählt";
+                buyBtn.disabled = (selectedTheme === currentTheme);
+                if(selectedTheme === currentTheme) buyBtn.innerText = "Aktiviert";
+                buyBtn.style.background = "#2E94D1";
+                buyBtn.style.color = "white";
+            } else {
+                buyBtn.disabled = false;
+                buyBtn.style.background = "#FFD700";
+                buyBtn.style.color = "black";
+                buyBtn.innerHTML = `Kaufen für ${price} <img src="coin.png" style="width:14px; vertical-align:middle;">`;
+            }
         }
 
         function initGame(e) {
             if(e) e.stopPropagation();
+            // Sicherstellen, dass das gewählte Design auch wirklich das aktive ist
+            if (!ownedThemes.includes(selectedTheme)) selectedTheme = currentTheme;
+            else currentTheme = selectedTheme;
+            
             score = 0; scoreEl.innerText = "0";
             blocks = [{ x: (canvas.width-120)/2, y: canvas.height - blockHeight, w: 120, color: '#70C4F7' }];
             newBlock();
@@ -209,18 +260,13 @@
             if(!gameRunning) return;
             const lastBlock = blocks[blocks.length - 1];
             const delta = currentBlock.x - lastBlock.x;
-            
-            // Perfekt-Check (Toleranz 4 Pixel)
             if (Math.abs(delta) < 4) {
                 currentBlock.x = lastBlock.x;
-                flash = 15; // Weißes Aufleuchten
-                if(currentBlock.w < 150) currentBlock.w += 5; // Kleiner Bonus
+                flash = 15;
+                if(currentBlock.w < 150) currentBlock.w += 5;
             }
-
             const overlap = currentBlock.w - Math.abs(delta);
-
             if (overlap <= 0) { gameOver(); return; }
-
             const newX = delta > 0 ? currentBlock.x : lastBlock.x;
             blocks.push({ x: newX, y: currentBlock.y, w: overlap, color: currentBlock.color });
             score = blocks.length - 1;
@@ -241,6 +287,7 @@
                 document.getElementById('msg').innerText = "Crash! Höhe: " + score;
             }
             menu.style.display = 'flex';
+            updateShopUI();
         }
 
         function earnCoin() {
@@ -254,24 +301,19 @@
         function animate() {
             if(!gameRunning) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             blocks.forEach(b => {
                 ctx.fillStyle = b.color;
                 ctx.beginPath();
                 ctx.roundRect(b.x, b.y, b.w, blockHeight - 2, 6);
                 ctx.fill();
             });
-
             currentBlock.x += speed * direction;
             if(currentBlock.x + currentBlock.w > canvas.width || currentBlock.x < 0) direction *= -1;
-
             ctx.fillStyle = flash > 0 ? `rgba(255,255,255,${flash/15})` : currentBlock.color;
             if(flash > 0) flash--;
-            
             ctx.beginPath();
             ctx.roundRect(currentBlock.x, currentBlock.y, currentBlock.w, blockHeight - 2, 6);
             ctx.fill();
-            
             requestAnimationFrame(animate);
         }
 
