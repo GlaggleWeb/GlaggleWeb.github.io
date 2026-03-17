@@ -6,9 +6,18 @@
     <title>Glaggle Tower</title>
     <style>
         :root {
-            --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
-            --accent: #70C4F7; --danger: #FF6B6B; --card-border: #444444;
+            --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --link-color: #2E94D1;
+            --accent: #70C4F7; --danger: #FF6B6B;
         }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
+                --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5;
+            }
+        }
+        
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color); color: var(--text-color);
@@ -19,73 +28,109 @@
 
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
-            width: 100%; height: 60px; background-color: var(--nav-bg);
-            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            position: fixed; top: 0; z-index: 1000;
+            width: 100%; height: 65px; background-color: var(--nav-bg);
+            padding: 0 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed; top: 0; left: 0; z-index: 1000;
         }
 
+        .logo-link { display: flex; align-items: center; padding-left: 10px; }
+        .nav-logo { height: 35px; display: block; }
+
+        .main-content { margin-top: 90px; width: 100%; max-width: 450px; padding: 15px; text-align: center; }
+        
         #game-container {
-            margin-top: 80px; position: relative;
-            width: 90vw; max-width: 400px; height: 70vh;
-            background: #18191c; border: 4px solid var(--card-border);
-            border-radius: 20px; overflow: hidden;
+            position: relative; width: 100%; height: 60vh;
+            background: var(--card-bg); border: 4px solid var(--card-border);
+            border-radius: 20px; overflow: hidden; cursor: pointer;
         }
 
-        canvas { width: 100%; height: 100%; display: block; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+        .score-val { font-size: 14px; color: var(--text-color); }
+        .score-val b { color: var(--accent); font-size: 18px; display: block; }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; text-align: center;
+            background: rgba(0,0,0,0.8); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10;
         }
 
         .btn {
-            background: var(--accent); color: white; border: none;
-            padding: 12px 30px; border-radius: 30px; font-weight: bold;
-            cursor: pointer; margin: 10px; font-size: 16px;
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px;
+        }
+        .btn:hover { transform: scale(1.05); }
+
+        /* Coin UI */
+        #coin-container {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: var(--card-bg); border: 2px solid var(--accent); 
+            padding: 10px 20px; border-radius: 50px; 
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000;
         }
 
-        .score-display {
-            position: absolute; top: 20px; width: 100%;
-            text-align: center; font-size: 30px; font-weight: bold;
-            color: var(--accent); pointer-events: none; z-index: 5;
+        @keyframes coin-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); background-color: #FFD700; }
+            100% { transform: scale(1); }
         }
+        .coin-animation { animation: coin-pop 0.5s ease-out; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div style="font-weight: bold; color: var(--accent);">Glaggle Tower</div>
-        <button onclick="window.location.href='https://glaggle.ch/gamecenter'" 
-                style="background:transparent; border:1px solid var(--accent); color:white; border-radius:10px; padding:5px 10px; cursor:pointer;">
-            Gamecenter
-        </button>
+        <a href="/" class="logo-link"><img src="glagglelogo.png" class="nav-logo" alt="Logo"></a>
+        <div style="color: var(--accent); font-weight: bold; padding-right: 10px;">Glaggle Tower</div>
     </div>
 
-    <div id="game-container" onclick="placeBlock()">
-        <div class="score-display" id="score">0</div>
-        <canvas id="towerCanvas"></canvas>
-        
-        <div id="menu-overlay" class="overlay">
-            <h1 id="msg">Turm bauen!</h1>
-            <p id="sub-msg">Tippe, um den Block zu stoppen.</p>
-            <button class="btn" onclick="initGame(event)">Starten</button>
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Höhe <b id="score">0</b></div>
+            <div class="score-val">Bestleistung <b id="highscore">0</b></div>
         </div>
+
+        <div id="game-container" onclick="placeBlock()">
+            <canvas id="towerCanvas"></canvas>
+            
+            <div id="menu-overlay" class="overlay">
+                <h2 id="msg">Turm bauen!</h2>
+                <button class="btn" onclick="initGame(event)">Starten</button>
+                <button class="btn" onclick="window.location.href='https://glaggle.ch/gamecenter'" style="background: transparent; border: 2px solid var(--accent);">
+                    Gamecenter 🏠
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-container">
+        <img src="coin.png" style="width:24px; height:24px;" alt="Coin"> 
+        <span id="coin-count" style="font-weight: bold; color: var(--text-color);">0</span>
     </div>
 
     <script>
         const canvas = document.getElementById('towerCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const menu = document.getElementById('menu-overlay');
         
-        // Spiel-Variablen
         let blocks = [];
         let currentBlock = {};
         let gameRunning = false;
         let speed = 2;
-        let direction = 1; // 1 = rechts, -1 = links
-        const blockHeight = 30;
+        let direction = 1;
+        const blockHeight = 35;
+        let score = 0;
+        let highscore = localStorage.getItem('glaggleTowerHighscore') || 0;
+        highscoreEl.innerText = highscore;
 
         function resize() {
             canvas.width = canvas.offsetWidth;
@@ -96,10 +141,12 @@
 
         function initGame(e) {
             if(e) e.stopPropagation();
-            blocks = [{ x: (canvas.width-100)/2, y: canvas.height - blockHeight, w: 100 }];
+            score = 0;
+            scoreEl.innerText = "0";
+            blocks = [{ x: (canvas.width-120)/2, y: canvas.height - blockHeight, w: 120, color: '#70C4F7' }];
             newBlock();
             gameRunning = true;
-            document.getElementById('menu-overlay').style.display = 'none';
+            menu.style.display = 'none';
             animate();
         }
 
@@ -109,9 +156,9 @@
                 x: 0,
                 y: lastBlock.y - blockHeight,
                 w: lastBlock.w,
-                color: `hsl(${blocks.length * 15 % 360}, 70%, 60%)`
+                color: `hsl(${blocks.length * 20 % 360}, 70%, 60%)`
             };
-            speed = 2 + (blocks.length * 0.2); // Wird mit der Zeit schneller
+            speed = 2 + (blocks.length * 0.15);
             direction = Math.random() > 0.5 ? 1 : -1;
             if(direction === -1) currentBlock.x = canvas.width - currentBlock.w;
         }
@@ -120,8 +167,6 @@
             if(!gameRunning) return;
 
             const lastBlock = blocks[blocks.length - 1];
-            
-            // Überlappung berechnen
             const delta = currentBlock.x - lastBlock.x;
             const overlap = currentBlock.w - Math.abs(delta);
 
@@ -130,14 +175,14 @@
                 return;
             }
 
-            // Block kürzen
             const newX = delta > 0 ? currentBlock.x : lastBlock.x;
             blocks.push({ x: newX, y: currentBlock.y, w: overlap, color: currentBlock.color });
             
-            scoreEl.innerText = blocks.length - 1;
+            score = blocks.length - 1;
+            scoreEl.innerText = score;
             
-            // Kamera-Effekt: Wenn der Turm zu hoch wird, schieben wir alles runter
-            if(blocks.length > 5) {
+            // Kamera-Scroll-Effekt
+            if(blocks.length > 4) {
                 blocks.forEach(b => b.y += blockHeight);
             }
 
@@ -146,36 +191,77 @@
 
         function gameOver() {
             gameRunning = false;
-            document.getElementById('msg').innerText = "Eingestürzt!";
-            document.getElementById('sub-msg').innerText = "Höhe: " + (blocks.length - 1);
-            document.getElementById('menu-overlay').style.display = 'flex';
+            
+            // Coin verdienen ab Höhe 10
+            if (score >= 10) {
+                earnCoin();
+            }
+
+            if(score > highscore) {
+                highscore = score;
+                localStorage.setItem('glaggleTowerHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
+            } else {
+                document.getElementById('msg').innerText = "Eingestürzt! Höhe: " + score;
+            }
+            
+            menu.style.display = 'flex';
+        }
+
+        function earnCoin() {
+            let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+            glaggleCoins++;
+            localStorage.setItem('glaggleCoins', glaggleCoins);
+
+            const container = document.getElementById('coin-container');
+            const countElement = document.getElementById('coin-count');
+
+            if (countElement) {
+                countElement.innerText = glaggleCoins;
+                container.classList.add('coin-animation');
+                setTimeout(() => container.classList.remove('coin-animation'), 500);
+            }
         }
 
         function animate() {
             if(!gameRunning) return;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Bestehende Blöcke zeichnen
+            // Boden/Plattform zeichnen
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
+            ctx.fillRect(0, canvas.height - 5, canvas.width, 5);
+
+            // Alle Blöcke
             blocks.forEach(b => {
-                ctx.fillStyle = b.color || '#70C4F7';
-                ctx.fillRect(b.x, b.y, b.w, blockHeight - 2);
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.roundRect(b.x, b.y, b.w, blockHeight - 3, 5);
+                ctx.fill();
             });
 
-            // Aktuellen Block bewegen
+            // Aktueller Block
             currentBlock.x += speed * direction;
             if(currentBlock.x + currentBlock.w > canvas.width || currentBlock.x < 0) {
                 direction *= -1;
             }
 
-            // Aktuellen Block zeichnen
             ctx.fillStyle = currentBlock.color;
-            ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.w, blockHeight - 2);
+            ctx.beginPath();
+            ctx.roundRect(currentBlock.x, currentBlock.y, currentBlock.w, blockHeight - 3, 5);
+            ctx.fill();
 
             requestAnimationFrame(animate);
         }
 
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space') placeBlock(); });
+        window.addEventListener('keydown', (e) => { 
+            if(e.code === 'Space') placeBlock(); 
+        });
+
+        window.addEventListener('load', () => {
+            const startCoins = localStorage.getItem('glaggleCoins') || 0;
+            document.getElementById('coin-count').innerText = startCoins;
+        });
     </script>
 </body>
 </html>
