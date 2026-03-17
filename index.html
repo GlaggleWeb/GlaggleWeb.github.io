@@ -567,20 +567,21 @@
    <main class="main-content">
     <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
     
-    <div class="search-section">
-        <div class="search-bar-container">
-            <div id="fakeCaret" class="custom-caret"></div>
+<div class="search-section">
+    <form onsubmit="glaggleSearch(); return false;" class="search-bar-container">
+        <div id="fakeCaret" class="custom-caret"></div>
 
-            <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." onkeypress="if(event.key === 'Enter') glaggleSearch()">
+        <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
+               autocomplete="off">
 
-            <button onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
 
-            <button onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-        </div>
+        <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+    </form>
 
-        <div class="loader" id="glaggleLoader"></div>
-        <div id="glaggleResults" class="results-container"></div>
-    </div>
+    <div class="loader" id="glaggleLoader"></div>
+    <div id="glaggleResults" class="results-container"></div>
+</div>
 
     <div class="button-container" id="quickButtons">
         <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
