@@ -107,7 +107,36 @@
         display: flex; flex-direction: column; align-items: center; 
         min-height: 100vh; transition: background-color 0.3s;
     }
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color, #ffffff); /* Nutzt deine Hintergrundfarbe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Immer ganz oben */
+    transition: opacity 0.5s ease;
+}
 
+.loader-logo {
+    width: 150px; /* Oder deine gewünschte Größe */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+/* Versteckt den Preloader */
+.preloader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
     /* NAVIGATION */
     .navbar {
         display: flex; align-items: center; justify-content: space-between;
@@ -529,6 +558,11 @@
 </style>
 </head>
 <body>
+
+<div id="preloader">
+    <img src="glagglelogo.png" alt="Glaggle Loading..." class="loader-logo">
+</div>
+    
    <nav class="navbar">
     <div class="nav-left">
         <a href="https://glaggle.ch"><img src="glagglelogo.png" class="logo-img" alt="Logo"></a>
@@ -1141,6 +1175,14 @@ function toggleMenu() {
     sidebar.classList.toggle("active");
     overlay.classList.toggle("active");
 }
+
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    // Wir geben der Seite eine kleine Extra-Zehntelsekunde für den Wow-Effekt
+    setTimeout(() => {
+        preloader.classList.add('preloader-hidden');
+    }, 500);
+});
 </script>
 </body>
 </html>
