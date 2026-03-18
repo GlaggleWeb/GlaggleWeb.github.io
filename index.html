@@ -555,31 +555,6 @@
 .sidebar-category summary::-webkit-details-marker {
     display: none;
 }
-
-.search-bar-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-/* WICHTIG: Der Button muss über allem anderen liegen */
-.search-icon-btn, .ai-magic-btn {
-    position: relative;
-    z-index: 10; 
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent; /* Entfernt den blauen Kasten auf Mobile */
-}
-
-/* Der Fake-Caret darf Klicks nicht blockieren! */
-.custom-caret {
-    pointer-events: none; 
-    z-index: 5;
-}
-
-/* Sicherstellen, dass das Input-Feld nicht den Button überlappt */
-#glaggleQuery {
-    padding-right: 90px; /* Platz für die zwei Buttons rechts */
-}
 </style>
 </head>
 <body>
