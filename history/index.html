@@ -7,25 +7,39 @@
     <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
     
     <style>
-        :root {
-            --bg-color: #ffffff;
-            --nav-bg: #ffffff;
-            --text-color: #202124;
-            --card-bg: #ffffff;
-            --card-border: #dfe1e5;
-            --link-color: #70C4F7;
-            --desc-color: #4d5156;
-        }
+       /* 1. STANDARD: HELL (Light Mode) */
+:root {
+    --bg-color: #ffffff;
+    --nav-bg: #ffffff;
+    --text-color: #202124;
+    --card-bg: #ffffff;
+    --card-border: #dfe1e5;
+    --link-color: #70C4F7;
+    --desc-color: #4d5156;
+    --input-bg: #ffffff;
+}
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+/* 2. AUTOMATISCH: DUNKEL (Dark Mode) */
+/* Dieser Block wird nur aktiv, wenn das System auf 'Dunkel' steht */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #0b0f13;       /* Dunkler Hintergrund */
+        --nav-bg: #161b22;         /* Dunkle Navbar */
+        --text-color: #e6edf3;     /* Heller Text */
+        --card-bg: #161b22;        /* Dunkle Karten */
+        --card-border: #30363d;    /* Dunklerer Rand */
+        --link-color: #58a6ff;     /* Etwas kräftigeres Blau für Dark Mode */
+        --desc-color: #8b949e;     /* Grauer Text */
+        --input-bg: #0d1117;
+    }
+}
+
+/* WICHTIG: Deine Elemente müssen diese Variablen nutzen */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease; /* Sanfter Wechsel */
+}
 
         /* NAVIGATION (Dein Original-Style) */
         .navbar {
@@ -167,10 +181,10 @@
             <div class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content">
-                    <div class="glaggle-entry">
+                    <div class="glaggle-entry fav-project">
                         <span class="month-label">März 2026</span>
                         <h3 class="entry-title">🎮 Gamecenter und Quiz Studio</h3>
-                        <p>Das Gamecenter mit anfänglich 4 Games wird eröffnet. Es kommen laufend welche dazu, und erstmals ist das Quiz Studio Pro verfügbar in dem man mit KI Quize erstellen kann! Auch wird die Home Seite um das Hamburgerkonzept erweitert, dass eine bessere Übersicht gewährleisten sollte!</p>
+                        <p>Das Gamecenter mit anfänglich 4 Games wird eröffnet. Es kommen laufend welche dazu, und erstmals ist das Quiz Studio Pro verfügbar in dem man mit KI Quize erstellen kann! Auch wird die Home Seite um das Hamburgerkonzept erweitert, dass eine bessere Übersicht gewährleisten sollte! Dazu wird Glame 2.0 auf Glame 3.0 Upgedatet!</p>
                     </div>
                 </div>
             </div>
@@ -178,10 +192,10 @@
             <div class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content">
-                    <div class="glaggle-entry">
+                    <div class="glaggle-entry fav-project">
                         <span class="month-label">Februar 2026</span>
                         <h3 class="entry-title">🤖 Glame AI Evolution und WebSearch</h3>
-                        <p>Gkame 1.0 wird erschaffen und später weiterentwickelt für mehr Designmodes und Markdown. Auch wird ende Februar auch erstmals das GlaggleWEbSearch verfügbar sein. Nebenbei wird auch die Home-Seite massiv Upgedatet!</p>
+                        <p>Glame 1.0 wird erschaffen und später weiterentwickelt für mehr Designmodes und Markdown. Auch wird ende Februar auch erstmals das GlaggleWEbSearch verfügbar sein. Nebenbei wird auch die Home-Seite massiv Upgedatet!</p>
                     </div>
                 </div>
             </div>
@@ -189,10 +203,10 @@
             <div class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content">
-                    <div class="glaggle-entry">
+                    <div class="glaggle-entry fav-project">
                         <span class="month-label">Januar 2026</span>
                         <h3 class="entry-title">🔢 Zahlenraten</h3>
-                        <p>Das Glaggle Zahlenraten ist erstamls öffentlich nur in einem alten design.</p>
+                        <p>Das Glaggle <a href="https://glaggle.ch/zahlenraten/">Zahlenraten</a> ist erstamls öffentlich nur in einem alten design.</p>
                     </div>
                 </div>
             </div>
