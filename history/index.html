@@ -223,7 +223,7 @@
 
     <script>
         // Kleiner Effekt: Karten beim Scrollen einblenden
-        const observerOptions = { threshold: 0.2 };
+        const observerOptions = { threshold: 0.5 };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
