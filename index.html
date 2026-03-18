@@ -555,6 +555,31 @@
 .sidebar-category summary::-webkit-details-marker {
     display: none;
 }
+
+.search-bar-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* WICHTIG: Der Button muss über allem anderen liegen */
+.search-icon-btn, .ai-magic-btn {
+    position: relative;
+    z-index: 10; 
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* Entfernt den blauen Kasten auf Mobile */
+}
+
+/* Der Fake-Caret darf Klicks nicht blockieren! */
+.custom-caret {
+    pointer-events: none; 
+    z-index: 5;
+}
+
+/* Sicherstellen, dass das Input-Feld nicht den Button überlappt */
+#glaggleQuery {
+    padding-right: 90px; /* Platz für die zwei Buttons rechts */
+}
 </style>
 </head>
 <body>
@@ -607,16 +632,13 @@
     <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
     
 <div class="search-section">
-    <form onsubmit="glaggleSearch(); return false;" class="search-bar-container">
-        <div id="fakeCaret" class="custom-caret"></div>
+   <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
+    
+    <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
+           autocomplete="off" enterkeyhint="search"> <button type="submit" onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
 
-        <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
-               autocomplete="off">
-
-        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
-
-        <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-    </form>
+    <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+</form>
 
     <div class="loader" id="glaggleLoader"></div>
     <div id="glaggleResults" class="results-container"></div>
@@ -1187,6 +1209,15 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         preloader.classList.add('preloader-hidden');
     }, 500);
+});
+
+// Ermöglicht Suche durch 'Enter' auf der Handy-Tastatur
+document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Verhindert Neuladen der Seite
+        glaggleSearch();
+        this.blur(); // Schließt die Tastatur auf dem Handy nach der Suche
+    }
 });
 </script>
 </body>
