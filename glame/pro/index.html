@@ -44,7 +44,7 @@
 
         #chat-wrapper {
             width: 95%;
-            max-width: 450px;
+            max-width: 1900px;
             height: 85vh;
             background: var(--panel);
             border-radius: 25px;
@@ -271,6 +271,38 @@
         select, .action-btn { width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; font-size: 14px; outline: none; }
         .action-btn { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 15px; }
         .reset-btn { background: var(--danger); }
+        #sidebar {
+    width: 260px;
+    background: #1a1a1a;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #333;
+    transition: all 0.3s ease;
+}
+
+.chat-slot {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #2d2d2d;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid transparent;
+}
+
+.chat-slot:hover { background: #3d3d3d; }
+.chat-slot.active { border-color: var(--primary); background: #333; }
+
+/* Responsive: Auf Handys Sidebar verstecken oder schmaler machen */
+@media (max-width: 768px) {
+    #sidebar { width: 60px; padding: 10px; }
+    #sidebar h2, #sidebar button { display: none; }
+}
     </style>
 </head>
 <body>
@@ -304,7 +336,18 @@
         <input type="email" id="setup-email" placeholder="Deine E-Mail Adresse">
         <button class="action-btn" id="start-btn">Jetzt starten 🚀</button>
     </div>
+    <div id="main-container" style="display: flex; width: 100vw; height: 100vh;">
+    
+    <div id="sidebar">
+        <h2 style="font-size: 1.2rem; margin-bottom: 20px;">Glame Chats</h2>
+        <button class="action-btn" id="new-chat-btn">+ Neuer Chat</button>
+        <div id="chat-list" style="margin-top: 20px; flex: 1; overflow-y: auto;">
+            </div>
+    </div>
 
+    <div id="chat-wrapper" style="flex: 1; max-width: 900px; margin: auto;">
+        </div>
+</div>
     <div class="modal-overlay" id="overlay"></div>
 
     <div id="settings-modal">
@@ -585,6 +628,7 @@ async function antwortSenden() {
         
         chatVerlauf.push({ role: "assistant", content: antwort });
         typeWriter(textSpan, antwort);
+        speichereVerlauf();
 
     } catch (e) {
         const botDiv = document.getElementById(thinkingId);
@@ -601,6 +645,102 @@ document.getElementById("reset-everything").onclick = () => {
         location.reload();
     }
 };
+
+// Funktion zum Laden des Verlaufs beim Start
+function ladeVerlauf() {
+    const gespeicherterVerlauf = localStorage.getItem("glame_history");
+    if (gespeicherterVerlauf) {
+        chatVerlauf = JSON.parse(gespeicherterVerlauf);
+        
+        // Chat-Fenster leeren und alte Nachrichten anzeigen
+        chatWindow.innerHTML = ""; 
+        chatVerlauf.forEach(msg => {
+            if(msg.role === "system") return; // System-Anweisung nicht anzeigen
+            const cssClass = msg.role === "assistant" ? "bot-msg" : "user-msg";
+            const prefix = msg.role === "assistant" ? "<b>Glame:</b> " : "";
+            chatWindow.innerHTML += `<div class="${cssClass}">${prefix}${msg.content}</div>`;
+        });
+    }
+}
+
+// Funktion zum Speichern (begrenzt auf die letzten 3 Interaktionen)
+function speichereVerlauf() {
+    // Wir behalten die System-Anweisung (Index 0) 
+    // plus die letzten 6 Einträge (3 Fragen + 3 Antworten)
+    const systemPrompt = chatVerlauf[0];
+    const letzteNachrichten = chatVerlauf.slice(-6); 
+    
+    // Falls der Verlauf noch kurz ist, keine Duplikate speichern
+    const zuSpeichern = [systemPrompt, ...letzteNachrichten.filter(m => m.role !== "system")];
+    
+    localStorage.setItem("glame_history", JSON.stringify(zuSpeichern));
+}
+
+// RUFE DAS LADEN BEIM START AUF
+ladeVerlauf();
+
+let allChats = JSON.parse(localStorage.getItem("glame_all_chats")) || {};
+let currentChatId = localStorage.getItem("glame_active_id") || "chat_" + Date.now();
+
+// Initialisiere den aktuellen Chat, falls neu
+if (!allChats[currentChatId]) {
+    allChats[currentChatId] = [{ role: "system", content: seelen.standard }];
+}
+
+function renderChatList() {
+    const list = document.getElementById("chat-list");
+    list.innerHTML = "";
+    
+    // Wir zeigen nur die letzten 3-5 Chats an
+    Object.keys(allChats).reverse().slice(0, 5).forEach(id => {
+        const slot = document.createElement("div");
+        slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
+        
+        // Titel generieren: Entweder erste Nachricht oder Datum
+        const firstMsg = allChats[id].find(m => m.role === "user");
+        slot.innerText = firstMsg ? firstMsg.content.substring(0, 20) + "..." : "Leerer Chat";
+        
+        slot.onclick = () => switchChat(id);
+        list.appendChild(slot);
+    });
+}
+
+function switchChat(id) {
+    currentChatId = id;
+    localStorage.setItem("glame_active_id", id);
+    chatVerlauf = allChats[id];
+    
+    // Chat-Fenster im UI leeren und neu befüllen
+    renderMessages();
+    renderChatList();
+}
+
+function renderMessages() {
+    chatWindow.innerHTML = "";
+    chatVerlauf.forEach(msg => {
+        if (msg.role === "system") return;
+        const div = document.createElement("div");
+        div.className = msg.role === "assistant" ? "bot-msg" : "user-msg";
+        div.innerHTML = msg.role === "assistant" ? `<b>Glame:</b> ${msg.content}` : msg.content;
+        chatWindow.appendChild(div);
+    });
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Wenn eine Nachricht empfangen wird:
+// Speichere in allChats[currentChatId] = chatVerlauf;
+// localStorage.setItem("glame_all_chats", JSON.stringify(allChats));
+
+document.getElementById("new-chat-btn").onclick = () => {
+    const newId = "chat_" + Date.now();
+    allChats[newId] = [{ role: "system", content: seelen.standard }];
+    switchChat(newId);
+};
+
+// Beim Start einmal ausführen
+renderChatList();
+renderMessages();
+    
 </script>
 </body>
 </html>
