@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI</title>
+    <title>Glame AI Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary: #008C9C;
@@ -454,7 +455,11 @@ function renderMessages() {
         if (msg.role === "system") return;
         const div = document.createElement("div");
         div.className = msg.role === "assistant" ? "bot-msg" : "user-msg";
-        div.innerHTML = msg.role === "assistant" ? `<b>Glame:</b> ${msg.content}` : msg.content;
+        if (msg.role === "assistant") {
+    div.innerHTML = `<b>Glame:</b> ` + marked.parse(msg.content);
+} else {
+    div.textContent = msg.content;
+}
         chatWindow.appendChild(div);
     });
     chatWindow.scrollTop = chatWindow.scrollHeight;
