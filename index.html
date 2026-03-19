@@ -603,24 +603,24 @@
 </div> </div> <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
 
-   <main class="main-content">
+  <main class="main-content">
     <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
     
-<div class="search-section">
-   <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
-   <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
-    <div class="custom-caret"></div> 
-    
-    <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." autocomplete="off" enterkeyhint="search">
-    
-           autocomplete="off" enterkeyhint="search"> <button type="submit" onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
+    <div class="search-section">
+        <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
+            
+            <div class="custom-caret"></div> 
+            
+            <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." autocomplete="off" enterkeyhint="search">
+            
+            <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
 
-    <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-</form>
+            <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+        </form>
 
-    <div class="loader" id="glaggleLoader"></div>
-    <div id="glaggleResults" class="results-container"></div>
-</div>
+        <div class="loader" id="glaggleLoader"></div>
+        <div id="glaggleResults" class="results-container"></div>
+    </div>
 
     <div class="button-container" id="quickButtons">
         <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
