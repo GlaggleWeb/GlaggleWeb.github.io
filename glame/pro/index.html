@@ -744,6 +744,111 @@ document.getElementById("new-chat-btn").onclick = () => {
 // Beim Start einmal ausführen
 renderChatList();
 renderMessages();
+
+// 1. Variablen & Speicher laden
+let allChats = JSON.parse(localStorage.getItem("glame_all_chats")) || {};
+let currentChatId = localStorage.getItem("glame_active_id");
+let chatVerlauf = [];
+
+const chatWindow = document.getElementById("chat-window");
+const userInput = document.getElementById("user-input");
+
+// Falls kein Chat existiert, einen erstellen
+if (!currentChatId || !allChats[currentChatId]) {
+    currentChatId = "chat_" + Date.now();
+    allChats[currentChatId] = [{ role: "system", content: seelen.standard }];
+    saveToStorage();
+}
+chatVerlauf = allChats[currentChatId];
+
+// 2. Funktionen für die Sidebar & Nachrichten
+function renderChatList() {
+    const list = document.getElementById("chat-list");
+    list.innerHTML = "";
+    Object.keys(allChats).sort().reverse().slice(0, 8).forEach(id => {
+        const firstMsg = allChats[id].find(m => m.role === "user");
+        const slot = document.createElement("div");
+        slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
+        slot.innerText = firstMsg ? firstMsg.content.substring(0, 20) + "..." : "Leerer Chat";
+        slot.onclick = () => switchChat(id);
+        list.appendChild(slot);
+    });
+}
+
+function renderMessages() {
+    chatWindow.innerHTML = "";
+    if (chatVerlauf.length <= 1) {
+        chatWindow.innerHTML = '<div class="bot-msg">Hallo! Ich bin <b>Glame</b>. Wie kann ich dir helfen?</div>';
+    } else {
+        chatVerlauf.forEach(msg => {
+            if (msg.role === "system") return;
+            const div = document.createElement("div");
+            div.className = msg.role === "assistant" ? "bot-msg" : "user-msg";
+            div.innerHTML = msg.role === "assistant" ? `<b>Glame:</b> ${msg.content}` : msg.content;
+            chatWindow.appendChild(div);
+        });
+    }
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function switchChat(id) {
+    currentChatId = id;
+    localStorage.setItem("glame_active_id", id);
+    chatVerlauf = allChats[id];
+    renderMessages();
+    renderChatList();
+}
+
+function saveToStorage() {
+    allChats[currentChatId] = chatVerlauf;
+    localStorage.setItem("glame_all_chats", JSON.stringify(allChats));
+    localStorage.setItem("glame_active_id", currentChatId);
+}
+
+// 3. Neue Nachrichten senden (angepasst)
+async function antwortSenden() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    chatVerlauf.push({ role: "user", content: text });
+    userInput.value = "";
+    renderMessages();
+    renderChatList(); // Sidebar updaten für den Titel
+
+    const thinkingId = "think-" + Date.now();
+    chatWindow.innerHTML += `<div class="bot-msg" id="${thinkingId}"><b>Glame:</b> ...</div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    try {
+        const k = "gsk_" + "ImbDfvvSXzXJfw80vZP5" + "WGdyb3FYknkYv77zRJZN3pfyA1PiRGWu";
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + k, "Content-Type": "application/json" },
+            body: JSON.stringify({ model: currentModel, messages: chatVerlauf })
+        });
+        const data = await res.json();
+        const antwort = data.choices[0].message.content;
+
+        document.getElementById(thinkingId).remove();
+        chatVerlauf.push({ role: "assistant", content: antwort });
+        
+        renderMessages();
+        saveToStorage(); // WICHTIG: Hier wird alles permanent gesichert
+    } catch (e) {
+        document.getElementById(thinkingId).innerText = "Fehler!";
+    }
+}
+
+// Button Events
+document.getElementById("new-chat-btn").onclick = () => {
+    const newId = "chat_" + Date.now();
+    allChats[newId] = [{ role: "system", content: seelen.standard }];
+    switchChat(newId);
+};
+
+// Start-Aufruf
+renderChatList();
+renderMessages();
     
 </script>
 </body>
