@@ -608,6 +608,10 @@
     
 <div class="search-section">
    <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
+   <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
+    <div class="custom-caret"></div> 
+    
+    <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." autocomplete="off" enterkeyhint="search">
     
     <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
            autocomplete="off" enterkeyhint="search"> <button type="submit" onclick="glaggleSearch()" class="search-icon-btn" aria-label="Suche"></button>
@@ -810,13 +814,15 @@ const container = document.querySelector('.search-bar-container');
 const fakeCaret = container.querySelector('.custom-caret');
 
 function updateCaret() {
+    // Prüfen, ob das Element überhaupt existiert, bevor wir darauf zugreifen
+    if (!fakeCaret) return; 
+
     if (document.activeElement === input) {
         fakeCaret.style.display = 'block';
         
         const inputStyle = window.getComputedStyle(input);
         const measurementSpan = document.createElement('span');
         
-        // Stile kopieren
         measurementSpan.style.font = inputStyle.font;
         measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
         measurementSpan.style.textTransform = inputStyle.textTransform;
@@ -824,14 +830,10 @@ function updateCaret() {
         measurementSpan.style.visibility = 'hidden';
         measurementSpan.style.position = 'absolute';
         
-        // Text bis zum Cursor
         measurementSpan.textContent = input.value.substring(0, input.selectionStart);
         document.body.appendChild(measurementSpan);
         
         const textWidth = measurementSpan.offsetWidth;
-        
-        // BERECHNUNG KORRIGIERT:
-        // Wir nehmen die Position des Inputs + das Padding von links + die Textbreite
         const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
         fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
         
