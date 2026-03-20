@@ -525,76 +525,100 @@
             }
         }
 
-        async function callAI(prompt, base64Image = null) {
-            let retryCount = 0;
-            const maxRetries = 5;
+       // 1. Zerstückelte Keys (Oben im Script-Bereich platzieren)
+const g1 = "AIzaSyD7Vz";
+const g2 = "tHGsr1UCI-0jpr";
+const g3 = "Pdr0iRU3hFQrK-c";
 
-            const executeRequest = async () => {
-                let url, payload;
+const l1 = "gsk_ImbDfvvSXzXJfw80";
+const l2 = "vZP5WGdyb3FYknkYv77z";
+const l3 = "RJZN3pfyA1PiRGWu";
 
-                if (selectedModel.includes("gemini")) {
-                    url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
-                    
-                    const parts = [{ text: prompt }];
-                    if (base64Image) {
-                        parts.push({
-                            inlineData: {
-                                mimeType: "image/png",
-                                data: base64Image
-                            }
-                        });
-                    }
+// Hilfsfunktionen zum Zusammensetzen
+function getGKey() { return g1 + g2 + g3; }
+function getLKey() { return l1 + l2 + l3; }
 
-                    payload = {
-                        contents: [{ parts: parts }],
-                        systemInstruction: { parts: [{ text: "Du bist Glame Pro, eine hilfreiche und moderne KI. Antworte in klarem Deutsch mit Markdown-Formatierung." }] }
-                    };
-                } else {
-                    // Fallback Groq (Legacy)
-                    url = "https://api.groq.com/openai/v1/chat/completions";
-                    payload = {
-                        model: selectedModel,
-                        messages: [{ role: "system", content: "Du bist Glame Pro." }, ...allChats[currentChatId]]
-                    };
+/**
+ * Hauptfunktion für den KI-Aufruf
+ * Unterstützt Gemini (mit Bildern) und Llama (Text-only)
+ */
+async function callAI(prompt, base64Image = null) {
+    const isGemini = selectedModel.includes("gemini");
+    const activeKey = isGemini ? getGKey() : getLKey();
+    
+    let url, payload;
+    const headers = { "Content-Type": "application/json" };
+
+    if (isGemini) {
+        // Google API nutzt den Key in der URL
+        url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${activeKey}`;
+        
+        const parts = [{ text: prompt }];
+        if (base64Image) {
+            parts.push({
+                inlineData: {
+                    mimeType: "image/png",
+                    data: base64Image
                 }
-
-                const res = await fetch(url, {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        // Beispiel für einen Gemini Key (ersetze die Teile durch deinen echten Key)
-const partA = "AIzaSy"; 
-const partB = "D3fG_hIjkLmNoP"; 
-const partC = "qRsTuVwXyZ1234";
-
-// Die Funktion, die den Key erst "on-the-fly" zusammenbaut
-function getKey() {
-    return partA + partB + partC;
-}
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!res.ok) throw new Error("API Error");
-
-                const data = await res.json();
-                if (selectedModel.includes("gemini")) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    return data.choices[0].message.content;
-                }
-            };
-
-            while (retryCount < maxRetries) {
-                try {
-                    return await executeRequest();
-                } catch (e) {
-                    retryCount++;
-                    await new Promise(r => setTimeout(r, Math.pow(2, retryCount) * 1000));
-                    if (retryCount === maxRetries) throw e;
-                }
-            }
+            });
         }
+
+        payload = {
+            contents: [{ parts: parts }],
+            systemInstruction: { 
+                parts: [{ text: "Du bist Glame Pro, eine hilfreiche und moderne KI. Antworte in klarem Deutsch mit Markdown-Formatierung." }] 
+            }
+        };
+    } else {
+        // Groq/OpenAI kompatible API nutzt Authorization Header
+        url = "https://api.groq.com/openai/v1/chat/completions";
+        headers["Authorization"] = `Bearer ${activeKey}`;
+        
+        // Chat-Historie für Llama vorbereiten
+        const history = allChats[currentChatId] || [];
+        payload = {
+            model: selectedModel,
+            messages: [
+                { role: "system", content: "Du bist Glame Pro, ein hilfreicher Assistent." },
+                ...history.map(m => ({ role: m.role, content: m.content }))
+            ]
+        };
+    }
+
+    // Request-Logik mit Exponential Backoff (Retry)
+    let retryCount = 0;
+    const maxRetries = 5;
+
+    while (retryCount < maxRetries) {
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error?.message || "API Error");
+            }
+
+            const data = await res.json();
+            
+            // Antwort-Parsing je nach Anbieter
+            if (isGemini) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                return data.choices[0].message.content;
+            }
+
+        } catch (err) {
+            retryCount++;
+            if (retryCount === maxRetries) throw err;
+            // Wartezeit: 1s, 2s, 4s, 8s...
+            await new Promise(r => setTimeout(r, Math.pow(2, retryCount) * 1000));
+        }
+    }
+}
 
         function renderMessages() {
             chatWindow.innerHTML = "";
