@@ -387,295 +387,232 @@
         </div>
     </main>
 
-    <script>
-        // State
-        let apiKey = "AIzaSyD7VztHGsr1UCI-0jprPdr0iRU3hFQrK-c"; // Wird von der Umgebung gefüllt
-        let currentUser = JSON.parse(localStorage.getItem("glame_pro_user")) || null;
-        let allChats = JSON.parse(localStorage.getItem("glame_pro_chats")) || {};
-        let currentChatId = localStorage.getItem("glame_pro_active_id") || "chat_" + Date.now();
-        let selectedModel = "gemini-1.5-flash";
-        let currentImageBase64 = null;
+   
+<script>
+    // 1. Keys & State
+    const g1 = "AIzaSyD7Vz", g2 = "tHGsr1UCI-0jpr", g3 = "Pdr0iRU3hFQrK-c";
+    const l1 = "gsk_ImbDfvvSXzXJfw80", l2 = "vZP5WGdyb3FYknkYv77z", l3 = "RJZN3pfyA1PiRGWu";
 
-        // UI Elements
-        const chatWindow = document.getElementById("chat-window");
-        const userInput = document.getElementById("user-input");
-        const sendBtn = document.getElementById("send-btn");
-        const chatList = document.getElementById("chat-list");
-        const attachBtn = document.getElementById("attach-btn");
-        const imageInput = document.getElementById("image-input");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
-        const imagePreview = document.getElementById("image-preview");
+    function getGKey() { return g1 + g2 + g3; }
+    function getLKey() { return l1 + l2 + l3; }
 
-        // Init
-        window.onload = () => {
-            if (!currentUser) {
-                showModal("login-modal");
-            } else {
-                document.getElementById("avatar-circle").innerText = currentUser.name.charAt(0).toUpperCase();
-            }
+    let currentUser = JSON.parse(localStorage.getItem("glame_pro_user")) || null;
+    let allChats = JSON.parse(localStorage.getItem("glame_pro_chats")) || {};
+    let currentChatId = localStorage.getItem("glame_pro_active_id") || "chat_" + Date.now();
+    let selectedModel = "gemini-1.5-flash";
+    let currentImageBase64 = null;
 
-            if (!allChats[currentChatId]) {
-                createNewChat();
-            }
-            renderChatList();
-            renderMessages();
-            updateModelBadge();
-        };
+    // UI Elements
+    const chatWindow = document.getElementById("chat-window");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+    const chatList = document.getElementById("chat-list");
+    const attachBtn = document.getElementById("attach-btn");
+    const imageInput = document.getElementById("image-input");
+    const imagePreviewContainer = document.getElementById("image-preview-container");
+    const imagePreview = document.getElementById("image-preview");
 
-        // Modal Management
-        function showModal(id) {
-            document.getElementById(id).style.display = "block";
-            document.getElementById("overlay").style.display = "block";
-        }
+    // Init
+    window.onload = () => {
+        if (!currentUser) { showModal("login-modal"); } 
+        else { document.getElementById("avatar-circle").innerText = currentUser.name.charAt(0).toUpperCase(); }
+        if (!allChats[currentChatId]) { createNewChat(); }
+        renderChatList();
+        renderMessages();
+        updateModelBadge();
+    };
 
-        function hideModals() {
-            document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-            document.getElementById("overlay").style.display = "none";
-        }
+    // Modal Management
+    function showModal(id) {
+        document.getElementById(id).style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+    function hideModals() {
+        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+        document.getElementById("overlay").style.display = "none";
+    }
 
-        // Event Listeners
-        document.getElementById("login-confirm").onclick = () => {
-            const name = document.getElementById("user-name").value.trim();
-            if (name) {
-                currentUser = { name };
-                localStorage.setItem("glame_pro_user", JSON.stringify(currentUser));
-                document.getElementById("avatar-circle").innerText = name.charAt(0).toUpperCase();
-                hideModals();
-            }
-        };
-
-        document.getElementById("open-settings").onclick = () => showModal("settings-modal");
-        document.getElementById("settings-save").onclick = () => {
-            selectedModel = document.getElementById("model-select").value;
-            const theme = document.getElementById("theme-select").value;
-            document.body.className = theme === "default" ? "" : theme + "-mode";
-            updateModelBadge();
+    // Event Listeners
+    document.getElementById("login-confirm").onclick = () => {
+        const name = document.getElementById("user-name").value.trim();
+        if (name) {
+            currentUser = { name };
+            localStorage.setItem("glame_pro_user", JSON.stringify(currentUser));
+            document.getElementById("avatar-circle").innerText = name.charAt(0).toUpperCase();
             hideModals();
-        };
+        }
+    };
 
-        document.getElementById("delete-data").onclick = () => {
-            if (confirm("Wirklich alles löschen?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        };
+    document.getElementById("open-settings").onclick = () => showModal("settings-modal");
+    document.getElementById("settings-save").onclick = () => {
+        selectedModel = document.getElementById("model-select").value;
+        const theme = document.getElementById("theme-select").value;
+        document.body.className = theme === "default" ? "" : theme + "-mode";
+        updateModelBadge();
+        hideModals();
+    };
 
-        document.getElementById("new-chat-btn").onclick = createNewChat;
+    document.getElementById("delete-data").onclick = () => {
+        if (confirm("Wirklich alles löschen?")) { localStorage.clear(); location.reload(); }
+    };
 
-        attachBtn.onclick = () => {
-            if (selectedModel.includes("gemini")) {
-                imageInput.click();
-            } else {
-                alert("Bild-Upload ist nur mit Gemini-Modellen verfügbar.");
-            }
-        };
+    document.getElementById("new-chat-btn").onclick = createNewChat;
+    attachBtn.onclick = () => {
+        if (selectedModel.includes("gemini")) { imageInput.click(); } 
+        else { alert("Bild-Upload ist nur mit Gemini-Modellen verfügbar."); }
+    };
 
-        imageInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    currentImageBase64 = event.target.result.split(',')[1];
-                    imagePreview.src = event.target.result;
-                    imagePreviewContainer.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-            }
-        };
+    imageInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImageBase64 = event.target.result.split(',')[1];
+                imagePreview.src = event.target.result;
+                imagePreviewContainer.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
-        document.getElementById("remove-img-btn").onclick = () => {
-            currentImageBase64 = null;
-            imagePreviewContainer.style.display = "none";
-            imageInput.value = "";
-        };
+    document.getElementById("remove-img-btn").onclick = () => {
+        currentImageBase64 = null;
+        imagePreviewContainer.style.display = "none";
+        imageInput.value = "";
+    };
 
-        userInput.onkeypress = (e) => { if (e.key === "Enter") handleSend(); };
-        sendBtn.onclick = handleSend;
+    userInput.onkeypress = (e) => { if (e.key === "Enter") handleSend(); };
+    sendBtn.onclick = handleSend;
 
-        // Functions
-        function createNewChat() {
-            currentChatId = "chat_" + Date.now();
-            allChats[currentChatId] = [];
-            localStorage.setItem("glame_pro_active_id", currentChatId);
+    // Logic Functions
+    function createNewChat() {
+        currentChatId = "chat_" + Date.now();
+        allChats[currentChatId] = [];
+        localStorage.setItem("glame_pro_active_id", currentChatId);
+        localStorage.setItem("glame_pro_chats", JSON.stringify(allChats));
+        renderChatList();
+        renderMessages();
+    }
+
+    function updateModelBadge() {
+        const badge = document.getElementById("model-badge");
+        badge.innerText = selectedModel.includes("gemini") ? "Gemini 1.5 Flash" : "Llama 3.3 Pro";
+        badge.style.borderColor = selectedModel.includes("gemini") ? "#0ea5e9" : "#22c55e";
+        attachBtn.style.opacity = selectedModel.includes("gemini") ? "1" : "0.3";
+    }
+
+    async function handleSend() {
+        const text = userInput.value.trim();
+        if (!text && !currentImageBase64) return;
+
+        const userMsg = { role: "user", content: text, image: currentImageBase64 ? imagePreview.src : null };
+        allChats[currentChatId].push(userMsg);
+        renderMessages();
+        
+        userInput.value = "";
+        const activeImage = currentImageBase64;
+        currentImageBase64 = null;
+        imagePreviewContainer.style.display = "none";
+
+        const botMsgId = "bot-" + Date.now();
+        addMessageToUI("bot", "Denke nach...", botMsgId);
+
+        try {
+            const responseText = await callAI(text, activeImage);
+            updateBotMessage(botMsgId, responseText);
+            allChats[currentChatId].push({ role: "assistant", content: responseText });
             localStorage.setItem("glame_pro_chats", JSON.stringify(allChats));
             renderChatList();
-            renderMessages();
-            imagePreviewContainer.style.display = "none";
-            currentImageBase64 = null;
-        }
-
-        function updateModelBadge() {
-            const badge = document.getElementById("model-badge");
-            if (selectedModel.includes("gemini")) {
-                badge.innerText = "Gemini 1.5 Flash";
-                badge.style.borderColor = "#0ea5e9";
-                attachBtn.style.opacity = "1";
-            } else {
-                badge.innerText = "Llama 3.3 Pro";
-                badge.style.borderColor = "#22c55e";
-                attachBtn.style.opacity = "0.3";
-            }
-        }
-
-        async function handleSend() {
-            const text = userInput.value.trim();
-            if (!text && !currentImageBase64) return;
-
-            const userMsg = { 
-                role: "user", 
-                content: text, 
-                image: currentImageBase64 ? imagePreview.src : null 
-            };
-            
-            allChats[currentChatId].push(userMsg);
-            renderMessages();
-            
-            userInput.value = "";
-            const activeImage = currentImageBase64; // local copy
-            currentImageBase64 = null;
-            imagePreviewContainer.style.display = "none";
-
-            // Typing Indicator
-            const botMsgId = "bot-" + Date.now();
-            addMessageToUI("bot", "...", botMsgId);
-
-            try {
-                const responseText = await callAI(text, activeImage);
-                updateBotMessage(botMsgId, responseText);
-                
-                allChats[currentChatId].push({ role: "assistant", content: responseText });
-                localStorage.setItem("glame_pro_chats", JSON.stringify(allChats));
-                renderChatList();
-            } catch (err) {
-                updateBotMessage(botMsgId, "Hoppla, da ist was schiefgelaufen. " + err.message);
-            }
-        }
-
-       // 1. Zerstückelte Keys (Oben im Script-Bereich platzieren)
-const g1 = "AIzaSyD7Vz";
-const g2 = "tHGsr1UCI-0jpr";
-const g3 = "Pdr0iRU3hFQrK-c";
-
-const l1 = "gsk_ImbDfvvSXzXJfw80";
-const l2 = "vZP5WGdyb3FYknkYv77z";
-const l3 = "RJZN3pfyA1PiRGWu";
-
-// Hilfsfunktionen zum Zusammensetzen
-function getGKey() { return g1 + g2 + g3; }
-function getLKey() { return l1 + l2 + l3; }
-
-/**
- * Hauptfunktion für den KI-Aufruf
- * Unterstützt Gemini (mit Bildern) und Llama (Text-only)
- */
-async function callAI(prompt, base64Image = null) {
-    const isGemini = selectedModel.includes("gemini");
-    const activeKey = isGemini ? getGKey() : getLKey();
-    
-    let url, payload;
-    const headers = { "Content-Type": "application/json" };
-v else {
-        // Groq/OpenAI kompatible API nutzt Authorization Header
-        url = "https://api.groq.com/openai/v1/chat/completions";
-        headers["Authorization"] = `Bearer ${activeKey}`;
-        
-        // Chat-Historie für Llama vorbereiten
-        const history = allChats[currentChatId] || [];
-        payload = {
-            model: selectedModel,
-            messages: [
-                { role: "system", content: "Du bist Glame Pro, ein hilfreicher Assistent." },
-                ...history.map(m => ({ role: m.role, content: m.content }))
-            ]
-        };
-    }
-
-    // Request-Logik mit Exponential Backoff (Retry)
-    let retryCount = 0;
-    const maxRetries = 5;
-
-    while (retryCount < maxRetries) {
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error?.message || "API Error");
-            }
-
-            const data = await res.json();
-            
-            // Antwort-Parsing je nach Anbieter
-            if (isGemini) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                return data.choices[0].message.content;
-            }
-
         } catch (err) {
-            retryCount++;
-            if (retryCount === maxRetries) throw err;
-            // Wartezeit: 1s, 2s, 4s, 8s...
-            await new Promise(r => setTimeout(r, Math.pow(2, retryCount) * 1000));
+            updateBotMessage(botMsgId, "Fehler: " + err.message);
         }
     }
-}
 
-        function renderMessages() {
-            chatWindow.innerHTML = "";
+    async function callAI(prompt, base64Image = null) {
+        const isGemini = selectedModel.includes("gemini");
+        const activeKey = isGemini ? getGKey() : getLKey();
+        let url, payload;
+        const headers = { "Content-Type": "application/json" };
+
+        if (isGemini) {
+            url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
+            payload = {
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            };
+            if (base64Image) {
+                payload.contents[0].parts.push({
+                    inlineData: { mimeType: "image/png", data: base64Image }
+                });
+            }
+        } else {
+            url = "https://api.groq.com/openai/v1/chat/completions";
+            headers["Authorization"] = `Bearer ${activeKey}`;
             const history = allChats[currentChatId] || [];
-            history.forEach(msg => {
-                const container = document.createElement("div");
-                container.className = `msg-container ${msg.role === 'user' ? 'user' : 'bot'}`;
-                
-                let innerHTML = "";
-                if (msg.image) {
-                    innerHTML += `<img src="${msg.image}" class="msg-image">`;
-                }
-                innerHTML += `<div class="bubble">${msg.role === 'assistant' ? marked.parse(msg.content) : msg.content}</div>`;
-                
-                container.innerHTML = innerHTML;
-                chatWindow.appendChild(container);
-            });
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            payload = {
+                model: selectedModel,
+                messages: [
+                    { role: "system", content: "Du bist Glame Pro, ein KI-Assistent." },
+                    ...history.map(m => ({ role: m.role, content: m.content }))
+                ]
+            };
         }
 
-        function addMessageToUI(role, text, id) {
+        const res = await fetch(url, { method: "POST", headers: headers, body: JSON.stringify(payload) });
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error?.message || "API Error");
+        }
+        const data = await res.json();
+        return isGemini ? data.candidates[0].content.parts[0].text : data.choices[0].message.content;
+    }
+
+    function renderMessages() {
+        chatWindow.innerHTML = "";
+        (allChats[currentChatId] || []).forEach(msg => {
             const container = document.createElement("div");
-            container.className = `msg-container ${role}`;
-            container.id = id;
-            container.innerHTML = `<div class="bubble">${text}</div>`;
+            container.className = `msg-container ${msg.role === 'user' ? 'user' : 'bot'}`;
+            let content = msg.image ? `<img src="${msg.image}" class="msg-image">` : "";
+            content += `<div class="bubble">${msg.role === 'assistant' ? marked.parse(msg.content) : msg.content}</div>`;
+            container.innerHTML = content;
             chatWindow.appendChild(container);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
+        });
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-        function updateBotMessage(id, text) {
-            const bubble = document.getElementById(id).querySelector(".bubble");
-            bubble.innerHTML = marked.parse(text);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
+    function addMessageToUI(role, text, id) {
+        const container = document.createElement("div");
+        container.className = `msg-container ${role}`;
+        container.id = id;
+        container.innerHTML = `<div class="bubble">${text}</div>`;
+        chatWindow.appendChild(container);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-        function renderChatList() {
-            chatList.innerHTML = "";
-            const keys = Object.keys(allChats).sort((a,b) => b.split('_')[1] - a.split('_')[1]);
-            keys.forEach(id => {
-                const slot = document.createElement("div");
-                slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
-                const firstUserMsg = allChats[id].find(m => m.role === 'user');
-                slot.innerText = firstUserMsg ? firstUserMsg.content.substring(0, 25) + "..." : "Leerer Chat";
-                slot.onclick = () => {
-                    currentChatId = id;
-                    localStorage.setItem("glame_pro_active_id", id);
-                    renderChatList();
-                    renderMessages();
-                };
-                chatList.appendChild(slot);
-            });
-        }
-    </script>
+    function updateBotMessage(id, text) {
+        const bubble = document.getElementById(id).querySelector(".bubble");
+        bubble.innerHTML = marked.parse(text);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function renderChatList() {
+        chatList.innerHTML = "";
+        const keys = Object.keys(allChats).sort((a,b) => b.split('_')[1] - a.split('_')[1]);
+        keys.forEach(id => {
+            const slot = document.createElement("div");
+            slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
+            const firstUserMsg = allChats[id].find(m => m.role === 'user');
+            slot.innerText = firstUserMsg ? firstUserMsg.content.substring(0, 25) + "..." : "Leerer Chat";
+            slot.onclick = () => {
+                currentChatId = id;
+                localStorage.setItem("glame_pro_active_id", id);
+                renderChatList();
+                renderMessages();
+            };
+            chatList.appendChild(slot);
+        });
+    }
+</script>
 </body>
 </html>
