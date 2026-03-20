@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Penguin - Ice Run</title>
+    <style>
+        :root {
+            --bg-color: #f0f7ff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #ffffff; --card-border: #e0eefb; --link-color: #2E94D1;
+            --desc-color: #555555; --input-bg: #e1f0ff; --accent: #70C4F7;
+            --ice-solid: #ffffff; --ice-cracked: #d1e9ff; --ice-broken: #a2d2ff;
+            --water: #2E94D1;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1c1e; --text-color: #e8eaed; --nav-bg: #2d2e30;
+                --card-bg: #2d2e30; --card-border: #444444; --link-color: #8cc9f5;
+                --desc-color: #bdc1c6; --input-bg: #1a1c1e; --accent: #4fa8e0;
+                --ice-solid: #e8f4ff; --ice-cracked: #70b0e0; --ice-broken: #3d7fb0;
+                --water: #0a2540;
+            }
+        }
+        body {
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; overflow: hidden; touch-action: none;
+        }
+
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 65px; background-color: var(--nav-bg);
+            padding: 0 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
+        }
+        .nav-logo { height: 35px; border-radius: 50%; cursor: pointer; }
+
+        .main-content { margin-top: 85px; padding: 10px; text-align: center; width: 100%; max-width: 420px; }
+        
+        #game-container {
+            position: relative; background: var(--card-bg);
+            border: 4px solid var(--card-border); border-radius: 28px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden;
+            aspect-ratio: 1 / 1;
+            transition: transform 0.3s ease;
+        }
+        canvas { display: block; background-color: var(--water); width: 100%; height: auto; }
+        
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 12px; border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+        .score-val { font-size: 13px; color: var(--desc-color); text-transform: uppercase; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 14px 28px; 
+            border-radius: 30px; font-weight: bold; cursor: pointer; width: 200px; 
+            margin: 8px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 16px;
+        }
+        .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn:active { transform: scale(0.95); }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); color: #333;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; transition: opacity 0.5s;
+        }
+        @media (prefers-color-scheme: dark) {
+            .overlay { background: rgba(32, 33, 36, 0.9); color: white; }
+        }
+
+        #joystick-wrapper {
+            display: none; width: 110px; height: 110px;
+            background: rgba(128, 128, 128, 0.1);
+            border-radius: 50%; margin: 20px auto;
+            position: relative; touch-action: none;
+            border: 3px solid var(--card-border);
+        }
+        #joystick-knob {
+            width: 45px; height: 45px; background: var(--accent);
+            border-radius: 50%; position: absolute;
+            top: 32.5px; left: 32.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+
+        #coin-container {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: var(--card-bg); border: 2px solid #FFD700; 
+            padding: 8px 16px; border-radius: 50px; 
+            display: flex; align-items: center; gap: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; 
+        }
+        
+        .coin-icon { font-size: 18px; }
+
+        .gamecenter-link {
+            margin-top: 15px; display: inline-block; color: var(--link-color);
+            text-decoration: none; font-size: 14px; font-weight: bold;
+        }
+        .gamecenter-link:hover { text-decoration: underline; }
+
+        /* Animation für das Einbrechen */
+        @keyframes shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            75% { transform: translate(1px, -1px); }
+            100% { transform: translate(0,0); }
+        }
+        .shaking { animation: shake 0.2s infinite; }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="https://glaggle.ch/gamecenter" class="nav-logo" style="text-decoration: none;">
+            <div style="width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🐧</div>
+        </a>
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Penguin</div>
+        <div style="width: 35px;"></div> <!-- Spacer -->
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Zeit <b id="timer">0.0s</b></div>
+            <div class="score-val">Bestzeit <b id="best-time">0.0s</b></div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            
+            <div id="start-overlay" class="overlay">
+                <div style="font-size: 60px; margin-bottom: 10px;">🧊</div>
+                <h2 style="margin-bottom:10px;">Ice Run</h2>
+                <p style="padding: 0 40px; margin-bottom: 20px; font-size: 14px; line-height: 1.4;">Laufe schnell! Das Eis bricht auch unter deinen Füßen, wenn du stehen bleibst.</p>
+                <button class="btn" onclick="initGame('pc')">🕹️ PC Modus</button>
+                <button class="btn" onclick="initGame('mobile')">📱 Handy Modus</button>
+                <a href="https://glaggle.ch/gamecenter" class="gamecenter-link">← zum Gamecenter</a>
+            </div>
+
+            <div id="death-overlay" class="overlay" style="display:none;">
+                <div style="font-size: 60px; margin-bottom: 10px;">🌊</div>
+                <h1 style="color: var(--accent);">Eingebrochen!</h1>
+                <p id="final-msg" style="margin-bottom:20px; font-size: 18px;"></p>
+                <button class="btn" onclick="resetGame()">Nochmal</button>
+                <a href="https://glaggle.ch/gamecenter" class="gamecenter-link">Zum Gamecenter</a>
+            </div>
+        </div>
+
+        <div id="joystick-wrapper">
+            <div id="joystick-knob"></div>
+        </div>
+    </div>
+
+    <div id="coin-container">
+        <span class="coin-icon">🪙</span> 
+        <span id="coin-count" style="font-weight: bold; color: var(--text-color); font-size: 16px;">0</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 8; // Kleineres Grid für mehr Action
+        const tileSize = 400 / gridSize;
+        
+        let player = { x: 4, y: 4, renderX: 4, renderY: 4 };
+        let grid = []; // 0: Fest, 1: Rissig, 2: Sehr rissig, 3: Wasser
+        let startTime, currentTime, gameRunning = false;
+        let lastMoveTime = 0;
+        let lastStandTime = 0;
+        const moveCooldown = 150; 
+        const standDangerTime = 800; // Nach 0.8s bricht das Eis unter dir, wenn du stehst
+        
+        let bestTime = localStorage.getItem('glagglePenguinBest') || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        let inputDirection = null;
+
+        document.getElementById('best-time').innerText = parseFloat(bestTime).toFixed(1) + "s";
+        document.getElementById('coin-count').innerText = coins;
+
+        function initGame(mode) {
+            document.getElementById('start-overlay').style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById('start-overlay').style.display = "none";
+            }, 500);
+            
+            if(mode === 'mobile') {
+                document.getElementById('joystick-wrapper').style.display = "block";
+                setupJoystick();
+            }
+            resetGame();
+        }
+
+        function resetGame() {
+            grid = [];
+            for(let y=0; y<gridSize; y++) {
+                grid[y] = [];
+                for(let x=0; x<gridSize; x++) {
+                    grid[y][x] = 0; 
+                }
+            }
+            
+            player = { x: Math.floor(gridSize/2), y: Math.floor(gridSize/2), renderX: Math.floor(gridSize/2), renderY: Math.floor(gridSize/2) };
+            grid[player.y][player.x] = 1;
+            
+            startTime = Date.now();
+            lastStandTime = Date.now();
+            gameRunning = true;
+            document.getElementById('death-overlay').style.display = "none";
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function movePlayer(dx, dy) {
+            if(!gameRunning) return;
+
+            let newX = player.x + dx;
+            let newY = player.y + dy;
+
+            if(newX < 0 || newX >= gridSize || newY < 0 || newY >= gridSize) return;
+
+            // Altes Feld verschlechtert sich beim Verlassen
+            grid[player.y][player.x]++;
+
+            // Sofort prüfen ob wir auf Wasser treten
+            if(grid[newY][newX] >= 3) {
+                player.x = newX;
+                player.y = newY;
+                gameOver();
+                return;
+            }
+
+            player.x = newX;
+            player.y = newY;
+            lastMoveTime = Date.now();
+            lastStandTime = Date.now(); // Timer für Camping zurücksetzen
+            
+            // Neues Feld knistert sofort
+            if(grid[player.y][player.x] === 0) grid[player.y][player.x] = 1;
+        }
+
+        function setupJoystick() {
+            const wrapper = document.getElementById('joystick-wrapper');
+            const knob = document.getElementById('joystick-knob');
+            let active = false;
+
+            const handleMove = (e) => {
+                if(!active) return;
+                const rect = wrapper.getBoundingClientRect();
+                const touch = e.touches ? e.touches[0] : e;
+                const x = touch.clientX - rect.left - rect.width/2;
+                const y = touch.clientY - rect.top - rect.height/2;
+
+                const dist = Math.sqrt(x*x + y*y);
+                if (dist > 15) {
+                    if (Math.abs(x) > Math.abs(y)) {
+                        inputDirection = x > 0 ? 'RIGHT' : 'LEFT';
+                    } else {
+                        inputDirection = y > 0 ? 'DOWN' : 'UP';
+                    }
+                } else {
+                    inputDirection = null;
+                }
+
+                const moveDist = Math.min(dist, 30);
+                const angle = Math.atan2(y, x);
+                knob.style.transform = `translate(${Math.cos(angle)*moveDist}px, ${Math.sin(angle)*moveDist}px)`;
+            };
+
+            wrapper.addEventListener('touchstart', (e) => { active = true; handleMove(e); e.preventDefault(); });
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', () => { active = false; knob.style.transform = "translate(0,0)"; inputDirection = null; });
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if(!gameRunning) return;
+            const now = Date.now();
+            if(now - lastMoveTime < moveCooldown) return;
+
+            if(["ArrowUp","w"].includes(e.key)) movePlayer(0, -1);
+            if(["ArrowDown","s"].includes(e.key)) movePlayer(0, 1);
+            if(["ArrowLeft","a"].includes(e.key)) movePlayer(-1, 0);
+            if(["ArrowRight","d"].includes(e.key)) movePlayer(1, 0);
+        });
+
+        function gameLoop() {
+            if(!gameRunning) return;
+
+            currentTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer').innerText = currentTime + "s";
+
+            // Anti-Camping Logik: Wenn der Spieler zu lange auf einem Feld steht
+            if(Date.now() - lastStandTime > standDangerTime) {
+                grid[player.y][player.x]++;
+                lastStandTime = Date.now();
+                if(grid[player.y][player.x] >= 3) {
+                    gameOver();
+                }
+            }
+
+            // Mobile Auto-Move
+            if(inputDirection && Date.now() - lastMoveTime > moveCooldown) {
+                if(inputDirection === 'UP') movePlayer(0, -1);
+                if(inputDirection === 'DOWN') movePlayer(0, 1);
+                if(inputDirection === 'LEFT') movePlayer(-1, 0);
+                if(inputDirection === 'RIGHT') movePlayer(1, 0);
+            }
+
+            // "Sanfte" Interpolation für den Pinguin
+            player.renderX += (player.x - player.renderX) * 0.2;
+            player.renderY += (player.y - player.renderY) * 0.2;
+
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const iceSolid = getStyle('--ice-solid');
+            const iceCracked = getStyle('--ice-cracked');
+            const iceBroken = getStyle('--ice-broken');
+
+            for(let y=0; y<gridSize; y++) {
+                for(let x=0; x<gridSize; x++) {
+                    const state = grid[y][x];
+                    if(state >= 3) continue; 
+
+                    ctx.fillStyle = (state === 0) ? iceSolid : (state === 1) ? iceCracked : iceBroken;
+
+                    // Zeichnen mit Schatten für mehr Tiefe
+                    ctx.shadowColor = "rgba(0,0,0,0.1)";
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetY = 2;
+                    
+                    drawRoundedRect(x * tileSize + 4, y * tileSize + 4, tileSize - 8, tileSize - 8, 12);
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+                    if(state > 0) {
+                        ctx.strokeStyle = "rgba(0,0,0,0.08)";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(x * tileSize + 15, y * tileSize + 15);
+                        ctx.lineTo(x * tileSize + tileSize - 15, y * tileSize + tileSize - 15);
+                        if(state === 2) {
+                            ctx.moveTo(x * tileSize + tileSize - 15, y * tileSize + 15);
+                            ctx.lineTo(x * tileSize + 15, y * tileSize + tileSize - 15);
+                        }
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Pinguin Schatten
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.beginPath();
+            ctx.ellipse(player.renderX * tileSize + tileSize/2, player.renderY * tileSize + tileSize/2 + 15, 12, 6, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // Pinguin Emoji
+            ctx.font = "34px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🐧", player.renderX * tileSize + tileSize/2, player.renderY * tileSize + tileSize/2);
+        }
+
+        function getStyle(prop) {
+            return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+        }
+
+        function drawRoundedRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            const finalTime = parseFloat(currentTime);
+            
+            // Coins berechnen (1 Coin pro 5 Sekunden)
+            const earnedCoins = Math.floor(finalTime / 5);
+            if(earnedCoins > 0) {
+                coins += earnedCoins;
+                localStorage.setItem('glaggleCoins', coins);
+                document.getElementById('coin-count').innerText = coins;
+            }
+
+            if(finalTime > bestTime) {
+                bestTime = finalTime;
+                localStorage.setItem('glagglePenguinBest', bestTime);
+                document.getElementById('best-time').innerText = bestTime.toFixed(1) + "s";
+                document.getElementById('final-msg').innerText = "Neuer Rekord! " + bestTime.toFixed(1) + "s 🎉";
+            } else {
+                document.getElementById('final-msg').innerText = "Zeit: " + finalTime.toFixed(1) + "s";
+            }
+            
+            document.getElementById('death-overlay').style.display = "flex";
+        }
+    </script>
+</body>
+</html>
