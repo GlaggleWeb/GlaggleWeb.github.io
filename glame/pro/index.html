@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI Pro | Next Gen</title>
+    <title>Glame AI Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,11 +20,6 @@
             --glass: rgba(30, 41, 59, 0.7);
         }
 
-        /* Themes */
-        body.cyber-mode { --primary: #ff003c; --bg-dark: #050505; --panel-dark: #121212; --accent: #00ffcc; }
-        body.gold-mode { --primary: #d4af37; --bg-dark: #1a1405; --panel-dark: #2a2410; --accent: #f3e5ab; }
-        body.forest-mode { --primary: #22c55e; --bg-dark: #052e16; --panel-dark: #064e3b; --accent: #4ade80; }
-
         * { box-sizing: border-box; transition: all 0.2s ease; }
 
         body {
@@ -39,13 +34,12 @@
 
         /* Sidebar */
         #sidebar {
-            width: 300px;
+            width: 280px;
             background: #020617;
             display: flex;
             flex-direction: column;
             padding: 20px;
             border-right: 1px solid rgba(255,255,255,0.05);
-            z-index: 50;
         }
 
         .sidebar-header {
@@ -53,46 +47,47 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 30px;
-            padding: 10px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: white;
         }
 
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
+        #new-chat-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
             border-radius: 12px;
-            box-shadow: 0 0 15px var(--primary);
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
         #chat-list {
             flex: 1;
             overflow-y: auto;
-            margin-top: 20px;
         }
 
         .chat-slot {
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 5px;
             cursor: pointer;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
             font-size: 14px;
+            color: var(--text-muted);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: var(--text-muted);
         }
 
-        .chat-slot:hover { background: rgba(255,255,255,0.08); color: white; }
-        .chat-slot.active { background: var(--primary); color: white; border-color: var(--accent); }
+        .chat-slot:hover { background: rgba(255,255,255,0.05); }
+        .chat-slot.active { background: rgba(14, 165, 233, 0.1); color: var(--primary); border: 1px solid var(--primary); }
 
-        /* Main Content */
+        /* Main */
         #main-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            position: relative;
-            background: var(--bg-dark);
         }
 
         #chat-header {
@@ -101,60 +96,45 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 30px;
-            background: var(--glass);
-            backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         #chat-window {
             flex: 1;
-            padding: 40px 20%;
+            padding: 40px 15%;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            scroll-behavior: smooth;
+            gap: 25px;
         }
 
-        /* Messages */
-        .msg-container { display: flex; flex-direction: column; max-width: 100%; }
-        .msg-container.user { align-items: flex-end; }
-        .msg-container.bot { align-items: flex-start; }
+        .msg-container { display: flex; width: 100%; }
+        .msg-container.user { justify-content: flex-end; }
+        .msg-container.bot { justify-content: flex-start; }
 
         .bubble {
-            padding: 16px 20px;
-            border-radius: 20px;
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
             font-size: 15px;
-            line-height: 1.6;
-            max-width: 85%;
-            position: relative;
         }
 
         .user .bubble { background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; }
-        .bot .bubble { background: var(--bot-bubble); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); shadow: 0 4px 15px rgba(0,0,0,0.2); }
-
-        .msg-image {
-            max-width: 300px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border: 2px solid var(--primary);
-        }
+        .bot .bubble { background: var(--bot-bubble); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
 
         /* Input Area */
-        #input-area-wrapper {
-            padding: 20px 20%;
-            background: transparent;
-        }
+        #input-area-wrapper { padding: 20px 15% 40px 15%; }
 
         #input-container {
             background: var(--panel-dark);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px;
-            padding: 10px 15px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         #user-input {
@@ -163,222 +143,69 @@
             border: none;
             color: white;
             padding: 10px;
-            font-size: 16px;
             outline: none;
+            font-size: 16px;
         }
 
         .icon-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: none;
             background: transparent;
+            border: none;
             color: var(--text-muted);
             cursor: pointer;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-        }
-
-        .icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-        #send-btn { background: var(--primary); color: white; }
-        #send-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
-
-        /* Modals */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 450px;
-            background: var(--panel-dark);
-            padding: 30px;
-            border-radius: 28px;
-            z-index: 1000;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-            z-index: 999;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px 16px;
-            margin: 10px 0;
-            background: #0f172a;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-        }
-
-        .action-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-
-        /* Image Preview */
-        #image-preview-container {
-            display: none;
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        #image-preview-container img {
-            max-height: 80px;
-            border-radius: 8px;
-        }
-        .remove-img {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
         }
 
-        /* Markdown Styles */
-        .bubble h1, .bubble h2 { font-size: 1.2rem; margin-top: 10px; color: var(--primary); }
-        .bubble code { background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px; font-family: monospace; color: #fbbf24; }
-        .bubble pre { background: #000; padding: 15px; border-radius: 10px; overflow-x: auto; margin: 10px 0; }
-        
-        @media (max-width: 1024px) {
-            #sidebar { width: 80px; padding: 15px 10px; align-items: center; }
-            .sidebar-header span, .chat-slot, #new-chat-btn span { display: none; }
-            #chat-window, #input-area-wrapper { padding: 20px 5%; }
+        .icon-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+        #mic-btn.listening { color: #ef4444; background: rgba(239, 68, 68, 0.15); animation: pulse 1.5s infinite; }
+        #send-btn { color: var(--primary); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* Leuchteffekt für das Eingabefeld bei Fokus */
-#user-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
-    background: rgba(255, 255, 255, 0.02);
-}
-
-/* Feedback wenn man auf einen Button klickt */
-.icon-btn:active, .action-btn:active {
-    transform: scale(0.92);
-    filter: brightness(1.2);
-}
-
-/* Aktiver Chat-Slot in der Sidebar mit Indikator */
-.chat-slot.active {
-    background: var(--primary) !important;
-    border-left: 4px solid var(--accent);
-    padding-left: 11px; /* Ausgleich für den Border */
-}
-
-/* Hover-Effekt für Chat-Slots */
-.chat-slot:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="overlay"></div>
-
-    <!-- Login Modal -->
-    <div class="modal" id="login-modal">
-        <h2 style="text-align: center;">Welcome to Glame AI Pro</h2>
-        <p style="text-align: center; color: var(--text-muted);">Dein intelligenter Begleiter</p>
-        <input type="text" id="user-name" placeholder="Dein Name">
-        <button class="action-btn" id="login-confirm">Loslegen ⚡</button>
-    </div>
-
-    <!-- Settings Modal -->
-    <div class="modal" id="settings-modal">
-        <h3>Einstellungen</h3>
-        <label>KI-Modell</label>
-        <select id="model-select">
-            <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Text Pro)</option>
-            <option value="llama-3.1-8b-instant">Llama 3.1 8B (Schnell)</option>
-        </select>
-        
-        <label>Design</label>
-        <select id="theme-select">
-            <option value="default">Ocean Dark</option>
-            <option value="cyber">Cyberpunk</option>
-            <option value="gold">Luxury Gold</option>
-            <option value="forest">Emerald Forest</option>
-        </select>
-
-        <button class="action-btn" id="settings-save">Speichern</button>
-        <button class="action-btn" style="background: #ef4444;" id="delete-data">Daten löschen</button>
-    </div>
-
     <aside id="sidebar">
         <div class="sidebar-header">
-            <img src="https://cdn-icons-png.flaticon.com/512/2103/2103633.png" alt="Logo">
-            <span style="font-weight: bold; font-size: 1.2rem;">Glame AI</span>
+            <i class="fas fa-bolt" style="color: var(--primary);"></i>
+            <span>GLAME PRO</span>
         </div>
-        <button class="action-btn" id="new-chat-btn" style="margin-top:0;">
-            <i class="fas fa-plus"></i> <span>Neuer Chat</span>
-        </button>
+        <button id="new-chat-btn">Neuer Chat</button>
         <div id="chat-list"></div>
-        <div style="margin-top: auto; padding-top: 20px; color: var(--text-muted); font-size: 12px; text-align: center;">
-            Version 4.0 Pro
-        </div>
     </aside>
 
     <main id="main-container">
         <header id="chat-header">
-            <div id="model-badge" style="background: rgba(14, 165, 233, 0.1); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--primary); font-size: 12px; color: var(--primary);">
-                Llama 3.1
+            <div style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 5px 12px; border-radius: 20px;">
+                <i class="fas fa-microchip" style="margin-right: 5px;"></i> Llama 3.3 Versatile
             </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <button class="icon-btn" id="open-settings"><i class="fas fa-cog"></i></button>
-                <div id="avatar-circle" style="width: 35px; height: 35px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">G</div>
-            </div>
+            <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">U</div>
         </header>
 
         <div id="chat-window">
             <div class="msg-container bot">
-                <div class="bubble">
-                    Hallo! Ich bin <b>Glame</b>.  Wie kann ich dir helfen? ✨
-                </div>
+                <div class="bubble">Hallo! Ich bin Glame Pro. Klicke auf das Mikrofon, um mit mir zu sprechen. 🎙️</div>
             </div>
         </div>
 
         <div id="input-area-wrapper">
-            <div id="image-preview-container">
-                <span class="remove-img" id="remove-img-btn">×</span>
-                <img id="image-preview" src="">
-            </div>
-
             <div id="input-container">
-                <input type="file" id="image-input" accept="image/*" style="display: none;">
-                <button class="icon-btn" id="attach-btn" title="Bild hochladen">
-                    <i class="fas fa-camera"></i>
+                <button class="icon-btn" id="mic-btn" title="Spracheingabe starten">
+                    <i class="fas fa-microphone"></i>
                 </button>
-                <input type="text" id="user-input" placeholder="Frag mich was..." autocomplete="off">
+                <input type="text" id="user-input" placeholder="Nachricht eingeben oder sprechen..." autocomplete="off">
                 <button class="icon-btn" id="send-btn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -386,240 +213,193 @@
         </div>
     </main>
 
-   
 <script>
-    // 1. Keys & State
-    const g1 = "AIzaSyD7Vz", g2 = "tHGsr1UCI-0jpr", g3 = "Pdr0iRU3hFQrK-c";
-    const l1 = "gsk_ImbDfvvSXzXJfw80", l2 = "vZP5WGdyb3FYknkYv77z", l3 = "RJZN3pfyA1PiRGWu";
+    // API Key (Zerstückelt für Sicherheit)
+    const lKey = "gsk_ImbDfvvSXzXJfw80" + "vZP5WGdyb3FYknkYv77z" + "RJZN3pfyA1PiRGWu";
 
-    function getGKey() { return g1 + g2 + g3; }
-    function getLKey() { return l1 + l2 + l3; }
+    let allChats = JSON.parse(localStorage.getItem("glame_chats_v2")) || {};
+    let currentChatId = localStorage.getItem("glame_active_id") || "chat_" + Date.now();
 
-    let currentUser = JSON.parse(localStorage.getItem("glame_pro_user")) || null;
-    let allChats = JSON.parse(localStorage.getItem("glame_pro_chats")) || {};
-    let currentChatId = localStorage.getItem("glame_pro_active_id") || "chat_" + Date.now();
-    let selectedModel = "gemini-1.5-flash";
-    let currentImageBase64 = null;
-
-    // UI Elements
     const chatWindow = document.getElementById("chat-window");
     const userInput = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
+    const micBtn = document.getElementById("mic-btn");
     const chatList = document.getElementById("chat-list");
-    const attachBtn = document.getElementById("attach-btn");
-    const imageInput = document.getElementById("image-input");
-    const imagePreviewContainer = document.getElementById("image-preview-container");
-    const imagePreview = document.getElementById("image-preview");
 
-    // Init
+    // --- SPRACHERKENNUNG SETUP ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+    
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'de-DE';
+        recognition.interimResults = true; // Zwischenergebnisse zeigen
+        recognition.continuous = false;   // Stoppt automatisch nach einem Satz
+
+        recognition.onstart = () => {
+            isListening = true;
+            micBtn.classList.add("listening");
+            userInput.placeholder = "Ich höre zu...";
+        };
+        
+        recognition.onend = () => {
+            isListening = false;
+            micBtn.classList.remove("listening");
+            userInput.placeholder = "Nachricht eingeben oder sprechen...";
+        };
+
+        recognition.onerror = (event) => {
+            isListening = false;
+            micBtn.classList.remove("listening");
+            
+            if (event.error === 'not-allowed') {
+                showSystemMessage("Mikrofon-Zugriff wurde verweigert. Bitte erlaube den Zugriff in deinen Browsereinstellungen.");
+            } else if (event.error !== 'aborted') {
+                console.warn("Erkennungsfehler:", event.error);
+            }
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            userInput.value = transcript;
+            
+            // Wenn die Erkennung final ist, Nachricht senden
+            if (event.results[event.results.length - 1].isFinal) {
+                setTimeout(handleSend, 500); 
+            }
+        };
+    }
+
+    function showSystemMessage(text) {
+        const container = document.createElement("div");
+        container.className = "msg-container bot";
+        container.innerHTML = `<div class="bubble" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;">${text}</div>`;
+        chatWindow.appendChild(container);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // --- CHAT LOGIK ---
     window.onload = () => {
-        if (!currentUser) { showModal("login-modal"); } 
-        else { document.getElementById("avatar-circle").innerText = currentUser.name.charAt(0).toUpperCase(); }
-        if (!allChats[currentChatId]) { createNewChat(); }
+        if (!allChats[currentChatId]) {
+            allChats[currentChatId] = [];
+        }
         renderChatList();
         renderMessages();
-        updateModelBadge();
     };
 
-    // Modal Management
-    function showModal(id) {
-        document.getElementById(id).style.display = "block";
-        document.getElementById("overlay").style.display = "block";
-    }
-    function hideModals() {
-        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-        document.getElementById("overlay").style.display = "none";
-    }
-
-    // Event Listeners
-    document.getElementById("login-confirm").onclick = () => {
-        const name = document.getElementById("user-name").value.trim();
-        if (name) {
-            currentUser = { name };
-            localStorage.setItem("glame_pro_user", JSON.stringify(currentUser));
-            document.getElementById("avatar-circle").innerText = name.charAt(0).toUpperCase();
-            hideModals();
-        }
-    };
-
-    document.getElementById("open-settings").onclick = () => showModal("settings-modal");
-    document.getElementById("settings-save").onclick = () => {
-        selectedModel = document.getElementById("model-select").value;
-        const theme = document.getElementById("theme-select").value;
-        document.body.className = theme === "default" ? "" : theme + "-mode";
-        updateModelBadge();
-        hideModals();
-    };
-
-    document.getElementById("delete-data").onclick = () => {
-        if (confirm("Wirklich alles löschen?")) { localStorage.clear(); location.reload(); }
-    };
-
-    document.getElementById("new-chat-btn").onclick = createNewChat;
-    attachBtn.onclick = () => {
-        if (selectedModel.includes("gemini")) { imageInput.click(); } 
-        else { alert("Bild-Upload ist nur mit Gemini-Modellen verfügbar."); }
-    };
-
-    imageInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                currentImageBase64 = event.target.result.split(',')[1];
-                imagePreview.src = event.target.result;
-                imagePreviewContainer.style.display = "block";
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    document.getElementById("remove-img-btn").onclick = () => {
-        currentImageBase64 = null;
-        imagePreviewContainer.style.display = "none";
-        imageInput.value = "";
-    };
-
-    userInput.onkeypress = (e) => { if (e.key === "Enter") handleSend(); };
-    sendBtn.onclick = handleSend;
-
-    // Logic Functions
-    function createNewChat() {
-        currentChatId = "chat_" + Date.now();
-        allChats[currentChatId] = [];
-        localStorage.setItem("glame_pro_active_id", currentChatId);
-        localStorage.setItem("glame_pro_chats", JSON.stringify(allChats));
-        renderChatList();
-        renderMessages();
-    }
-
-    function updateModelBadge() {
-        const badge = document.getElementById("model-badge");
-        badge.innerText = selectedModel.includes("gemini") ? "Gemini 1.5 Flash" : "Llama 3.3 Pro";
-        badge.style.borderColor = selectedModel.includes("gemini") ? "#0ea5e9" : "#22c55e";
-        attachBtn.style.opacity = selectedModel.includes("gemini") ? "1" : "0.3";
+    function save() {
+        localStorage.setItem("glame_chats_v2", JSON.stringify(allChats));
+        localStorage.setItem("glame_active_id", currentChatId);
     }
 
     async function handleSend() {
         const text = userInput.value.trim();
-        if (!text && !currentImageBase64) return;
+        if (!text) return;
 
-        const userMsg = { role: "user", content: text, image: currentImageBase64 ? imagePreview.src : null };
-        allChats[currentChatId].push(userMsg);
+        allChats[currentChatId].push({ role: "user", content: text });
         renderMessages();
-        
         userInput.value = "";
-        const activeImage = currentImageBase64;
-        currentImageBase64 = null;
-        imagePreviewContainer.style.display = "none";
 
-        const botMsgId = "bot-" + Date.now();
-        addMessageToUI("bot", "Denke nach...", botMsgId);
+        const tempId = "bot-" + Date.now();
+        const container = document.createElement("div");
+        container.className = "msg-container bot";
+        container.innerHTML = `<div class="bubble" id="${tempId}">...</div>`;
+        chatWindow.appendChild(container);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
 
         try {
-            const responseText = await callAI(text, activeImage);
-            updateBotMessage(botMsgId, responseText);
-            allChats[currentChatId].push({ role: "assistant", content: responseText });
-            localStorage.setItem("glame_pro_chats", JSON.stringify(allChats));
+            const history = (allChats[currentChatId] || []).slice(-6);
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${lKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        { role: "system", content: "Du bist Glame Pro, ein hilfreicher Assistent. Antworte präzise auf Deutsch." },
+                        ...history.map(m => ({ role: m.role, content: m.content }))
+                    ]
+                })
+            });
+
+            const data = await res.json();
+            const reply = data.choices[0].message.content;
+            
+            document.getElementById(tempId).innerHTML = marked.parse(reply);
+            allChats[currentChatId].push({ role: "assistant", content: reply });
+            save();
             renderChatList();
         } catch (err) {
-            updateBotMessage(botMsgId, "Fehler: " + err.message);
+            document.getElementById(tempId).innerText = "Fehler bei der Verbindung zum Server.";
         }
-    }
-
-    async function callAI(prompt, base64Image = null) {
-        const isGemini = selectedModel.includes("gemini");
-        const activeKey = isGemini ? getGKey() : getLKey();
-        let url, payload;
-        const headers = { "Content-Type": "application/json" };
-
-       if (isGemini) {
-    // Wechsel von v1beta auf v1 und explizite Modell-Adressierung
-    url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
-    
-    payload = {
-        contents: [{
-            parts: [{ text: prompt }]
-        }],
-        // Wir fügen eine leere generationConfig hinzu, um Standardwerte zu erzwingen
-        generationConfig: {} 
-    };
-
-    if (base64Image) {
-        payload.contents[0].parts.push({
-            inlineData: {
-                mimeType: "image/png",
-                data: base64Image
-            }
-        });
-    }
-} else {
-            url = "https://api.groq.com/openai/v1/chat/completions";
-            headers["Authorization"] = `Bearer ${activeKey}`;
-            const history = allChats[currentChatId] || [];
-            payload = {
-                model: selectedModel,
-                messages: [
-                    { role: "system", content: "Du bist Glame Pro, ein KI-Assistent." },
-                    ...history.map(m => ({ role: m.role, content: m.content }))
-                ]
-            };
-        }
-
-        const res = await fetch(url, { method: "POST", headers: headers, body: JSON.stringify(payload) });
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error?.message || "API Error");
-        }
-        const data = await res.json();
-        return isGemini ? data.candidates[0].content.parts[0].text : data.choices[0].message.content;
     }
 
     function renderMessages() {
         chatWindow.innerHTML = "";
-        (allChats[currentChatId] || []).forEach(msg => {
+        const messages = allChats[currentChatId] || [];
+        if (messages.length === 0) {
+            chatWindow.innerHTML = `<div class="msg-container bot"><div class="bubble">Hallo! Wie kann ich dir heute helfen? 🎙️</div></div>`;
+        }
+        messages.forEach(msg => {
             const container = document.createElement("div");
             container.className = `msg-container ${msg.role === 'user' ? 'user' : 'bot'}`;
-            let content = msg.image ? `<img src="${msg.image}" class="msg-image">` : "";
-            content += `<div class="bubble">${msg.role === 'assistant' ? marked.parse(msg.content) : msg.content}</div>`;
-            container.innerHTML = content;
+            container.innerHTML = `<div class="bubble">${msg.role === 'assistant' ? marked.parse(msg.content) : msg.content}</div>`;
             chatWindow.appendChild(container);
         });
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    function addMessageToUI(role, text, id) {
-        const container = document.createElement("div");
-        container.className = `msg-container ${role}`;
-        container.id = id;
-        container.innerHTML = `<div class="bubble">${text}</div>`;
-        chatWindow.appendChild(container);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    function updateBotMessage(id, text) {
-        const bubble = document.getElementById(id).querySelector(".bubble");
-        bubble.innerHTML = marked.parse(text);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
     function renderChatList() {
         chatList.innerHTML = "";
-        const keys = Object.keys(allChats).sort((a,b) => b.split('_')[1] - a.split('_')[1]);
-        keys.forEach(id => {
+        Object.keys(allChats).sort((a,b) => b.split("_")[1] - a.split("_")[1]).forEach(id => {
             const slot = document.createElement("div");
             slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
-            const firstUserMsg = allChats[id].find(m => m.role === 'user');
-            slot.innerText = firstUserMsg ? firstUserMsg.content.substring(0, 25) + "..." : "Leerer Chat";
+            const firstMsg = allChats[id].find(m => m.role === 'user');
+            slot.innerText = firstMsg ? firstMsg.content.substring(0, 25) + "..." : "Leerer Chat";
             slot.onclick = () => {
                 currentChatId = id;
-                localStorage.setItem("glame_pro_active_id", id);
+                save();
                 renderChatList();
                 renderMessages();
             };
             chatList.appendChild(slot);
         });
     }
+
+    document.getElementById("new-chat-btn").onclick = () => {
+        currentChatId = "chat_" + Date.now();
+        allChats[currentChatId] = [];
+        save();
+        renderChatList();
+        renderMessages();
+    };
+
+    micBtn.onclick = () => {
+        if (!recognition) {
+            alert("Dein Browser unterstützt leider keine Spracherkennung.");
+            return;
+        }
+        
+        if (isListening) {
+            recognition.stop();
+        } else {
+            try {
+                // Hard reset vor Start
+                recognition.abort(); 
+                setTimeout(() => recognition.start(), 50);
+            } catch (e) {
+                isListening = false;
+                micBtn.classList.remove("listening");
+                console.warn("Neustart erforderlich...");
+            }
+        }
+    };
+
+    userInput.onkeypress = (e) => { if (e.key === "Enter") handleSend(); };
+    sendBtn.onclick = handleSend;
 </script>
 </body>
 </html>
