@@ -574,27 +574,7 @@ async function callAI(prompt, base64Image = null) {
     
     let url, payload;
     const headers = { "Content-Type": "application/json" };
-if (isGemini) {
-    // Versuch mit v1beta und dem absoluten Pfad
-    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
-    
-    // Wir halten das Payload absolut minimal
-    payload = {
-        contents: [{
-            parts: [{ text: prompt }]
-        }]
-    };
-    
-    // Falls ein Bild da ist, fügen wir es hinzu
-    if (base64Image) {
-        payload.contents[0].parts.push({
-            inlineData: {
-                mimeType: "image/png",
-                data: base64Image
-            }
-        });
-    }
-} else {
+v else {
         // Groq/OpenAI kompatible API nutzt Authorization Header
         url = "https://api.groq.com/openai/v1/chat/completions";
         headers["Authorization"] = `Bearer ${activeKey}`;
