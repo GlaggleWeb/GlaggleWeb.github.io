@@ -574,15 +574,11 @@ async function callAI(prompt, base64Image = null) {
     
     let url, payload;
     const headers = { "Content-Type": "application/json" };
-
 if (isGemini) {
-    // Wir gehen zurück auf v1beta, nutzen aber den absolut stabilen Namen
-    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${activeKey}`;
+    // v1 + explizite Version 001 statt "latest" (behebt 404 in der Schweiz)
+    url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-001:generateContent?key=${activeKey}`;
     
-    // Wir packen den System-Prompt direkt in den User-Text, um den 400er Fehler zu umgehen
-    const fullPrompt = "Antworte als Glame Pro (hilfreiche KI) auf Deutsch: " + prompt;
-    
-    const parts = [{ text: fullPrompt }];
+    const parts = [{ text: prompt }];
     if (base64Image) {
         parts.push({
             inlineData: {
@@ -594,7 +590,6 @@ if (isGemini) {
 
     payload = {
         contents: [{ parts: parts }]
-        // Keine systemInstruction hier – das verursacht oft den 400/403 in der Schweiz
     };
 } else {
         // Groq/OpenAI kompatible API nutzt Authorization Header
