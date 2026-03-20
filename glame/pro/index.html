@@ -549,27 +549,26 @@ async function callAI(prompt, base64Image = null) {
     let url, payload;
     const headers = { "Content-Type": "application/json" };
 
-    if (isGemini) {
-        // Google API nutzt den Key in der URL
+if (isGemini) {
     url = `https://generativelanguage.googleapis.com/v1/models/${selectedModel}:generateContent?key=${activeKey}`;
-        
-        const parts = [{ text: prompt }];
-        if (base64Image) {
-            parts.push({
-                inlineData: {
-                    mimeType: "image/png",
-                    data: base64Image
-                }
-            });
-        }
-
-        payload = {
-            contents: [{ parts: parts }],
-            systemInstruction: { 
-                parts: [{ text: "Du bist Glame Pro, eine hilfreiche und moderne KI. Antworte in klarem Deutsch mit Markdown-Formatierung." }] 
+    
+    const parts = [{ text: prompt }];
+    if (base64Image) {
+        parts.push({
+            inlineData: {
+                mimeType: "image/png",
+                data: base64Image
             }
-        };
-    } else {
+        });
+    }
+
+    // Vereinfachtes Payload ohne systemInstruction für maximale Kompatibilität
+    payload = {
+        contents: [{ 
+            parts: parts 
+        }]
+    };
+} else {
         // Groq/OpenAI kompatible API nutzt Authorization Header
         url = "https://api.groq.com/openai/v1/chat/completions";
         headers["Authorization"] = `Bearer ${activeKey}`;
