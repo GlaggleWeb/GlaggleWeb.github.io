@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glame AI Pro</title>
+    <title>Glame AI Pro | Voice & Fast Typing</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,10 +17,9 @@
             --user-bubble: #334155;
             --bot-bubble: #1e293b;
             --accent: #38bdf8;
-            --glass: rgba(30, 41, 59, 0.7);
         }
 
-        * { box-sizing: border-box; transition: all 0.2s ease; }
+        * { box-sizing: border-box; transition: all 0.1s ease; }
 
         body {
             background-color: var(--bg-dark);
@@ -108,7 +107,7 @@
             gap: 25px;
         }
 
-        .msg-container { display: flex; width: 100%; }
+        .msg-container { display: flex; width: 100%; position: relative; }
         .msg-container.user { justify-content: flex-end; }
         .msg-container.bot { justify-content: flex-start; }
 
@@ -118,10 +117,43 @@
             border-radius: 18px;
             line-height: 1.5;
             font-size: 15px;
+            position: relative;
         }
 
         .user .bubble { background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; }
         .bot .bubble { background: var(--bot-bubble); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+
+        /* Read Aloud Button */
+        .speak-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+        }
+
+        .speak-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        /* Typewriter Cursor Effect */
+        .typing::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--primary);
+            margin-left: 4px;
+            animation: blink 0.5s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
 
         /* Input Area */
         #input-area-wrapper { padding: 20px 15% 40px 15%; }
@@ -189,16 +221,12 @@
     <main id="main-container">
         <header id="chat-header">
             <div style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 5px 12px; border-radius: 20px;">
-                <i class="fas fa-microchip" style="margin-right: 5px;"></i> Llama 3.3 Versatile
+                <i class="fas fa-microchip" style="margin-right: 5px;"></i> Llama 3.3 Turbo Voice
             </div>
             <div style="width: 35px; height: 35px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">U</div>
         </header>
 
-        <div id="chat-window">
-            <div class="msg-container bot">
-                <div class="bubble">Hallo! Ich bin Glame Pro. Klicke auf das Mikrofon, um mit mir zu sprechen. 🎙️</div>
-            </div>
-        </div>
+        <div id="chat-window"></div>
 
         <div id="input-area-wrapper">
             <div id="input-container">
@@ -214,11 +242,11 @@
     </main>
 
 <script>
-    // API Key (Zerstückelt für Sicherheit)
     const lKey = "gsk_ImbDfvvSXzXJfw80" + "vZP5WGdyb3FYknkYv77z" + "RJZN3pfyA1PiRGWu";
 
     let allChats = JSON.parse(localStorage.getItem("glame_chats_v2")) || {};
     let currentChatId = localStorage.getItem("glame_active_id") || "chat_" + Date.now();
+    let isProcessing = false; // Sperre gegen doppeltes Senden
 
     const chatWindow = document.getElementById("chat-window");
     const userInput = document.getElementById("user-input");
@@ -226,16 +254,57 @@
     const micBtn = document.getElementById("mic-btn");
     const chatList = document.getElementById("chat-list");
 
+    // --- VOICE OUTPUT (TTS) ---
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const cleanText = text.replace(/[*#_`]/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        
+        const voices = window.speechSynthesis.getVoices();
+        const deVoice = voices.find(v => v.lang.startsWith('de') && v.name.includes('Google')) || voices.find(v => v.lang.startsWith('de'));
+        
+        if (deVoice) utterance.voice = deVoice;
+        utterance.lang = 'de-DE';
+        utterance.rate = 1.05; 
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // --- TYPEWRITER EFFECT ---
+    async function typeWriter(element, text) {
+        element.classList.add("typing");
+        let i = 0;
+        const speed = 5; // Noch schneller
+        
+        return new Promise(resolve => {
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML = marked.parse(text.substring(0, i + 1));
+                    i += 2; // Sprung in 2er Schritten für Speed
+                    if (i > text.length) i = text.length;
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove("typing");
+                    resolve();
+                }
+            }
+            type();
+        });
+    }
+
     // --- SPRACHERKENNUNG SETUP ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let isListening = false;
+    let wasVoiceRequest = false; 
+    let autoSendTimer = null;
     
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'de-DE';
-        recognition.interimResults = true; // Zwischenergebnisse zeigen
-        recognition.continuous = false;   // Stoppt automatisch nach einem Satz
+        recognition.interimResults = true;
+        recognition.continuous = true;
 
         recognition.onstart = () => {
             isListening = true;
@@ -249,37 +318,33 @@
             userInput.placeholder = "Nachricht eingeben oder sprechen...";
         };
 
-        recognition.onerror = (event) => {
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join('');
+            
+            userInput.value = transcript;
+
+            // Timer zurücksetzen
+            clearTimeout(autoSendTimer);
+            if (!isProcessing) {
+                autoSendTimer = setTimeout(() => {
+                    if (userInput.value.trim().length > 0 && isListening) {
+                        wasVoiceRequest = true; // Explizit hier setzen
+                        recognition.stop();
+                        handleSend();
+                    }
+                }, 1300);
+            }
+        };
+
+        recognition.onerror = () => {
             isListening = false;
             micBtn.classList.remove("listening");
-            
-            if (event.error === 'not-allowed') {
-                showSystemMessage("Mikrofon-Zugriff wurde verweigert. Bitte erlaube den Zugriff in deinen Browsereinstellungen.");
-            } else if (event.error !== 'aborted') {
-                console.warn("Erkennungsfehler:", event.error);
-            }
-        };
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript;
-            userInput.value = transcript;
-            
-            // Wenn die Erkennung final ist, Nachricht senden
-            if (event.results[event.results.length - 1].isFinal) {
-                setTimeout(handleSend, 500); 
-            }
         };
     }
 
-    function showSystemMessage(text) {
-        const container = document.createElement("div");
-        container.className = "msg-container bot";
-        container.innerHTML = `<div class="bubble" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;">${text}</div>`;
-        chatWindow.appendChild(container);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    // --- CHAT LOGIK ---
+    // --- INITIALISIERUNG ---
     window.onload = () => {
         if (!allChats[currentChatId]) {
             allChats[currentChatId] = [];
@@ -295,7 +360,14 @@
 
     async function handleSend() {
         const text = userInput.value.trim();
-        if (!text) return;
+        if (!text || isProcessing) return;
+
+        isProcessing = true;
+        clearTimeout(autoSendTimer);
+        window.speechSynthesis.cancel();
+        
+        const isVoiceInput = wasVoiceRequest; 
+        wasVoiceRequest = false; // Reset für den nächsten Turn
 
         allChats[currentChatId].push({ role: "user", content: text });
         renderMessages();
@@ -304,12 +376,12 @@
         const tempId = "bot-" + Date.now();
         const container = document.createElement("div");
         container.className = "msg-container bot";
-        container.innerHTML = `<div class="bubble" id="${tempId}">...</div>`;
+        container.innerHTML = `<div class="bubble typing" id="${tempId}">...</div>`;
         chatWindow.appendChild(container);
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
         try {
-            const history = (allChats[currentChatId] || []).slice(-6);
+            const history = (allChats[currentChatId] || []).slice(-8);
             const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -319,7 +391,7 @@
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: "Du bist Glame Pro, ein hilfreicher Assistent. Antworte präzise auf Deutsch." },
+                        { role: "system", content: "Du bist Glame Pro. Antworte immer auf Deutsch, sei charmant und präzise." },
                         ...history.map(m => ({ role: m.role, content: m.content }))
                     ]
                 })
@@ -328,12 +400,28 @@
             const data = await res.json();
             const reply = data.choices[0].message.content;
             
-            document.getElementById(tempId).innerHTML = marked.parse(reply);
+            const botBubble = document.getElementById(tempId);
+            botBubble.innerHTML = "";
+            
+            if (isVoiceInput) {
+                speak(reply);
+            }
+            
+            await typeWriter(botBubble, reply);
+            
+            const speakBtn = document.createElement("button");
+            speakBtn.className = "speak-btn";
+            speakBtn.innerHTML = `<i class="fas fa-volume-up"></i> Vorlesen`;
+            speakBtn.onclick = () => speak(reply);
+            botBubble.appendChild(speakBtn);
+            
             allChats[currentChatId].push({ role: "assistant", content: reply });
             save();
             renderChatList();
         } catch (err) {
-            document.getElementById(tempId).innerText = "Fehler bei der Verbindung zum Server.";
+            document.getElementById(tempId).innerText = "Fehler bei der Verbindung.";
+        } finally {
+            isProcessing = false;
         }
     }
 
@@ -341,12 +429,25 @@
         chatWindow.innerHTML = "";
         const messages = allChats[currentChatId] || [];
         if (messages.length === 0) {
-            chatWindow.innerHTML = `<div class="msg-container bot"><div class="bubble">Hallo! Wie kann ich dir heute helfen? 🎙️</div></div>`;
+            chatWindow.innerHTML = `<div class="msg-container bot"><div class="bubble">Hallo! Ich bin Glame Pro Turbo. Spreche oder schreibe mir einfach. 🚀</div></div>`;
+            return;
         }
-        messages.forEach(msg => {
+        messages.forEach((msg) => {
             const container = document.createElement("div");
             container.className = `msg-container ${msg.role === 'user' ? 'user' : 'bot'}`;
-            container.innerHTML = `<div class="bubble">${msg.role === 'assistant' ? marked.parse(msg.content) : msg.content}</div>`;
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.innerHTML = msg.role === 'assistant' ? marked.parse(msg.content) : msg.content;
+            
+            if (msg.role === 'assistant') {
+                const btn = document.createElement("button");
+                btn.className = "speak-btn";
+                btn.innerHTML = `<i class="fas fa-volume-up"></i> Vorlesen`;
+                btn.onclick = () => speak(msg.content);
+                bubble.appendChild(btn);
+            }
+            
+            container.appendChild(bubble);
             chatWindow.appendChild(container);
         });
         chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -358,8 +459,9 @@
             const slot = document.createElement("div");
             slot.className = `chat-slot ${id === currentChatId ? 'active' : ''}`;
             const firstMsg = allChats[id].find(m => m.role === 'user');
-            slot.innerText = firstMsg ? firstMsg.content.substring(0, 25) + "..." : "Leerer Chat";
+            slot.innerText = firstMsg ? firstMsg.content.substring(0, 25) + "..." : "Turbo Chat";
             slot.onclick = () => {
+                window.speechSynthesis.cancel();
                 currentChatId = id;
                 save();
                 renderChatList();
@@ -370,6 +472,7 @@
     }
 
     document.getElementById("new-chat-btn").onclick = () => {
+        window.speechSynthesis.cancel();
         currentChatId = "chat_" + Date.now();
         allChats[currentChatId] = [];
         save();
@@ -378,28 +481,27 @@
     };
 
     micBtn.onclick = () => {
-        if (!recognition) {
-            alert("Dein Browser unterstützt leider keine Spracherkennung.");
-            return;
-        }
-        
+        if (!recognition) return;
         if (isListening) {
             recognition.stop();
         } else {
-            try {
-                // Hard reset vor Start
-                recognition.abort(); 
-                setTimeout(() => recognition.start(), 50);
-            } catch (e) {
-                isListening = false;
-                micBtn.classList.remove("listening");
-                console.warn("Neustart erforderlich...");
-            }
+            wasVoiceRequest = true; 
+            recognition.start();
         }
     };
 
-    userInput.onkeypress = (e) => { if (e.key === "Enter") handleSend(); };
-    sendBtn.onclick = handleSend;
+    userInput.onkeypress = (e) => { 
+        if (e.key === "Enter") {
+            wasVoiceRequest = false; 
+            handleSend();
+        }
+    };
+    sendBtn.onclick = () => {
+        wasVoiceRequest = false;
+        handleSend();
+    };
+
+    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
 </script>
 </body>
 </html>
