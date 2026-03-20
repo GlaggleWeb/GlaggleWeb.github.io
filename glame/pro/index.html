@@ -576,9 +576,12 @@ async function callAI(prompt, base64Image = null) {
     const headers = { "Content-Type": "application/json" };
 
 if (isGemini) {
-    url = `https://generativelanguage.googleapis.com/v1/models/${selectedModel}:generateContent?key=${activeKey}`;
+    // 1. URL auf v1 (stabil) setzen - löst 404
+    url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
     
-    const parts = [{ text: prompt }];
+    // 2. Payload so einfach wie möglich halten - löst 400/403
+    const parts = [{ text: "Du bist Glame Pro. Antworte kurz auf Deutsch: " + prompt }];
+    
     if (base64Image) {
         parts.push({
             inlineData: {
@@ -588,11 +591,8 @@ if (isGemini) {
         });
     }
 
-    // Vereinfachtes Payload ohne systemInstruction für maximale Kompatibilität
     payload = {
-        contents: [{ 
-            parts: parts 
-        }]
+        contents: [{ parts: parts }]
     };
 } else {
         // Groq/OpenAI kompatible API nutzt Authorization Header
