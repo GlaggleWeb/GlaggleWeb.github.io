@@ -534,19 +534,27 @@
         let url, payload;
         const headers = { "Content-Type": "application/json" };
 
-        if (isGemini) {
-            url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
-            payload = {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }]
-            };
-            if (base64Image) {
-                payload.contents[0].parts.push({
-                    inlineData: { mimeType: "image/png", data: base64Image }
-                });
+       if (isGemini) {
+    // Wechsel von v1beta auf v1 und explizite Modell-Adressierung
+    url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
+    
+    payload = {
+        contents: [{
+            parts: [{ text: prompt }]
+        }],
+        // Wir fügen eine leere generationConfig hinzu, um Standardwerte zu erzwingen
+        generationConfig: {} 
+    };
+
+    if (base64Image) {
+        payload.contents[0].parts.push({
+            inlineData: {
+                mimeType: "image/png",
+                data: base64Image
             }
-        } else {
+        });
+    }
+} else {
             url = "https://api.groq.com/openai/v1/chat/completions";
             headers["Authorization"] = `Bearer ${activeKey}`;
             const history = allChats[currentChatId] || [];
