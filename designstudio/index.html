@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Design Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=Roboto+Mono&family=Bebas+Neue&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --studio-bg: #0f0f0f;
+            --panel-bg: #151515;
+            --accent: #8b5cf6;
+        }
+
+        body {
+            background-color: var(--studio-bg);
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .canvas-area {
+            background-image: radial-gradient(#222 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .artboard {
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transition: transform 0.1s ease-out;
+            transform-origin: center;
+            background-color: white;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .element-selected {
+            outline: 2px solid var(--accent);
+        }
+
+        /* Resizer Handles */
+        .resizer-handle {
+            width: 10px; height: 10px; background: white; border: 2px solid var(--accent);
+            position: absolute; border-radius: 50%; z-index: 100;
+        }
+        .resizer-nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .resizer-ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .resizer-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .resizer-se { bottom: -5px; right: -5px; cursor: se-resize; }
+
+        .sidebar-icon {
+            @apply flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition-all hover:bg-white/10 text-gray-400 hover:text-white;
+        }
+        .sidebar-icon.active { @apply bg-violet-600/20 text-violet-400; }
+
+        .gradient-preview {
+            width: 100%; height: 40px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        input[type="range"] { @apply w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer; }
+        input[type="range"]::-webkit-slider-thumb { @apply appearance-none w-3 h-3 bg-violet-500 rounded-full; }
+
+        .font-card { @apply p-2 rounded bg-gray-800/50 hover:bg-gray-700 cursor-pointer text-xs mb-1 transition-colors; }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- Header -->
+    <nav class="h-14 border-b border-white/5 bg-black flex items-center justify-between px-6 shrink-0 z-50">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-violet-600 rounded flex items-center justify-center font-black text-white">G</div>
+                <span class="font-bold text-sm tracking-tight">GLAGGLE <span class="text-violet-500 italic">PRO</span></span>
+            </div>
+            <div class="flex gap-4 text-xs font-medium text-gray-400">
+                <button class="hover:text-white transition-colors">Datei</button>
+                <button onclick="clearCanvas()" class="hover:text-white transition-colors">Neu</button>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="flex items-center bg-gray-900 rounded-lg p-1">
+                <button onclick="zoomCanvas(0.9)" class="p-1 hover:bg-gray-800 rounded"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                <span class="text-[10px] px-3 font-mono" id="zoom-label">100%</span>
+                <button onclick="zoomCanvas(1.1)" class="p-1 hover:bg-gray-800 rounded"><i data-lucide="plus" class="w-4 h-4"></i></button>
+            </div>
+            
+            <div class="relative group">
+                <button class="bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
+                    <i data-lucide="download" class="w-3 h-3"></i> Speichern als...
+                </button>
+                <div class="absolute right-0 top-full mt-2 w-40 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-2 z-[100]">
+                    <button onclick="exportAs('png')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">PNG Bild</button>
+                    <button onclick="exportAs('jpg')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">JPEG Bild</button>
+                    <button onclick="exportAs('pdf')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">PDF Dokument</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-20 bg-black border-r border-white/5 flex flex-col py-6 gap-3 items-center shrink-0">
+            <div onclick="switchTab('templates')" class="sidebar-icon active" id="tab-templates"><i data-lucide="layout" class="w-6 h-6"></i><span class="text-[9px] mt-1">Vorlagen</span></div>
+            <div onclick="switchTab('elements')" class="sidebar-icon" id="tab-elements"><i data-lucide="shapes" class="w-6 h-6"></i><span class="text-[9px] mt-1">Formen</span></div>
+            <div onclick="switchTab('text')" class="sidebar-icon" id="tab-text"><i data-lucide="type" class="w-6 h-6"></i><span class="text-[9px] mt-1">Text</span></div>
+            <div onclick="switchTab('uploads')" class="sidebar-icon" id="tab-uploads"><i data-lucide="image-plus" class="w-6 h-6"></i><span class="text-[9px] mt-1">Upload</span></div>
+        </aside>
+
+        <!-- Tool Panel -->
+        <aside class="w-72 bg-[#121212] border-r border-white/5 flex flex-col shrink-0 overflow-y-auto">
+            <div class="p-5">
+                <!-- Templates Section -->
+                <div id="panel-content-templates" class="panel-section">
+                    <h2 class="text-sm font-bold mb-4 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i> Start-Layouts</h2>
+                    <div class="space-y-3">
+                        <div onclick="applyTemplate('insta')" class="bg-gradient-to-tr from-purple-500 to-pink-500 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold shadow-lg">Instagram Post</div>
+                        <div onclick="applyTemplate('yt')" class="bg-gradient-to-tr from-red-600 to-red-400 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">YouTube Thumbnail</div>
+                        <div onclick="applyTemplate('modern')" class="bg-gradient-to-tr from-gray-700 to-gray-900 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">Minimalist Design</div>
+                        <div onclick="applyTemplate('presentation')" class="bg-gradient-to-tr from-blue-600 to-cyan-400 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">Presentation Slide</div>
+                    </div>
+                </div>
+
+                <!-- Elements Section -->
+                <div id="panel-content-elements" class="panel-section hidden">
+                    <h2 class="text-sm font-bold mb-4">Grafik-Elemente</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="addElement('rect')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="square" class="w-6 h-6"></i></button>
+                        <button onclick="addElement('circle')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="circle" class="w-6 h-6"></i></button>
+                        <button onclick="addElement('triangle')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="triangle" class="w-6 h-6"></i></button>
+                        <button onclick="addElement('star')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="star" class="w-6 h-6"></i></button>
+                        <button onclick="addElement('hexagon')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="hexagon" class="w-6 h-6"></i></button>
+                        <button onclick="addElement('heart')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="heart" class="w-6 h-6"></i></button>
+                    </div>
+                </div>
+
+                <!-- Text Section -->
+                <div id="panel-content-text" class="panel-section hidden">
+                    <h2 class="text-sm font-bold mb-4">Typografie</h2>
+                    <div class="space-y-2 mb-6">
+                        <button onclick="addElement('text-h1')" class="w-full p-4 bg-white/5 rounded-xl text-left hover:bg-white/10 font-bold text-xl">Überschrift</button>
+                        <button onclick="addElement('text-p')" class="w-full p-4 bg-white/5 rounded-xl text-left hover:bg-white/10 text-sm">Fließtext</button>
+                    </div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2">Beliebte Schriftarten</h3>
+                    <div class="font-card" style="font-family: 'Bebas Neue'" onclick="applyStyle('fontFamily', 'Bebas Neue')">Bebas Neue (Impact)</div>
+                    <div class="font-card" style="font-family: 'Montserrat'" onclick="applyStyle('fontFamily', 'Montserrat')">Montserrat Black</div>
+                    <div class="font-card" style="font-family: 'Playfair Display'" onclick="applyStyle('fontFamily', 'Playfair Display')">Playfair Serif</div>
+                    <div class="font-card" style="font-family: 'Roboto Mono'" onclick="applyStyle('fontFamily', 'Roboto Mono')">Roboto Mono</div>
+                </div>
+
+                <!-- Upload Section -->
+                <div id="panel-content-uploads" class="panel-section hidden">
+                    <h2 class="text-sm font-bold mb-4">Eigene Bilder</h2>
+                    <label class="block w-full border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-violet-500 transition-colors">
+                        <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
+                        <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-2 text-violet-500"></i>
+                        <p class="text-xs font-medium">Bilder hochladen</p>
+                        <p class="text-[9px] text-gray-500 mt-2">JPG, PNG, SVG werden unterstützt</p>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Workspace -->
+        <main class="flex-1 canvas-area relative flex items-center justify-center overflow-auto" id="viewport">
+            <div id="artboard" class="artboard relative shadow-2xl overflow-hidden" style="width: 600px; height: 400px;" onclick="selectBackground(event)">
+                <!-- Elements will land here -->
+            </div>
+        </main>
+
+        <!-- Inspector -->
+        <aside class="w-72 bg-[#121212] border-l border-white/5 p-5 shrink-0 overflow-y-auto">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Inspector</h2>
+
+            <!-- Background Inspector (Hidden by default) -->
+            <div id="bg-inspector" class="space-y-6">
+                <div class="space-y-3">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase">Hintergrundfarbe</label>
+                    <input type="color" id="bg-color-picker" class="w-full h-10 rounded bg-transparent cursor-pointer" oninput="setArtboardBg(this.value)">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase">Presets & Gradients</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div onclick="setArtboardGradient('linear-gradient(45deg, #8b5cf6, #ec4899)')" class="gradient-preview bg-gradient-to-r from-violet-500 to-pink-500"></div>
+                        <div onclick="setArtboardGradient('linear-gradient(135deg, #3b82f6, #06b6d4)')" class="gradient-preview bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                        <div onclick="setArtboardGradient('linear-gradient(to right, #111, #444)')" class="gradient-preview bg-gradient-to-r from-black to-gray-700"></div>
+                        <div onclick="setArtboardGradient('linear-gradient(45deg, #f59e0b, #ef4444)')" class="gradient-preview bg-gradient-to-r from-orange-500 to-red-500"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Element Inspector (Hidden by default) -->
+            <div id="element-inspector" class="hidden space-y-6">
+                <div class="space-y-3">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase">Farbe & Füllung</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="el-color-picker" class="w-10 h-10 rounded bg-transparent cursor-pointer" oninput="applyStyle('backgroundColor', this.value); applyStyle('color', this.value)">
+                        <input type="text" id="el-hex-val" class="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-xs outline-none" placeholder="#FFFFFF">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
+                        <span>Eckenradius</span>
+                        <span id="radius-label">0px</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="0" oninput="applyStyle('borderRadius', this.value + 'px'); document.getElementById('radius-label').innerText = this.value+'px'">
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
+                        <span>Transparenz</span>
+                        <span id="opacity-label">100%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="100" oninput="applyStyle('opacity', this.value/100); document.getElementById('opacity-label').innerText = this.value+'%'">
+                </div>
+
+                <div class="pt-6 border-t border-white/5 space-y-2">
+                    <button onclick="applyStyle('zIndex', (parseInt(selectedElement?.style.zIndex) || 10) + 1)" class="w-full p-2 bg-white/5 hover:bg-white/10 text-[10px] font-bold rounded">Ebene nach vorn</button>
+                    <button onclick="applyStyle('zIndex', (parseInt(selectedElement?.style.zIndex) || 10) - 1)" class="w-full p-2 bg-white/5 hover:bg-white/10 text-[10px] font-bold rounded">Ebene nach hinten</button>
+                    <button onclick="deleteSelected()" class="w-full p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-bold rounded mt-4">Löschen</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full text-xs font-bold shadow-2xl opacity-0 translate-y-10 transition-all z-[200] pointer-events-none">Export erfolgreich!</div>
+
+    <script>
+        let selectedElement = null;
+        let zoomLevel = 1.0;
+        const artboard = document.getElementById('artboard');
+        
+        // --- DRAG & RESIZE LOGIC ---
+        let isDragging = false;
+        let isResizing = false;
+        let currentHandle = '';
+        let startX, startY, startW, startH, startLeft, startTop;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.sidebar-icon').forEach(i => i.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelectorAll('.panel-section').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`panel-content-${tabId}`).classList.remove('hidden');
+        }
+
+        function addElement(type, content = null) {
+            const el = document.createElement('div');
+            el.className = 'absolute cursor-move select-none flex items-center justify-center';
+            el.id = 'el-' + Date.now();
+            el.style.left = '100px';
+            el.style.top = '100px';
+            el.style.width = '150px';
+            el.style.height = '150px';
+            el.style.zIndex = '10';
+
+            // Add resize handles
+            const handles = ['nw', 'ne', 'sw', 'se'];
+            handles.forEach(h => {
+                const handle = document.createElement('div');
+                handle.className = `resizer-handle resizer-${h} hidden group-selected`;
+                handle.onmousedown = (e) => startResize(e, el, h);
+                el.appendChild(handle);
+            });
+
+            if (type === 'rect') el.style.backgroundColor = '#8b5cf6';
+            if (type === 'circle') { el.style.backgroundColor = '#ec4899'; el.style.borderRadius = '50%'; }
+            if (type === 'triangle') el.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+            if (type === 'star') el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            if (type === 'hexagon') el.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
+            if (type === 'heart') el.style.clipPath = 'polygon(50% 30%, 100% 0, 100% 50%, 50% 100%, 0 50%, 0 0)';
+
+            if (type.startsWith('text')) {
+                el.style.height = 'auto';
+                const tag = type === 'text-h1' ? 'h1' : 'p';
+                const classes = type === 'text-h1' ? 'text-4xl font-black' : 'text-sm';
+                el.innerHTML += `<${tag} contenteditable="true" class="${classes} outline-none w-full text-center">Dein Text</${tag}>`;
+            }
+
+            if (type === 'image' && content) {
+                el.style.backgroundImage = `url(${content})`;
+                el.style.backgroundSize = 'contain';
+                el.style.backgroundRepeat = 'no-repeat';
+                el.style.backgroundPosition = 'center';
+            }
+
+            el.onmousedown = (e) => { if(!isResizing) startDrag(e, el); };
+            artboard.appendChild(el);
+            selectElementFn(el);
+        }
+
+        function startDrag(e, el) {
+            if (e.target.contentEditable === 'true') return;
+            selectElementFn(el);
+            isDragging = true;
+            const rect = el.getBoundingClientRect();
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(el.style.left);
+            startTop = parseInt(el.style.top);
+
+            document.onmousemove = (e) => {
+                if (!isDragging) return;
+                const dx = (e.clientX - startX) / zoomLevel;
+                const dy = (e.clientY - startY) / zoomLevel;
+                el.style.left = (startLeft + dx) + 'px';
+                el.style.top = (startTop + dy) + 'px';
+            };
+            document.onmouseup = stopAll;
+        }
+
+        function startResize(e, el, handle) {
+            e.stopPropagation();
+            isResizing = true;
+            currentHandle = handle;
+            startX = e.clientX;
+            startY = e.clientY;
+            startW = parseInt(el.style.width);
+            startH = parseInt(el.style.height);
+            startLeft = parseInt(el.style.left);
+            startTop = parseInt(el.style.top);
+
+            document.onmousemove = (e) => {
+                const dx = (e.clientX - startX) / zoomLevel;
+                const dy = (e.clientY - startY) / zoomLevel;
+
+                if (currentHandle.includes('e')) el.style.width = (startW + dx) + 'px';
+                if (currentHandle.includes('s')) el.style.height = (startH + dy) + 'px';
+                if (currentHandle.includes('w')) {
+                    el.style.width = (startW - dx) + 'px';
+                    el.style.left = (startLeft + dx) + 'px';
+                }
+                if (currentHandle.includes('n')) {
+                    el.style.height = (startH - dy) + 'px';
+                    el.style.top = (startTop + dy) + 'px';
+                }
+            };
+            document.onmouseup = stopAll;
+        }
+
+        function stopAll() {
+            isDragging = false;
+            isResizing = false;
+            document.onmousemove = null;
+        }
+
+        function selectElementFn(el) {
+            if (selectedElement) {
+                selectedElement.classList.remove('element-selected');
+                selectedElement.querySelectorAll('.resizer-handle').forEach(h => h.classList.add('hidden'));
+            }
+            selectedElement = el;
+            el.classList.add('element-selected');
+            el.querySelectorAll('.resizer-handle').forEach(h => h.classList.remove('hidden'));
+            
+            document.getElementById('bg-inspector').classList.add('hidden');
+            document.getElementById('element-inspector').classList.remove('hidden');
+        }
+
+        function selectBackground(e) {
+            if (e.target === artboard) {
+                if (selectedElement) {
+                    selectedElement.classList.remove('element-selected');
+                    selectedElement.querySelectorAll('.resizer-handle').forEach(h => h.classList.add('hidden'));
+                }
+                selectedElement = null;
+                document.getElementById('bg-inspector').classList.remove('hidden');
+                document.getElementById('element-inspector').classList.add('hidden');
+            }
+        }
+
+        function setArtboardBg(color) {
+            artboard.style.background = color;
+        }
+
+        function setArtboardGradient(grad) {
+            artboard.style.background = grad;
+        }
+
+        function applyStyle(prop, val) {
+            if (selectedElement) selectedElement.style[prop] = val;
+        }
+
+        function deleteSelected() {
+            if (selectedElement) {
+                selectedElement.remove();
+                selectedElement = null;
+                selectBackground({target: artboard});
+            }
+        }
+
+        function zoomCanvas(factor) {
+            zoomLevel *= factor;
+            artboard.style.transform = `scale(${zoomLevel})`;
+            document.getElementById('zoom-label').innerText = Math.round(zoomLevel*100) + '%';
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => addElement('image', e.target.result);
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function exportAs(format) {
+            const toast = document.getElementById('toast');
+            toast.innerText = `Exportiere als ${format.toUpperCase()}...`;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0) translateX(-50%)';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px) translateX(-50%)';
+            }, 3000);
+            
+            // Note: In real production, this would use html2canvas or similar.
+            // For this environment, we simulate the success.
+        }
+
+        function clearCanvas() {
+            artboard.innerHTML = '';
+            artboard.style.background = 'white';
+        }
+
+        function applyTemplate(type) {
+            clearCanvas();
+            if (type === 'insta') {
+                artboard.style.width = '500px'; artboard.style.height = '500px';
+                setArtboardGradient('linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)');
+                addElement('text-h1');
+                selectedElement.style.color = 'white';
+                selectedElement.style.fontFamily = 'Montserrat';
+            } else if (type === 'yt') {
+                artboard.style.width = '640px'; artboard.style.height = '360px';
+                setArtboardBg('#000');
+                addElement('rect');
+                selectedElement.style.width = '300px';
+                selectedElement.style.backgroundColor = 'red';
+                addElement('text-h1');
+                selectedElement.style.color = 'white';
+                selectedElement.style.fontFamily = 'Bebas Neue';
+            } else if (type === 'presentation') {
+                artboard.style.width = '700px'; artboard.style.height = '400px';
+                setArtboardBg('#f8fafc');
+                addElement('text-h1');
+                selectedElement.style.top = '100px';
+            }
+            selectBackground({target: artboard});
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
