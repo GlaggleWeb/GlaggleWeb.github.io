@@ -662,6 +662,14 @@ function createAiPlaceholder() {
     return aiBox;
 }
 
+document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Verhindert Neuladen der Seite
+        glaggleSearch();
+        this.blur(); // Schließt die mobile Tastatur
+    }
+});
+    
 async function glaggleSearch() {
     if (Notification.permission !== "granted") {
     Notification.requestPermission();
