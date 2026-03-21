@@ -612,17 +612,16 @@
   <main class="main-content">
     <img src="glagglelogo.png" class="large-logo" alt="Glaggle Logo">
     
-    <div class="search-section">
-        <form onsubmit="event.preventDefault(); glaggleSearch();" class="search-bar-container" action="#">
-            
-            <div class="custom-caret"></div> 
-            
-            <input type="text" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." autocomplete="off" enterkeyhint="search" autofocus>
-            
-            <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
+    <form class="search-bar-container" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
+    <div class="custom-caret"></div> 
+    
+    <input type="search" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
+           autocomplete="off" enterkeyhint="search" name="q">
+    
+    <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
 
-            <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-        </form>
+    <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+</form>
 
         <div class="loader" id="glaggleLoader"></div>
         <div id="glaggleResults" class="results-container"></div>
