@@ -401,7 +401,7 @@
             const finalTime = parseFloat(currentTime);
             
             // Coins berechnen (1 Coin pro 5 Sekunden)
-            const earnedCoins = Math.floor(finalTime / 5);
+            const earnedCoins = Math.floor(finalTime / 15);
             if(earnedCoins > 0) {
                 coins += earnedCoins;
                 localStorage.setItem('glaggleCoins', coins);
