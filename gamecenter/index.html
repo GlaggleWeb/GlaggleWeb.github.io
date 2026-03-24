@@ -318,33 +318,29 @@
         })
         .subscribe();
 
-    async function sendMessage() {
-        const text = chatInput.value.trim();
-        if (!text) return;
+   async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
 
-        sendBtn.disabled = true;
-        const result = await checkModeration(text);
-        sendBtn.disabled = false;
+    sendBtn.disabled = true;
+    const result = await checkModeration(text);
+    
+    if (result.includes("OK")) {
+        // 1. Alte Nachrichten löschen (Müllabfuhr)
+        await supabaseClient.rpc('delete_old_messages');
 
-        // Wir prüfen, ob "OK" irgendwo in der Antwort vorkommt
-        if (result.includes("OK")) {
-            document.getElementById('chat-status').innerText = "";
-            const { error } = await supabaseClient
-                .from('messages')
-                .insert([{ user: "Glaggle-Fan", content: text }]);
-            
-            if(error) {
-                console.error("Supabase Error:", error);
-                document.getElementById('chat-status').innerText = "Datenbank-Fehler!";
-            }
-            chatInput.value = "";
-        } else {
-            document.getElementById('chat-status').innerText = "⚠️ Blockiert: Sei bitte höflich!";
-            chatInput.value = "";
-            // Kurzes Delay, dann Warnung löschen
-            setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
-        }
+        // 2. Neue Nachricht senden
+        const { error } = await supabaseClient
+            .from('messages')
+            .insert([{ user: "Glaggle-Fan", content: text }]);
+        
+        if(!error) chatInput.value = "";
+    } else {
+        document.getElementById('chat-status').innerText = "⚠️ Sei bitte höflich!";
+        setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
     }
+    sendBtn.disabled = false;
+}
 
     function renderMessage(user, text) {
         const msgDiv = document.createElement('div');
