@@ -349,27 +349,33 @@
 }
 
     function renderMessage(user, text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.style.background = "var(--nav-bg)";
-        msgDiv.style.padding = "10px 15px";
-        msgDiv.style.borderRadius = "15px";
-        msgDiv.style.fontSize = "0.9rem";
-        msgDiv.style.border = "1px solid var(--card-border)";
-        msgDiv.style.alignSelf = "flex-start";
-        msgDiv.style.maxWidth = "85%";
-        msgDiv.innerHTML = `<b style="color: var(--accent);">${user}:</b> ${text}`;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    const msgDiv = document.createElement('div');
+    msgDiv.style.background = "var(--nav-bg)";
+    msgDiv.style.padding = "10px 15px";
+    msgDiv.style.borderRadius = "15px";
+    msgDiv.style.fontSize = "0.9rem";
+    msgDiv.style.border = "1px solid var(--card-border)";
+    msgDiv.style.alignSelf = "flex-start";
+    msgDiv.style.maxWidth = "85%";
+    msgDiv.style.wordBreak = "break-word"; // Verhindert, dass langer Text aus dem Feld läuft
+
+    // --- DEVELOPER CHECK ---
+    let userDisplay;
+    
+    if (user === "Julian Gysin") {
+        // Goldener Text und Krone für dich
+        userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer (Julian):</b>`;
+        msgDiv.style.border = "2px solid #FFD700"; // Goldener Rand
+        msgDiv.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.2)"; // Leichter Glüheffekt
+    } else {
+        // Normaler Name für alle anderen
+        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
     }
 
-    // --- 5. INITIALISIERUNG ---
-    updateCoinDisplay();
-    loadInitialMessages();
-    
-    sendBtn.onclick = sendMessage;
-    // Korrektur: onkeydown statt ononkeydown
-    chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
-
+    msgDiv.innerHTML = `${userDisplay} ${text}`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
     // --- 2.5 LUSTIGE GLAGGLE-NAMEN LOGIK ---
 function generateFunnyName() {
     const adjektive = [
