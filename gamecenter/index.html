@@ -244,36 +244,40 @@
 </div>
     
 <script>
-    // --- 1. KONFIGURATION ---
+ // --- 1. KONFIGURATION ---
     const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
     const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
     
-    // Groq Key (Zerstückelt)
     const _p1 = "gsk_"; 
     const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
     const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
     const getG = () => _p1 + _p2 + _p3;
 
-    // Supabase Initialisierung (Korrektur: supabase.createClient statt lib.supabase)
-    // Ersetze die alte Initialisierung durch diese:
     const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
-    // --- 2. COIN LOGIK ---
+    // --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
+    function generateFunnyName() {
+        const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
+        const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
+        const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
+        const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
+        const randomNum = Math.floor(Math.random() * 999);
+        return `${randomAdj} ${randomNom}-${randomNum}`;
+    }
+
+    let currentUserName = localStorage.getItem('glaggleUserName');
+    if (!currentUserName) {
+        currentUserName = generateFunnyName();
+        localStorage.setItem('glaggleUserName', currentUserName);
+    }
+
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     function updateCoinDisplay() {
         const countElement = document.getElementById('coin-count');
         if (countElement) countElement.innerText = glaggleCoins;
     }
-    function earnCoin() {
-        glaggleCoins++;
-        localStorage.setItem('glaggleCoins', glaggleCoins);
-        updateCoinDisplay();
-        const container = document.getElementById('coin-container');
-        container.style.backgroundColor = "var(--accent)";
-        setTimeout(() => { container.style.backgroundColor = "var(--card-bg)"; }, 300);
-    }
 
-  // --- 3. GROQ MODERATION ---
+    // --- 3. GROQ MODERATION ---
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
         chatStatus.innerText = "Glaggle-Wächter prüft...";
@@ -285,18 +289,15 @@
                     model: "llama-3.1-8b-instant",
                     messages: [{
                         role: "system", 
-                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text harmlos ist. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen oder Schimpfwörter enthält."
+                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text harmlos ist. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen enthält."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
             });
             const data = await response.json();
-            const aiReply = data.choices[0].message.content.trim().toUpperCase();
-            console.log("KI Urteil:", aiReply); // Zum Debuggen in der Konsole
-            return aiReply;
+            return data.choices[0].message.content.trim().toUpperCase();
         } catch (e) { 
-            console.error("Moderation Error:", e);
-            return "OK"; // Falls KI down ist, Nachricht erlauben
+            return "OK"; 
         }
     }
 
@@ -305,6 +306,31 @@
     const sendBtn = document.getElementById('send-btn');
     const chatBox = document.getElementById('chat-box');
 
+    function renderMessage(user, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.background = "var(--nav-bg)";
+        msgDiv.style.padding = "10px 15px";
+        msgDiv.style.borderRadius = "15px";
+        msgDiv.style.fontSize = "0.9rem";
+        msgDiv.style.border = "1px solid var(--card-border)";
+        msgDiv.style.alignSelf = "flex-start";
+        msgDiv.style.maxWidth = "85%";
+        msgDiv.style.wordBreak = "break-word";
+
+        let userDisplay;
+        if (user === "Julian Gysin") {
+            userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
+            msgDiv.style.border = "2px solid #FFD700";
+            msgDiv.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.2)";
+        } else {
+            userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
+        }
+
+        msgDiv.innerHTML = `${userDisplay} ${text}`;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
     async function loadInitialMessages() {
         const { data, error } = await supabaseClient
             .from('messages')
@@ -312,10 +338,39 @@
             .order('created_at', { ascending: true })
             .limit(20);
         if (data) {
-            chatBox.innerHTML = '<div style="font-style: italic; opacity: 0.5; font-size: 0.8rem;">Willkommen im Chat!</div>';
+            chatBox.innerHTML = ''; 
             data.forEach(m => renderMessage(m.user, m.content));
         }
     }
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        const result = await checkModeration(text);
+        
+        if (result.includes("OK")) {
+            // Löschen alter Nachrichten via RPC
+            await supabaseClient.rpc('delete_old_messages');
+
+            const { error } = await supabaseClient
+                .from('messages')
+                .insert([{ user: currentUserName, content: text }]);
+            
+            if(!error) chatInput.value = "";
+            document.getElementById('chat-status').innerText = "";
+        } else {
+            document.getElementById('chat-status').innerText = "⚠️ Sei bitte höflich!";
+            setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
+        }
+        sendBtn.disabled = false;
+    }
+
+    // --- 5. INITIALISIERUNG & REALTIME ---
+    updateCoinDisplay();
+    loadInitialMessages();
+    chatInput.placeholder = `${currentUserName}: Tippen...`;
 
     supabaseClient
         .channel('public:messages')
@@ -324,87 +379,8 @@
         })
         .subscribe();
 
-   async function sendMessage() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    sendBtn.disabled = true;
-    const result = await checkModeration(text);
-    
-    if (result.includes("OK")) {
-        // 1. Alte Nachrichten löschen (Müllabfuhr)
-        await supabaseClient.rpc('delete_old_messages');
-
-        // 2. Neue Nachricht senden
-        const { error } = await supabaseClient
-            .from('messages')
-            .insert([{ user: currentUserName, content: text }]);
-        
-        if(!error) chatInput.value = "";
-    } else {
-        document.getElementById('chat-status').innerText = "⚠️ Sei bitte höflich!";
-        setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
-    }
-    sendBtn.disabled = false;
-}
-
-    function renderMessage(user, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.style.background = "var(--nav-bg)";
-    msgDiv.style.padding = "10px 15px";
-    msgDiv.style.borderRadius = "15px";
-    msgDiv.style.fontSize = "0.9rem";
-    msgDiv.style.border = "1px solid var(--card-border)";
-    msgDiv.style.alignSelf = "flex-start";
-    msgDiv.style.maxWidth = "85%";
-    msgDiv.style.wordBreak = "break-word"; // Verhindert, dass langer Text aus dem Feld läuft
-
-    // --- DEVELOPER CHECK ---
-    let userDisplay;
-    
-    if (user === "Julian Gysin") {
-        // Goldener Text und Krone für dich
-        userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">Glaggle Developer:</b>`;
-        msgDiv.style.border = "2px solid #FFD700"; // Goldener Rand
-        msgDiv.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.2)"; // Leichter Glüheffekt
-    } else {
-        // Normaler Name für alle anderen
-        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
-    }
-
-    msgDiv.innerHTML = `${userDisplay} ${text}`;
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-    // --- 2.5 LUSTIGE GLAGGLE-NAMEN LOGIK ---
-function generateFunnyName() {
-    const adjektive = [
-        "Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", 
-        "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", 
-        "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer",
-        "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"
-    ];
-    
-    const nomen = [
-        "Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", 
-        "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", 
-        "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", 
-        "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"
-    ];
-    
-    const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
-    const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
-    const randomNum = Math.floor(Math.random() * 999); // Mehr Nummern für mehr Einzigartigkeit
-
-    return `${randomAdj} ${randomNom}-${randomNum}`;
-}
-
-// Namen aus Speicher laden oder neu generieren
-let currentUserName = localStorage.getItem('glaggleUserName');
-if (!currentUserName) {
-    currentUserName = generateFunnyName();
-    localStorage.setItem('glaggleUserName', currentUserName);
-}
+    sendBtn.onclick = sendMessage;
+    chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 </script>
 </body>
 </html>
