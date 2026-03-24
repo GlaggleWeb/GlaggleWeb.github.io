@@ -338,7 +338,7 @@
         // 2. Neue Nachricht senden
         const { error } = await supabaseClient
             .from('messages')
-            .insert([{ user: "Glaggle-Fan", content: text }]);
+            .insert([{ user: currentUserName, content: text }]);
         
         if(!error) chatInput.value = "";
     } else {
@@ -369,6 +369,36 @@
     sendBtn.onclick = sendMessage;
     // Korrektur: onkeydown statt ononkeydown
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+
+    // --- 2.5 LUSTIGE GLAGGLE-NAMEN LOGIK ---
+function generateFunnyName() {
+    const adjektive = [
+        "Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", 
+        "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", 
+        "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer",
+        "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"
+    ];
+    
+    const nomen = [
+        "Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", 
+        "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", 
+        "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", 
+        "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"
+    ];
+    
+    const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
+    const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
+    const randomNum = Math.floor(Math.random() * 999); // Mehr Nummern für mehr Einzigartigkeit
+
+    return `${randomAdj} ${randomNom}-${randomNum}`;
+}
+
+// Namen aus Speicher laden oder neu generieren
+let currentUserName = localStorage.getItem('glaggleUserName');
+if (!currentUserName) {
+    currentUserName = generateFunnyName();
+    localStorage.setItem('glaggleUserName', currentUserName);
+}
 </script>
 </body>
 </html>
