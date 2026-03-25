@@ -500,77 +500,67 @@ function renderMessage(user, text) {
 
 let leaderboardExpanded = false;
 const gameSelector = document.getElementById('game-selector');
+    
 async function updateLeaderboard() {
     const selectedGame = gameSelector.value;
     let scoreToSend = 0;
 
+    // 1. Richtigen Score ermitteln
     if (selectedGame === 'global') {
         scoreToSend = glaggleCoins;
     } else {
-        // Erstellt den Key (z.B. 'glagglejump_highscore') automatisch
         const storageKey = selectedGame + "_highscore"; 
         scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
     }
 
-    // Nur senden, wenn ein Score existiert oder es die globale Liste ist
+    // 2. Daten an Supabase senden (Upsert)
     if (scoreToSend > 0 || selectedGame === 'global') {
         await supabaseClient
             .from('leaderboard')
             .upsert({ 
                 username: currentUserName, 
-                coins: scoreToSend, // Wir nutzen die Spalte 'coins' für alle Werte
+                coins: scoreToSend, 
                 game_name: selectedGame 
             }, { onConflict: 'username, game_name' });
     }
 
-    // Ab hier bleibt dein restlicher Code (Daten abrufen und anzeigen) gleich...
+    // 3. Daten abrufen
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
-        // ...
         .eq('game_name', selectedGame)
         .order('coins', { ascending: false })
         .limit(50);
-    
-    // ... Rest der Funktion (data.forEach etc.) bleibt gleich ...
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
         const myFixedRank = document.getElementById('my-fixed-rank');
-        const showMoreCont = document.getElementById('show-more-container');
+        const showMoreBtn = document.getElementById('toggle-leaderboard');
         
         list.innerHTML = ''; 
         myFixedRank.style.display = 'none';
 
         let userFoundInVisiblePart = false;
-        let myOverallRank = 0;
+        let myRankData = null;
 
         data.forEach((entry, index) => {
             const isMe = entry.username === currentUserName;
             const rank = index + 1;
+            
             if (isMe) {
-                myOverallRank = rank;
-                // Wenn wir in den Top 10 sind ODER die Liste ausgeklappt ist
+                myRankData = { rank, score: entry.coins };
                 if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
             }
 
             const row = document.createElement('div');
             row.className = 'leader-row';
-            
-            // Sichtbarkeits-Steuerung
-            if (rank > 10 && !leaderboardExpanded) {
-                row.style.display = 'none';
-            }
-
-            if (isMe) {
-                row.style.background = "rgba(112, 196, 247, 0.15)";
-                row.style.borderRadius = "10px";
-            }
+            if (rank > 10 && !leaderboardExpanded) row.style.display = 'none';
+            if (isMe) row.style.background = "rgba(112, 196, 247, 0.15)";
 
             const rankIcons = ['🥇', '🥈', '🥉'];
             const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
             
-            // Text-Label: Bei "global" Coins, sonst "Punkte"
+            // Einheit anpassen: Global = Nichts, Spiele = Pkt.
             const unit = selectedGame === 'global' ? '' : ' Pkt.';
 
             row.innerHTML = `
@@ -578,51 +568,27 @@ async function updateLeaderboard() {
                 <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
                     ${isMe ? '⭐ ' : ''}${entry.username}
                 </span>
-                <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
+                <span class="leader-coins">
                     ${entry.coins.toLocaleString()}${unit}
                 </span>
             `;
             list.appendChild(row);
         });
 
-        // Button nur zeigen, wenn mehr als 10 da sind
-        showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
-
-        // Wenn man nicht in der aktuellen Ansicht ist, zeige den eigenen Rang fixiert unten
-        if (!userFoundInVisiblePart && myOverallRank > 0) {
+        // "Eigener Rang" Anzeige am Ende der Liste, falls man nicht in den Top 10 ist
+        if (!userFoundInVisiblePart && myRankData) {
             myFixedRank.style.display = 'block';
+            const unit = selectedGame === 'global' ? '' : ' Pkt.';
             myFixedRank.innerHTML = `
                 <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
-                    <span class="leader-rank">#${myOverallRank}</span>
+                    <span class="leader-rank">#${myRankData.rank}</span>
                     <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
-                    <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                        <img src="coin.png" style="width: 16px; height: 16px;"> 
-                        ${glaggleCoins.toLocaleString()}${selectedGame === 'global' ? '' : ' Pkt.'}
-                    </span>
+                    <span class="leader-coins">${myRankData.score.toLocaleString()}${unit}</span>
                 </div>
             `;
         }
     }
 }
-
-// Umschalten zwischen Top 10 und Top 50
-document.getElementById('toggle-leaderboard').onclick = function() {
-    leaderboardExpanded = !leaderboardExpanded;
-    this.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen (Top 50)";
-    updateLeaderboard();
-};
-
-// Wenn ein anderes Spiel gewählt wird
-gameSelector.onchange = () => {
-    leaderboardExpanded = false; 
-    document.getElementById('toggle-leaderboard').innerText = "Mehr anzeigen";
-    updateLeaderboard();
-};
-
-// Start
-updateLeaderboard();
-setInterval(updateLeaderboard, 8000); // Alle 8 Sek. aktualisieren
 </script>
 </body>
 </html>
