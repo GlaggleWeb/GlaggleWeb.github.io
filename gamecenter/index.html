@@ -189,6 +189,41 @@
 .msg-bubble.own-msg b {
     color: white !important;
 }
+
+/* Animation für Nachrichten */
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-bubble {
+    animation: fadeInSlide 0.3s ease-out forwards;
+    /* ... restliche Styles bleiben ... */
+}
+
+/* Leaderboard Styles */
+.leaderboard-card {
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 18px;
+    padding: 20px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+}
+
+.leader-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.leader-row:last-child { border-bottom: none; }
+.leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
+.leader-name { flex-grow: 1; }
+.leader-coins { font-weight: bold; color: #FFD700; }
     </style>
 </head>
 <body>
@@ -199,10 +234,6 @@
             <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Glaggle Gamecenter</span>
         </div>
         <div style="text-align: center; margin-bottom: 10px;">
-    <span id="online-count" style="background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
-        🟢 1 Online
-    </span>
-</div>
     </nav>
 
     <div class="hero">
@@ -279,6 +310,14 @@
         </div>
         <p id="chat-status" style="font-size: 0.7rem; margin-top: 10px; color: var(--danger);"></p>
     </div>
+
+    <div class="leaderboard-card">
+        <h2 class="game-title"><span>🏆</span> Glaggle Coin Top 10</h2>
+            <div id="leaderboard-list">
+                <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
+    </div>
+</div>
+        
 </div>
 
     <p style="margin-top: 40px; font-size: 12px; color: var(--desc-color);">© 2026 Glaggle - Glaggle your life!</p>
@@ -430,38 +469,41 @@ function renderMessage(user, text) {
 
     sendBtn.onclick = sendMessage;
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+// --- LEADERBOARD LOGIK ---
 
-    // --- ONLINE-ZÄHLER LOGIK ---
-const onlineChannel = supabaseClient.channel('online-users', {
-  config: {
-    presence: {
-      key: currentUserName,
-    },
-  },
-});
+async function updateLeaderboard() {
+    // 1. Eigene Coins in der DB aktualisieren (Tabelle 'leaderboard' vorausgesetzt)
+    // Falls du keine Tabelle hast, kannst du diesen Teil weglassen oder die Tabelle in Supabase erstellen
+    await supabaseClient
+        .from('leaderboard')
+        .upsert({ username: currentUserName, coins: glaggleCoins }, { onConflict: 'username' });
 
-onlineChannel
-  .on('presence', { event: 'sync' }, () => {
-    const state = onlineChannel.presenceState();
-    const count = Object.keys(state).length;
-    
-    // Anzeige aktualisieren
-    const countElem = document.getElementById('online-count');
-    if (countElem) {
-        countElem.innerText = `🟢 ${count} ${count === 1 ? 'Gamer' : 'Gamer'} online`;
+    // 2. Top 10 abrufen
+    const { data, error } = await supabaseClient
+        .from('leaderboard')
+        .select('*')
+        .order('coins', { ascending: false })
+        .limit(10);
+
+    if (data) {
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = '';
+        data.forEach((entry, index) => {
+            const row = document.createElement('div');
+            row.className = 'leader-row';
+            row.innerHTML = `
+                <span class="leader-rank">#${index + 1}</span>
+                <span class="leader-name">${entry.username}</span>
+                <span class="leader-coins">🪙 ${entry.coins}</span>
+            `;
+            list.appendChild(row);
+        });
     }
-  })
-  .on('presence', { event: 'join', key: 'new_user' }, ({ newPresences }) => {
-    console.log('Neuer Gamer ist beigetreten!', newPresences);
-  })
-  .subscribe(async (status) => {
-    if (status === 'SUBSCRIBED') {
-      // Den eigenen Status an alle senden
-      await onlineChannel.track({
-        online_at: new Date().toISOString(),
-      });
-    }
-  });
+}
+
+// Ruf das Leaderboard beim Start und nach dem Senden einer Nachricht auf
+updateLeaderboard();
+setInterval(updateLeaderboard, 15000); // Alle 15 Sek aktualisieren
 </script>
 </body>
 </html>
