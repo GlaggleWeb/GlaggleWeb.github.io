@@ -238,22 +238,23 @@
         function gameOver() {
     gameRunning = false;
     
-    // Prüfen, ob man einen Coin bekommt (ab 5 Punkten)
     if (score >= 5) {
         earnCoin();
     }
 
-    if(score > highscore) {
-        highscore = score;
-        localStorage.setItem('glaggleDashHighscore', highscore);
-        document.getElementById('highscore').innerText = highscore;
+    // ÄNDERUNG HIER: Eindeutiger Name für das Gamecenter
+    const storageKey = 'glagglejump_highscore'; 
+    let currentHighscore = localStorage.getItem(storageKey) || 0;
+
+    if(score > currentHighscore) {
+        localStorage.setItem(storageKey, score); // Speichern für Gamecenter
+        document.getElementById('highscore').innerText = score;
         document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
     } else {
         document.getElementById('msg').innerText = "Crash! Score: " + score;
     }
     menu.style.display = "flex";
 }
-
 function earnCoin() {
     // 1. Coins aus Speicher laden und erhöhen
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
