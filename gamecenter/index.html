@@ -474,6 +474,7 @@ function renderMessage(user, text) {
 // --- LEADERBOARD LOGIK ---
 async function updateLeaderboard() {
     // 1. Eigene Coins in der DB aktualisieren
+    // Wir senden den aktuellen Namen und den Punktestand aus dem LocalStorage
     await supabaseClient
         .from('leaderboard')
         .upsert({ 
@@ -490,37 +491,36 @@ async function updateLeaderboard() {
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = ''; // Liste leeren
+        list.innerHTML = ''; // Liste leeren für Refresh
         
         data.forEach((entry, index) => {
             const row = document.createElement('div');
             row.className = 'leader-row';
             
-            // Markierung wenn du es selbst bist (für CSS .is-me)
-            if (entry.username === currentUserName) {
-                row.style.background = "rgba(112, 196, 247, 0.1)";
+            // Goldene Farbe und Stern für dich selbst
+            const isMe = entry.username === currentUserName;
+            if (isMe) {
+                row.style.background = "rgba(112, 196, 247, 0.15)";
                 row.style.borderRadius = "10px";
             }
 
-            // Medaillen für die Top 3
-            const medals = ['🥇', '🥈', '🥉'];
-            const rankDisplay = index < 3 ? medals[index] : `#${index + 1}`;
+            // Medaillen-Symbole für die Top 3
+            const rankIcons = ['🥇', '🥈', '🥉'];
+            const rankDisplay = index < 3 ? rankIcons[index] : `#${index + 1}`;
 
             row.innerHTML = `
-                <span class="leader-rank" style="width: 35px; display: inline-block;">${rankDisplay}</span>
-                <span class="leader-name" style="font-weight: ${index < 3 ? 'bold' : 'normal'}">
-                    ${entry.username === currentUserName ? '⭐ ' : ''}${entry.username}
+                <span class="leader-rank">${rankDisplay}</span>
+                <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
+                    ${isMe ? '⭐ ' : ''}${entry.username}
                 </span>
-                <span class="leader-coins" style="float: right; font-weight: bold; color: #FFD700;">
-                    🪙 ${entry.coins.toLocaleString()}
-                </span>
+                <span class="leader-coins">🪙 ${entry.coins.toLocaleString()}</span>
             `;
             list.appendChild(row);
         });
     }
 }
 
-// Ruf das Leaderboard beim Start und alle 15 Sek. auf
+// Initialer Aufruf und Intervall alle 15 Sekunden
 updateLeaderboard();
 setInterval(updateLeaderboard, 15000);
 </script>
