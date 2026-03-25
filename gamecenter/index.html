@@ -312,12 +312,18 @@
         <p id="chat-status" style="font-size: 0.7rem; margin-top: 10px; color: var(--danger);"></p>
     </div>
 
-    <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
-        <h2 class="game-title"><span>🏆</span> Glaggle Coin Top 10</h2>
-        <div id="leaderboard-list">
-            <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
-        </div>
+   <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
+    <h2 class="game-title"><span>🏆</span> Glaggle Coin Keeper Top 50</h2>
+    <div id="leaderboard-list">
+        <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
     </div>
+    <div id="show-more-container" style="text-align: center; margin-top: 15px; display: none;">
+        <button id="toggle-leaderboard" class="play-btn" style="background: none; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; width: auto; padding: 5px 20px;">
+            Mehr anzeigen (Top 50)
+        </button>
+    </div>
+    <div id="my-fixed-rank" style="margin-top: 15px; border-top: 2px dashed var(--accent); padding-top: 10px; display: none;"></div>
+</div>
     
 </div>
         
@@ -474,41 +480,54 @@ function renderMessage(user, text) {
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 // --- LEADERBOARD LOGIK ---
 
-// --- LEADERBOARD LOGIK ---
+let leaderboardExpanded = false;
+
 async function updateLeaderboard() {
-    // 1. Eigene Coins in der DB aktualisieren
-    // Wir senden den aktuellen Namen und den Punktestand aus dem LocalStorage
+    // 1. Eigene Coins aktualisieren
     await supabaseClient
         .from('leaderboard')
-        .upsert({ 
-            username: currentUserName, 
-            coins: glaggleCoins 
-        }, { onConflict: 'username' });
+        .upsert({ username: currentUserName, coins: glaggleCoins }, { onConflict: 'username' });
 
-    // 2. Top 10 abrufen
+    // 2. Top 50 abrufen
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
         .order('coins', { ascending: false })
-        .limit(10);
+        .limit(50);
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = ''; // Liste leeren für Refresh
-        
+        const myFixedRank = document.getElementById('my-fixed-rank');
+        const showMoreCont = document.getElementById('show-more-container');
+        list.innerHTML = '';
+        myFixedRank.style.display = 'none';
+
+        let userFoundInTop = false;
+        let myData = null;
+        let myRank = 0;
+
         data.forEach((entry, index) => {
+            const isMe = entry.username === currentUserName;
+            if (isMe) {
+                userFoundInTop = true;
+                myData = entry;
+                myRank = index + 1;
+            }
+
             const row = document.createElement('div');
             row.className = 'leader-row';
             
-            // Goldene Farbe und Stern für dich selbst
-            const isMe = entry.username === currentUserName;
+            // Nur die ersten 10 anzeigen, außer es ist ausgeklappt
+            if (index >= 10 && !leaderboardExpanded) {
+                row.style.display = 'none';
+            }
+
             if (isMe) {
                 row.style.background = "rgba(112, 196, 247, 0.15)";
                 row.style.borderRadius = "10px";
             }
 
-            // Medaillen-Symbole für die Top 3
-            const rankIcons = ['🥇', '🥈', '🥉'];
+            const rankIcons = ['Keeper 🥇', '🥈', '🥉'];
             const rankDisplay = index < 3 ? rankIcons[index] : `#${index + 1}`;
 
             row.innerHTML = `
@@ -520,12 +539,32 @@ async function updateLeaderboard() {
             `;
             list.appendChild(row);
         });
+
+        // Button anzeigen wenn mehr als 10 Einträge da sind
+        if (data.length > 10) showMoreCont.style.display = 'block';
+
+        // Falls man NICHT in den aktuell sichtbaren Top 10 ist (oder gar nicht in Top 50)
+        // zeigen wir die eigene Position unten separat an
+        if (!userFoundInTop || (myRank > 10 && !leaderboardExpanded)) {
+            myFixedRank.style.display = 'block';
+            myFixedRank.innerHTML = `
+                <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
+                    <span class="leader-rank">#?</span>
+                    <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
+                    <span class="leader-coins">🪙 ${glaggleCoins.toLocaleString()}</span>
+                </div>
+                <p style="font-size: 0.7rem; text-align: center; margin-top: 5px; opacity: 0.6;">Sammle mehr Coins, um aufzusteigen!</p>
+            `;
+        }
     }
 }
 
-// Initialer Aufruf und Intervall alle 5 Sekunden
-updateLeaderboard();
-setInterval(updateLeaderboard, 5000);
+// Button-Klick Logik
+document.getElementById('toggle-leaderboard').onclick = function() {
+    leaderboardExpanded = !leaderboardExpanded;
+    this.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen (Top 50)";
+    updateLeaderboard();
+};
 </script>
 </body>
 </html>
