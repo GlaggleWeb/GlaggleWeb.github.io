@@ -164,6 +164,31 @@
     box-shadow: 0 0 8px rgba(112, 196, 247, 0.4); /* Sanfter Leuchteffekt */
     background-color: var(--card-bg); /* Leichtes Hervorheben */
 }
+
+/* Standard für alle Nachrichten (links) */
+.msg-bubble {
+    background: var(--nav-bg);
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    border: 1px solid var(--card-border);
+    align-self: flex-start;
+    maxWidth: 85%;
+    word-break: break-word;
+}
+
+/* Speziell für deine eigenen Nachrichten (rechts & blau) */
+.msg-bubble.own-msg {
+    align-self: flex-end; /* Nach rechts schieben */
+    background: var(--accent); /* Glaggle-Blau */
+    color: white; /* Weißer Text für bessere Lesbarkeit */
+    border: none;
+}
+
+/* Farbe des Namens in eigenen Nachrichten anpassen */
+.msg-bubble.own-msg b {
+    color: white !important;
+}
     </style>
 </head>
 <body>
@@ -320,30 +345,32 @@
     const sendBtn = document.getElementById('send-btn');
     const chatBox = document.getElementById('chat-box');
 
-    function renderMessage(user, text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.style.background = "var(--nav-bg)";
-        msgDiv.style.padding = "10px 15px";
-        msgDiv.style.borderRadius = "15px";
-        msgDiv.style.fontSize = "0.9rem";
-        msgDiv.style.border = "1px solid var(--card-border)";
-        msgDiv.style.alignSelf = "flex-start";
-        msgDiv.style.maxWidth = "85%";
-        msgDiv.style.wordBreak = "break-word";
+function renderMessage(user, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('msg-bubble'); // Standard-Klasse geben
 
-        let userDisplay;
-        if (user === "Julian Gysin") {
-            userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
-            msgDiv.style.border = "2px solid #FFD700";
-            msgDiv.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.2)";
-        } else {
-            userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
-        }
-
-        msgDiv.innerHTML = `${userDisplay} ${text}`;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    // Prüfen: Ist das MEINE Nachricht?
+    const isMe = (user === currentUserName || user === "Julian Gysin");
+    
+    if (isMe) {
+        msgDiv.classList.add('own-msg'); // Blaue Rechts-Klasse hinzufügen
     }
+
+    let userDisplay;
+    if (user === "Julian Gysin") {
+        userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
+        if (!isMe) { // Nur Gold-Rahmen, wenn es nicht mein eigenes Blau überschreibt
+            msgDiv.style.border = "2px solid #FFD700";
+        }
+    } else {
+        // Wenn es meine eigene ist, ist das Fettgedruckte weiß (durch CSS), sonst Akzentfarbe
+        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
+    }
+
+    msgDiv.innerHTML = `${userDisplay} ${text}`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
    async function loadInitialMessages() {
     const { data, error } = await supabaseClient
