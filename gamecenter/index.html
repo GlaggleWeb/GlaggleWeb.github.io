@@ -151,6 +151,19 @@
     font-weight: bold;
     color: var(--text-color);
 }
+
+/* Effekt wenn man in das Textfeld klickt */
+#chat-input {
+    transition: all 0.3s ease; /* Macht den Übergang weich */
+    border: 1px solid var(--card-border);
+}
+
+#chat-input:focus {
+    outline: none; /* Entfernt den Standard-Browser-Rahmen */
+    border-color: var(--accent); /* Färbt den Rand blau */
+    box-shadow: 0 0 8px rgba(112, 196, 247, 0.4); /* Sanfter Leuchteffekt */
+    background-color: var(--card-bg); /* Leichtes Hervorheben */
+}
     </style>
 </head>
 <body>
