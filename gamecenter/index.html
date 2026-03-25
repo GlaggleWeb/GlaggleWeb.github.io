@@ -198,6 +198,11 @@
         <div class="nav-right">
             <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Glaggle Gamecenter</span>
         </div>
+        <div style="text-align: center; margin-bottom: 10px;">
+    <span id="online-count" style="background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
+        🟢 1 Online
+    </span>
+</div>
     </nav>
 
     <div class="hero">
@@ -425,6 +430,38 @@ function renderMessage(user, text) {
 
     sendBtn.onclick = sendMessage;
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+
+    // --- ONLINE-ZÄHLER LOGIK ---
+const onlineChannel = supabaseClient.channel('online-users', {
+  config: {
+    presence: {
+      key: currentUserName,
+    },
+  },
+});
+
+onlineChannel
+  .on('presence', { event: 'sync' }, () => {
+    const state = onlineChannel.presenceState();
+    const count = Object.keys(state).length;
+    
+    // Anzeige aktualisieren
+    const countElem = document.getElementById('online-count');
+    if (countElem) {
+        countElem.innerText = `🟢 ${count} ${count === 1 ? 'Glaggle' : 'Glaggles'} online`;
+    }
+  })
+  .on('presence', { event: 'join', key: 'new_user' }, ({ newPresences }) => {
+    console.log('Neuer Gamer ist beigetreten!', newPresences);
+  })
+  .subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      // Den eigenen Status an alle senden
+      await onlineChannel.track({
+        online_at: new Date().toISOString(),
+      });
+    }
+  });
 </script>
 </body>
 </html>
