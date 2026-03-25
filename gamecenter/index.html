@@ -302,7 +302,8 @@
                     model: "llama-3.1-8b-instant",
                     messages: [{
                         role: "system", 
-                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text keine Beleidigungen oder Fluchwörter enrhält. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen oder Fluchwörter enthält."
+                        // Ändere den "content" im checkModeration-Teil:
+                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
