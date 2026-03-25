@@ -195,17 +195,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* WICHTIG: Festgelegte Größe, sonst ist der Button 0px groß */
     width: 44px; 
     height: 44px;
     padding: 0;
-    
     position: relative;
-    z-index: 20; /* Liegt über dem bunten Strich */
-    flex-shrink: 0; /* Verhindert, dass der Button zusammengedrückt wird */
+    z-index: 20; /* Höher als der Cursor */
+    flex-shrink: 0;
+    -webkit-appearance: none; /* Verhindert iOS Button-Styles */
 }
-
 .search-icon-btn::before {
     content: "";
     display: block;
@@ -302,7 +299,7 @@
     background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853, #FF6D00);
     background-size: 100% 300%;
     pointer-events: none;
-    z-index: 10;
+    z-index: 5;
     border-radius: 5px;
     animation: glaggleFlow 3s infinite alternate ease-in-out;
     display: none;
@@ -618,7 +615,11 @@
     <input type="search" id="glaggleQuery" placeholder="The AI-Powered Searchmachine..." 
            autocomplete="off" enterkeyhint="search" name="q">
     
-    <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
+    <button type="submit" 
+        class="search-icon-btn" 
+        aria-label="Suche" 
+        onpointerdown="glaggleSearch()">
+</button>
 
     <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
 </form>
