@@ -498,9 +498,11 @@ function renderMessage(user, text) {
     sendBtn.onclick = sendMessage;
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 
+// --- LEADERBOARD LOGIK ---
 let leaderboardExpanded = false;
 const gameSelector = document.getElementById('game-selector');
-    
+const toggleBtn = document.getElementById('toggle-leaderboard');
+
 async function updateLeaderboard() {
     const selectedGame = gameSelector.value;
     let scoreToSend = 0;
@@ -513,18 +515,21 @@ async function updateLeaderboard() {
         scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
     }
 
-    // 2. Score an Supabase senden (Upsert: Update oder Insert)
-    if (scoreToSend > 0 || selectedGame === 'global') {
-        await supabaseClient
-            .from('leaderboard')
-            .upsert({ 
-                username: currentUserName, 
-                coins: scoreToSend, 
-                game_name: selectedGame 
-            }, { onConflict: 'username, game_name' });
+    // 2. Score an Supabase senden (Upsert)
+    // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
+    if (scoreToSend > 0) {
+        try {
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({ 
+                    username: currentUserName, 
+                    coins: scoreToSend, 
+                    game_name: selectedGame 
+                }, { onConflict: 'username, game_name' });
+        } catch (e) { console.error("Update Fehler:", e); }
     }
 
-    // 3. Top 50 Daten abrufen
+    // 3. Daten abrufen
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
@@ -555,7 +560,7 @@ async function updateLeaderboard() {
             const row = document.createElement('div');
             row.className = 'leader-row';
             
-            // Sichtbarkeit steuern (Top 10 vs Top 50)
+            // Sichtbarkeit steuern
             if (rank > 10 && !leaderboardExpanded) {
                 row.style.display = 'none';
             }
@@ -582,9 +587,11 @@ async function updateLeaderboard() {
             list.appendChild(row);
         });
 
+        // Button nur zeigen, wenn mehr als 10 Einträge da sind
         showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
+        toggleBtn.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen";
 
-        // 4. Eigener Rang (Fixierte Zeile unten), falls nicht sichtbar
+        // 4. Eigener Rang fixiert unten, falls nicht in der Liste sichtbar
         if (!userFoundInVisiblePart && myOverallRank > 0) {
             myFixedRank.style.display = 'block';
             const unit = selectedGame === 'global' ? '' : ' Pkt.';
@@ -601,6 +608,27 @@ async function updateLeaderboard() {
         }
     }
 }
+
+// --- EVENT LISTENER ---
+
+// Beim Wechseln des Spiels im Dropdown
+gameSelector.onchange = () => {
+    leaderboardExpanded = false;
+    updateLeaderboard();
+};
+
+// "Mehr anzeigen" Button
+toggleBtn.onclick = () => {
+    leaderboardExpanded = !leaderboardExpanded;
+    updateLeaderboard();
+};
+
+// WICHTIG: Erster Aufruf beim Laden der Seite
+updateLeaderboard();
+
+// Leaderboard alle 30 Sekunden automatisch aktualisieren
+setInterval(updateLeaderboard, 15000);
+</script>
 </script>
 </body>
 </html>
