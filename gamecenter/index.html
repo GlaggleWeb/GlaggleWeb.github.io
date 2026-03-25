@@ -471,6 +471,7 @@ function renderMessage(user, text) {
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 // --- LEADERBOARD LOGIK ---
 
+// --- LEADERBOARD LOGIK ---
 async function updateLeaderboard() {
     // 1. Eigene Coins in der DB aktualisieren
     await supabaseClient
@@ -489,36 +490,37 @@ async function updateLeaderboard() {
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = ''; // Liste leeren vor dem Neuaufbau
+        list.innerHTML = ''; // Liste leeren
         
         data.forEach((entry, index) => {
             const row = document.createElement('div');
             row.className = 'leader-row';
             
-            // Deine Medaillen-Logik
-            const medals = ['🥇', '🥈', '🥉'];
-            const medal = index < 3 ? medals[index] : `#${index + 1}`;
-
-            // Markierung wenn man es selbst ist
+            // Markierung wenn du es selbst bist (für CSS .is-me)
             if (entry.username === currentUserName) {
-                row.classList.add('is-me');
+                row.style.background = "rgba(112, 196, 247, 0.1)";
+                row.style.borderRadius = "10px";
             }
 
+            // Medaillen für die Top 3
+            const medals = ['🥇', '🥈', '🥉'];
+            const rankDisplay = index < 3 ? medals[index] : `#${index + 1}`;
+
             row.innerHTML = `
-                <span class="leader-rank">${medal}</span>
+                <span class="leader-rank" style="width: 35px; display: inline-block;">${rankDisplay}</span>
                 <span class="leader-name" style="font-weight: ${index < 3 ? 'bold' : 'normal'}">
                     ${entry.username === currentUserName ? '⭐ ' : ''}${entry.username}
                 </span>
-                <span class="leader-coins">🪙 ${entry.coins.toLocaleString()}</span>
+                <span class="leader-coins" style="float: right; font-weight: bold; color: #FFD700;">
+                    🪙 ${entry.coins.toLocaleString()}
+                </span>
             `;
             list.appendChild(row);
         });
-    } else if (error) {
-        console.error("Leaderboard Error:", error.message);
     }
 }
 
-// Initialer Aufruf und Intervall (hast du schon richtig!)
+// Ruf das Leaderboard beim Start und alle 15 Sek. auf
 updateLeaderboard();
 setInterval(updateLeaderboard, 15000);
 </script>
