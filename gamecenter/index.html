@@ -313,14 +313,31 @@
     </div>
 
   <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
-    <h2 class="game-title"><span>🏆</span> Glaggle Coin Top 50</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        <h2 class="game-title" style="margin: 0;"><span>🏆</span> Glaggle Highscores</h2>
+        
+        <select id="game-selector" style="padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; outline: none;">
+            <option value="global">Glaggle Coin Keepers (Top 50)</option>
+            <option disabled>── Spiele Highscores ──</option>
+            <option value="tictactoe">❌ Tic Tac Toe</option>
+            <option value="zahlenraten">🔢 Zahlenraten</option>
+            <option value="snake">🐍 Glaggle Snake</option>
+            <option value="glagglejump">🛤️ Glaggle Jump</option>
+            <option value="glagglerace">🛣️ Glaggle Racing</option>
+            <option value="pong">🔵 Glaggle Pong</option>
+            <option value="stacker">🗼 Glaggle Tower</option>
+            <option value="icerun">🧊 Glaggle Ice Run</option>
+            <option value="flappyfish">🐠 Flappy Fish</option>
+        </select>
+    </div>
+
     <div id="leaderboard-list">
         <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
     </div>
     
-    <div id="show-more-container" style="text-align: center; margin-top: 15px; display: none;">
+    <div id="show-more-container" style="text-align: center; margin-top: 15px;">
         <button id="toggle-leaderboard" class="play-btn" style="background: none; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; width: auto; padding: 5px 20px;">
-            Mehr anzeigen (Top 50)
+            Mehr anzeigen
         </button>
     </div>
 
@@ -482,20 +499,25 @@ function renderMessage(user, text) {
     chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 
 let leaderboardExpanded = false;
+const gameSelector = document.getElementById('game-selector');
 
 async function updateLeaderboard() {
-    // 1. Eigene Coins in der DB aktualisieren
+    const selectedGame = gameSelector.value;
+    
+    // 1. Deine aktuellen Coins IMMER in der Global-Liste aktuell halten
     await supabaseClient
         .from('leaderboard')
         .upsert({ 
             username: currentUserName, 
-            coins: glaggleCoins 
-        }, { onConflict: 'username' });
+            coins: glaggleCoins,
+            game_name: 'global' 
+        }, { onConflict: 'username, game_name' });
 
-    // 2. Top 50 abrufen
+    // 2. Daten abrufen (Filtert nach dem ausgewählten Spiel oder 'global')
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
+        .eq('game_name', selectedGame)
         .order('coins', { ascending: false })
         .limit(50);
 
@@ -513,17 +535,18 @@ async function updateLeaderboard() {
         data.forEach((entry, index) => {
             const isMe = entry.username === currentUserName;
             const rank = index + 1;
-            
-            if (isMe) myOverallRank = rank;
+            if (isMe) {
+                myOverallRank = rank;
+                // Wenn wir in den Top 10 sind ODER die Liste ausgeklappt ist
+                if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
+            }
 
             const row = document.createElement('div');
             row.className = 'leader-row';
             
-            // Logik für das Ausklappen: Verstecke alles nach Platz 10, wenn nicht expanded
+            // Sichtbarkeits-Steuerung
             if (rank > 10 && !leaderboardExpanded) {
                 row.style.display = 'none';
-            } else if (rank <= 10 || leaderboardExpanded) {
-                if (isMe) userFoundInVisiblePart = true;
             }
 
             if (isMe) {
@@ -533,6 +556,9 @@ async function updateLeaderboard() {
 
             const rankIcons = ['🥇', '🥈', '🥉'];
             const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
+            
+            // Text-Label: Bei "global" Coins, sonst "Punkte"
+            const unit = selectedGame === 'global' ? '' : ' Pkt.';
 
             row.innerHTML = `
                 <span class="leader-rank">${rankDisplay}</span>
@@ -540,26 +566,26 @@ async function updateLeaderboard() {
                     ${isMe ? '⭐ ' : ''}${entry.username}
                 </span>
                 <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                    <img src="coin.png" style="width: 16px; height: 16px;"> ${entry.coins.toLocaleString()}
+                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
+                    ${entry.coins.toLocaleString()}${unit}
                 </span>
             `;
             list.appendChild(row);
         });
 
-        // Button anzeigen, wenn mehr als 10 Einträge vorhanden sind
-        if (data.length > 10) {
-            showMoreCont.style.display = 'block';
-        }
+        // Button nur zeigen, wenn mehr als 10 da sind
+        showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
 
-        // Fixierte Anzeige unten, wenn du nicht in den sichtbaren Top 10 (oder Top 50) bist
-        if (!userFoundInVisiblePart) {
+        // Wenn man nicht in der aktuellen Ansicht ist, zeige den eigenen Rang fixiert unten
+        if (!userFoundInVisiblePart && myOverallRank > 0) {
             myFixedRank.style.display = 'block';
             myFixedRank.innerHTML = `
                 <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
-                    <span class="leader-rank">${myOverallRank > 0 ? '#' + myOverallRank : '?'}</span>
+                    <span class="leader-rank">#${myOverallRank}</span>
                     <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
                     <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                        <img src="coin.png" style="width: 16px; height: 16px;"> ${glaggleCoins.toLocaleString()}
+                        <img src="coin.png" style="width: 16px; height: 16px;"> 
+                        ${glaggleCoins.toLocaleString()}${selectedGame === 'global' ? '' : ' Pkt.'}
                     </span>
                 </div>
             `;
@@ -567,16 +593,23 @@ async function updateLeaderboard() {
     }
 }
 
-// Button-Klick Event
+// Umschalten zwischen Top 10 und Top 50
 document.getElementById('toggle-leaderboard').onclick = function() {
     leaderboardExpanded = !leaderboardExpanded;
     this.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen (Top 50)";
-    updateLeaderboard(); // Sofort aktualisieren
+    updateLeaderboard();
 };
 
-// Start & Intervall
+// Wenn ein anderes Spiel gewählt wird
+gameSelector.onchange = () => {
+    leaderboardExpanded = false; 
+    document.getElementById('toggle-leaderboard').innerText = "Mehr anzeigen";
+    updateLeaderboard();
+};
+
+// Start
 updateLeaderboard();
-setInterval(updateLeaderboard, 5000);
+setInterval(updateLeaderboard, 8000); // Alle 8 Sek. aktualisieren
 </script>
 </body>
 </html>
