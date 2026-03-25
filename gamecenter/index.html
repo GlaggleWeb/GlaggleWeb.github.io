@@ -472,11 +472,13 @@ function renderMessage(user, text) {
 // --- LEADERBOARD LOGIK ---
 
 async function updateLeaderboard() {
-    // 1. Eigene Coins in der DB aktualisieren (Tabelle 'leaderboard' vorausgesetzt)
-    // Falls du keine Tabelle hast, kannst du diesen Teil weglassen oder die Tabelle in Supabase erstellen
+    // 1. Eigene Coins in der DB aktualisieren
     await supabaseClient
         .from('leaderboard')
-        .upsert({ username: currentUserName, coins: glaggleCoins }, { onConflict: 'username' });
+        .upsert({ 
+            username: currentUserName, 
+            coins: glaggleCoins 
+        }, { onConflict: 'username' });
 
     // 2. Top 10 abrufen
     const { data, error } = await supabaseClient
@@ -487,23 +489,38 @@ async function updateLeaderboard() {
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
-        list.innerHTML = '';
+        list.innerHTML = ''; // Liste leeren vor dem Neuaufbau
+        
         data.forEach((entry, index) => {
             const row = document.createElement('div');
             row.className = 'leader-row';
+            
+            // Deine Medaillen-Logik
+            const medals = ['🥇', '🥈', '🥉'];
+            const medal = index < 3 ? medals[index] : `#${index + 1}`;
+
+            // Markierung wenn man es selbst ist
+            if (entry.username === currentUserName) {
+                row.classList.add('is-me');
+            }
+
             row.innerHTML = `
-                <span class="leader-rank">#${index + 1}</span>
-                <span class="leader-name">${entry.username}</span>
-                <span class="leader-coins">🪙 ${entry.coins}</span>
+                <span class="leader-rank">${medal}</span>
+                <span class="leader-name" style="font-weight: ${index < 3 ? 'bold' : 'normal'}">
+                    ${entry.username === currentUserName ? '⭐ ' : ''}${entry.username}
+                </span>
+                <span class="leader-coins">🪙 ${entry.coins.toLocaleString()}</span>
             `;
             list.appendChild(row);
         });
+    } else if (error) {
+        console.error("Leaderboard Error:", error.message);
     }
 }
 
-// Ruf das Leaderboard beim Start und nach dem Senden einer Nachricht auf
+// Initialer Aufruf und Intervall (hast du schon richtig!)
 updateLeaderboard();
-setInterval(updateLeaderboard, 15000); // Alle 15 Sek aktualisieren
+setInterval(updateLeaderboard, 15000);
 </script>
 </body>
 </html>
