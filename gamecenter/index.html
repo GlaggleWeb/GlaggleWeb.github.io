@@ -331,17 +331,20 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function loadInitialMessages() {
-        const { data, error } = await supabaseClient
-            .from('messages')
-            .select('*')
-            .order('created_at', { ascending: true })
-            .limit(20);
-        if (data) {
-            chatBox.innerHTML = ''; 
-            data.forEach(m => renderMessage(m.user, m.content));
-        }
+   async function loadInitialMessages() {
+    const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false }) // 'false' für die neuesten zuerst
+        .limit(20);
+    
+    if (data) {
+        chatBox.innerHTML = ''; 
+        // Wichtig: Da wir sie 'desc' laden, müssen wir sie für die 
+        // Anzeige wieder umdrehen (.reverse()), damit die neueste unten steht
+        data.reverse().forEach(m => renderMessage(m.user, m.content));
     }
+}
 
     async function sendMessage() {
         const text = chatInput.value.trim();
