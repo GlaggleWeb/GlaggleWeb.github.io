@@ -448,7 +448,7 @@ onlineChannel
     // Anzeige aktualisieren
     const countElem = document.getElementById('online-count');
     if (countElem) {
-        countElem.innerText = `🟢 ${count} ${count === 1 ? 'Glaggle' : 'Glaggles'} online`;
+        countElem.innerText = `🟢 ${count} ${count === 1 ? 'Gamer' : 'Gamer'} online`;
     }
   })
   .on('presence', { event: 'join', key: 'new_user' }, ({ newPresences }) => {
