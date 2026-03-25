@@ -342,24 +342,22 @@ function draw() {
 function gameOver() {
     gameRunning = false;
     
-    // Coin Logik (bleibt gleich, ab 5 Metern gibt es einen Coin)
+    // Coin Logik
     if(score >= 5) {
-        coins++;
-        localStorage.setItem('glaggleCoins', coins);
-        coinEl.innerText = coins;
-        const display = document.getElementById('coin-display');
-        display.classList.add('pulse');
-        setTimeout(() => display.classList.remove('pulse'), 500);
+        let currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        currentCoins++;
+        localStorage.setItem('glaggleCoins', currentCoins);
+        document.getElementById('coin-count').innerText = currentCoins;
+        // ... Animation ...
     }
 
-    // Highscore Logik für das Gamecenter
-    const storageKey = 'flappyfish_highscore';
-    let currentHighscore = localStorage.getItem(storageKey) || 0;
+    // WICHTIG: Der Key muss exakt "flappyfish_highscore" sein
+    const storageKey = 'flappyfish_highscore'; 
+    let currentHighscore = parseInt(localStorage.getItem(storageKey)) || 0;
 
     if(score > currentHighscore) {
         localStorage.setItem(storageKey, score);
-        highscore = score; // Update die lokale Variable für die Anzeige
-        highscoreEl.innerText = highscore + "m";
+        highscoreEl.innerText = score + "m";
         document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
     } else {
         document.getElementById('msg').innerText = "Crash! Tiefe: " + score + "m";
