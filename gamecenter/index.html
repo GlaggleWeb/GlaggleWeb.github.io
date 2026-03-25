@@ -298,8 +298,9 @@
         </a>
     </div>
 
-    <div class="game-grid" style="max-width: 900px; margin-top: 20px;">
-    <div class="game-card" style="cursor: default; transform: none; border-color: var(--accent);">
+   <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 900px; margin-top: 20px; padding: 0 20px; box-sizing: border-box;">
+    
+    <div class="game-card" style="cursor: default; transform: none; border-color: var(--accent); width: 100%; box-sizing: border-box;">
         <h2 class="game-title"><span>💬</span> Globaler Glaggle Chat</h2>
         <div id="chat-box" style="height: 300px; overflow-y: auto; background: var(--bg-color); border-radius: 12px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
             <div style="font-style: italic; opacity: 0.5; font-size: 0.8rem;">Willkommen im Chat! Tausche dich mit anderen Nutzern aus!</div>
@@ -311,11 +312,13 @@
         <p id="chat-status" style="font-size: 0.7rem; margin-top: 10px; color: var(--danger);"></p>
     </div>
 
-    <div class="leaderboard-card">
+    <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
         <h2 class="game-title"><span>🏆</span> Glaggle Coin Top 10</h2>
-            <div id="leaderboard-list">
-                <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
+        <div id="leaderboard-list">
+            <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
+        </div>
     </div>
+    
 </div>
         
 </div>
