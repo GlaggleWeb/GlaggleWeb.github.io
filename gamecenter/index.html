@@ -500,37 +500,34 @@ function renderMessage(user, text) {
 
 let leaderboardExpanded = false;
 const gameSelector = document.getElementById('game-selector');
-
 async function updateLeaderboard() {
     const selectedGame = gameSelector.value;
     let scoreToSend = 0;
 
     if (selectedGame === 'global') {
-        // Für die globale Liste nutzen wir die glaggleCoins
         scoreToSend = glaggleCoins;
     } else {
-        // Hier musst du die Namen anpassen, unter denen deine Spiele 
-        // ihre Highscores speichern (z.B. 'snake_highscore')
+        // Erstellt den Key (z.B. 'glagglejump_highscore') automatisch
         const storageKey = selectedGame + "_highscore"; 
         scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
     }
 
-    // 1. Daten an Supabase senden (Upsert: Erstellen oder Aktualisieren)
-    // Wir senden IMMER den aktuellen Stand für das gewählte Spiel
+    // Nur senden, wenn ein Score existiert oder es die globale Liste ist
     if (scoreToSend > 0 || selectedGame === 'global') {
         await supabaseClient
             .from('leaderboard')
             .upsert({ 
                 username: currentUserName, 
-                coins: scoreToSend, // In der DB heißt die Spalte 'coins', auch für Punkte
+                coins: scoreToSend, // Wir nutzen die Spalte 'coins' für alle Werte
                 game_name: selectedGame 
             }, { onConflict: 'username, game_name' });
     }
 
-    // 2. Daten abrufen (Filtert nach dem ausgewählten Spiel)
+    // Ab hier bleibt dein restlicher Code (Daten abrufen und anzeigen) gleich...
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
+        // ...
         .eq('game_name', selectedGame)
         .order('coins', { ascending: false })
         .limit(50);
