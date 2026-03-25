@@ -189,25 +189,36 @@
 
         const handleInput = (active) => { fish.isLifting = active; };
         
-        container.onmousedown = () => handleInput(true);
-        container.onmouseup = () => handleInput(false);
-        // Ersetze die alten Touch-Zeilen durch diese:
+      // Neue Eingabe-Logik: Ignoriert Klicks auf Buttons und Links (A-Tags)
+const handleInput = (active) => { 
+    if(gameRunning) fish.isLifting = active; 
+};
+
+// Maus-Steuerung
+container.onmousedown = (e) => {
+    if (e.target.closest('button') || e.target.closest('a')) return;
+    handleInput(true);
+};
+container.onmouseup = () => handleInput(false);
+
+// Touch-Steuerung (Wichtig für Mobile)
 container.ontouchstart = (e) => { 
-    // Wenn das Ziel des Klicks ein Button ist, tu nichts und lass den Klick durch
-    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    // Wenn ein Button oder Link getroffen wurde, Funktion abbrechen (Link normal folgen)
+    if (e.target.closest('button') || e.target.closest('a')) return;
     
     e.preventDefault(); 
     handleInput(true); 
 };
-
 container.ontouchend = (e) => { 
-    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    if (e.target.closest('button') || e.target.closest('a')) return;
     
     e.preventDefault(); 
     handleInput(false); 
 };
-        window.onkeydown = (e) => { if(e.code === "Space") handleInput(true); };
-        window.onkeyup = (e) => { if(e.code === "Space") handleInput(false); };
+
+// Tastatur bleibt gleich
+window.onkeydown = (e) => { if(e.code === "Space") handleInput(true); };
+window.onkeyup = (e) => { if(e.code === "Space") handleInput(false); };
 
         function startGame(e) {
             if(e) e.stopPropagation();
