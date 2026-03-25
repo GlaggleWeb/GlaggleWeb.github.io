@@ -191,8 +191,21 @@
         
         container.onmousedown = () => handleInput(true);
         container.onmouseup = () => handleInput(false);
-        container.ontouchstart = (e) => { e.preventDefault(); handleInput(true); };
-        container.ontouchend = (e) => { e.preventDefault(); handleInput(false); };
+        // Ersetze die alten Touch-Zeilen durch diese:
+container.ontouchstart = (e) => { 
+    // Wenn das Ziel des Klicks ein Button ist, tu nichts und lass den Klick durch
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    
+    e.preventDefault(); 
+    handleInput(true); 
+};
+
+container.ontouchend = (e) => { 
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    
+    e.preventDefault(); 
+    handleInput(false); 
+};
         window.onkeydown = (e) => { if(e.code === "Space") handleInput(true); };
         window.onkeyup = (e) => { if(e.code === "Space") handleInput(false); };
 
