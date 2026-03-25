@@ -289,7 +289,7 @@
                     model: "llama-3.1-8b-instant",
                     messages: [{
                         role: "system", 
-                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text harmlos ist. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen enthält."
+                        content: "Du bist ein Chat-Moderator. Antworte NUR mit dem Wort OK wenn der Text keine Beleidigungen oder Fluchwörter enrhält. Antworte NUR mit dem Wort BLOCK wenn der Text Beleidigungen oder Fluchwörter enthält."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
