@@ -382,7 +382,7 @@ function renderMessage(user, text) {
         .from('messages')
         .select('*')
         .order('created_at', { ascending: false }) // 'false' für die neuesten zuerst
-        .limit(20);
+        .limit(500);
     
     if (data) {
         chatBox.innerHTML = ''; 
