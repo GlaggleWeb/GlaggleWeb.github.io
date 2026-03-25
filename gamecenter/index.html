@@ -505,15 +505,15 @@ async function updateLeaderboard() {
     const selectedGame = gameSelector.value;
     let scoreToSend = 0;
 
-    // 1. Richtigen Score ermitteln
+    // 1. Richtigen Score aus dem LocalStorage holen
     if (selectedGame === 'global') {
-        scoreToSend = glaggleCoins;
+        scoreToSend = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     } else {
         const storageKey = selectedGame + "_highscore"; 
         scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
     }
 
-    // 2. Daten an Supabase senden (Upsert)
+    // 2. Score an Supabase senden (Upsert: Update oder Insert)
     if (scoreToSend > 0 || selectedGame === 'global') {
         await supabaseClient
             .from('leaderboard')
@@ -524,7 +524,7 @@ async function updateLeaderboard() {
             }, { onConflict: 'username, game_name' });
     }
 
-    // 3. Daten abrufen
+    // 3. Top 50 Daten abrufen
     const { data, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
@@ -535,32 +535,38 @@ async function updateLeaderboard() {
     if (data) {
         const list = document.getElementById('leaderboard-list');
         const myFixedRank = document.getElementById('my-fixed-rank');
-        const showMoreBtn = document.getElementById('toggle-leaderboard');
+        const showMoreCont = document.getElementById('show-more-container');
         
         list.innerHTML = ''; 
         myFixedRank.style.display = 'none';
 
         let userFoundInVisiblePart = false;
-        let myRankData = null;
+        let myOverallRank = 0;
 
         data.forEach((entry, index) => {
             const isMe = entry.username === currentUserName;
             const rank = index + 1;
             
             if (isMe) {
-                myRankData = { rank, score: entry.coins };
+                myOverallRank = rank;
                 if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
             }
 
             const row = document.createElement('div');
             row.className = 'leader-row';
-            if (rank > 10 && !leaderboardExpanded) row.style.display = 'none';
-            if (isMe) row.style.background = "rgba(112, 196, 247, 0.15)";
+            
+            // Sichtbarkeit steuern (Top 10 vs Top 50)
+            if (rank > 10 && !leaderboardExpanded) {
+                row.style.display = 'none';
+            }
+
+            if (isMe) {
+                row.style.background = "rgba(112, 196, 247, 0.15)";
+                row.style.borderRadius = "10px";
+            }
 
             const rankIcons = ['🥇', '🥈', '🥉'];
             const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
-            
-            // Einheit anpassen: Global = Nichts, Spiele = Pkt.
             const unit = selectedGame === 'global' ? '' : ' Pkt.';
 
             row.innerHTML = `
@@ -568,22 +574,28 @@ async function updateLeaderboard() {
                 <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
                     ${isMe ? '⭐ ' : ''}${entry.username}
                 </span>
-                <span class="leader-coins">
+                <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
+                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
                     ${entry.coins.toLocaleString()}${unit}
                 </span>
             `;
             list.appendChild(row);
         });
 
-        // "Eigener Rang" Anzeige am Ende der Liste, falls man nicht in den Top 10 ist
-        if (!userFoundInVisiblePart && myRankData) {
+        showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
+
+        // 4. Eigener Rang (Fixierte Zeile unten), falls nicht sichtbar
+        if (!userFoundInVisiblePart && myOverallRank > 0) {
             myFixedRank.style.display = 'block';
             const unit = selectedGame === 'global' ? '' : ' Pkt.';
             myFixedRank.innerHTML = `
                 <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
-                    <span class="leader-rank">#${myRankData.rank}</span>
+                    <span class="leader-rank">#${myOverallRank}</span>
                     <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
-                    <span class="leader-coins">${myRankData.score.toLocaleString()}${unit}</span>
+                    <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
+                        <img src="coin.png" style="width: 16px; height: 16px;"> 
+                        ${scoreToSend.toLocaleString()}${unit}
+                    </span>
                 </div>
             `;
         }
