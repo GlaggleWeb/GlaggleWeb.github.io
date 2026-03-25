@@ -227,19 +227,34 @@
         }
 
         function gameOver() {
-            gameActive = false;
-            clearInterval(obsSpawner);
-            if(score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('racingBest', score);
-            }
+    gameActive = false;
+    clearInterval(obsSpawner);
 
-            if(score >= 5) {
-                earnCoin();
-            } else {
-                showGlaggleMessage("Crash!", `Score: ${score}. Brauchst 5 für einen Coin!`);
-            }
-        }
+    // WICHTIG: Key für das Gamecenter angepasst
+    const storageKey = 'racing_highscore'; 
+    let currentHighscore = parseInt(localStorage.getItem(storageKey)) || 0;
+
+    if(score > currentHighscore) {
+        localStorage.setItem(storageKey, score);
+        bestScore = score;
+        showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
+    } else {
+        showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
+    }
+
+    // Coin Logik
+    if(score >= 5) {
+        earnCoin();
+    }
+    
+    updateScoreUI();
+}
+
+// Auch die Anzeige oben muss den richtigen Key laden
+function updateScoreUI() {
+    const displayHighscore = localStorage.getItem('racing_highscore') || 0;
+    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
+}
 
         function resetGame() {
             // Spielfeld säubern ohne Reload
