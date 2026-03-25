@@ -149,246 +149,251 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('fishCanvas');
-        const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu-overlay');
-        const scoreEl = document.getElementById('score');
-        const highscoreEl = document.getElementById('highscore');
-        const coinEl = document.getElementById('coin-count');
-        const container = document.getElementById('game-container');
+       const canvas = document.getElementById('fishCanvas');
+const ctx = canvas.getContext('2d');
+const menu = document.getElementById('menu-overlay');
+const scoreEl = document.getElementById('score');
+const highscoreEl = document.getElementById('highscore');
+const coinEl = document.getElementById('coin-count');
+const container = document.getElementById('game-container');
 
-        let gameRunning = false;
-        let score = 0;
-        let highscore = localStorage.getItem('glaggleFishHighscore') || 0;
-        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-        
-        highscoreEl.innerText = highscore + "m";
-        coinEl.innerText = coins;
+let gameRunning = false;
+let score = 0;
+let highscore = localStorage.getItem('glaggleFishHighscore') || 0;
+let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
-        const fish = {
-            x: 80,
-            y: 200,
-            radius: 18,
-            vy: 0,
-            gravity: 0.25,
-            lift: -0.6,
-            isLifting: false
-        };
+highscoreEl.innerText = highscore + "m";
+coinEl.innerText = coins;
 
-        let obstacles = [];
-        let bubbles = [];
-        let gameSpeed = 3;
-        let frameCount = 0;
+const fish = {
+    x: 80,
+    y: 200,
+    radius: 18,
+    vy: 0,
+    gravity: 0.25,
+    lift: -0.6,
+    isLifting: false
+};
 
-        function resize() {
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-        }
-        window.onresize = resize;
-        resize();
+let obstacles = [];
+let bubbles = [];
+let gameSpeed = 3;
+let frameCount = 0;
 
-        const handleInput = (active) => { fish.isLifting = active; };
-        
-      // Neue Eingabe-Logik: Ignoriert Klicks auf Buttons und Links (A-Tags)
+function resize() {
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- KORRIGIERTE STEUERUNG ---
 const handleInput = (active) => { 
     if(gameRunning) fish.isLifting = active; 
 };
 
-// Maus-Steuerung
-container.onmousedown = (e) => {
+// Maus
+container.addEventListener('mousedown', (e) => {
     if (e.target.closest('button') || e.target.closest('a')) return;
     handleInput(true);
-};
-container.onmouseup = () => handleInput(false);
+});
+window.addEventListener('mouseup', () => handleInput(false));
 
-// Touch-Steuerung (Wichtig für Mobile)
-container.ontouchstart = (e) => { 
-    // Wenn ein Button oder Link getroffen wurde, Funktion abbrechen (Link normal folgen)
+// Touch (Mobile)
+container.addEventListener('touchstart', (e) => { 
     if (e.target.closest('button') || e.target.closest('a')) return;
-    
     e.preventDefault(); 
     handleInput(true); 
-};
-container.ontouchend = (e) => { 
-    if (e.target.closest('button') || e.target.closest('a')) return;
-    
-    e.preventDefault(); 
+}, {passive: false});
+
+container.addEventListener('touchend', (e) => { 
     handleInput(false); 
-};
+}, {passive: false});
 
-// Tastatur bleibt gleich
-window.onkeydown = (e) => { if(e.code === "Space") handleInput(true); };
-window.onkeyup = (e) => { if(e.code === "Space") handleInput(false); };
+// Tastatur
+window.addEventListener('keydown', (e) => { if(e.code === "Space") handleInput(true); });
+window.addEventListener('keyup', (e) => { if(e.code === "Space") handleInput(false); });
 
-        function startGame(e) {
-            if(e) e.stopPropagation();
-            score = 0;
-            gameSpeed = 3;
-            obstacles = [];
-            bubbles = [];
-            fish.y = canvas.height / 2;
-            fish.vy = 0;
-            gameRunning = true;
-            menu.style.display = "none";
-            requestAnimationFrame(gameLoop);
+function startGame(e) {
+    if(e) e.stopPropagation();
+    score = 0;
+    gameSpeed = 3;
+    obstacles = [];
+    bubbles = [];
+    fish.y = canvas.height / 2;
+    fish.vy = 0;
+    scoreEl.innerText = "0m";
+    gameRunning = true;
+    menu.style.display = "none";
+    frameCount = 0; // Reset FrameCount für Hindernis-Timing
+    requestAnimationFrame(gameLoop);
+}
+
+function createObstacle() {
+    const minGap = 130;
+    const gap = Math.max(110, minGap - (score / 15));
+    const margin = 40;
+    const pos = Math.random() * (canvas.height - gap - margin * 2) + margin;
+    
+    obstacles.push({
+        x: canvas.width,
+        top: pos,
+        bottom: pos + gap,
+        width: 45,
+        passed: false
+    });
+}
+
+function gameLoop() {
+    if(!gameRunning) return;
+
+    if(fish.isLifting) {
+        fish.vy += fish.lift;
+    } else {
+        fish.vy += fish.gravity;
+    }
+    
+    fish.vy *= 0.98;
+    fish.y += fish.vy;
+
+    if(fish.y - fish.radius < 0) {
+        fish.y = fish.radius;
+        fish.vy = 0;
+    }
+    if(fish.y + fish.radius > canvas.height) {
+        gameOver();
+        return; // Loop beenden
+    }
+
+    if(frameCount % 100 === 0) createObstacle();
+    
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obs = obstacles[i];
+        obs.x -= gameSpeed;
+
+        const hitTop = fish.x + fish.radius > obs.x && 
+                     fish.x - fish.radius < obs.x + obs.width && 
+                     fish.y - fish.radius < obs.top;
+                     
+        const hitBottom = fish.x + fish.radius > obs.x && 
+                        fish.x - fish.radius < obs.x + obs.width && 
+                        fish.y + fish.radius > obs.bottom;
+
+        if(hitTop || hitBottom) {
+            gameOver();
+            return;
         }
 
-        function createObstacle() {
-            const minGap = 130;
-            const gap = Math.max(110, minGap - (score / 15));
-            const margin = 40;
-            const pos = Math.random() * (canvas.height - gap - margin * 2) + margin;
-            
-            obstacles.push({
-                x: canvas.width,
-                top: pos,
-                bottom: pos + gap,
-                width: 45,
-                passed: false
-            });
+        if(!obs.passed && obs.x + obs.width < fish.x) {
+            obs.passed = true;
+            score++;
+            scoreEl.innerText = score + "m";
+            gameSpeed += 0.04;
         }
 
-        function gameLoop() {
-            if(!gameRunning) return;
+        if(obs.x + obs.width < 0) obstacles.splice(i, 1);
+    }
 
-            if(fish.isLifting) {
-                fish.vy += fish.lift;
-            } else {
-                fish.vy += fish.gravity;
-            }
-            
-            fish.vy *= 0.98;
-            fish.y += fish.vy;
+    if(frameCount % 12 === 0) {
+        bubbles.push({ x: canvas.width, y: Math.random() * canvas.height, r: Math.random() * 4 + 1, s: Math.random() * 2 + 1 });
+    }
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+        bubbles[i].x -= gameSpeed + bubbles[i].s;
+        if(bubbles[i].x < -10) bubbles.splice(i, 1);
+    }
 
-            if(fish.y - fish.radius < 0) {
-                fish.y = fish.radius;
-                fish.vy = 0;
-            }
-            if(fish.y + fish.radius > canvas.height) {
-                gameOver();
-            }
+    draw();
+    frameCount++;
+    requestAnimationFrame(gameLoop);
+}
 
-            if(frameCount % 100 === 0) createObstacle();
-            
-            obstacles.forEach((obs, i) => {
-                obs.x -= gameSpeed;
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                const hitTop = fish.x + fish.radius > obs.x && 
-                             fish.x - fish.radius < obs.x + obs.width && 
-                             fish.y - fish.radius < obs.top;
-                             
-                const hitBottom = fish.x + fish.radius > obs.x && 
-                                fish.x - fish.radius < obs.x + obs.width && 
-                                fish.y + fish.radius > obs.bottom;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+    bubbles.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
-                if(hitTop || hitBottom) gameOver();
-
-                if(!obs.passed && obs.x + obs.width < fish.x) {
-                    obs.passed = true;
-                    score++;
-                    scoreEl.innerText = score + "m";
-                    gameSpeed += 0.04;
-                }
-
-                if(obs.x + obs.width < 0) obstacles.splice(i, 1);
-            });
-
-            if(frameCount % 12 === 0) {
-                bubbles.push({ x: canvas.width, y: Math.random() * canvas.height, r: Math.random() * 4 + 1, s: Math.random() * 2 + 1 });
-            }
-            bubbles.forEach((b, i) => {
-                b.x -= gameSpeed + b.s;
-                if(b.x < -10) bubbles.splice(i, 1);
-            });
-
-            draw();
-            frameCount++;
-            requestAnimationFrame(gameLoop);
+    ctx.fillStyle = "#2ecc71";
+    obstacles.forEach(obs => {
+        ctx.beginPath();
+        if(ctx.roundRect) {
+            ctx.roundRect(obs.x, -20, obs.width, obs.top + 20, [0, 0, 12, 12]);
+            ctx.roundRect(obs.x, obs.bottom, obs.width, canvas.height - obs.bottom + 20, [12, 12, 0, 0]);
+        } else {
+            ctx.rect(obs.x, 0, obs.width, obs.top);
+            ctx.rect(obs.x, obs.bottom, obs.width, canvas.height);
         }
+        ctx.fill();
+    });
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(fish.x, fish.y);
+    ctx.rotate(Math.min(0.5, Math.max(-0.5, fish.vy * 0.08)));
+    
+    // Körper
+    ctx.fillStyle = "#FFD700";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, fish.radius + 5, fish.radius, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-            bubbles.forEach(b => {
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-                ctx.fill();
-            });
+    // Auge
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(10, -5, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(12, -5, 3, 0, Math.PI * 2);
+    ctx.fill();
 
-            ctx.fillStyle = "#2ecc71";
-            obstacles.forEach(obs => {
-                ctx.beginPath();
-                ctx.roundRect(obs.x, -20, obs.width, obs.top + 20, [0, 0, 12, 12]);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.roundRect(obs.x, obs.bottom, obs.width, canvas.height - obs.bottom + 20, [12, 12, 0, 0]);
-                ctx.fill();
-            });
+    // Mund
+    ctx.beginPath();
+    ctx.arc(8, 5, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
 
-            ctx.save();
-            ctx.translate(fish.x, fish.y);
-            ctx.rotate(Math.min(0.5, Math.max(-0.5, fish.vy * 0.08)));
-            
-            // Körper
-            ctx.fillStyle = "#FFD700";
-            ctx.beginPath();
-            ctx.ellipse(0, 0, fish.radius + 5, fish.radius, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = "#000";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+    // Schwanzflosse
+    ctx.fillStyle = "#FFA500";
+    ctx.beginPath();
+    ctx.moveTo(-15, 0);
+    ctx.lineTo(-26, -12);
+    ctx.lineTo(-26, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
-            // Auge
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(10, -5, 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.arc(12, -5, 3, 0, Math.PI * 2);
-            ctx.fill();
+    ctx.restore();
+}
 
-            // Mund
-            ctx.beginPath();
-            ctx.arc(8, 5, 5, 0.1 * Math.PI, 0.9 * Math.PI);
-            ctx.stroke();
+function gameOver() {
+    gameRunning = false;
+    
+    if(score >= 5) {
+        coins++;
+        localStorage.setItem('glaggleCoins', coins);
+        coinEl.innerText = coins;
+        const display = document.getElementById('coin-display');
+        display.classList.add('pulse');
+        setTimeout(() => display.classList.remove('pulse'), 500);
+    }
 
-            // Schwanzflosse
-            ctx.fillStyle = "#FFA500";
-            ctx.beginPath();
-            ctx.moveTo(-15, 0);
-            ctx.lineTo(-26, -12);
-            ctx.lineTo(-26, 12);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.restore();
-        }
-
-        function gameOver() {
-            gameRunning = false;
-            
-            if(score >= 5) {
-                coins++;
-                localStorage.setItem('glaggleCoins', coins);
-                coinEl.innerText = coins;
-                document.getElementById('coin-display').classList.add('pulse');
-                setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 500);
-            }
-
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem('glaggleFishHighscore', highscore);
-                highscoreEl.innerText = highscore + "m";
-                document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
-            } else {
-                document.getElementById('msg').innerText = "Crash! Score: " + score + "m";
-            }
-            
-            menu.style.display = "flex";
-        }
+    if(score > highscore) {
+        highscore = score;
+        localStorage.setItem('glaggleFishHighscore', highscore);
+        highscoreEl.innerText = highscore + "m";
+        document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
+    } else {
+        document.getElementById('msg').innerText = "Crash! Score: " + score + "m";
+    }
+    
+    menu.style.display = "flex";
+}
     </script>
 </body>
 </html>
