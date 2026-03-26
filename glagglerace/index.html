@@ -230,9 +230,8 @@
     gameActive = false;
     clearInterval(obsSpawner);
 
-    // WICHTIG: Key für das Gamecenter angepasst
-    // In deiner gameOver Funktion:
-const storageKey = 'racing_highscore'; // Muss klein geschrieben sein!
+    // Geändert von 'racing_highscore' zu 'glagglerace_highscore'
+    const storageKey = 'glagglerace_highscore'; 
     let currentHighscore = parseInt(localStorage.getItem(storageKey)) || 0;
 
     if(score > currentHighscore) {
@@ -243,12 +242,14 @@ const storageKey = 'racing_highscore'; // Muss klein geschrieben sein!
         showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
     }
 
-    // Coin Logik
-    if(score >= 5) {
-        earnCoin();
-    }
-    
+    if(score >= 5) earnCoin();
     updateScoreUI();
+}
+
+// Auch hier den Key anpassen, damit die Anzeige oben stimmt
+function updateScoreUI() {
+    const displayHighscore = localStorage.getItem('glagglerace_highscore') || 0;
+    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
 }
 
 // Auch die Anzeige oben muss den richtigen Key laden
