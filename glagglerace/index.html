@@ -231,7 +231,8 @@
     clearInterval(obsSpawner);
 
     // WICHTIG: Key für das Gamecenter angepasst
-    const storageKey = 'racing_highscore'; 
+    // In deiner gameOver Funktion:
+const storageKey = 'racing_highscore'; // Muss klein geschrieben sein!
     let currentHighscore = parseInt(localStorage.getItem(storageKey)) || 0;
 
     if(score > currentHighscore) {
