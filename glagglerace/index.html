@@ -162,15 +162,16 @@
         const popupText = document.getElementById('popup-text');
         const popupTitle = document.getElementById('popup-title');
 
-        const lanes = [20, 120, 220]; 
-        let currentLane = 1;
-        let score = 0;
-        let speed = 5;
-        let gameActive = true;
-        let bestScore = localStorage.getItem('racingBest') || 0;
-        let activeObstacles = [];
-        let obsSpawner;
-
+        // Oben bei den Variablen-Definitionen
+const lanes = [20, 120, 220]; 
+let currentLane = 1;
+let score = 0;
+let speed = 5;
+let gameActive = true;
+// Hier den Key auf 'racing_highscore' ändern:
+let bestScore = parseInt(localStorage.getItem('racing_highscore')) || 0; 
+let activeObstacles = [];
+let obsSpawner;
         // Init
         function init() {
             player.style.left = lanes[currentLane] + 'px';
