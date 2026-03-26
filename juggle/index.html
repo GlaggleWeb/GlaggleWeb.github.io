@@ -44,8 +44,6 @@
             z-index: 1000;
         }
 
-        .nav-logo { height: 35px; }
-
         .main-content { margin-top: 85px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
 
         #game-container {
@@ -56,7 +54,6 @@
             border: 4px solid var(--card-border);
             border-radius: 20px; 
             overflow: hidden; 
-            cursor: pointer;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
@@ -75,16 +72,19 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; backdrop-filter: blur(4px);
+            z-index: 20; /* Höherer Z-Index */
+            backdrop-filter: blur(4px);
         }
 
         .btn {
-            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            background: var(--accent); color: white; border: none; padding: 16px 35px;
             border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
             box-shadow: 0 4px 0px #2E94D1; margin-bottom: 10px;
-            width: 200px;
+            width: 220px; /* Etwas breiter für Finger */
             text-decoration: none;
             display: inline-block;
+            font-size: 18px;
+            z-index: 30; /* Sicherstellen, dass oben */
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #2E94D1; }
 
@@ -95,8 +95,6 @@
             display: flex; align-items: center; gap: 10px;
             font-weight: bold; z-index: 1000;
         }
-
-        .coin-img { width: 24px; height: 24px; }
     </style>
 </head>
 <body>
@@ -117,9 +115,10 @@
             <canvas id="gameCanvas"></canvas>
             
             <div id="menu-overlay" class="overlay">
-                <h1 id="msg">⚽ Glaggle Ball!</h1>
-                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Klicke den Ball an,<br>damit er nicht runterfällt!</p>
-                <button class="btn" onclick="startGame(event)">Anpfiff!</button>
+                <h1 id="msg">⚽ Glaggle Juggle!</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Tippe den Ball an!</p>
+                <!-- onclick und ontouchend für maximale Kompatibilität -->
+                <button class="btn" onclick="startGame(event)" ontouchend="startGame(event)">Anpfiff!</button>
             </div>
         </div>
     </div>
@@ -161,37 +160,36 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Input Handling
         function handleInteraction(e) {
+            // Verhindert, dass das Spiel reagiert, wenn das Menü offen ist
             if (!gameRunning) return;
             
             const rect = canvas.getBoundingClientRect();
-            const clickX = (e.clientX || e.touches[0].clientX) - rect.left;
-            const clickY = (e.clientY || e.touches[0].clientY) - rect.top;
+            // Unterstützung für Maus und Touch
+            const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+            
+            const clickX = clientX - rect.left;
+            const clickY = clientY - rect.top;
 
-            // Check collision with ball
             const dist = Math.sqrt((clickX - ball.x)**2 + (clickY - ball.y)**2);
             
-            if (dist < ball.radius + 20) {
-                // Kick logic
-                ball.vy = -8.5;
-                ball.vx = (ball.x - clickX) * 0.4;
-                ball.vRotation = ball.vx * 0.1;
+            if (dist < ball.radius + 25) {
+                ball.vy = -9;
+                ball.vx = (ball.x - clickX) * 0.45;
+                ball.vRotation = ball.vx * 0.12;
                 
                 score++;
                 scoreEl.innerText = score;
                 createParticles(ball.x, ball.y);
-                
-                // Audio Feedback (Simulated)
-                ctx.fillStyle = "white";
-                ctx.font = "bold 20px Arial";
-                ctx.fillText("+1", ball.x, ball.y - 40);
             }
         }
 
+        // Gamepad/Canvas Inputs
         container.addEventListener('mousedown', handleInteraction);
         container.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+            if (!gameRunning) return; 
+            e.preventDefault(); // Verhindert Scrollen beim Spielen
             handleInteraction(e);
         }, {passive: false});
 
@@ -209,7 +207,11 @@
         }
 
         function startGame(e) {
-            if(e) e.stopPropagation();
+            if(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
             score = 0;
             scoreEl.innerText = "0";
             ball.x = canvas.width / 2;
@@ -220,32 +222,30 @@
             particles = [];
             gameRunning = true;
             menu.style.display = "none";
+            
+            // Loop nur starten, wenn nicht bereits aktiv
             requestAnimationFrame(gameLoop);
         }
 
         function gameLoop() {
             if(!gameRunning) return;
 
-            // Physics
             ball.vy += ball.gravity;
             ball.x += ball.vx;
             ball.y += ball.vy;
             ball.rotation += ball.vRotation;
 
-            // Walls
             if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
                 ball.vx *= -0.7;
                 ball.vRotation *= -1;
                 ball.x = ball.x - ball.radius < 0 ? ball.radius : canvas.width - ball.radius;
             }
 
-            // Game Over (Floor)
             if (ball.y + ball.radius > canvas.height) {
                 gameOver();
                 return;
             }
 
-            // Top boundary (ceiling)
             if (ball.y - ball.radius < 0) {
                 ball.y = ball.radius;
                 ball.vy *= -0.5;
@@ -260,7 +260,6 @@
             ctx.translate(ball.x, ball.y);
             ctx.rotate(ball.rotation);
 
-            // Ball Shadow/Outer
             ctx.beginPath();
             ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#fff";
@@ -269,7 +268,6 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Soccer Pattern (Simplified)
             ctx.fillStyle = "#000";
             for(let i=0; i<5; i++) {
                 ctx.rotate((Math.PI * 2) / 5);
@@ -281,36 +279,27 @@
                 ctx.fill();
             }
             
-            // Glaggle Face on Ball
             ctx.fillStyle = "#000";
-            ctx.beginPath(); ctx.arc(-7, -5, 3, 0, Math.PI * 2); ctx.fill(); // Eye L
-            ctx.beginPath(); ctx.arc(7, -5, 3, 0, Math.PI * 2); ctx.fill(); // Eye R
-            ctx.beginPath(); ctx.arc(0, 5, 6, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke(); // Smile
+            ctx.beginPath(); ctx.arc(-7, -5, 3, 0, Math.PI * 2); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(7, -5, 3, 0, Math.PI * 2); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(0, 5, 6, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke(); 
             
             ctx.restore();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Grass bottom
             ctx.fillStyle = "rgba(46, 204, 113, 0.3)";
             ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
 
-            // Particles
             particles.forEach((p, i) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.02;
-                ctx.globalAlpha = p.life;
+                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                ctx.globalAlpha = Math.max(0, p.life);
                 ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
                 if(p.life <= 0) particles.splice(i, 1);
             });
             ctx.globalAlpha = 1.0;
-
             drawBall();
         }
 
@@ -321,14 +310,13 @@
                 highscore = score;
                 localStorage.setItem('glaggleSoccerHighscore', highscore);
                 highscoreEl.innerText = highscore;
-                document.getElementById('msg').innerText = "🏆 Rekord gebrochen!";
+                document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
             } else {
-                document.getElementById('msg').innerText = "Abgepfiffen! " + score;
+                document.getElementById('msg').innerText = "Aus! Score: " + score;
             }
 
-            // Coin reward
             if (score > 0) {
-                let earned = Math.floor(score / 10) + 1;
+                let earned = Math.floor(score / 5) + 1;
                 coins += earned;
                 localStorage.setItem('glaggleCoins', coins);
                 coinEl.innerText = coins;
