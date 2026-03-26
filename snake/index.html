@@ -270,7 +270,7 @@
         function gameOver() {
             if(score > highscore) {
                 highscore = score;
-                localStorage.setItem('glaggleShakeHighscore', highscore);
+                localStorage.setItem('snake_highscore', highscore);
                 document.getElementById('highscore').innerText = highscore;
                 document.getElementById('final-msg').innerText = "Neuer Rekord! 🎉";
             } else {
