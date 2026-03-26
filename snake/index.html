@@ -267,17 +267,27 @@
             return array.some(p => p.x === head.x && p.y === head.y);
         }
 
-        function gameOver() {
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem('snake_highscore', highscore);
-                document.getElementById('highscore').innerText = highscore;
-                document.getElementById('final-msg').innerText = "Neuer Rekord! 🎉";
-            } else {
-                document.getElementById('final-msg').innerText = "Score: " + score;
-            }
-            document.getElementById('death-overlay').style.display = "flex";
-        }
+       function gameOver() {
+    // 1. Rekord lokal speichern
+    if(score > highscore) {
+        highscore = score;
+        localStorage.setItem('snake_highscore', highscore); // Für das Spiel selbst
+        localStorage.setItem('snake', highscore);           // WICHTIG: Damit das Gamecenter es findet!
+        document.getElementById('highscore').innerText = highscore;
+        document.getElementById('final-msg').innerText = "Neuer Rekord! 🎉";
+    } else {
+        document.getElementById('final-msg').innerText = "Score: " + score;
+    }
+    
+    // 2. Overlay zeigen
+    document.getElementById('death-overlay').style.display = "flex";
+    
+    // 3. Dem Gamecenter sagen: "Hey, lad das mal hoch!"
+    // Falls du das Spiel im Iframe oder gleichen Tab hast, hilft dieser Trigger:
+    if (window.parent && window.parent.updateLeaderboard) {
+        window.parent.updateLeaderboard();
+    }
+}
 
        function earnCoin() {
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
