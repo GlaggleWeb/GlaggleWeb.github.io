@@ -148,7 +148,7 @@
         const box = 20;
         let shake, food, score, d, nextD, gameLoop;
         let lastMoveTime = 0;
-        let highscore = localStorage.getItem('glaggleShakeHighscore') || 0;
+        let highscore = localStorage.getItem('snake_highscore') || 0;
         document.getElementById('highscore').innerText = highscore;
 
         const getStyle = (prop) => getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
