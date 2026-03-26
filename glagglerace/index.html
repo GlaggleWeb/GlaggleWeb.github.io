@@ -163,16 +163,52 @@
         const popupTitle = document.getElementById('popup-title');
 
         // Oben bei den Variablen-Definitionen
-const lanes = [20, 120, 220]; 
-let currentLane = 1;
-let score = 0;
-let speed = 5;
-let gameActive = true;
-// Hier den Key auf 'racing_highscore' ändern:
-let bestScore = parseInt(localStorage.getItem('racing_highscore')) || 0; 
-let activeObstacles = [];
-let obsSpawner;
-        // Init
+const HIGH_KEY = 'racing'; // Einheitlicher Key für das Gamecenter
+
+        const lanes = [20, 120, 220]; 
+        let currentLane = 1;
+        let score = 0;
+        let speed = 5;
+        let gameActive = true;
+        let activeObstacles = [];
+        let obsSpawner;
+
+        // Init beim Start
+        function init() {
+            player.style.left = lanes[currentLane] + 'px';
+            updateScoreUI(); // Bestwert beim Laden anzeigen
+            coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
+            obsSpawner = setInterval(createObstacle, 1400);
+        }
+
+        // EINZIGE Version der Anzeige-Funktion
+        function updateScoreUI() {
+            const displayHighscore = localStorage.getItem(HIGH_KEY) || 0;
+            scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
+        }
+
+        function gameOver() {
+            gameActive = false;
+            clearInterval(obsSpawner);
+
+            let currentHighscore = parseInt(localStorage.getItem(HIGH_KEY)) || 0;
+
+            if(score > currentHighscore) {
+                localStorage.setItem(HIGH_KEY, score);
+                showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
+                
+                // Gamecenter Leaderboard informieren
+                if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
+                    window.parent.updateLeaderboard();
+                }
+            } else {
+                showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
+            }
+
+            if(score >= 5) earnCoin();
+            updateScoreUI(); // UI mit neuem Bestwert aktualisieren
+        }
+        
         function init() {
             player.style.left = lanes[currentLane] + 'px';
             updateScoreUI();
@@ -180,9 +216,7 @@ let obsSpawner;
             obsSpawner = setInterval(createObstacle, 1400);
         }
 
-        function updateScoreUI() {
-            scoreDisplay.innerText = `Score: ${score} | Best: ${bestScore}`;
-        }
+
 
         function move(dir) {
             if(!gameActive) return;
@@ -226,26 +260,6 @@ let obsSpawner;
             }, 20);
             activeObstacles.push({element: obs, interval: interval});
         }
-
-        function gameOver() {
-    gameActive = false;
-    clearInterval(obsSpawner);
-
-    // Geändert von 'racing_highscore' zu 'glagglerace_highscore'
-    const storageKey = 'glagglerace_highscore'; 
-    let currentHighscore = parseInt(localStorage.getItem(storageKey)) || 0;
-
-    if(score > currentHighscore) {
-        localStorage.setItem(storageKey, score);
-        bestScore = score;
-        showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
-    } else {
-        showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
-    }
-
-    if(score >= 5) earnCoin();
-    updateScoreUI();
-}
 
 // Auch hier den Key anpassen, damit die Anzeige oben stimmt
 function updateScoreUI() {
