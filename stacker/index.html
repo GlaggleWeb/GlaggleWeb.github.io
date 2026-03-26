@@ -199,9 +199,17 @@
 
             if(score > highscore) {
                 highscore = score;
+                // 1. BEIDE Keys speichern (für Spiel & Leaderboard)
                 localStorage.setItem('tower_highscore', highscore);
+                localStorage.setItem('tower', highscore); 
+                
                 highscoreEl.innerText = highscore;
                 document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
+                
+                // 2. Gamecenter anstupsen (falls es im Parent-Fenster läuft)
+                if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
+                    window.parent.updateLeaderboard();
+                }
             } else {
                 document.getElementById('msg').innerText = "Eingestürzt! Höhe: " + score;
             }
