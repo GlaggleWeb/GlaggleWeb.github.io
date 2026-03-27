@@ -399,32 +399,39 @@
     // Funktion zum Namen ändern
 async function changeName() {
     const oldName = localStorage.getItem('glaggleUserName');
-    const newName = prompt("Wie möchtest du im Glaggle-Netzwerk heißen?", oldName);
+    const newName = prompt("Wie möchtest du heißen? (Keine Schimpfwörter erlaubt!)", oldName);
 
-    if (newName && newName.trim() !== "" && newName !== oldName) {
-        // Name säubern (max 25 Zeichen)
-        const cleanedName = newName.trim().substring(0, 25);
-        
-        // Speichern
+    // Abbrechen, wenn leer oder unverändert
+    if (!newName || newName.trim() === "" || newName === oldName) return;
+
+    const cleanedName = newName.trim().substring(0, 20);
+
+    // Prüfung durch Groq (nutzt deine vorhandene checkModeration Funktion)
+    const statusDisplay = document.getElementById('chat-status'); // Wir nutzen das Feld für Feedback
+    if (statusDisplay) statusDisplay.innerText = "Glaggle-Wächter prüft Name...";
+
+    const result = await checkModeration(cleanedName);
+
+    if (result.includes("OK")) {
+        // 1. Speichern
         localStorage.setItem('glaggleUserName', cleanedName);
-        currentUserName = cleanedName; // Update der globalen Variable
+        currentUserName = cleanedName;
 
-        // UI Updates
+        // 2. UI aktualisieren
         document.getElementById('user-name-display').innerText = cleanedName;
         if(chatInput) chatInput.placeholder = `${cleanedName}: Tippen...`;
         
-        // Leaderboard sofort mit neuem Namen updaten
+        // 3. Leaderboard aktualisieren
         updateLeaderboard();
-        
-        alert("Dein Name wurde zu '" + cleanedName + "' geändert!");
+
+        if (statusDisplay) statusDisplay.innerText = "✅ Name akzeptiert und gespeichert!";
+        setTimeout(() => { if(statusDisplay) statusDisplay.innerText = ""; }, 3000);
+    } else {
+        // Name wurde abgelehnt
+        alert("⚠️ Dieser Name wurde vom Glaggle-Wächter abgelehnt. Bitte wähle einen höflichen Namen!");
+        if (statusDisplay) statusDisplay.innerText = "❌ Name abgelehnt.";
     }
 }
-
-// Initialisierung: Namen beim Laden auf dem Button anzeigen
-document.addEventListener("DOMContentLoaded", () => {
-    const display = document.getElementById('user-name-display');
-    if(display) display.innerText = currentUserName;
-});
     // --- 3. GROQ MODERATION ---
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
