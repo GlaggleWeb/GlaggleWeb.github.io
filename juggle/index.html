@@ -95,6 +95,17 @@
             display: flex; align-items: center; gap: 10px;
             font-weight: bold; z-index: 1000;
         }
+
+        .btn-secondary {
+    background: #4a6fa5 !important; /* Etwas dezentere Farbe */
+    box-shadow: 0 4px 0px #345480 !important;
+    font-size: 16px;
+    padding: 12px 35px;
+}
+
+.btn-secondary:active {
+    box-shadow: 0 2px 0px #345480 !important;
+}
     </style>
 </head>
 <body>
@@ -114,12 +125,14 @@
         <div id="game-container">
             <canvas id="gameCanvas"></canvas>
             
-            <div id="menu-overlay" class="overlay">
-                <h1 id="msg">⚽ Glaggle Ball!</h1>
-                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Tippe den Ball an!</p>
-                <!-- onclick und ontouchend für maximale Kompatibilität -->
-                <button class="btn" onclick="startGame(event)" ontouchend="startGame(event)">Anpfiff!</button>
-            </div>
+<div id="menu-overlay" class="overlay">
+    <h1 id="msg">⚽ Glaggle Ball!</h1>
+    <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Tippe den Ball an!</p>
+    
+    <button class="btn" onclick="startGame(event)" ontouchend="startGame(event)">Anpfiff!</button>
+    
+    <a href="https://glaggle.ch/gamecenter" class="btn btn-secondary">Mehr Spiele</a>
+</div>
         </div>
     </div>
 
