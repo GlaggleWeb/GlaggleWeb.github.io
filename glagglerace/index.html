@@ -154,69 +154,63 @@
     </div>
 
     <script>
-        const container = document.getElementById('game-container');
-        const player = document.getElementById('player');
-        const scoreDisplay = document.getElementById('score-display');
-        const coinCountEl = document.getElementById('coin-count');
-        const popup = document.getElementById('glaggle-popup');
-        const popupText = document.getElementById('popup-text');
-        const popupTitle = document.getElementById('popup-title');
+        cconst container = document.getElementById('game-container');
+const player = document.getElementById('player');
+const scoreDisplay = document.getElementById('score-display');
+const coinCountEl = document.getElementById('coin-count');
+const popup = document.getElementById('glaggle-popup');
+const popupText = document.getElementById('popup-text');
+const popupTitle = document.getElementById('popup-title');
 
-        // Oben bei den Variablen-Definitionen
-const HIGH_KEY = 'racing'; // Einheitlicher Key für das Gamecenter
+// WICHTIG: Dieser Key muss exakt so im Leaderboard-Script vorkommen
+const HIGH_KEY = 'racing_highscore'; 
 
-        const lanes = [20, 120, 220]; 
-        let currentLane = 1;
-        let score = 0;
-        let speed = 5;
-        let gameActive = true;
-        let activeObstacles = [];
-        let obsSpawner;
+const lanes = [20, 120, 220]; 
+let currentLane = 1;
+let score = 0;
+let speed = 5;
+let gameActive = true;
+let activeObstacles = [];
+let obsSpawner;
 
-        // Init beim Start
-        function init() {
-            player.style.left = lanes[currentLane] + 'px';
-            updateScoreUI(); // Bestwert beim Laden anzeigen
-            coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
-            obsSpawner = setInterval(createObstacle, 1400);
-        }
+function init() {
+    player.style.left = lanes[currentLane] + 'px';
+    updateScoreUI();
+    coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
+    if(obsSpawner) clearInterval(obsSpawner);
+    obsSpawner = setInterval(createObstacle, 1400);
+}
 
-        // EINZIGE Version der Anzeige-Funktion
-        function updateScoreUI() {
-            const displayHighscore = localStorage.getItem(HIGH_KEY) || 0;
-            scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
-        }
+function updateScoreUI() {
+    // Holt den Highscore mit dem einheitlichen Key
+    const displayHighscore = localStorage.getItem(HIGH_KEY) || 0;
+    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
+}
 
-        function gameOver() {
-            gameActive = false;
-            clearInterval(obsSpawner);
+function gameOver() {
+    gameActive = false;
+    clearInterval(obsSpawner);
 
-            let currentHighscore = parseInt(localStorage.getItem(HIGH_KEY)) || 0;
+    let currentHighscore = parseInt(localStorage.getItem(HIGH_KEY)) || 0;
 
-            if(score > currentHighscore) {
-                localStorage.setItem(HIGH_KEY, score);
-                showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
-                
-                // Gamecenter Leaderboard informieren
-                if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
-                    window.parent.updateLeaderboard();
-                }
-            } else {
-                showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
-            }
-
-            if(score >= 5) earnCoin();
-            updateScoreUI(); // UI mit neuem Bestwert aktualisieren
-        }
+    if(score > currentHighscore) {
+        localStorage.setItem(HIGH_KEY, score);
+        showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
         
-        function init() {
-            player.style.left = lanes[currentLane] + 'px';
-            updateScoreUI();
-            coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
-            obsSpawner = setInterval(createObstacle, 1400);
+        // Leaderboard im Elternfenster (Gamecenter) aktualisieren
+        if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
+            window.parent.updateLeaderboard();
         }
+    } else {
+        showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
+    }
 
+    if(score >= 5) earnCoin();
+    updateScoreUI(); 
+}
 
+// ... Rest deiner Funktionen (move, createObstacle, earnCoin, resetGame) bleiben gleich ...
+// Achte darauf, dass in resetGame() ebenfalls updateScoreUI() aufgerufen wird.
 
         function move(dir) {
             if(!gameActive) return;
