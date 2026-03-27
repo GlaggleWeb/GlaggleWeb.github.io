@@ -634,94 +634,114 @@ updateLeaderboard();
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
 setInterval(updateLeaderboard, 15000);
 
-// --- GLOBALE VARIABLEN ---
-let currentUserName = localStorage.getItem('glaggleUserName') || generateFunnyName();
-let currentGlaggleID = localStorage.getItem('glaggleID') || null;
-let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+// --- VARIABLEN ---
+    let currentGlaggleID = localStorage.getItem('glaggleID') || null;
+    let currentUserName = localStorage.getItem('glaggleUserName') || generateFunnyName();
+    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
-// Initiale Anzeige beim Laden
-async function initAccountSystem() {
-    const displayUser = document.getElementById('display-username');
-    const authBtn = document.getElementById('auth-action-btn');
+    // --- INITIALISIERUNG DES ACCOUNTS ---
+    async function initAccountSystem() {
+        const displayUser = document.getElementById('display-username');
+        const authBtn = document.getElementById('auth-action-btn');
 
-    if (currentGlaggleID) {
-        // Angemeldeter Account: Daten von Supabase holen
+        if (currentGlaggleID) {
+            // Cloud-Modus: Daten von Supabase holen
+            const { data, error } = await supabaseClient
+                .from('leaderboard') // Wir nutzen die leaderboard tabelle als account-basis
+                .select('username, coins')
+                .eq('glaggle_id', currentGlaggleID) // Falls du eine glaggle_id spalte hast
+                .eq('game_name', 'global')
+                .single();
+
+            if (data) {
+                currentUserName = data.username;
+                glaggleCoins = data.coins;
+                localStorage.setItem('glaggleUserName', currentUserName);
+                localStorage.setItem('glaggleCoins', glaggleCoins);
+                
+                displayUser.innerHTML = `👤 ${currentUserName} <small>(Cloud)</small>`;
+                authBtn.innerText = "Logout";
+                authBtn.onclick = logout;
+            } else {
+                // ID existiert nicht (mehr)
+                logout();
+            }
+        } else {
+            // Gast-Modus
+            displayUser.innerHTML = `👤 ${currentUserName} <small>(Gast)</small>`;
+            authBtn.innerText = "ID Login";
+            authBtn.onclick = () => document.getElementById('login-modal').style.display = 'flex';
+        }
+        
+        updateCoinDisplay();
+        loadInitialMessages();
+        updateLeaderboard();
+    }
+
+    // --- LOGIN FUNKTION ---
+    async function loginWithID() {
+        const idInput = document.getElementById('login-id-input').value.trim();
+        if (idInput.length !== 6) return alert("Die ID muss 6-stellig sein!");
+
+        // Prüfen ob ID in der Datenbank existiert
         const { data, error } = await supabaseClient
-            .from('glaggle_accounts')
-            .select('*')
-            .eq('glaggle_id', currentGlaggleID)
+            .from('leaderboard') // Nutze deine Account-Tabelle hier
+            .select('username, coins')
+            .eq('glaggle_id', idInput) 
+            .eq('game_name', 'global')
             .single();
 
         if (data) {
-            currentUserName = data.username;
-            glaggleCoins = data.total_coins;
-            displayUser.innerHTML = `👤 ${currentUserName} <span style="color:var(--success); font-size:0.7rem;">(Cloud)</span>`;
-            authBtn.innerText = "Abmelden";
-            authBtn.onclick = logout;
+            localStorage.setItem('glaggleID', idInput);
+            localStorage.setItem('glaggleUserName', data.username);
+            localStorage.setItem('glaggleCoins', data.coins);
+            location.reload(); // Seite neu laden um alles zu syncen
+        } else {
+            alert("Glaggle ID nicht gefunden!");
         }
-    } else {
-        // Gast-Modus
-        displayUser.innerHTML = `👤 ${currentUserName} <span style="color:var(--desc-color); font-size:0.7rem;">(Gast)</span>`;
-        authBtn.innerText = "Glaggle ID Login";
-        authBtn.onclick = () => document.getElementById('login-modal').style.display = 'flex';
     }
-    
-    updateCoinDisplay();
-    updateLeaderboard();
-}
 
-// Login Funktion
-async function loginWithID() {
-    const idInput = document.getElementById('login-id-input').value.trim();
-    if (idInput.length !== 6) return alert("Die ID muss 6 Stellen haben!");
-
-    const { data, error } = await supabaseClient
-        .from('glaggle_accounts')
-        .select('*')
-        .eq('glaggle_id', idInput)
-        .single();
-
-    if (data) {
-        // Gefunden! Lokal speichern und neuladen
-        localStorage.setItem('glaggleID', data.glaggle_id);
-        localStorage.setItem('glaggleUserName', data.username);
-        // Optional: Lokale Gast-Coins auf den Account übertragen? 
-        // Dann hier: await syncCoinsWithDB(glaggleCoins);
-        location.reload();
-    } else {
-        alert("ID nicht gefunden. Hast du dich schon registriert?");
-    }
-}
-
-function logout() {
-    if(confirm("Abmelden? Dein Gast-Account wird dann wieder aktiv.")) {
+    function logout() {
         localStorage.removeItem('glaggleID');
-        // Wir lassen den Usernamen im LocalStorage, damit er seinen Namen behält
+        // Namen behalten wir als Gast einfach bei
         location.reload();
     }
-}
 
-function closeModal() {
-    document.getElementById('login-modal').style.display = 'none';
-}
+    // --- KORRIGIERTE COIN-LOGIK (Cloud Sync) ---
+    async function addCoins(amount) {
+        glaggleCoins += amount;
+        localStorage.setItem('glaggleCoins', glaggleCoins);
+        updateCoinDisplay();
 
-// WICHTIG: Beim Speichern von Coins prüfen, ob angemeldet
-async function addCoins(amount) {
-    glaggleCoins += amount;
-    localStorage.setItem('glaggleCoins', glaggleCoins);
-    
-    if (currentGlaggleID) {
-        // Nur wenn angemeldet, auch in der Cloud speichern
-        await supabaseClient
-            .from('glaggle_accounts')
-            .update({ total_coins: glaggleCoins })
-            .eq('glaggle_id', currentGlaggleID);
+        if (currentGlaggleID) {
+            // Sofort in Cloud speichern wenn eingeloggt
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({ 
+                    username: currentUserName, 
+                    coins: glaggleCoins, 
+                    game_name: 'global',
+                    glaggle_id: currentGlaggleID 
+                }, { onConflict: 'glaggle_id, game_name' });
+        }
     }
-    updateCoinDisplay();
-}
 
-// Am Ende des Scripts aufrufen
-initAccountSystem();
+    // --- HILFSFUNKTIONEN ---
+    function generateFunnyName() {
+        const adj = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Schneller"];
+        const nom = ["Sammler", "Meister", "Held", "King", "Glaggle"];
+        const name = `${adj[Math.floor(Math.random()*adj.length)]} ${nom[Math.floor(Math.random()*nom.length)]}-${Math.floor(Math.random()*999)}`;
+        localStorage.setItem('glaggleUserName', name);
+        return name;
+    }
+
+    function updateCoinDisplay() {
+        const countElement = document.getElementById('coin-count');
+        if (countElement) countElement.innerText = glaggleCoins.toLocaleString();
+    }
+
+    // Am Ende des Scripts aufrufen statt der alten Aufrufe:
+    initAccountSystem();
 </script>
 </body>
 </html>
