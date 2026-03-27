@@ -1,503 +1,504 @@
-<! DOCTYPE Html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Gamecenter</title>
-    <meta property="og:title" content="Glaggle Gamecenter" />
-    <meta property="og:description" content="Game viele spannende Games wie Snake oder Glaggle Jump. Und verdiene und sammle Glaggle Coins!" />
-    <meta property="og:image" content="https://glaggle.ch/glagglelogo.png" />
-    <meta property="og:url" content="https://glaggle.ch/gamecenter" />
-    <meta property="og:type" content="website" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Gamecenter</title>
+    <meta property="og:title" content="Glaggle Gamecenter" />
+    <meta property="og:description" content="Game viele spannende Games wie Snake oder Glaggle Jump. Und verdiene und sammle Glaggle Coins!" />
+    <meta property="og:image" content="https://glaggle.ch/glagglelogo.png" />
+    <meta property="og:url" content="https://glaggle.ch/gamecenter" />
+    <meta property="og:type" content="website" />
 
-    <meta name="twitter:card" content="summary_large_image">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --nav-bg: #ffffff;
-            --card-bg: #fdfdfd;
-            --card-border: #eeeeee;
-            --link-color: #2E94D1;
-            --desc-color: #555555;
-            --accent: #70C4F7;
-        }
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --link-color: #2E94D1;
+            --desc-color: #555555;
+            --accent: #70C4F7;
+        }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #202124;
-                --text-color: #e8eaed;
-                --nav-bg: #303134;
-                --card-bg: #303134;
-                --card-border: #444444;
-                --link-color: #8cc9f5;
-                --desc-color: #bdc1c6;
-            }
-        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+                --link-color: #8cc9f5;
+                --desc-color: #bdc1c6;
+            }
+        }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+        }
 
-        /* NAVBAR */
-        .navbar {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; height: 70px; background-color: var(--nav-bg);
-            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
-        }
-        .nav-logo { height: 35px; cursor: pointer; }
+        /* NAVBAR */
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 70px; background-color: var(--nav-bg);
+            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+        }
+        .nav-logo { height: 35px; cursor: pointer; }
 
-        /* HERO SECTION */
-        .hero {
-            margin-top: 120px;
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-        }
-        .large-logo { 
-            width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; 
-        }
+        /* HERO SECTION */
+        .hero {
+            margin-top: 120px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .large-logo { 
+            width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; 
+        }
 
-        /* GAME GRID */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        /* GAME GRID */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-        /* GAME CARD */
-        .game-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 20px;
-            text-align: left;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
+        /* GAME CARD */
+        .game-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 20px;
+            text-align: left;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
 
-        .game-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 20px rgba(112, 196, 247, 0.15);
-        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(112, 196, 247, 0.15);
+        }
 
-        .game-title {
-            font-size: 1.2rem;
-            color: var(--link-color);
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .game-title {
+            font-size: 1.2rem;
+            color: var(--link-color);
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        .game-desc {
-            color: var(--desc-color);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            flex-grow: 1;
-            margin-bottom: 15px;
-        }
+        .game-desc {
+            color: var(--desc-color);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 15px;
+        }
 
-        .play-btn {
-            background: var(--accent);
-            color: white;
-            padding: 8px;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
+        .play-btn {
+            background: var(--accent);
+            color: white;
+            padding: 8px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
 
-        /* Das schwebende Coin-Fenster */
+        /* Das schwebende Coin-Fenster */
 .coin-status {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--card-bg);
-    border: 2px solid var(--accent);
-    padding: 10px 20px;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    padding: 10px 20px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
 }
 
 .coin-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
 }
 
 .coin-amount {
-    font-weight: bold;
-    color: var(--text-color);
+    font-weight: bold;
+    color: var(--text-color);
 }
 
 /* Effekt wenn man in das Textfeld klickt */
 #chat-input {
-    transition: all 0.3s ease; /* Macht den Übergang weich */
-    border: 1px solid var(--card-border);
+    transition: all 0.3s ease; /* Macht den Übergang weich */
+    border: 1px solid var(--card-border);
 }
 
 #chat-input:focus {
-    outline: none; /* Entfernt den Standard-Browser-Rahmen */
-    border-color: var(--accent); /* Färbt den Rand blau */
-    box-shadow: 0 0 8px rgba(112, 196, 247, 0.4); /* Sanfter Leuchteffekt */
-    background-color: var(--card-bg); /* Leichtes Hervorheben */
+    outline: none; /* Entfernt den Standard-Browser-Rahmen */
+    border-color: var(--accent); /* Färbt den Rand blau */
+    box-shadow: 0 0 8px rgba(112, 196, 247, 0.4); /* Sanfter Leuchteffekt */
+    background-color: var(--card-bg); /* Leichtes Hervorheben */
 }
 
 /* Standard für alle Nachrichten (links) */
 .msg-bubble {
-    background: var(--nav-bg);
-    padding: 10px 15px;
-    border-radius: 15px;
-    font-size: 0.9rem;
-    border: 1px solid var(--card-border);
-    align-self: flex-start;
-    maxWidth: 85%;
-    word-break: break-word;
+    background: var(--nav-bg);
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    border: 1px solid var(--card-border);
+    align-self: flex-start;
+    maxWidth: 85%;
+    word-break: break-word;
 }
 
 /* Speziell für deine eigenen Nachrichten (rechts & blau) */
 .msg-bubble.own-msg {
-    align-self: flex-end; /* Nach rechts schieben */
-    background: var(--accent); /* Glaggle-Blau */
-    color: white; /* Weißer Text für bessere Lesbarkeit */
-    border: none;
+    align-self: flex-end; /* Nach rechts schieben */
+    background: var(--accent); /* Glaggle-Blau */
+    color: white; /* Weißer Text für bessere Lesbarkeit */
+    border: none;
 }
 
 /* Farbe des Namens in eigenen Nachrichten anpassen */
 .msg-bubble.own-msg b {
-    color: white !important;
+    color: white !important;
 }
 
 /* Animation für Nachrichten */
 @keyframes fadeInSlide {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .msg-bubble {
-    animation: fadeInSlide 0.3s ease-out forwards;
-    /* ... restliche Styles bleiben ... */
+    animation: fadeInSlide 0.3s ease-out forwards;
+    /* ... restliche Styles bleiben ... */
 }
 
 /* Leaderboard Styles */
 .leaderboard-card {
-    background: var(--card-bg);
-    border: 2px solid var(--accent);
-    border-radius: 18px;
-    padding: 20px;
-    margin-top: 20px;
-    width: 100%;
-    max-width: 900px;
-    box-sizing: border-box;
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 18px;
+    padding: 20px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
 }
 
 .leader-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--card-border);
 }
 
 .leader-row:last-child { border-bottom: none; }
 .leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
 .leader-name { flex-grow: 1; }
 .leader-coins { font-weight: bold; color: #FFD700; }
-    </style>
+    </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="/"><img src="glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
-        <div class="nav-right">
-            <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Glaggle Gamecenter</span>
-        </div>
-        <div style="text-align: center; margin-bottom: 10px;">
-    </nav>
+    <nav class="navbar">
+        <a href="/"><img src="glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
+        <div class="nav-right">
+            <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Glaggle Gamecenter</span>
+        </div>
+        <div style="text-align: center; margin-bottom: 10px;">
+    </nav>
 
-    <div class="hero">
-        <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
-        <p style="color: var(--desc-color);">Entdecke die Welt der Glaggle Games</p>
-    </div>
+    <div class="hero">
+        <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
+        <p style="color: var(--desc-color);">Entdecke die Welt der Glaggle Games</p>
+    </div>
 
-    <div class="game-grid">
-        <a href="/tictactoe" class="game-card">
-            <h2 class="game-title"><span>❌</span> Tic Tac Toe Live</h2>
-            <p class="game-desc">Klassisches 3-gewinnt. Spiele live gegen Freunde via Link oder fordere die Kombi-KI heraus.</p>
-            <div class="play-btn">Jetzt spielen</div>
-        </a>
+    <div class="game-grid">
+        <a href="/tictactoe" class="game-card">
+            <h2 class="game-title"><span>❌</span> Tic Tac Toe Live</h2>
+            <p class="game-desc">Klassisches 3-gewinnt. Spiele live gegen Freunde via Link oder fordere die Kombi-KI heraus.</p>
+            <div class="play-btn">Jetzt spielen</div>
+        </a>
 
-        <a href="/zahlenraten" class="game-card">
-            <h2 class="game-title"><span>🔢</span> Zahlenraten</h2>
-            <p class="game-desc">Errate die geheime Zahl der Kombi. Hast du das Zeug zum Logik-Meister?</p>
-            <div class="play-btn">Herausforderung annehmen</div>
-        </a>
+        <a href="/zahlenraten" class="game-card">
+            <h2 class="game-title"><span>🔢</span> Zahlenraten</h2>
+            <p class="game-desc">Errate die geheime Zahl der Kombi. Hast du das Zeug zum Logik-Meister?</p>
+            <div class="play-btn">Herausforderung annehmen</div>
+        </a>
 
-        <a href="/snake" class="game-card">
-            <h2 class="game-title"><span>🐍</span> Glaggle Snake</h2>
-            <p class="game-desc">Friss die roten Punkte und werde zur längsten Glaggle-Schlange. Aber pass auf die Wände auf!</p>
-            <div class="play-btn">Jetzt snaken</div>
-        </a>
+        <a href="/snake" class="game-card">
+            <h2 class="game-title"><span>🐍</span> Glaggle Snake</h2>
+            <p class="game-desc">Friss die roten Punkte und werde zur längsten Glaggle-Schlange. Aber pass auf die Wände auf!</p>
+            <div class="play-btn">Jetzt snaken</div>
+        </a>
 
-        <a href="/glagglejump" class="game-card">
-            <h2 class="game-title"><span>🛤️</span> Glaggle Jump</h2>
-            <p class="game-desc">Glaggle Jump. Dass perfekte Jump and Run um Zeit zu verbringen!</p>
-            <div class="play-btn">Jumpe Los</div>
-        </a>
+        <a href="/glagglejump" class="game-card">
+            <h2 class="game-title"><span>🛤️</span> Glaggle Jump</h2>
+            <p class="game-desc">Glaggle Jump. Dass perfekte Jump and Run um Zeit zu verbringen!</p>
+            <div class="play-btn">Jumpe Los</div>
+        </a>
 
-        <a href="/glagglerace" class="game-card">
-            <h2 class="game-title"><span>🛣️</span> Glaggle Racing</h2>
-            <p class="game-desc">Schaffst du es auf der Bahn zu bleiben und den Hindernissen auszuweichen?</p>
-            <div class="play-btn">3, 2, 1, Go</div>
-        </a>
+        <a href="/glagglerace" class="game-card">
+            <h2 class="game-title"><span>🛣️</span> Glaggle Racing</h2>
+            <p class="game-desc">Schaffst du es auf der Bahn zu bleiben und den Hindernissen auszuweichen?</p>
+            <div class="play-btn">3, 2, 1, Go</div>
+        </a>
 
-          <a href="/pong" class="game-card">
-            <h2 class="game-title"><span>🔵</span> Glaggle Pong</h2>
-            <p class="game-desc">Eines der ersten Computer Spiele im neuen Glaggle Design! Was ist deine Bestzeit?</p>
-            <div class="play-btn">Zurück in die 90-er!</div>
-        </a>
+          <a href="/pong" class="game-card">
+            <h2 class="game-title"><span>🔵</span> Glaggle Pong</h2>
+            <p class="game-desc">Eines der ersten Computer Spiele im neuen Glaggle Design! Was ist deine Bestzeit?</p>
+            <div class="play-btn">Zurück in die 90-er!</div>
+        </a>
 
-           <a href="/stacker" class="game-card">
-            <h2 class="game-title"><span>🗼</span> Glaggle Tower</h2>
-            <p class="game-desc">Baue deinen Tower! Wie hoch schaffst du es?</p>
-            <div class="play-btn">Baue Los!</div>
-        </a>
+           <a href="/stacker" class="game-card">
+            <h2 class="game-title"><span>🗼</span> Glaggle Tower</h2>
+            <p class="game-desc">Baue deinen Tower! Wie hoch schaffst du es?</p>
+            <div class="play-btn">Baue Los!</div>
+        </a>
 
-        
-        <a href="/icerun" class="game-card">
-            <h2 class="game-title"><span>🧊</span> Glaggle Ice Run</h2>
-            <p class="game-desc">Renne Los aber achtung die Eisschollen schmelzen!</p>
-            <div class="play-btn">Ab in die Arktis</div>
-        </a>
+        
+        <a href="/icerun" class="game-card">
+            <h2 class="game-title"><span>🧊</span> Glaggle Ice Run</h2>
+            <p class="game-desc">Renne Los aber achtung die Eisschollen schmelzen!</p>
+            <div class="play-btn">Ab in die Arktis</div>
+        </a>
 
-        <a href="/flappyfish" class="game-card">
-            <h2 class="game-title"><span>🐠</span> Glaggle Flappyfish</h2>
-            <p class="game-desc">Tauche ab und schwimme los aber pass auf die Röhren auf!</p>
-            <div class="play-btn">Abtauchen</div>
-        </a>
+        <a href="/flappyfish" class="game-card">
+            <h2 class="game-title"><span>🐠</span> Glaggle Flappyfish</h2>
+            <p class="game-desc">Tauche ab und schwimme los aber pass auf die Röhren auf!</p>
+            <div class="play-btn">Abtauchen</div>
+        </a>
 
-        <a href="/juggle" class="game-card">
-            <h2 class="game-title"><span>🤹</span> Glaggle Juggle Master</h2>
-            <p class="game-desc">Jongliere den Fussball aber pass auf!</p>
-            <div class="play-btn">Hop, Hop</div>
-        </a>
-    </div>
+        <a href="/juggle" class="game-card">
+            <h2 class="game-title"><span>🤹</span> Glaggle Juggle Master</h2>
+            <p class="game-desc">Jongliere den Fussball aber pass auf!</p>
+            <div class="play-btn">Hop, Hop</div>
+        </a>
+    </div>
 
-   <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 900px; margin-top: 20px; padding: 0 20px; box-sizing: border-box;">
-    
-    <div class="game-card" style="cursor: default; transform: none; border-color: var(--accent); width: 100%; box-sizing: border-box;">
-        <h2 class="game-title"><span>💬</span> Globaler Glaggle Chat</h2>
-        <div id="chat-box" style="height: 300px; overflow-y: auto; background: var(--bg-color); border-radius: 12px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
-            <div style="font-style: italic; opacity: 0.5; font-size: 0.8rem;">Willkommen im Chat! Tausche dich mit anderen Nutzern aus!</div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="chat-input" placeholder="Nachricht schreiben..." style="flex-grow: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); outline: none;">
-            <button class="play-btn" id="send-btn" style="width: auto; padding: 10px 20px; border: none; cursor: pointer;">Senden</button>
-        </div>
-        <p id="chat-status" style="font-size: 0.7rem; margin-top: 10px; color: var(--danger);"></p>
-    </div>
+   <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 900px; margin-top: 20px; padding: 0 20px; box-sizing: border-box;">
+    
+    <div class="game-card" style="cursor: default; transform: none; border-color: var(--accent); width: 100%; box-sizing: border-box;">
+        <h2 class="game-title"><span>💬</span> Globaler Glaggle Chat</h2>
+        <div id="chat-box" style="height: 300px; overflow-y: auto; background: var(--bg-color); border-radius: 12px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-style: italic; opacity: 0.5; font-size: 0.8rem;">Willkommen im Chat! Tausche dich mit anderen Nutzern aus!</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="chat-input" placeholder="Nachricht schreiben..." style="flex-grow: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-color); outline: none;">
+            <button class="play-btn" id="send-btn" style="width: auto; padding: 10px 20px; border: none; cursor: pointer;">Senden</button>
+        </div>
+        <p id="chat-status" style="font-size: 0.7rem; margin-top: 10px; color: var(--danger);"></p>
+    </div>
 
-  <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-        <h2 class="game-title" style="margin: 0;"><span>🏆</span> Glaggle Highscores</h2>
-        
-        <select id="game-selector" style="padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; outline: none;">
-            <option value="global">Glaggle Coin Keepers (Top 50)</option>
-            <option disabled>─ Spiele Highscores ─</option>
-            <option value="snake">🐍 Glaggle Snake</option>
-            <option value="glagglejump">🛤️ Glaggle Jump</option>
-            <option value="tower">🗼 Glaggle Tower</option>
-            <option value="flappyfish">🐠 Flappy Fish</option>
-        </select>
-    </div>
+  <div class="leaderboard-card" style="margin-top: 0; width: 100%; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        <h2 class="game-title" style="margin: 0;"><span>🏆</span> Glaggle Highscores</h2>
+        
+        <select id="game-selector" style="padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; outline: none;">
+            <option value="global">Glaggle Coin Keepers (Top 50)</option>
+            <option disabled>── Spiele Highscores ──</option>
+            <option value="snake">🐍 Glaggle Snake</option>
+            <option value="glagglejump">🛤️ Glaggle Jump</option>
+            <option value="glagglerace">🛣️ Glaggle Racing</option>
+            <option value="tower">🗼 Glaggle Tower</option>
+            <option value="flappyfish">🐠 Flappy Fish</option>
+        </select>
+    </div>
 
-    <div id="leaderboard-list">
-        <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
-    </div>
-    
-    <div id="show-more-container" style="text-align: center; margin-top: 15px;">
-        <button id="toggle-leaderboard" class="play-btn" style="background: none; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; width: auto; padding: 5px 20px;">
-            Mehr anzeigen
-        </button>
-    </div>
+    <div id="leaderboard-list">
+        <p style="text-align:center; opacity:0.5;">Lade Bestenliste...</p>
+    </div>
+    
+    <div id="show-more-container" style="text-align: center; margin-top: 15px;">
+        <button id="toggle-leaderboard" class="play-btn" style="background: none; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; width: auto; padding: 5px 20px;">
+            Mehr anzeigen
+        </button>
+    </div>
 
-    <div id="my-fixed-rank" style="margin-top: 15px; border-top: 2px dashed var(--accent); padding-top: 10px; display: none;"></div>
+    <div id="my-fixed-rank" style="margin-top: 15px; border-top: 2px dashed var(--accent); padding-top: 10px; display: none;"></div>
 </div>
-    
+    
 </div>
-        
+        
 </div>
 
-    <p style="margin-top: 40px; font-size: 12px; color: var(--desc-color);">© 2026 Glaggle - Glaggle your life!</p>
-    <div class="coin-status" id="coin-container">
-    <img src="coin.png" alt="Coin" class="coin-icon"> <span class="coin-amount" id="coin-count">0</span>
+    <p style="margin-top: 40px; font-size: 12px; color: var(--desc-color);">© 2026 Glaggle - Glaggle your life!</p>
+    <div class="coin-status" id="coin-container">
+    <img src="coin.png" alt="Coin" class="coin-icon"> <span class="coin-amount" id="coin-count">0</span>
 </div>
-    
+    
 <script>
- // --- 1. KONFIGURATION ---
-    const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
-    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
-    
-    const _p1 = "gsk_"; 
-    const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
-    const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
-    const getG = () => _p1 + _p2 + _p3;
+ // --- 1. KONFIGURATION ---
+    const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
+    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
+    
+    const _p1 = "gsk_"; 
+    const _p2 = "DhmV9OW7Z0hYFfuFuDWAW"; 
+    const _p3 = "Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
+    const getG = () => _p1 + _p2 + _p3;
 
-    const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
+    const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
-    // --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
-    function generateFunnyName() {
-        const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
-        const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
-        const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
-        const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
-        const randomNum = Math.floor(Math.random() * 999);
-        return `${randomAdj} ${randomNom}-${randomNum}`;
-    }
+    // --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
+    function generateFunnyName() {
+        const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
+        const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
+        const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
+        const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
+        const randomNum = Math.floor(Math.random() * 999);
+        return `${randomAdj} ${randomNom}-${randomNum}`;
+    }
 
-    let currentUserName = localStorage.getItem('glaggleUserName');
-    if (!currentUserName) {
-        currentUserName = generateFunnyName();
-        localStorage.setItem('glaggleUserName', currentUserName);
-    }
+    let currentUserName = localStorage.getItem('glaggleUserName');
+    if (!currentUserName) {
+        currentUserName = generateFunnyName();
+        localStorage.setItem('glaggleUserName', currentUserName);
+    }
 
-    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-    function updateCoinDisplay() {
-        const countElement = document.getElementById('coin-count');
-        if (countElement) countElement.innerText = glaggleCoins;
-    }
+    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    function updateCoinDisplay() {
+        const countElement = document.getElementById('coin-count');
+        if (countElement) countElement.innerText = glaggleCoins;
+    }
 
-    // --- 3. GROQ MODERATION ---
-    async function checkModeration(text) {
-        const chatStatus = document.getElementById('chat-status');
-        chatStatus.innerText = "Glaggle-Wächter prüft...";
-        try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${getG()}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "llama-3.1-8b-instant",
-                    messages: [{
-                        role: "system", 
-                        // Ändere den "content" im checkModeration-Teil:
-                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK."
-                    }, { role: "user", content: text }],
-                    temperature: 0.1
-                })
-            });
-            const data = await response.json();
-            return data.choices[0].message.content.trim().toUpperCase();
-        } catch (e) { 
-            return "OK"; 
-        }
-    }
+    // --- 3. GROQ MODERATION ---
+    async function checkModeration(text) {
+        const chatStatus = document.getElementById('chat-status');
+        chatStatus.innerText = "Glaggle-Wächter prüft...";
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${getG()}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "llama-3.1-8b-instant",
+                    messages: [{
+                        role: "system", 
+                        // Ändere den "content" im checkModeration-Teil:
+                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK."
+                    }, { role: "user", content: text }],
+                    temperature: 0.1
+                })
+            });
+            const data = await response.json();
+            return data.choices[0].message.content.trim().toUpperCase();
+        } catch (e) { 
+            return "OK"; 
+        }
+    }
 
-    // --- 4. CHAT LOGIK ---
-    const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-btn');
-    const chatBox = document.getElementById('chat-box');
+    // --- 4. CHAT LOGIK ---
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatBox = document.getElementById('chat-box');
 
 function renderMessage(user, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('msg-bubble'); // Standard-Klasse geben
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('msg-bubble'); // Standard-Klasse geben
 
-    // Prüfen: Ist das MEINE Nachricht?
-    const isMe = (user === currentUserName || user === "Julian Gysin");
-    
-    if (isMe) {
-        msgDiv.classList.add('own-msg'); // Blaue Rechts-Klasse hinzufügen
-    }
+    // Prüfen: Ist das MEINE Nachricht?
+    const isMe = (user === currentUserName || user === "Julian Gysin");
+    
+    if (isMe) {
+        msgDiv.classList.add('own-msg'); // Blaue Rechts-Klasse hinzufügen
+    }
 
-    let userDisplay;
-    if (user === "Julian Gysin") {
-        userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
-        if (!isMe) { // Nur Gold-Rahmen, wenn es nicht mein eigenes Blau überschreibt
-            msgDiv.style.border = "2px solid #FFD700";
-        }
-    } else {
-        // Wenn es meine eigene ist, ist das Fettgedruckte weiß (durch CSS), sonst Akzentfarbe
-        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
-    }
+    let userDisplay;
+    if (user === "Julian Gysin") {
+        userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
+        if (!isMe) { // Nur Gold-Rahmen, wenn es nicht mein eigenes Blau überschreibt
+            msgDiv.style.border = "2px solid #FFD700";
+        }
+    } else {
+        // Wenn es meine eigene ist, ist das Fettgedruckte weiß (durch CSS), sonst Akzentfarbe
+        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
+    }
 
-    msgDiv.innerHTML = `${userDisplay} ${text}`;
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    msgDiv.innerHTML = `${userDisplay} ${text}`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-   async function loadInitialMessages() {
-    const { data, error } = await supabaseClient
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false }) // 'false' für die neuesten zuerst
-        .limit(500);
-    
-    if (data) {
-        chatBox.innerHTML = ''; 
-        // Wichtig: Da wir sie 'desc' laden, müssen wir sie für die 
-        // Anzeige wieder umdrehen (.reverse()), damit die neueste unten steht
-        data.reverse().forEach(m => renderMessage(m.user, m.content));
-    }
+   async function loadInitialMessages() {
+    const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false }) // 'false' für die neuesten zuerst
+        .limit(500);
+    
+    if (data) {
+        chatBox.innerHTML = ''; 
+        // Wichtig: Da wir sie 'desc' laden, müssen wir sie für die 
+        // Anzeige wieder umdrehen (.reverse()), damit die neueste unten steht
+        data.reverse().forEach(m => renderMessage(m.user, m.content));
+    }
 }
 
-    async function sendMessage() {
-        const text = chatInput.value.trim();
-        if (!text) return;
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
 
-        sendBtn.disabled = true;
-        const result = await checkModeration(text);
-        
-        if (result.includes("OK")) {
-            // Löschen alter Nachrichten via RPC
-            await supabaseClient.rpc('delete_old_messages');
+        sendBtn.disabled = true;
+        const result = await checkModeration(text);
+        
+        if (result.includes("OK")) {
+            // Löschen alter Nachrichten via RPC
+            await supabaseClient.rpc('delete_old_messages');
 
-            const { error } = await supabaseClient
-                .from('messages')
-                .insert([{ user: currentUserName, content: text }]);
-            
-            if(!error) chatInput.value = "";
-            document.getElementById('chat-status').innerText = "";
-        } else {
-            document.getElementById('chat-status').innerText = "⚠️ Sei bitte höflich!";
-            setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
-        }
-        sendBtn.disabled = false;
-    }
+            const { error } = await supabaseClient
+                .from('messages')
+                .insert([{ user: currentUserName, content: text }]);
+            
+            if(!error) chatInput.value = "";
+            document.getElementById('chat-status').innerText = "";
+        } else {
+            document.getElementById('chat-status').innerText = "⚠️ Sei bitte höflich!";
+            setTimeout(() => { document.getElementById('chat-status').innerText = ""; }, 3000);
+        }
+        sendBtn.disabled = false;
+    }
 
-    // --- 5. INITIALISIERUNG & REALTIME ---
-    updateCoinDisplay();
-    loadInitialMessages();
-    chatInput.placeholder = `${currentUserName}: Tippen...`;
+    // --- 5. INITIALISIERUNG & REALTIME ---
+    updateCoinDisplay();
+    loadInitialMessages();
+    chatInput.placeholder = `${currentUserName}: Tippen...`;
 
-    supabaseClient
-        .channel('public:messages')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-            renderMessage(payload.new.user, payload.new.content);
-        })
-        .subscribe();
+    supabaseClient
+        .channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+            renderMessage(payload.new.user, payload.new.content);
+        })
+        .subscribe();
 
-    sendBtn.onclick = sendMessage;
-    chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+    sendBtn.onclick = sendMessage;
+    chatInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
 
 // --- LEADERBOARD LOGIK ---
 let leaderboardExpanded = false;
@@ -505,123 +506,123 @@ const gameSelector = document.getElementById('game-selector');
 const toggleBtn = document.getElementById('toggle-leaderboard');
 
 async function updateLeaderboard() {
-    const selectedGame = gameSelector.value;
-    let scoreToSend = 0;
+    const selectedGame = gameSelector.value;
+    let scoreToSend = 0;
 
-    // 1. Richtigen Score aus dem LocalStorage holen
-    if (selectedGame === 'global') {
-        scoreToSend = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-    } else {
-        const storageKey = selectedGame + "_highscore"; 
-        scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
-    }
+    // 1. Richtigen Score aus dem LocalStorage holen
+    if (selectedGame === 'global') {
+        scoreToSend = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    } else {
+        const storageKey = selectedGame + "_highscore"; 
+        scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
+    }
 
-    // 2. Score an Supabase senden (Upsert)
-    // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
-    if (scoreToSend > 0) {
-        try {
-            await supabaseClient
-                .from('leaderboard')
-                .upsert({ 
-                    username: currentUserName, 
-                    coins: scoreToSend, 
-                    game_name: selectedGame 
-                }, { onConflict: 'username, game_name' });
-        } catch (e) { console.error("Update Fehler:", e); }
-    }
+    // 2. Score an Supabase senden (Upsert)
+    // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
+    if (scoreToSend > 0) {
+        try {
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({ 
+                    username: currentUserName, 
+                    coins: scoreToSend, 
+                    game_name: selectedGame 
+                }, { onConflict: 'username, game_name' });
+        } catch (e) { console.error("Update Fehler:", e); }
+    }
 
-    // 3. Daten abrufen
-    const { data, error } = await supabaseClient
-        .from('leaderboard')
-        .select('*')
-        .eq('game_name', selectedGame)
-        .order('coins', { ascending: false })
-        .limit(50);
+    // 3. Daten abrufen
+    const { data, error } = await supabaseClient
+        .from('leaderboard')
+        .select('*')
+        .eq('game_name', selectedGame)
+        .order('coins', { ascending: false })
+        .limit(50);
 
-    if (data) {
-        const list = document.getElementById('leaderboard-list');
-        const myFixedRank = document.getElementById('my-fixed-rank');
-        const showMoreCont = document.getElementById('show-more-container');
-        
-        list.innerHTML = ''; 
-        myFixedRank.style.display = 'none';
+    if (data) {
+        const list = document.getElementById('leaderboard-list');
+        const myFixedRank = document.getElementById('my-fixed-rank');
+        const showMoreCont = document.getElementById('show-more-container');
+        
+        list.innerHTML = ''; 
+        myFixedRank.style.display = 'none';
 
-        let userFoundInVisiblePart = false;
-        let myOverallRank = 0;
+        let userFoundInVisiblePart = false;
+        let myOverallRank = 0;
 
-        data.forEach((entry, index) => {
-            const isMe = entry.username === currentUserName;
-            const rank = index + 1;
-            
-            if (isMe) {
-                myOverallRank = rank;
-                if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
-            }
+        data.forEach((entry, index) => {
+            const isMe = entry.username === currentUserName;
+            const rank = index + 1;
+            
+            if (isMe) {
+                myOverallRank = rank;
+                if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
+            }
 
-            const row = document.createElement('div');
-            row.className = 'leader-row';
-            
-            // Sichtbarkeit steuern
-            if (rank > 10 && !leaderboardExpanded) {
-                row.style.display = 'none';
-            }
+            const row = document.createElement('div');
+            row.className = 'leader-row';
+            
+            // Sichtbarkeit steuern
+            if (rank > 10 && !leaderboardExpanded) {
+                row.style.display = 'none';
+            }
 
-            if (isMe) {
-                row.style.background = "rgba(112, 196, 247, 0.15)";
-                row.style.borderRadius = "10px";
-            }
+            if (isMe) {
+                row.style.background = "rgba(112, 196, 247, 0.15)";
+                row.style.borderRadius = "10px";
+            }
 
-            const rankIcons = ['🥇', '🥈', '🥉'];
-            const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
-            const unit = selectedGame === 'global' ? '' : ' Pkt.';
+            const rankIcons = ['🥇', '🥈', '🥉'];
+            const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
+            const unit = selectedGame === 'global' ? '' : ' Pkt.';
 
-            row.innerHTML = `
-                <span class="leader-rank">${rankDisplay}</span>
-                <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
-                    ${isMe ? '⭐ ' : ''}${entry.username}
-                </span>
-                <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
-                    ${entry.coins.toLocaleString()}${unit}
-                </span>
-            `;
-            list.appendChild(row);
-        });
+            row.innerHTML = `
+                <span class="leader-rank">${rankDisplay}</span>
+                <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
+                    ${isMe ? '⭐ ' : ''}${entry.username}
+                </span>
+                <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
+                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
+                    ${entry.coins.toLocaleString()}${unit}
+                </span>
+            `;
+            list.appendChild(row);
+        });
 
-        // Button nur zeigen, wenn mehr als 10 Einträge da sind
-        showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
-        toggleBtn.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen";
+        // Button nur zeigen, wenn mehr als 10 Einträge da sind
+        showMoreCont.style.display = data.length > 10 ? 'block' : 'none';
+        toggleBtn.innerText = leaderboardExpanded ? "Weniger anzeigen" : "Mehr anzeigen";
 
-        // 4. Eigener Rang fixiert unten, falls nicht in der Liste sichtbar
-        if (!userFoundInVisiblePart && myOverallRank > 0) {
-            myFixedRank.style.display = 'block';
-            const unit = selectedGame === 'global' ? '' : ' Pkt.';
-            myFixedRank.innerHTML = `
-                <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
-                    <span class="leader-rank">#${myOverallRank}</span>
-                    <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
-                    <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                        <img src="coin.png" style="width: 16px; height: 16px;"> 
-                        ${scoreToSend.toLocaleString()}${unit}
-                    </span>
-                </div>
-            `;
-        }
-    }
+        // 4. Eigener Rang fixiert unten, falls nicht in der Liste sichtbar
+        if (!userFoundInVisiblePart && myOverallRank > 0) {
+            myFixedRank.style.display = 'block';
+            const unit = selectedGame === 'global' ? '' : ' Pkt.';
+            myFixedRank.innerHTML = `
+                <div class="leader-row" style="background: rgba(112, 196, 247, 0.15); border-radius: 10px; border-bottom: none;">
+                    <span class="leader-rank">#${myOverallRank}</span>
+                    <span class="leader-name" style="font-weight: bold;">⭐ ${currentUserName} (Du)</span>
+                    <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
+                        <img src="coin.png" style="width: 16px; height: 16px;"> 
+                        ${scoreToSend.toLocaleString()}${unit}
+                    </span>
+                </div>
+            `;
+        }
+    }
 }
 
 // --- EVENT LISTENER ---
 
 // Beim Wechseln des Spiels im Dropdown
 gameSelector.onchange = () => {
-    leaderboardExpanded = false;
-    updateLeaderboard();
+    leaderboardExpanded = false;
+    updateLeaderboard();
 };
 
 // "Mehr anzeigen" Button
 toggleBtn.onclick = () => {
-    leaderboardExpanded = !leaderboardExpanded;
-    updateLeaderboard();
+    leaderboardExpanded = !leaderboardExpanded;
+    updateLeaderboard();
 };
 
 // WICHTIG: Erster Aufruf beim Laden der Seite
@@ -629,6 +630,7 @@ updateLeaderboard();
 
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
 setInterval(updateLeaderboard, 15000);
+</script>
 </script>
 </body>
 </html>
