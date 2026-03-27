@@ -227,31 +227,23 @@
     </style>
 </head>
 <body>
-
-    <nav class="navbar">
+<nav class="navbar">
         <a href="/"><img src="glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
-        <div class="nav-right">
-            <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Glaggle Gamecenter</span>
+        <div id="user-status-nav" style="display: flex; align-items: center; gap: 10px;">
+            <span id="display-username" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">Lädt...</span>
+            <button id="auth-action-btn" class="play-btn" style="padding: 5px 12px; font-size: 0.7rem; border: none; cursor: pointer;">Login</button>
         </div>
-        <div style="text-align: center; margin-bottom: 10px;">
     </nav>
 
-    <div id="account-status-bar" style="width: 100%; max-width: 900px; display: flex; justify-content: flex-end; padding: 10px 20px; box-sizing: border-box;">
-    <div id="user-info" style="background: var(--card-bg); padding: 8px 15px; border-radius: 15px; border: 1px solid var(--accent); display: flex; align-items: center; gap: 10px;">
-        <span id="display-username" style="font-size: 0.9rem; font-weight: bold;">Lädt...</span>
-        <button id="auth-action-btn" class="play-btn" style="padding: 5px 12px; font-size: 0.75rem; border: none; cursor: pointer;">Anmelden</button>
+    <div id="login-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10001; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+        <div style="background:var(--card-bg); padding:30px; border-radius:25px; border:2px solid var(--accent); width:90%; max-width:350px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h3 style="margin-top:0; color:var(--link-color);">Glaggle Login</h3>
+            <p style="font-size: 0.8rem; color: var(--desc-color); margin-bottom: 20px;">Gib deine 6-stellige Glaggle ID ein.</p>
+            <input type="text" id="login-id-input" placeholder="123456" maxlength="6" style="width:100%; padding:15px; border-radius:15px; border:1px solid var(--card-border); text-align:center; font-size:1.5rem; letter-spacing:5px; margin-bottom:20px; background: var(--bg-color); color: var(--text-color);">
+            <button class="play-btn" onclick="loginWithID()" style="width:100%; padding: 12px; margin-bottom:10px; border:none; cursor:pointer;">Verbinden</button>
+            <button onclick="document.getElementById('login-modal').style.display='none'" style="background:none; border:none; color:var(--desc-color); cursor:pointer; font-size:0.8rem;">Abbrechen</button>
+        </div>
     </div>
-</div>
-
-<div id="login-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
-    <div style="background:var(--card-bg); padding:30px; border-radius:25px; border:2px solid var(--accent); width:90%; max-width:350px; text-align:center;">
-        <h3 style="margin-top:0; color:var(--link-color);">Glaggle Login</h3>
-        <p style="font-size: 0.8rem; color: var(--desc-color);">Gib deine 6-stellige ID ein, um deine Coins zu synchronisieren.</p>
-        <input type="text" id="login-id-input" placeholder="123456" maxlength="6" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--card-border); text-align:center; font-size:1.2rem; letter-spacing:4px; margin-bottom:15px;">
-        <button class="play-btn" onclick="loginWithID()" style="width:100%; margin-bottom:10px;">Mit ID anmelden</button>
-        <button onclick="closeModal()" style="background:none; border:none; color:var(--desc-color); cursor:pointer; font-size:0.8rem;">Abbrechen / Als Gast bleiben</button>
-    </div>
-</div>
 
     <div class="game-grid">
         <a href="/tictactoe" class="game-card">
