@@ -304,26 +304,28 @@
         }
 
         function gameOver() {
-            gameRunning = false;
-            
-            if (score > highscore) {
-                highscore = score;
-                localStorage.setItem('glaggleSoccerHighscore', highscore);
-                highscoreEl.innerText = highscore;
-                document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
-            } else {
-                document.getElementById('msg').innerText = "Aus! Score: " + score;
-            }
+    gameRunning = false;
+    
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('glaggleSoccerHighscore', highscore);
+        highscoreEl.innerText = highscore;
+        document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
+    } else {
+        document.getElementById('msg').innerText = "Aus! Score: " + score;
+    }
 
-            if (score > 0) {
-                let earned = Math.floor(score / 5) + 1;
-                coins += earned;
-                localStorage.setItem('glaggleCoins', coins);
-                coinEl.innerText = coins;
-            }
+    // Geänderte Coin-Logik:
+    // Nur wenn der Score 5 oder höher ist, gibt es genau 1 Coin.
+    if (score >= 5) {
+        let earned = 1; 
+        coins += earned;
+        localStorage.setItem('glaggleCoins', coins);
+        coinEl.innerText = coins;
+    }
 
-            menu.style.display = "flex";
-        }
+    menu.style.display = "flex";
+}
     </script>
 </body>
 </html>
