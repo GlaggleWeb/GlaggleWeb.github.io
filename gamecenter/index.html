@@ -384,10 +384,18 @@
     }
 
     let currentUserName = localStorage.getItem('glaggleUserName');
-    if (!currentUserName) {
-        currentUserName = generateFunnyName();
-        localStorage.setItem('glaggleUserName', currentUserName);
-    }
+// Neu: Eine feste ID generieren, falls noch keine da ist
+let glaggleUserId = localStorage.getItem('glaggleUserId');
+
+if (!glaggleUserId) {
+    glaggleUserId = 'user-' + Math.random().toString(36).substr(2, 9) + Date.now();
+    localStorage.setItem('glaggleUserId', glaggleUserId);
+}
+
+if (!currentUserName) {
+    currentUserName = generateFunnyName();
+    localStorage.setItem('glaggleUserName', currentUserName);
+}
 
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     function updateCoinDisplay() {
@@ -399,37 +407,33 @@
     // Funktion zum Namen ändern
 async function changeName() {
     const oldName = localStorage.getItem('glaggleUserName');
-    const newName = prompt("Wie möchtest du heißen? (Keine Schimpfwörter erlaubt!)", oldName);
+    const newName = prompt("Dein neuer Glaggle-Name:", oldName);
 
-    // Abbrechen, wenn leer oder unverändert
     if (!newName || newName.trim() === "" || newName === oldName) return;
 
     const cleanedName = newName.trim().substring(0, 20);
-
-    // Prüfung durch Groq (nutzt deine vorhandene checkModeration Funktion)
-    const statusDisplay = document.getElementById('chat-status'); // Wir nutzen das Feld für Feedback
-    if (statusDisplay) statusDisplay.innerText = "Glaggle-Wächter prüft Name...";
+    
+    // Kleiner Lade-Hinweis
+    const status = document.getElementById('chat-status');
+    if(status) status.innerText = "Glaggle-Wächter prüft...";
 
     const result = await checkModeration(cleanedName);
 
     if (result.includes("OK")) {
-        // 1. Speichern
         localStorage.setItem('glaggleUserName', cleanedName);
         currentUserName = cleanedName;
-
-        // 2. UI aktualisieren
+        
         document.getElementById('user-name-display').innerText = cleanedName;
         if(chatInput) chatInput.placeholder = `${cleanedName}: Tippen...`;
         
-        // 3. Leaderboard aktualisieren
+        // Sofort das Leaderboard mit der NEUEN Namens-Zuordnung zur ALTEN ID senden
         updateLeaderboard();
-
-        if (statusDisplay) statusDisplay.innerText = "✅ Name akzeptiert und gespeichert!";
-        setTimeout(() => { if(statusDisplay) statusDisplay.innerText = ""; }, 3000);
+        
+        alert("Name geändert! Deine Scores ziehen jetzt automatisch mit um.");
+        if(status) status.innerText = "";
     } else {
-        // Name wurde abgelehnt
-        alert("⚠️ Dieser Name wurde vom Glaggle-Wächter abgelehnt. Bitte wähle einen höflichen Namen!");
-        if (statusDisplay) statusDisplay.innerText = "❌ Name abgelehnt.";
+        alert("⚠️ Ups! Der Glaggle-Wächter sagt: Dieser Name ist nicht erlaubt.");
+        if(status) status.innerText = "";
     }
 }
     // --- 3. GROQ MODERATION ---
@@ -445,7 +449,7 @@ async function changeName() {
                     messages: [{
                         role: "system", 
                         // Ändere den "content" im checkModeration-Teil:
-                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK."
+                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK. Blockiere aber Wörter wie Arsch oder Penis usw."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
@@ -564,13 +568,14 @@ async function updateLeaderboard() {
     // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
     if (scoreToSend > 0) {
         try {
-            await supabaseClient
-                .from('leaderboard')
-                .upsert({ 
-                    username: currentUserName, 
-                    coins: scoreToSend, 
-                    game_name: selectedGame 
-                }, { onConflict: 'username, game_name' });
+           await supabaseClient
+    .from('leaderboard')
+    .upsert({ 
+        user_id: glaggleUserId, // Die feste ID nutzen!
+        username: currentUserName, 
+        coins: scoreToSend, 
+        game_name: selectedGame 
+    }, { onConflict: 'user_id, game_name' }); // Konflikt anhand der ID lösen
         } catch (e) { console.error("Update Fehler:", e); }
     }
 
