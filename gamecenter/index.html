@@ -236,10 +236,22 @@
         <div style="text-align: center; margin-bottom: 10px;">
     </nav>
 
-    <div class="hero">
-        <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
-        <p style="color: var(--desc-color);">Entdecke die Welt der Glaggle Games</p>
+    <div id="account-status-bar" style="width: 100%; max-width: 900px; display: flex; justify-content: flex-end; padding: 10px 20px; box-sizing: border-box;">
+    <div id="user-info" style="background: var(--card-bg); padding: 8px 15px; border-radius: 15px; border: 1px solid var(--accent); display: flex; align-items: center; gap: 10px;">
+        <span id="display-username" style="font-size: 0.9rem; font-weight: bold;">Lädt...</span>
+        <button id="auth-action-btn" class="play-btn" style="padding: 5px 12px; font-size: 0.75rem; border: none; cursor: pointer;">Anmelden</button>
     </div>
+</div>
+
+<div id="login-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+    <div style="background:var(--card-bg); padding:30px; border-radius:25px; border:2px solid var(--accent); width:90%; max-width:350px; text-align:center;">
+        <h3 style="margin-top:0; color:var(--link-color);">Glaggle Login</h3>
+        <p style="font-size: 0.8rem; color: var(--desc-color);">Gib deine 6-stellige ID ein, um deine Coins zu synchronisieren.</p>
+        <input type="text" id="login-id-input" placeholder="123456" maxlength="6" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--card-border); text-align:center; font-size:1.2rem; letter-spacing:4px; margin-bottom:15px;">
+        <button class="play-btn" onclick="loginWithID()" style="width:100%; margin-bottom:10px;">Mit ID anmelden</button>
+        <button onclick="closeModal()" style="background:none; border:none; color:var(--desc-color); cursor:pointer; font-size:0.8rem;">Abbrechen / Als Gast bleiben</button>
+    </div>
+</div>
 
     <div class="game-grid">
         <a href="/tictactoe" class="game-card">
@@ -629,6 +641,95 @@ updateLeaderboard();
 
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
 setInterval(updateLeaderboard, 15000);
+
+// --- GLOBALE VARIABLEN ---
+let currentUserName = localStorage.getItem('glaggleUserName') || generateFunnyName();
+let currentGlaggleID = localStorage.getItem('glaggleID') || null;
+let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+// Initiale Anzeige beim Laden
+async function initAccountSystem() {
+    const displayUser = document.getElementById('display-username');
+    const authBtn = document.getElementById('auth-action-btn');
+
+    if (currentGlaggleID) {
+        // Angemeldeter Account: Daten von Supabase holen
+        const { data, error } = await supabaseClient
+            .from('glaggle_accounts')
+            .select('*')
+            .eq('glaggle_id', currentGlaggleID)
+            .single();
+
+        if (data) {
+            currentUserName = data.username;
+            glaggleCoins = data.total_coins;
+            displayUser.innerHTML = `👤 ${currentUserName} <span style="color:var(--success); font-size:0.7rem;">(Cloud)</span>`;
+            authBtn.innerText = "Abmelden";
+            authBtn.onclick = logout;
+        }
+    } else {
+        // Gast-Modus
+        displayUser.innerHTML = `👤 ${currentUserName} <span style="color:var(--desc-color); font-size:0.7rem;">(Gast)</span>`;
+        authBtn.innerText = "Glaggle ID Login";
+        authBtn.onclick = () => document.getElementById('login-modal').style.display = 'flex';
+    }
+    
+    updateCoinDisplay();
+    updateLeaderboard();
+}
+
+// Login Funktion
+async function loginWithID() {
+    const idInput = document.getElementById('login-id-input').value.trim();
+    if (idInput.length !== 6) return alert("Die ID muss 6 Stellen haben!");
+
+    const { data, error } = await supabaseClient
+        .from('glaggle_accounts')
+        .select('*')
+        .eq('glaggle_id', idInput)
+        .single();
+
+    if (data) {
+        // Gefunden! Lokal speichern und neuladen
+        localStorage.setItem('glaggleID', data.glaggle_id);
+        localStorage.setItem('glaggleUserName', data.username);
+        // Optional: Lokale Gast-Coins auf den Account übertragen? 
+        // Dann hier: await syncCoinsWithDB(glaggleCoins);
+        location.reload();
+    } else {
+        alert("ID nicht gefunden. Hast du dich schon registriert?");
+    }
+}
+
+function logout() {
+    if(confirm("Abmelden? Dein Gast-Account wird dann wieder aktiv.")) {
+        localStorage.removeItem('glaggleID');
+        // Wir lassen den Usernamen im LocalStorage, damit er seinen Namen behält
+        location.reload();
+    }
+}
+
+function closeModal() {
+    document.getElementById('login-modal').style.display = 'none';
+}
+
+// WICHTIG: Beim Speichern von Coins prüfen, ob angemeldet
+async function addCoins(amount) {
+    glaggleCoins += amount;
+    localStorage.setItem('glaggleCoins', glaggleCoins);
+    
+    if (currentGlaggleID) {
+        // Nur wenn angemeldet, auch in der Cloud speichern
+        await supabaseClient
+            .from('glaggle_accounts')
+            .update({ total_coins: glaggleCoins })
+            .eq('glaggle_id', currentGlaggleID);
+    }
+    updateCoinDisplay();
+}
+
+// Am Ende des Scripts aufrufen
+initAccountSystem();
 </script>
 </body>
 </html>
