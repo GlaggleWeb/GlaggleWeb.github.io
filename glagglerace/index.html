@@ -31,7 +31,6 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Navbar wie bei Snake */
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; height: 80px; background-color: var(--nav-bg);
@@ -83,7 +82,6 @@
             font-size: 30px;
         }
 
-        /* Touch Zonen */
         .touch-zone {
             position: absolute;
             top: 0; width: 50%; height: 100%; z-index: 20;
@@ -91,7 +89,6 @@
         #left-zone { left: 0; }
         #right-zone { right: 0; }
 
-        /* Glaggle Popups */
         #glaggle-popup {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -154,63 +151,59 @@
     </div>
 
     <script>
-        cconst container = document.getElementById('game-container');
-const player = document.getElementById('player');
-const scoreDisplay = document.getElementById('score-display');
-const coinCountEl = document.getElementById('coin-count');
-const popup = document.getElementById('glaggle-popup');
-const popupText = document.getElementById('popup-text');
-const popupTitle = document.getElementById('popup-title');
+        const container = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score-display');
+        const coinCountEl = document.getElementById('coin-count');
+        const popup = document.getElementById('glaggle-popup');
+        const popupText = document.getElementById('popup-text');
+        const popupTitle = document.getElementById('popup-title');
 
-// WICHTIG: Dieser Key muss exakt so im Leaderboard-Script vorkommen
-const HIGH_KEY = 'racing_highscore'; 
+        // EINHEITLICHER KEY (Wichtig für Leaderboard)
+        const HIGH_KEY = 'racing_highscore'; 
 
-const lanes = [20, 120, 220]; 
-let currentLane = 1;
-let score = 0;
-let speed = 5;
-let gameActive = true;
-let activeObstacles = [];
-let obsSpawner;
+        const lanes = [20, 120, 220]; 
+        let currentLane = 1;
+        let score = 0;
+        let speed = 5;
+        let gameActive = true;
+        let obsSpawner;
 
-function init() {
-    player.style.left = lanes[currentLane] + 'px';
-    updateScoreUI();
-    coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
-    if(obsSpawner) clearInterval(obsSpawner);
-    obsSpawner = setInterval(createObstacle, 1400);
-}
-
-function updateScoreUI() {
-    // Holt den Highscore mit dem einheitlichen Key
-    const displayHighscore = localStorage.getItem(HIGH_KEY) || 0;
-    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
-}
-
-function gameOver() {
-    gameActive = false;
-    clearInterval(obsSpawner);
-
-    let currentHighscore = parseInt(localStorage.getItem(HIGH_KEY)) || 0;
-
-    if(score > currentHighscore) {
-        localStorage.setItem(HIGH_KEY, score);
-        showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
-        
-        // Leaderboard im Elternfenster (Gamecenter) aktualisieren
-        if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
-            window.parent.updateLeaderboard();
+        function init() {
+            player.style.left = lanes[currentLane] + 'px';
+            updateScoreUI();
+            coinCountEl.innerText = localStorage.getItem('glaggleCoins') || 0;
+            // Spawner starten
+            if(obsSpawner) clearInterval(obsSpawner);
+            obsSpawner = setInterval(createObstacle, 1400);
         }
-    } else {
-        showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
-    }
 
-    if(score >= 5) earnCoin();
-    updateScoreUI(); 
-}
+        function updateScoreUI() {
+            const displayHighscore = localStorage.getItem(HIGH_KEY) || 0;
+            scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
+        }
 
-// ... Rest deiner Funktionen (move, createObstacle, earnCoin, resetGame) bleiben gleich ...
-// Achte darauf, dass in resetGame() ebenfalls updateScoreUI() aufgerufen wird.
+        function gameOver() {
+            gameActive = false;
+            clearInterval(obsSpawner);
+
+            let currentHighscore = parseInt(localStorage.getItem(HIGH_KEY)) || 0;
+
+            if(score > currentHighscore) {
+                localStorage.setItem(HIGH_KEY, score);
+                showGlaggleMessage("Neuer Rekord! 🎉", `Score: ${score}. Super gefahren!`);
+                
+                // Gamecenter Leaderboard informieren
+                if (window.parent && typeof window.parent.updateLeaderboard === 'function') {
+                    window.parent.updateLeaderboard();
+                }
+            } else {
+                showGlaggleMessage("Crash!", `Score: ${score}. Dein Rekord: ${currentHighscore}`);
+            }
+
+            if(score >= 5) earnCoin();
+            updateScoreUI();
+        }
 
         function move(dir) {
             if(!gameActive) return;
@@ -218,7 +211,6 @@ function gameOver() {
             player.style.left = lanes[currentLane] + 'px';
         }
 
-        // Steuerung: Tippen & Pfeiltasten
         document.getElementById('left-zone').onclick = () => move(-1);
         document.getElementById('right-zone').onclick = () => move(1);
         document.addEventListener('keydown', (e) => {
@@ -238,11 +230,15 @@ function gameOver() {
 
             let pos = -100;
             const interval = setInterval(() => {
-                if(!gameActive) { clearInterval(interval); return; }
+                if(!gameActive) { clearInterval(interval); obs.remove(); return; }
                 pos += speed;
                 obs.style.top = pos + 'px';
 
-                if(pos > 380 && pos < 470 && lane === currentLane) gameOver();
+                // Kollisionsabfrage
+                if(pos > 380 && pos < 470 && lane === currentLane) {
+                    gameOver();
+                    clearInterval(interval);
+                }
 
                 if(pos > 500) {
                     score++;
@@ -252,37 +248,17 @@ function gameOver() {
                     clearInterval(interval);
                 }
             }, 20);
-            activeObstacles.push({element: obs, interval: interval});
         }
 
-// Auch hier den Key anpassen, damit die Anzeige oben stimmt
-function updateScoreUI() {
-    const displayHighscore = localStorage.getItem('glagglerace_highscore') || 0;
-    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
-}
-
-// Auch die Anzeige oben muss den richtigen Key laden
-function updateScoreUI() {
-    const displayHighscore = localStorage.getItem('racing_highscore') || 0;
-    scoreDisplay.innerText = `Score: ${score} | Best: ${displayHighscore}`;
-}
-
         function resetGame() {
-            // Spielfeld säubern ohne Reload
             gameActive = true;
             score = 0;
             speed = 5;
             currentLane = 1;
             player.style.left = lanes[currentLane] + 'px';
-            
-            // Alle alten Hindernisse entfernen
             document.querySelectorAll('.obstacle').forEach(o => o.remove());
-            activeObstacles = [];
-            
             popup.style.display = 'none';
             updateScoreUI();
-            
-            // Spawner neu starten
             clearInterval(obsSpawner);
             obsSpawner = setInterval(createObstacle, 1400);
         }
@@ -302,10 +278,6 @@ function updateScoreUI() {
             setTimeout(() => {
                 document.getElementById('coin-container').classList.remove('coin-animation');
             }, 500);
-            showGlaggleMessage("Sieg!", `Score: ${score}. Du hast 1 Coin verdient!`);
         }
 
-        init();
-    </script>
-</body>
-</html>
+        init
