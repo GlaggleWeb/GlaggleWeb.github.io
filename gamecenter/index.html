@@ -345,11 +345,17 @@
 
     <div id="my-fixed-rank" style="margin-top: 15px; border-top: 2px dashed var(--accent); padding-top: 10px; display: none;"></div>
 </div>
-    
+
+<div style="margin-top: 20px; text-align: center;">
+    <button onclick="changeName()" style="background: none; border: 1px solid var(--desc-color); color: var(--desc-color); padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s;">
+        👤 Name ändern (<span id="user-name-display">...</span>)
+    </button>
+</div>
+       
 </div>
         
 </div>
-
+    
     <p style="margin-top: 40px; font-size: 12px; color: var(--desc-color);">© 2026 Glaggle - Glaggle your life!</p>
     <div class="coin-status" id="coin-container">
     <img src="coin.png" alt="Coin" class="coin-icon"> <span class="coin-amount" id="coin-count">0</span>
@@ -389,6 +395,36 @@
         if (countElement) countElement.innerText = glaggleCoins;
     }
 
+
+    // Funktion zum Namen ändern
+async function changeName() {
+    const oldName = localStorage.getItem('glaggleUserName');
+    const newName = prompt("Wie möchtest du im Glaggle-Netzwerk heißen?", oldName);
+
+    if (newName && newName.trim() !== "" && newName !== oldName) {
+        // Name säubern (max 25 Zeichen)
+        const cleanedName = newName.trim().substring(0, 25);
+        
+        // Speichern
+        localStorage.setItem('glaggleUserName', cleanedName);
+        currentUserName = cleanedName; // Update der globalen Variable
+
+        // UI Updates
+        document.getElementById('user-name-display').innerText = cleanedName;
+        if(chatInput) chatInput.placeholder = `${cleanedName}: Tippen...`;
+        
+        // Leaderboard sofort mit neuem Namen updaten
+        updateLeaderboard();
+        
+        alert("Dein Name wurde zu '" + cleanedName + "' geändert!");
+    }
+}
+
+// Initialisierung: Namen beim Laden auf dem Button anzeigen
+document.addEventListener("DOMContentLoaded", () => {
+    const display = document.getElementById('user-name-display');
+    if(display) display.innerText = currentUserName;
+});
     // --- 3. GROQ MODERATION ---
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
