@@ -9,6 +9,11 @@
     <loc>https://glaggle.ch/glame</loc>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://glaggle.ch/glame/pro</loc>
+    <priority>0.7</priority>
+  </url>
   
   <url>
     <loc>https://glaggle.ch/gamecenter</loc>
