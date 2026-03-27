@@ -124,10 +124,9 @@
     </div>
 
     <div id="coin-display">
-        <span style="color:gold">🪙</span>
-        <span id="coin-count">0</span>
-    </div>
-
+    <img src="coin.png" style="width: 20px; height: 20px; object-fit: contain;">
+    <span id="coin-count">0</span>
+</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -306,25 +305,33 @@
         function gameOver() {
     gameRunning = false;
     
+    // 1. Rekord-Logik (Passend zum Leaderboard-Key)
+    const storageKey = 'glaggle_juggle_highscore'; 
+    
     if (score > highscore) {
         highscore = score;
-        localStorage.setItem('glaggleSoccerHighscore', highscore);
+        localStorage.setItem(storageKey, highscore);
         highscoreEl.innerText = highscore;
         document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
     } else {
         document.getElementById('msg').innerText = "Aus! Score: " + score;
     }
 
-    // Geänderte Coin-Logik:
-    // Nur wenn der Score 5 oder höher ist, gibt es genau 1 Coin.
+    // 2. Coin-Logik (Verdiente Münzen speichern)
     if (score >= 5) {
-        let earned = 1; 
-        coins += earned;
+        coins += 1;
         localStorage.setItem('glaggleCoins', coins);
         coinEl.innerText = coins;
     }
 
+    // 3. Menü anzeigen
     menu.style.display = "flex";
+
+    // 4. GameCenter-Ersatz: Daten an Supabase senden
+    // Diese Funktion hast du ja bereits in deinem Script-Teil definiert
+    if (typeof updateLeaderboard === "function") {
+        updateLeaderboard(); 
+    }
 }
     </script>
 </body>
