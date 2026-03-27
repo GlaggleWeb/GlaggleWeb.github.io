@@ -127,212 +127,209 @@
     <img src="coin.png" style="width: 20px; height: 20px; object-fit: contain;">
     <span id="coin-count">0</span>
 </div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu-overlay');
-        const scoreEl = document.getElementById('score');
-        const highscoreEl = document.getElementById('highscore');
-        const coinEl = document.getElementById('coin-count');
-        const container = document.getElementById('game-container');
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+    // --- 1. SUPABASE INITIALISIERUNG ---
+    // Ersetze URL und KEY mit deinen echten Daten aus Supabase
+    const SUPABASE_URL = 'DEINE_SUPABASE_URL';
+    const SUPABASE_KEY = 'DEIN_SUPABASE_ANON_KEY';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const currentUserName = localStorage.getItem('glaggleUsername') || 'Gast_' + Math.floor(Math.random() * 1000);
 
-        let gameRunning = false;
-        let score = 0;
-        let highscore = localStorage.getItem('glaggleSoccerHighscore') || 0;
-        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const menu = document.getElementById('menu-overlay');
+    const scoreEl = document.getElementById('score');
+    const highscoreEl = document.getElementById('highscore');
+    const coinEl = document.getElementById('coin-count');
+    const container = document.getElementById('game-container');
 
-        highscoreEl.innerText = highscore;
-        coinEl.innerText = coins;
+    let gameRunning = false;
+    let score = 0;
+    // Wir nutzen hier den einheitlichen Key 'glaggle_juggle_highscore'
+    let highscore = localStorage.getItem('glaggle_juggle') || 0;
+    let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
-        const ball = {
-            x: 0, y: 0, radius: 25,
-            vx: 0, vy: 0,
-            gravity: 0.25,
-            rotation: 0,
-            vRotation: 0
-        };
+    highscoreEl.innerText = highscore;
+    coinEl.innerText = coins;
 
-        function resize() {
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+    const ball = {
+        x: 0, y: 0, radius: 25,
+        vx: 0, vy: 0,
+        gravity: 0.25,
+        rotation: 0,
+        vRotation: 0
+    };
 
-        function handleInteraction(e) {
-            // Verhindert, dass das Spiel reagiert, wenn das Menü offen ist
-            if (!gameRunning) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            // Unterstützung für Maus und Touch
-            const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-            const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
-            
-            const clickX = clientX - rect.left;
-            const clickY = clientY - rect.top;
+    function resize() {
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-            const dist = Math.sqrt((clickX - ball.x)**2 + (clickY - ball.y)**2);
-            
-            if (dist < ball.radius + 25) {
-                ball.vy = -9;
-                ball.vx = (ball.x - clickX) * 0.45;
-                ball.vRotation = ball.vx * 0.12;
-                
-                score++;
-                scoreEl.innerText = score;
-                createParticles(ball.x, ball.y);
+    // --- LEADERBOARD FUNKTION ---
+    async function updateLeaderboard() {
+        const storageKey = 'glaggle_juggle_highscore';
+        const scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
+
+        if (scoreToSend > 0) {
+            try {
+                await supabaseClient
+                    .from('leaderboard')
+                    .upsert({ 
+                        username: currentUserName, 
+                        coins: scoreToSend, 
+                        game_name: 'glaggle_juggle' 
+                    }, { onConflict: 'username, game_name' });
+                console.log("Score synchronisiert!");
+            } catch (e) { 
+                console.error("Leaderboard Fehler:", e); 
             }
         }
+    }
 
-        // Gamepad/Canvas Inputs
-        container.addEventListener('mousedown', handleInteraction);
-        container.addEventListener('touchstart', (e) => {
-            if (!gameRunning) return; 
-            e.preventDefault(); // Verhindert Scrollen beim Spielen
-            handleInteraction(e);
-        }, {passive: false});
+    function handleInteraction(e) {
+        if (!gameRunning) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        const clickX = clientX - rect.left;
+        const clickY = clientY - rect.top;
 
-        let particles = [];
-        function createParticles(x, y) {
-            for(let i=0; i<8; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10,
-                    life: 1.0,
-                    color: i % 2 === 0 ? '#70C4F7' : '#ffffff'
-                });
-            }
+        const dist = Math.sqrt((clickX - ball.x)**2 + (clickY - ball.y)**2);
+        if (dist < ball.radius + 25) {
+            ball.vy = -9;
+            ball.vx = (ball.x - clickX) * 0.45;
+            ball.vRotation = ball.vx * 0.12;
+            score++;
+            scoreEl.innerText = score;
+            createParticles(ball.x, ball.y);
         }
+    }
 
-        function startGame(e) {
-            if(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            score = 0;
-            scoreEl.innerText = "0";
-            ball.x = canvas.width / 2;
-            ball.y = 100;
-            ball.vx = 0;
-            ball.vy = 0;
-            ball.vRotation = 0;
-            particles = [];
-            gameRunning = true;
-            menu.style.display = "none";
-            
-            // Loop nur starten, wenn nicht bereits aktiv
-            requestAnimationFrame(gameLoop);
-        }
+    container.addEventListener('mousedown', handleInteraction);
+    container.addEventListener('touchstart', (e) => {
+        if (!gameRunning) return; 
+        e.preventDefault();
+        handleInteraction(e);
+    }, {passive: false});
 
-        function gameLoop() {
-            if(!gameRunning) return;
-
-            ball.vy += ball.gravity;
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            ball.rotation += ball.vRotation;
-
-            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
-                ball.vx *= -0.7;
-                ball.vRotation *= -1;
-                ball.x = ball.x - ball.radius < 0 ? ball.radius : canvas.width - ball.radius;
-            }
-
-            if (ball.y + ball.radius > canvas.height) {
-                gameOver();
-                return;
-            }
-
-            if (ball.y - ball.radius < 0) {
-                ball.y = ball.radius;
-                ball.vy *= -0.5;
-            }
-
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        function drawBall() {
-            ctx.save();
-            ctx.translate(ball.x, ball.y);
-            ctx.rotate(ball.rotation);
-
-            ctx.beginPath();
-            ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
-            ctx.fillStyle = "#fff";
-            ctx.fill();
-            ctx.strokeStyle = "#000";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.fillStyle = "#000";
-            for(let i=0; i<5; i++) {
-                ctx.rotate((Math.PI * 2) / 5);
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(ball.radius * 0.6, -ball.radius * 0.3);
-                ctx.lineTo(ball.radius * 0.6, ball.radius * 0.3);
-                ctx.closePath();
-                ctx.fill();
-            }
-            
-            ctx.fillStyle = "#000";
-            ctx.beginPath(); ctx.arc(-7, -5, 3, 0, Math.PI * 2); ctx.fill(); 
-            ctx.beginPath(); ctx.arc(7, -5, 3, 0, Math.PI * 2); ctx.fill(); 
-            ctx.beginPath(); ctx.arc(0, 5, 6, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke(); 
-            
-            ctx.restore();
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "rgba(46, 204, 113, 0.3)";
-            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-
-            particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-                ctx.globalAlpha = Math.max(0, p.life);
-                ctx.fillStyle = p.color;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
-                if(p.life <= 0) particles.splice(i, 1);
+    let particles = [];
+    function createParticles(x, y) {
+        for(let i=0; i<8; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10,
+                life: 1.0,
+                color: i % 2 === 0 ? '#70C4F7' : '#ffffff'
             });
-            ctx.globalAlpha = 1.0;
-            drawBall();
+        }
+    }
+
+    function startGame(e) {
+        if(e) { e.preventDefault(); e.stopPropagation(); }
+        score = 0;
+        scoreEl.innerText = "0";
+        ball.x = canvas.width / 2;
+        ball.y = 100;
+        ball.vx = 0;
+        ball.vy = 0;
+        ball.vRotation = 0;
+        particles = [];
+        gameRunning = true;
+        menu.style.display = "none";
+        requestAnimationFrame(gameLoop);
+    }
+
+    function gameLoop() {
+        if(!gameRunning) return;
+        ball.vy += ball.gravity;
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        ball.rotation += ball.vRotation;
+
+        if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+            ball.vx *= -0.7;
+            ball.vRotation *= -1;
+            ball.x = ball.x - ball.radius < 0 ? ball.radius : canvas.width - ball.radius;
         }
 
-        function gameOver() {
-    gameRunning = false;
-    
-    // 1. Rekord-Logik (Passend zum Leaderboard-Key)
-    const storageKey = 'glaggle_juggle'; 
-    
-    if (score > highscore) {
-        highscore = score;
-        localStorage.setItem(storageKey, highscore);
-        highscoreEl.innerText = highscore;
-        document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
-    } else {
-        document.getElementById('msg').innerText = "Aus! Score: " + score;
+        if (ball.y + ball.radius > canvas.height) {
+            gameOver();
+            return;
+        }
+
+        if (ball.y - ball.radius < 0) {
+            ball.y = ball.radius;
+            ball.vy *= -0.5;
+        }
+        draw();
+        requestAnimationFrame(gameLoop);
     }
 
-    // 2. Coin-Logik (Verdiente Münzen speichern)
-    if (score >= 5) {
-        coins += 1;
-        localStorage.setItem('glaggleCoins', coins);
-        coinEl.innerText = coins;
+    function drawBall() {
+        ctx.save();
+        ctx.translate(ball.x, ball.y);
+        ctx.rotate(ball.rotation);
+        ctx.beginPath();
+        ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "#000";
+        for(let i=0; i<5; i++) {
+            ctx.rotate((Math.PI * 2) / 5);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(ball.radius * 0.6, -ball.radius * 0.3);
+            ctx.lineTo(ball.radius * 0.6, ball.radius * 0.3);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
     }
 
-    // 3. Menü anzeigen
-    menu.style.display = "flex";
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "rgba(46, 204, 113, 0.3)";
+        ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+        particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+            if(p.life <= 0) particles.splice(i, 1);
+        });
+        ctx.globalAlpha = 1.0;
+        drawBall();
+    }
 
-    // 4. GameCenter-Ersatz: Daten an Supabase senden
-    // Diese Funktion hast du ja bereits in deinem Script-Teil definiert
-    if (typeof updateLeaderboard === "function") {
+    function gameOver() {
+        gameRunning = false;
+        const storageKey = 'glaggle_juggle'; 
+        
+        if (score > highscore) {
+            highscore = score;
+            localStorage.setItem(storageKey, highscore);
+            highscoreEl.innerText = highscore;
+            document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
+        } else {
+            document.getElementById('msg').innerText = "Aus! Score: " + score;
+        }
+
+        if (score >= 5) {
+            coins += 1;
+            localStorage.setItem('glaggleCoins', coins);
+            coinEl.innerText = coins;
+        }
+
+        menu.style.display = "flex";
         updateLeaderboard(); 
     }
-}
-    </script>
+</script>
 </body>
 </html>
