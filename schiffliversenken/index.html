@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Schifli Versenken</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --link-color: #2E94D1;
+            --desc-color: #555555;
+            --accent: #70C4F7;
+            --accent-hover: #5bb3e8;
+            --hit-color: #ff4757;
+            --miss-color: #747d8c;
+            --ship-color: #2f3542;
+            --water-color: #eccc68;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+                --link-color: #8cc9f5;
+                --desc-color: #bdc1c6;
+                --water-color: #1e90ff;
+                --ship-color: #a4b0be;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; height: 70px; background-color: var(--nav-bg);
+            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+        }
+        .nav-logo { height: 35px; cursor: pointer; }
+
+        .game-container {
+            margin-top: 100px;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 18px;
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 10px 20px rgba(112, 196, 247, 0.15);
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--link-color); margin-top: 0; }
+        
+        .btn {
+            background: var(--accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            margin: 10px;
+            display: inline-block;
+        }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+
+        .boards-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .board-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-title { margin-bottom: 10px; font-weight: bold; font-size: 1.2rem; }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(10, 30px);
+            gap: 2px;
+            background-color: var(--card-border);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        @media (min-width: 600px) {
+            .board {
+                grid-template-columns: repeat(10, 40px);
+                grid-template-rows: repeat(10, 40px);
+            }
+        }
+
+        .cell {
+            background-color: var(--nav-bg);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: background-color 0.2s;
+            aspect-ratio: 1/1;
+        }
+        .cell:hover { background-color: var(--card-border); }
+        
+        .cell.ship { background-color: var(--ship-color); }
+        .cell.hit { background-color: var(--hit-color); color: white; cursor: default; }
+        .cell.hit::after { content: '💥'; }
+        .cell.miss { background-color: var(--nav-bg); color: var(--miss-color); cursor: default; }
+        .cell.miss::after { content: '❌'; font-size: 0.8rem; }
+        .cell.preview { background-color: rgba(112, 196, 247, 0.5); }
+        .cell.preview-invalid { background-color: rgba(255, 71, 87, 0.5); }
+
+        .status-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .coin-status {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--card-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        .coin-icon { width: 24px; height: 24px; object-fit: contain; }
+        .coin-amount { font-weight: bold; color: var(--text-color); }
+
+        #view-menu, #view-placement, #view-battle { display: none; width: 100%; }
+        #view-menu.active, #view-placement.active, #view-battle.active { display: flex; flex-direction: column; align-items: center; }
+
+        .ship-list { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .ship-item { padding: 5px 15px; background: var(--nav-bg); border: 2px solid var(--card-border); border-radius: 15px; cursor: pointer; }
+        .ship-item.selected { border-color: var(--accent); background: rgba(112, 196, 247, 0.1); }
+        .ship-item.placed { opacity: 0.5; text-decoration: line-through; cursor: default; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo" onclick="window.location.reload()" style="font-weight: bold; font-size: 1.5rem; color: var(--accent);">Glaggle</div>
+        <div class="nav-right">
+            <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Schifli Versenken 🚢</span>
+        </div>
+    </nav>
+
+    <div class="game-container">
+        <!-- MENU VIEW -->
+        <div id="view-menu" class="active">
+            <div class="card">
+                <h1>⚓ Glaggle Schifli Versenken</h1>
+                <p>Platziere deine Flotte und versenke die Schiffe des Gegners!</p>
+                <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                    <button class="btn" onclick="window.startGame('ki')" style="width: 250px;">🤖 Gegen KI spielen</button>
+                    <button class="btn" onclick="window.createLinkGame()" style="width: 250px;">🔗 Mit Freund spielen (Link)</button>
+                    <button class="btn btn-outline" onclick="window.findRandomGame()" style="width: 250px;">🌍 Zufälliger Gegner</button>
+                </div>
+                <p id="menu-status" style="color: var(--accent); margin-top: 20px; height: 20px;"></p>
+            </div>
+        </div>
+
+        <!-- PLACEMENT VIEW -->
+        <div id="view-placement">
+            <div class="card">
+                <h2>🚢 Platziere deine Flotte</h2>
+                <div class="ship-list" id="ship-selector"></div>
+                <button class="btn btn-outline" id="btn-rotate" onclick="window.toggleRotation()">🔄 Drehen (aktuell: Horizontal)</button>
+                <div class="board-container" style="margin-top: 20px;">
+                    <div class="board" id="placement-board"></div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" id="btn-ready" disabled onclick="window.playerReady()">Bereit für die Schlacht! ⚔️</button>
+                </div>
+                <p id="placement-status" style="margin-top: 15px; color: var(--desc-color);">Wähle ein Schiff und klicke auf das Raster.</p>
+            </div>
+        </div>
+
+        <!-- BATTLE VIEW -->
+        <div id="view-battle">
+            <div class="status-box" id="battle-status">Warte auf Gegner...</div>
+            <div class="boards-wrapper">
+                <div class="board-container">
+                    <div class="board-title" id="my-name-display">Deine Flotte</div>
+                    <div class="board" id="my-board"></div>
+                </div>
+                <div class="board-container">
+                    <div class="board-title" id="enemy-name-display">Gegner</div>
+                    <div class="board" id="enemy-board"></div>
+                </div>
+            </div>
+            <button class="btn" style="margin-top: 30px; display: none;" id="btn-rematch" onclick="window.resetGame()">Neues Spiel</button>
+        </div>
+    </div>
+
+    <div class="coin-status" id="coin-container">
+        <span style="font-size: 1.2rem;">💰</span> <span class="coin-amount" id="coin-count">0</span>
+    </div>
+
+<script>
+    (function() {
+        const S_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
+        const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
+        const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
+
+        const SHIPS = [
+            { id: 0, name: "Träger", size: 5 },
+            { id: 1, name: "Schlachtschiff", size: 4 },
+            { id: 2, name: "Kreuzer", size: 3 },
+            { id: 3, name: "U-Boot", size: 3 },
+            { id: 4, name: "Zerstörer", size: 2 }
+        ];
+
+        let userName = localStorage.getItem('glaggleUserName') || "Spieler";
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        let myGrid = Array(10).fill(null).map(() => Array(10).fill(0));
+        let enemyGrid = Array(10).fill(null).map(() => Array(10).fill(0));
+        let myShipsPlaced = [];
+        let isHorizontal = true;
+        let selectedShipId = 0;
+        let gameMode = 'ki';
+        let roomId = null;
+        let channel = null;
+        let isMyTurn = false;
+        let enemyReady = false;
+        let gameOver = false;
+        let enemyName = "Gegner";
+        let kiGrid = [];
+        let kiHits = [];
+
+        function updateCoinDisplay() {
+            document.getElementById('coin-count').innerText = coins;
+        }
+
+        function addCoins(amount) {
+            coins += amount;
+            localStorage.setItem('glaggleCoins', coins);
+            updateCoinDisplay();
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('#view-menu, #view-placement, #view-battle').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function renderBoard(elementId, gridData, isInteractive = false, isEnemy = false) {
+            const board = document.getElementById(elementId);
+            if (!board) return;
+            board.innerHTML = '';
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (gridData[y][x] === 1 && !isEnemy) cell.classList.add('ship');
+                    if (gridData[y][x] === 2) cell.classList.add('miss');
+                    if (gridData[y][x] === 3) cell.classList.add('hit');
+                    if (isInteractive) {
+                        if (elementId === 'placement-board') {
+                            cell.onmouseover = () => handlePreview(x, y);
+                            cell.onmouseout = () => clearPreview();
+                            cell.onclick = () => placeShip(x, y);
+                        } else if (elementId === 'enemy-board') {
+                            cell.onclick = () => handleFire(x, y);
+                        }
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function handlePreview(x, y) {
+            if (myShipsPlaced.length === SHIPS.length) return;
+            const ship = SHIPS.find(s => s.id === selectedShipId);
+            const board = document.getElementById('placement-board');
+            const cells = board.children;
+            const valid = canPlaceShip(myGrid, ship.size, x, y, isHorizontal);
+            for (let i = 0; i < ship.size; i++) {
+                const cx = isHorizontal ? x + i : x;
+                const cy = isHorizontal ? y : y + i;
+                if (cx < 10 && cy < 10) {
+                    const idx = cy * 10 + cx;
+                    cells[idx].classList.add(valid ? 'preview' : 'preview-invalid');
+                }
+            }
+        }
+
+        function clearPreview() {
+            document.querySelectorAll('.preview, .preview-invalid').forEach(el => el.classList.remove('preview', 'preview-invalid'));
+        }
+
+        function canPlaceShip(grid, size, startX, startY, horizontal) {
+            if (horizontal) {
+                if (startX + size > 10) return false;
+                for (let i = 0; i < size; i++) if (grid[startY][startX + i] !== 0) return false;
+            } else {
+                if (startY + size > 10) return false;
+                for (let i = 0; i < size; i++) if (grid[startY + i][startX] !== 0) return false;
+            }
+            return true;
+        }
+
+        function placeShip(x, y) {
+            const ship = SHIPS.find(s => s.id === selectedShipId);
+            if (!ship || myShipsPlaced.some(s => s.id === selectedShipId)) return;
+            if (canPlaceShip(myGrid, ship.size, x, y, isHorizontal)) {
+                for (let i = 0; i < ship.size; i++) {
+                    if (isHorizontal) myGrid[y][x + i] = 1;
+                    else myGrid[y + i][x] = 1;
+                }
+                myShipsPlaced.push(ship);
+                renderShipSelector();
+                renderBoard('placement-board', myGrid, true);
+            }
+        }
+
+        function renderShipSelector() {
+            const container = document.getElementById('ship-selector');
+            container.innerHTML = '';
+            SHIPS.forEach(ship => {
+                const isPlaced = myShipsPlaced.some(s => s.id === ship.id);
+                const div = document.createElement('div');
+                div.className = `ship-item ${selectedShipId === ship.id && !isPlaced ? 'selected' : ''} ${isPlaced ? 'placed' : ''}`;
+                div.innerText = `${ship.name} (${ship.size})`;
+                if (!isPlaced) div.onclick = () => { selectedShipId = ship.id; renderShipSelector(); };
+                container.appendChild(div);
+            });
+            const next = SHIPS.find(s => !myShipsPlaced.some(p => p.id === s.id));
+            if (next) {
+                selectedShipId = next.id;
+            } else {
+                document.getElementById('btn-ready').disabled = false;
+                document.getElementById('placement-status').innerText = "Alle Schiffe platziert!";
+            }
+        }
+
+        function handleFire(x, y) {
+            if (!isMyTurn || gameOver || enemyGrid[y][x] !== 0) return;
+            isMyTurn = false;
+            if (gameMode === 'ki') {
+                const hit = kiGrid[y][x] === 1;
+                enemyGrid[y][x] = hit ? 3 : 2;
+                if (hit) kiGrid[y][x] = 3;
+                renderBoard('enemy-board', enemyGrid, true, true);
+                if (checkWin(kiGrid)) {
+                    gameOver = true;
+                    setStatus("Sieg! Du hast die KI besiegt! (+10 Coins)");
+                    addCoins(10);
+                    document.getElementById('btn-rematch').style.display = 'block';
+                } else {
+                    updateTurnUI();
+                }
+            } else {
+                channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'fire', x, y } });
+            }
+        }
+
+        function processEnemyFire(x, y) {
+            const hit = myGrid[y][x] === 1;
+            myGrid[y][x] = hit ? 3 : 2;
+            renderBoard('my-board', myGrid, false, false);
+            channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'fire_result', x, y, hit } });
+            if (checkWin(myGrid)) {
+                gameOver = true;
+                channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'game_over' } });
+                setStatus(`Niederlage! ${enemyName} hat deine Flotte zerstört.`);
+                document.getElementById('btn-rematch').style.display = 'block';
+            } else {
+                isMyTurn = true;
+                updateTurnUI();
+            }
+        }
+
+        function checkWin(grid) {
+            for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) if (grid[y][x] === 1) return false;
+            return true;
+        }
+
+        function setStatus(msg) {
+            const el = document.getElementById('battle-status');
+            if (el) el.innerText = msg;
+        }
+
+        function updateTurnUI() {
+            if (gameOver) return;
+            if (!enemyReady) {
+                setStatus("Warte darauf, dass der Gegner seine Schiffe platziert...");
+                return;
+            }
+            setStatus(isMyTurn ? "Du bist dran! Wähle ein Ziel." : `${enemyName} zielt...`);
+            document.getElementById('enemy-board').style.opacity = isMyTurn ? "1" : "0.5";
+            document.getElementById('enemy-board').style.pointerEvents = isMyTurn ? "auto" : "none";
+            if (!isMyTurn && gameMode === 'ki') setTimeout(kiFire, 1000 + Math.random() * 1000);
+        }
+
+        function kiFire() {
+            if (gameOver) return;
+            let targetX, targetY, found = false;
+            while (!found) {
+                if (kiHits.length > 0) {
+                    const lastHit = kiHits[kiHits.length - 1];
+                    const dirs = [[0,1], [1,0], [0,-1], [-1,0]];
+                    const randDir = dirs[Math.floor(Math.random() * dirs.length)];
+                    targetX = lastHit.x + randDir[0];
+                    targetY = lastHit.y + randDir[1];
+                    if (targetX >= 0 && targetX < 10 && targetY >= 0 && targetY < 10 && myGrid[targetY][targetX] < 2) found = true;
+                    else if (Math.random() > 0.7) kiHits.pop();
+                } else {
+                    targetX = Math.floor(Math.random() * 10);
+                    targetY = Math.floor(Math.random() * 10);
+                    if (myGrid[targetY][targetX] < 2) found = true;
+                }
+            }
+            const hit = myGrid[targetY][targetX] === 1;
+            myGrid[targetY][targetX] = hit ? 3 : 2;
+            if (hit) kiHits.push({x: targetX, y: targetY});
+            renderBoard('my-board', myGrid, false, false);
+            if (checkWin(myGrid)) {
+                gameOver = true;
+                setStatus("Niederlage! Die KI hat deine Flotte zerstört.");
+                document.getElementById('btn-rematch').style.display = 'block';
+            } else {
+                isMyTurn = true;
+                updateTurnUI();
+            }
+        }
+
+        function placeKIShips() {
+            kiGrid = Array(10).fill(null).map(() => Array(10).fill(0));
+            kiHits = [];
+            SHIPS.forEach(ship => {
+                let placed = false;
+                while (!placed) {
+                    const horiz = Math.random() > 0.5;
+                    const x = Math.floor(Math.random() * 10), y = Math.floor(Math.random() * 10);
+                    if (canPlaceShip(kiGrid, ship.size, x, y, horiz)) {
+                        for (let i = 0; i < ship.size; i++) {
+                            if (horiz) kiGrid[y][x + i] = 1;
+                            else kiGrid[y + i][x] = 1;
+                        }
+                        placed = true;
+                    }
+                }
+            });
+        }
+
+        function setupChannel(id, isHost) {
+            if (channel) channel.unsubscribe();
+            channel = supabaseClient.channel(id);
+            isMyTurn = isHost;
+            channel.on('broadcast', { event: 'game_action' }, payload => {
+                const data = payload.payload;
+                if (data.action === 'join') {
+                    enemyName = data.name;
+                    if (isMyTurn) channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'join_reply', name: userName } });
+                } else if (data.action === 'join_reply') {
+                    enemyName = data.name;
+                } else if (data.action === 'ready') {
+                    enemyReady = true;
+                    if (document.getElementById('view-battle').classList.contains('active')) updateTurnUI();
+                } else if (data.action === 'fire') {
+                    processEnemyFire(data.x, data.y);
+                } else if (data.action === 'fire_result') {
+                    enemyGrid[data.y][data.x] = data.hit ? 3 : 2;
+                    renderBoard('enemy-board', enemyGrid, true, true);
+                    isMyTurn = false;
+                    updateTurnUI();
+                } else if (data.action === 'game_over') {
+                    gameOver = true;
+                    setStatus(`Sieg! Alle Schiffe von ${enemyName} versenkt! (+20 Coins)`);
+                    addCoins(20);
+                    document.getElementById('btn-rematch').style.display = 'block';
+                }
+            }).subscribe(status => {
+                if (status === 'SUBSCRIBED') channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'join', name: userName } });
+            });
+        }
+
+        // --- ATTACH TO WINDOW TO PREVENT REFERENCE ERRORS ---
+        window.startGame = (mode) => {
+            gameMode = mode;
+            if (mode === 'ki') enemyName = "Kombi-KI 🤖";
+            myGrid = Array(10).fill(null).map(() => Array(10).fill(0));
+            myShipsPlaced = [];
+            renderShipSelector();
+            renderBoard('placement-board', myGrid, true);
+            showView('view-placement');
+        };
+
+        window.createLinkGame = async () => {
+            roomId = 'glaggle_' + Math.random().toString(36).substr(2, 9);
+            gameMode = 'link';
+            setupChannel(roomId, true);
+            const link = window.location.origin + window.location.pathname + '?room=' + roomId;
+            try { 
+                await navigator.clipboard.writeText(link); 
+                document.getElementById('menu-status').innerText = "Link kopiert!"; 
+            } catch(e) {
+                // Fallback for copy
+                const textarea = document.createElement('textarea');
+                textarea.value = link;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                document.getElementById('menu-status').innerText = "Link kopiert!";
+            }
+            window.startGame('link');
+        };
+
+        window.findRandomGame = () => {
+            document.getElementById('menu-status').innerText = "Suche Gegner...";
+            gameMode = 'random';
+            const mm = supabaseClient.channel('matchmaking');
+            mm.on('broadcast', { event: 'looking' }, p => {
+                if (p.payload.user !== userName) {
+                    mm.unsubscribe();
+                    roomId = 'rand_' + Math.random().toString(36).substr(2, 9);
+                    setupChannel(roomId, true);
+                    mm.send({ type: 'broadcast', event: 'match_found', payload: { room: roomId, user: p.payload.user } });
+                    window.startGame('random');
+                }
+            }).on('broadcast', { event: 'match_found' }, p => {
+                if (p.payload.user === userName) {
+                    mm.unsubscribe();
+                    roomId = p.payload.room;
+                    setupChannel(roomId, false);
+                    window.startGame('random');
+                }
+            }).subscribe(s => { 
+                if (s === 'SUBSCRIBED') mm.send({ type: 'broadcast', event: 'looking', payload: { user: userName } }); 
+            });
+        };
+
+        window.toggleRotation = () => {
+            isHorizontal = !isHorizontal;
+            document.getElementById('btn-rotate').innerText = isHorizontal ? "🔄 Drehen (aktuell: Horizontal)" : "🔄 Drehen (aktuell: Vertikal)";
+        };
+
+        window.playerReady = () => {
+            showView('view-battle');
+            document.getElementById('my-name-display').innerText = `${userName} (Du)`;
+            document.getElementById('enemy-name-display').innerText = enemyName;
+            enemyGrid = Array(10).fill(null).map(() => Array(10).fill(0));
+            renderBoard('my-board', myGrid, false, false);
+            renderBoard('enemy-board', enemyGrid, true, true);
+            gameOver = false;
+            if (gameMode === 'ki') {
+                placeKIShips();
+                enemyReady = true;
+                isMyTurn = true;
+                updateTurnUI();
+            } else {
+                setStatus("Warte auf Gegner...");
+                if (channel) channel.send({ type: 'broadcast', event: 'game_action', payload: { action: 'ready' } });
+                if (enemyReady) updateTurnUI();
+            }
+        };
+
+        window.resetGame = () => {
+            if (channel) channel.unsubscribe();
+            channel = null; 
+            roomId = null; 
+            enemyReady = false;
+            window.history.pushState({}, document.title, window.location.pathname);
+            showView('view-menu');
+        };
+
+        // Initialize user info and entry logic
+        updateCoinDisplay();
+        const urlParams = new URLSearchParams(window.location.search);
+        const joinRoom = urlParams.get('room');
+        if (joinRoom) {
+            roomId = joinRoom;
+            gameMode = 'link';
+            setupChannel(roomId, false);
+            window.startGame('link');
+        }
+    })();
+</script>
+</body>
+</html>
