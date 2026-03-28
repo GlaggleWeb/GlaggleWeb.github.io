@@ -324,10 +324,9 @@
         
         <select id="game-selector" style="padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent); background: var(--bg-color); color: var(--text-color); font-family: inherit; cursor: pointer; outline: none;">
             <option value="global">Glaggle Coin Keepers (Top 50)</option>
-            <option disabled>── Spiele Highscores ──</option>
+            <option disabled>─ Spiele Highscores ─</option>
             <option value="snake">🐍 Glaggle Snake</option>
             <option value="glagglejump">🛤️ Glaggle Jump</option>
-            <option value="glagglerace">🛣️ Glaggle Racing</option>
             <option value="tower">🗼 Glaggle Tower</option>
             <option value="flappyfish">🐠 Flappy Fish</option>
         </select>
@@ -345,11 +344,11 @@
 
     <div id="my-fixed-rank" style="margin-top: 15px; border-top: 2px dashed var(--accent); padding-top: 10px; display: none;"></div>
 </div>
-       
+    
 </div>
         
 </div>
-    
+
     <p style="margin-top: 40px; font-size: 12px; color: var(--desc-color);">© 2026 Glaggle - Glaggle your life!</p>
     <div class="coin-status" id="coin-container">
     <img src="coin.png" alt="Coin" class="coin-icon"> <span class="coin-amount" id="coin-count">0</span>
@@ -378,18 +377,10 @@
     }
 
     let currentUserName = localStorage.getItem('glaggleUserName');
-// Neu: Eine feste ID generieren, falls noch keine da ist
-let glaggleUserId = localStorage.getItem('glaggleUserId');
-
-if (!glaggleUserId) {
-    glaggleUserId = 'user-' + Math.random().toString(36).substr(2, 9) + Date.now();
-    localStorage.setItem('glaggleUserId', glaggleUserId);
-}
-
-if (!currentUserName) {
-    currentUserName = generateFunnyName();
-    localStorage.setItem('glaggleUserName', currentUserName);
-}
+    if (!currentUserName) {
+        currentUserName = generateFunnyName();
+        localStorage.setItem('glaggleUserName', currentUserName);
+    }
 
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     function updateCoinDisplay() {
@@ -397,39 +388,6 @@ if (!currentUserName) {
         if (countElement) countElement.innerText = glaggleCoins;
     }
 
-
-    // Funktion zum Namen ändern
-async function changeName() {
-    const oldName = localStorage.getItem('glaggleUserName');
-    const newName = prompt("Dein neuer Glaggle-Name:", oldName);
-
-    if (!newName || newName.trim() === "" || newName === oldName) return;
-
-    const cleanedName = newName.trim().substring(0, 20);
-    
-    // Kleiner Lade-Hinweis
-    const status = document.getElementById('chat-status');
-    if(status) status.innerText = "Glaggle-Wächter prüft...";
-
-    const result = await checkModeration(cleanedName);
-
-    if (result.includes("OK")) {
-        localStorage.setItem('glaggleUserName', cleanedName);
-        currentUserName = cleanedName;
-        
-        document.getElementById('user-name-display').innerText = cleanedName;
-        if(chatInput) chatInput.placeholder = `${cleanedName}: Tippen...`;
-        
-        // Sofort das Leaderboard mit der NEUEN Namens-Zuordnung zur ALTEN ID senden
-        updateLeaderboard();
-        
-        alert("Name geändert! Deine Scores ziehen jetzt automatisch mit um.");
-        if(status) status.innerText = "";
-    } else {
-        alert("⚠️ Ups! Der Glaggle-Wächter sagt: Dieser Name ist nicht erlaubt.");
-        if(status) status.innerText = "";
-    }
-}
     // --- 3. GROQ MODERATION ---
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
@@ -443,7 +401,7 @@ async function changeName() {
                     messages: [{
                         role: "system", 
                         // Ändere den "content" im checkModeration-Teil:
-                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK. Blockiere aber Wörter wie Arsch oder Penis usw."
+                        content: "Du bist ein Chat-Moderator. Sei locker. Erlaube allgemeine Ausrufe wie 'Mist' oder 'Scheiße'. Antworte NUR mit dem Wort BLOCK, wenn eine Person direkt beleidigt wird oder extrem rassistische/hasserfüllte Inhalte gepostet werden. Ansonsten antworte NUR mit OK."
                     }, { role: "user", content: text }],
                     temperature: 0.1
                 })
@@ -492,7 +450,7 @@ function renderMessage(user, text) {
         .from('messages')
         .select('*')
         .order('created_at', { ascending: false }) // 'false' für die neuesten zuerst
-        .limit(250);
+        .limit(500);
     
     if (data) {
         chatBox.innerHTML = ''; 
@@ -562,14 +520,13 @@ async function updateLeaderboard() {
     // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
     if (scoreToSend > 0) {
         try {
-           await supabaseClient
-    .from('leaderboard')
-    .upsert({ 
-        user_id: glaggleUserId, // Die feste ID nutzen!
-        username: currentUserName, 
-        coins: scoreToSend, 
-        game_name: selectedGame 
-    }, { onConflict: 'user_id, game_name' }); // Konflikt anhand der ID lösen
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({ 
+                    username: currentUserName, 
+                    coins: scoreToSend, 
+                    game_name: selectedGame 
+                }, { onConflict: 'username, game_name' });
         } catch (e) { console.error("Update Fehler:", e); }
     }
 
@@ -671,8 +628,7 @@ toggleBtn.onclick = () => {
 updateLeaderboard();
 
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
-setInterval(updateLeaderboard, 15000);
-</script>
+setInterval(updateLeaderboard, 1000);
 </script>
 </body>
 </html>
