@@ -389,19 +389,22 @@
                 savesEl.innerText = saves;
                 showMessage("GEHALTEN!", "#ff4757");
                 goalie.querySelector('.goalie-head').innerText = "😎";
-            } else if (isInGoal) {
-                score++;
-                scoreEl.innerText = score;
-                // Jetzt 1 Coin pro Tor
-                coins += 1;
-                localStorage.setItem('glaggleCoins', coins);
-                coinsEl.innerText = coins;
-                showMessage("TOR!", "#2ecc71");
-                goalie.querySelector('.goalie-head').innerText = "😵";
-            } else {
-                showMessage("DANEBEN!", "#747d8c");
-                goalie.querySelector('.goalie-head').innerText = "😂";
-            }
+} else if (isInGoal) {
+    score++;
+    scoreEl.innerText = score;
+
+    // Prüfe, ob das aktuelle Score-Ergebnis durch 2 teilbar ist
+    if (score % 2 === 0) {
+        coins += 1;
+        localStorage.setItem('glaggleCoins', coins);
+        coinsEl.innerText = coins;
+        showMessage("TOR + COIN! ", "#2ecc71");
+    } else {
+        showMessage("TOR!", "#2ecc71");
+    }
+    
+    goalie.querySelector('.goalie-head').innerText = "😵";
+}
 
             setTimeout(resetPositions, 1400);
         }
