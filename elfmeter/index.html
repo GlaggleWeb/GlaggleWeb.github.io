@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Elfmeter-König</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #1c1e21;
+            --accent: #70C4F7;
+            --accent-hover: #5bb3e8;
+            --grass-color: #2ecc71;
+            --goal-color: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #18191a;
+                --text-color: #e4e6eb;
+                --accent: #3a86ff;
+                --grass-color: #27ae60;
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .navbar {
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 60px);
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 50%, var(--grass-color) 50%, var(--grass-color) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .goal {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 30%;
+            border: 8px solid var(--goal-color);
+            border-bottom: none;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            z-index: 1;
+        }
+
+        .net {
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #goalie {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 60px;
+            height: 80px;
+            transform: translateX(-50%);
+            transition: left 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.25s ease-out, transform 0.25s;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .goalie-body {
+            width: 44px;
+            height: 55px;
+            background: #ff4757;
+            border-radius: 12px;
+            position: relative;
+            border: 2px solid rgba(0,0,0,0.2);
+        }
+
+        .goalie-head {
+            width: 32px;
+            height: 32px;
+            background: #fbc531;
+            border-radius: 50%;
+            margin-bottom: -5px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        #ball {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.3);
+            z-index: 5;
+            cursor: pointer;
+            transition: width 0.5s, height 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 80px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid var(--accent);
+            color: #333;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .coin-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .power-bar-container {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            display: none;
+        }
+
+        #power-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div style="font-weight: bold; font-size: 1.5rem; color: var(--accent);">Glaggle Striker ⚽</div>
+    </nav>
+
+    <div id="game-container">
+        <div class="ui-layer">
+            <div class="stat-card">Tore: <span id="score">0</span></div>
+            <div class="stat-card">Gehalten: <span id="saves">0</span></div>
+        </div>
+
+        <div class="goal">
+            <div class="net"></div>
+            <div id="goalie">
+                <div class="goalie-head">🙂</div>
+                <div class="goalie-body"></div>
+            </div>
+        </div>
+
+        <div id="ball">⚽</div>
+
+        <div class="power-bar-container" id="p-container">
+            <div id="power-bar"></div>
+        </div>
+
+        <div id="message">TOR!</div>
+    </div>
+
+    <div class="coin-status">
+        <img src="coin.png" alt="Coin" id="coin-img" style="width: 24px; height: 24px; vertical-align: middle;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1292/1292744.png'">
+        <span id="coin-count" style="font-weight: bold;">0</span>
+    </div>
+
+    <script>
+        const ball = document.getElementById('ball');
+        const goalie = document.getElementById('goalie');
+        const scoreEl = document.getElementById('score');
+        const savesEl = document.getElementById('saves');
+        const coinsEl = document.getElementById('coin-count');
+        const message = document.getElementById('message');
+        const pBar = document.getElementById('power-bar');
+        const pContainer = document.getElementById('p-container');
+
+        let score = 0;
+        let saves = 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        let isShooting = false;
+        let startX, startY;
+        
+        coinsEl.innerText = coins;
+
+        ball.addEventListener('mousedown', startDrag);
+        ball.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDrag(e.touches[0]);
+        }, { passive: false });
+
+        function startDrag(e) {
+            if (isShooting) return;
+            startX = e.clientX;
+            startY = e.clientY;
+            pContainer.style.display = 'block';
+            
+            window.addEventListener('mousemove', drag);
+            window.addEventListener('touchmove', handleTouchMove, { passive: false });
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchend', endDrag);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            drag(e.touches[0]);
+        }
+
+        function drag(e) {
+            const diffX = e.clientX - startX;
+            const diffY = startY - e.clientY;
+            const power = Math.min(Math.sqrt(diffX*diffX + diffY*diffY) / 2, 100);
+            pBar.style.width = power + '%';
+        }
+
+        function endDrag(e) {
+            const endX = (e.clientX || (e.changedTouches && e.changedTouches[0].clientX));
+            const endY = (e.clientY || (e.changedTouches && e.changedTouches[0].clientY));
+            
+            window.removeEventListener('mousemove', drag);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('mouseup', endDrag);
+            window.removeEventListener('touchend', endDrag);
+            
+            if (!endX || !endY) return;
+
+            const diffX = endX - startX;
+            const diffY = startY - endY;
+            
+            if (diffY > 15) {
+                shoot(diffX, diffY);
+            } else {
+                pContainer.style.display = 'none';
+                pBar.style.width = '0%';
+            }
+        }
+
+        function shoot(targetX, targetY) {
+            isShooting = true;
+            pContainer.style.display = 'none';
+            
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            
+            // Flugbahn Limitierung für realistischere Schüsse
+            const finalX = 50 + Math.max(-45, Math.min(45, (targetX / screenW * 150)));
+            const finalY = 70 + Math.max(0, Math.min(25, (targetY / screenH * 150))); 
+            
+            ball.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            ball.style.left = finalX + '%';
+            ball.style.bottom = finalY + '%';
+            ball.style.width = '18px';
+            ball.style.height = '18px';
+
+            // Verbesserte KI Reaktion
+            setTimeout(() => {
+                moveGoalieBetter(finalX, finalY);
+            }, 50);
+
+            setTimeout(() => {
+                checkResult(finalX, finalY);
+            }, 500);
+        }
+
+        function moveGoalieBetter(ballX, ballY) {
+            // Höhere Reaktionsrate (85% statt 70%)
+            const reactionChance = 0.70; 
+            let goalieTargetX;
+
+            // Der Torwart "liest" den Schuss besser
+            if (Math.random() < reactionChance) {
+                // Präziseres Ansteuern des Balls
+                goalieTargetX = Math.max(22, Math.min(78, ballX));
+            } else {
+                // Seltenerer Fehler: Springt in die Mitte oder leicht daneben
+                goalieTargetX = 50 + (Math.random() - 0.5) * 20;
+            }
+
+            goalie.style.left = goalieTargetX + '%';
+            
+            // Sprung-Logik
+            if (ballY > 80) {
+                goalie.style.bottom = '12%'; // Höherer Sprung
+                goalie.style.transform = `translateX(-50%) rotate(${ballX > 50 ? 55 : -55}deg)`;
+            } else if (Math.abs(ballX - 50) > 15) {
+                goalie.style.bottom = '5%';
+                goalie.style.transform = `translateX(-50%) rotate(${ballX > 50 ? 35 : -35}deg)`;
+            } else {
+                goalie.style.bottom = '0';
+                goalie.style.transform = 'translateX(-50%)';
+            }
+        }
+
+        function checkResult(ballX, ballY) {
+            const goalieX = parseFloat(goalie.style.left);
+            const goalieBottom = parseFloat(goalie.style.bottom) || 0;
+            const dist = Math.abs(ballX - goalieX);
+            
+            // Torbereich
+            const isInGoal = ballX > 21 && ballX < 79 && ballY > 66 && ballY < 96;
+            
+            // Fang-Logik: Distanz zum Torwart muss klein sein
+            // Wenn der Ball hoch ist, muss der Torwart gesprungen sein
+            const isBallHigh = ballY > 82;
+            const didGoalieJump = goalieBottom > 5;
+            
+            let isSaved = dist < 7.5; // Grund-Fangradius
+            
+            if (isBallHigh && !didGoalieJump) isSaved = false; // Ball zu hoch für stehenden Torwart
+            if (!isBallHigh && didGoalieJump && dist > 3) isSaved = false; // Torwart springt über flachen Ball
+
+            if (isSaved && ballY < 98) {
+                saves++;
+                savesEl.innerText = saves;
+                showMessage("GEHALTEN!", "#ff4757");
+                goalie.querySelector('.goalie-head').innerText = "😎";
+            } else if (isInGoal) {
+                score++;
+                scoreEl.innerText = score;
+                // Jetzt 1 Coin pro Tor
+                coins += 1;
+                localStorage.setItem('glaggleCoins', coins);
+                coinsEl.innerText = coins;
+                showMessage("TOR!", "#2ecc71");
+                goalie.querySelector('.goalie-head').innerText = "😵";
+            } else {
+                showMessage("DANEBEN!", "#747d8c");
+                goalie.querySelector('.goalie-head').innerText = "😂";
+            }
+
+            setTimeout(resetPositions, 1400);
+        }
+
+        function showMessage(txt, color) {
+            message.innerText = txt;
+            message.style.color = color;
+            message.style.opacity = '1';
+            message.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            
+            setTimeout(() => {
+                message.style.opacity = '0';
+                message.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 900);
+        }
+
+        function resetPositions() {
+            isShooting = false;
+            ball.style.transition = 'none';
+            ball.style.left = '50%';
+            ball.style.bottom = '10%';
+            ball.style.width = '40px';
+            ball.style.height = '40px';
+            
+            goalie.style.left = '50%';
+            goalie.style.bottom = '0';
+            goalie.style.transform = 'translateX(-50%)';
+            goalie.querySelector('.goalie-head').innerText = "🙂";
+            
+            pBar.style.width = '0%';
+        }
+    </script>
+</body>
+</html>
