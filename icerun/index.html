@@ -400,8 +400,8 @@
             gameRunning = false;
             const finalTime = parseFloat(currentTime);
             
-            // Coins berechnen (1 Coin pro 5 Sekunden)
-            const earnedCoins = Math.floor(finalTime / 15);
+            // Coins berechnen (1 Coin pro 25 Sekunden)
+            const earnedCoins = Math.floor(finalTime / 25);
             if(earnedCoins > 0) {
                 coins += earnedCoins;
                 localStorage.setItem('glaggleCoins', coins);
