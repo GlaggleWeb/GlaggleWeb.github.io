@@ -224,6 +224,65 @@
 .leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
 .leader-name { flex-grow: 1; }
 .leader-coins { font-weight: bold; color: #FFD700; }
+
+/* NEWS SECTION STYLES */
+.news-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+.news-card {
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(112, 196, 247, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.news-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.news-badge {
+    background: #ff4757;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.news-date {
+    font-size: 0.8rem;
+    color: var(--desc-color);
+}
+
+.news-title {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: var(--link-color);
+}
+
+.news-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+/* Kleiner Hover-Effekt für die News */
+.news-card:hover {
+    box-shadow: 0 6px 20px rgba(112, 196, 247, 0.2);
+}
     </style>
 </head>
 <body>
@@ -240,6 +299,20 @@
         <img src="glagglelogo.png" alt="Glaggle Logo" class="large-logo">
         <p style="color: var(--desc-color);">Entdecke die Welt der Glaggle Games</p>
     </div>
+
+    <div class="news-container">
+    <div class="news-card">
+        <div class="news-header">
+            <span class="news-badge">NEU</span>
+            <span class="news-date">31. März 2026</span>
+        </div>
+        <h3 class="news-title">Willkommen bei den Gamecenter-News!</h3>
+        <p class="news-text">
+            Wir haben das Leaderboard aktualisiert! Vergleiche deine Bestzeit nun in 2 weiteren Games
+            Neu dabei: <b>Glaggle Grand Casino</b> – setze deine Coins weise ein!
+        </p>
+    </div>
+</div>
 
     <div class="game-grid">
         <a href="/tictactoe" class="game-card">
