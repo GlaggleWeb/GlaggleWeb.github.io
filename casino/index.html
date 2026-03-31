@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Grand Casino</title>
+    <style>
+        :root {
+            --bg: #020617;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent: #fbbf24;
+            --accent-hover: #f59e0b;
+            --text: #f8fafc;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #020617);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            width: 100%;
+            padding: 15px 30px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        .balance-pill {
+            background: linear-gradient(135deg, var(--accent), #d97706);
+            color: #000;
+            padding: 8px 18px;
+            border-radius: 99px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 95%;
+            padding: 40px 0;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .visual-box {
+            height: 150px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            font-size: 2.5rem;
+        }
+
+        /* Roulette Anim */
+        .roulette-wheel {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid #334155;
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+            background: conic-gradient(#ef4444 0deg 45deg, #1e293b 45deg 90deg, #ef4444 90deg 135deg, #1e293b 135deg 180deg, #ef4444 180deg 225deg, #1e293b 225deg 270deg, #ef4444 270deg 315deg, #1e293b 315deg 360deg);
+        }
+
+        /* Slots Anim */
+        .slot-reels { display: flex; gap: 8px; }
+        .reel { width: 60px; height: 80px; background: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--border); }
+        .spinning { animation: spin 0.1s infinite; }
+        @keyframes spin { 0% { transform: translateY(-5px); } 50% { transform: translateY(5px); } 100% { transform: translateY(-5px); } }
+
+        /* Coin Anim */
+        .coin-flip { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipping { animation: coin-spin 0.6s infinite; }
+        @keyframes coin-spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+
+        .bet-row {
+            display: flex;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .bet-row input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: scale(1.02); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .msg {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+            font-weight: 600;
+        }
+
+        .win-text { color: var(--success); }
+        .lose-text { color: var(--danger); }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: var(--accent);
+            color: #000;
+            border-radius: 12px;
+            font-weight: bold;
+            transform: translateY(100px);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        /* Plinko Ball */
+        .plinko-ball { width: 12px; height: 12px; background: var(--accent); border-radius: 50%; position: absolute; top: 10px; left: 50%; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">👑 GLAGGLE GRAND</div>
+        <div class="balance-pill">
+            🪙 <span id="balance-val">0</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="games-grid">
+            
+            <!-- ROULETTE -->
+            <div class="game-card">
+                <h3>🔴 Roulette</h3>
+                <div class="visual-box">
+                    <div id="r-wheel" class="roulette-wheel"></div>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-roulette" value="2" min="1"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn" style="background:#ef4444; color:white;" onclick="playRoulette('red')">Rot</button>
+                    <button class="btn" style="background:#1e293b; color:white;" onclick="playRoulette('black')">Schwarz</button>
+                </div>
+                <div id="msg-roulette" class="msg"></div>
+            </div>
+
+            <!-- SLOTS -->
+            <div class="game-card">
+                <h3>🎰 Glaggle Slots</h3>
+                <div class="visual-box">
+                    <div class="slot-reels">
+                        <div id="s1" class="reel">🍒</div>
+                        <div id="s2" class="reel">🍋</div>
+                        <div id="s3" class="reel">💎</div>
+                    </div>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-slots" value="1" min="1"></div>
+                <button class="btn" id="btn-slots" onclick="playSlots()">Hebel ziehen</button>
+                <div id="msg-slots" class="msg"></div>
+            </div>
+
+            <!-- COIN FLIP -->
+            <div class="game-card">
+                <h3>🪙 Münzwurf</h3>
+                <div class="visual-box">
+                    <div id="c-visual" class="coin-flip">🪙</div>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-coin" value="5" min="1"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn" onclick="playCoin('heads')">Kopf</button>
+                    <button class="btn" style="background:#475569; color:white;" onclick="playCoin('tails')">Zahl</button>
+                </div>
+                <div id="msg-coin" class="msg"></div>
+            </div>
+
+            <!-- PLINKO -->
+            <div class="game-card">
+                <h3>💧 Plinko Drop</h3>
+                <div class="visual-box" id="plinko-vp">
+                    <div id="p-ball" class="plinko-ball"></div>
+                    <div style="position:absolute; bottom:5px; font-size:0.7rem; width:100%; display:flex; justify-content:space-around;">
+                        <span>3x</span><span>0.5x</span><span>2x</span><span>0.5x</span><span>3x</span>
+                    </div>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-plinko" value="2" min="1"></div>
+                <button class="btn" id="btn-plinko" onclick="playPlinko()">Drop</button>
+                <div id="msg-plinko" class="msg"></div>
+            </div>
+
+            <!-- DICE ROLL -->
+            <div class="game-card">
+                <h3>🎲 Würfel (4+ gewinnt)</h3>
+                <div class="visual-box" id="d-visual">⚀</div>
+                <div class="bet-row"><input type="number" id="bet-dice" value="2" min="1"></div>
+                <button class="btn" onclick="playDice()">Würfeln</button>
+                <div id="msg-dice" class="msg"></div>
+            </div>
+
+            <!-- MINES -->
+            <div class="game-card">
+                <h3>💣 Mines (50/50 Chance)</h3>
+                <div class="visual-box" style="font-size:1.5rem; display:grid; grid-template-columns: repeat(2, 1fr); gap:5px; padding:10px;">
+                    <button class="btn" style="padding:5px;" onclick="playMines(0)">?</button>
+                    <button class="btn" style="padding:5px;" onclick="playMines(1)">?</button>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-mines" value="5" min="1"></div>
+                <div id="msg-mines" class="msg">Wähle eine Seite!</div>
+            </div>
+
+            <!-- PENALTY -->
+            <div class="game-card">
+                <h3>⚽ Elfmeter</h3>
+                <div class="visual-box" id="pen-vp" style="font-size:1.5rem;">🧤 🥅 🧤</div>
+                <div class="bet-row"><input type="number" id="bet-pen" value="5" min="1"></div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn" style="flex:1" onclick="playPen('L')">L</button>
+                    <button class="btn" style="flex:1" onclick="playPen('M')">M</button>
+                    <button class="btn" style="flex:1" onclick="playPen('R')">R</button>
+                </div>
+                <div id="msg-pen" class="msg"></div>
+            </div>
+
+            <!-- HIGHER LOWER -->
+            <div class="game-card">
+                <h3>🃏 Höher/Tiefer</h3>
+                <div class="visual-box" id="hl-vp">7</div>
+                <div class="bet-row"><input type="number" id="bet-hl" value="2" min="1"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn" onclick="playHL('up')">Höher</button>
+                    <button class="btn" style="background:#475569; color:white;" onclick="playHL('down')">Tiefer</button>
+                </div>
+                <div id="msg-hl" class="msg"></div>
+            </div>
+
+            <!-- WHEEL -->
+            <div class="game-card">
+                <h3>🎡 Glücksrad</h3>
+                <div class="visual-box">
+                    <div id="f-wheel" class="roulette-wheel" style="background: conic-gradient(#1e293b 0% 70%, gold 70% 100%);"></div>
+                </div>
+                <div class="bet-row"><input type="number" id="bet-wheel" value="5" min="1"></div>
+                <button class="btn" onclick="playFortune()">Drehen (30% Winrate)</button>
+                <div id="msg-wheel" class="msg"></div>
+            </div>
+
+            <!-- 21 SIM -->
+            <div class="game-card">
+                <h3>🃏 Black Jack Sim</h3>
+                <div class="visual-box" id="bj-vp" style="font-size:1.2rem;">Klick zum Ziehen</div>
+                <div class="bet-row"><input type="number" id="bet-bj" value="10" min="1"></div>
+                <button class="btn" onclick="playBJ()">Karte ziehen</button>
+                <div id="msg-bj" class="msg"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // --- COIN SYSTEM ---
+        let coins = 0;
+        let toastEl;
+        let balanceValueEl;
+
+        window.onload = function() {
+            toastEl = document.getElementById('toast');
+            balanceValueEl = document.getElementById('balance-val');
+            
+            let storedCoins = localStorage.getItem('glaggleCoins');
+            
+            if (storedCoins === null) {
+                coins = 10;
+                localStorage.setItem('glaggleCoins', coins);
+                showToast("WILLKOMMENS-BONUS: +10 COINS! 🎁");
+            } else {
+                coins = parseInt(storedCoins);
+                if (coins <= 0) {
+                    coins = 10;
+                    localStorage.setItem('glaggleCoins', coins);
+                    showToast("NACHSCHUB: +10 COINS! 💸");
+                }
+            }
+            updateUI();
+        };
+
+        function updateUI() {
+            if (coins < 0) coins = 0;
+            if (balanceValueEl) {
+                balanceValueEl.innerText = coins.toLocaleString();
+            }
+            localStorage.setItem('glaggleCoins', coins);
+        }
+
+        function showToast(txt) {
+            if (!toastEl) return;
+            toastEl.innerText = txt;
+            toastEl.style.transform = "translateY(0)";
+            setTimeout(() => {
+                if (toastEl) toastEl.style.transform = "translateY(100px)";
+            }, 3000);
+        }
+
+        function validate(betId, msgId) {
+            const input = document.getElementById(betId);
+            let amount = parseInt(input.value);
+            const msg = document.getElementById(msgId);
+            
+            if (isNaN(amount) || amount <= 0) {
+                msg.innerHTML = `<span class="lose-text">Mindestens 1 setzen!</span>`;
+                return false;
+            }
+            if (amount > coins) {
+                msg.innerHTML = `<span class="lose-text">Zu wenig Coins!</span>`;
+                return false;
+            }
+            
+            coins -= amount;
+            updateUI();
+            msg.innerHTML = "Einsatz platziert...";
+            return amount;
+        }
+
+        // --- GAMES (Faires Mittelmaß) ---
+
+        // 1. Roulette (50:50)
+        let rDeg = 0;
+        function playRoulette(choice) {
+            const bet = validate('bet-roulette', 'msg-roulette');
+            if (!bet) return;
+            const wheel = document.getElementById('r-wheel');
+            rDeg += 1800 + Math.floor(Math.random() * 360);
+            wheel.style.transform = `rotate(${rDeg}deg)`;
+            
+            setTimeout(() => {
+                const win = Math.random() < 0.50; 
+                if (win) {
+                    coins += bet * 2;
+                    document.getElementById('msg-roulette').innerHTML = `<span class="win-text">Treffer! +${bet*2}</span>`;
+                } else {
+                    document.getElementById('msg-roulette').innerHTML = `<span class="lose-text">Verloren.</span>`;
+                }
+                updateUI();
+            }, 4000);
+        }
+
+        // 2. Slots (Duo zahlt 1.2x)
+        function playSlots() {
+            const bet = validate('bet-slots', 'msg-slots');
+            if (!bet) return;
+            const syms = ['🍒', '🍋', '🍇', '💎', '7️⃣'];
+            const btn = document.getElementById('btn-slots');
+            btn.disabled = true;
+            
+            document.getElementById('s1').classList.add('spinning');
+            document.getElementById('s2').classList.add('spinning');
+            document.getElementById('s3').classList.add('spinning');
+
+            setTimeout(() => {
+                const r = [syms[Math.floor(Math.random()*5)], syms[Math.floor(Math.random()*5)], syms[Math.floor(Math.random()*5)]];
+                document.getElementById('s1').classList.remove('spinning');
+                document.getElementById('s1').innerText = r[0];
+                setTimeout(() => {
+                    document.getElementById('s2').classList.remove('spinning');
+                    document.getElementById('s2').innerText = r[1];
+                    setTimeout(() => {
+                        document.getElementById('s3').classList.remove('spinning');
+                        document.getElementById('s3').innerText = r[2];
+                        
+                        if (r[0] === r[1] && r[1] === r[2]) {
+                            const payout = r[0] === '7️⃣' ? 15 : 10;
+                            coins += bet * payout;
+                            showToast("JACKPOT! 🎰");
+                            document.getElementById('msg-slots').innerHTML = `<span class="win-text">JACKPOT! +${bet*payout}</span>`;
+                        } else if (r[0] === r[1] || r[1] === r[2] || r[0] === r[2]) {
+                            const win = Math.floor(bet * 1.2);
+                            coins += win;
+                            document.getElementById('msg-slots').innerHTML = `<span class="win-text">Duo! +${win}</span>`;
+                        } else {
+                            document.getElementById('msg-slots').innerHTML = `<span class="lose-text">Niete.</span>`;
+                        }
+                        btn.disabled = false;
+                        updateUI();
+                    }, 500);
+                }, 500);
+            }, 1000);
+        }
+
+        // 3. Coin
+        function playCoin(choice) {
+            const bet = validate('bet-coin', 'msg-coin');
+            if (!bet) return;
+            const visual = document.getElementById('c-visual');
+            visual.classList.add('flipping');
+            
+            setTimeout(() => {
+                visual.classList.remove('flipping');
+                const result = Math.random() < 0.5 ? 'heads' : 'tails';
+                visual.innerText = result === 'heads' ? '🪙' : '⚖️';
+                if (choice === result) {
+                    coins += bet * 2;
+                    document.getElementById('msg-coin').innerHTML = `<span class="win-text">Gewonnen! +${bet*2}</span>`;
+                } else {
+                    document.getElementById('msg-coin').innerHTML = `<span class="lose-text">Falsche Seite!</span>`;
+                }
+                updateUI();
+            }, 1200);
+        }
+
+        // 4. Plinko (Mitte 0.5x, Ränder 3x, Innen 2x)
+        function playPlinko() {
+            const bet = validate('bet-plinko', 'msg-plinko');
+            if (!bet) return;
+            const ball = document.getElementById('p-ball');
+            ball.style.display = "block";
+            ball.style.left = "50%";
+            ball.style.top = "10px";
+            
+            let pos = 50;
+            let fall = setInterval(() => {
+                let top = parseInt(ball.style.top);
+                if (top < 120) {
+                    ball.style.top = (top + 10) + "px";
+                    pos += (Math.random() - 0.5) * 25;
+                    ball.style.left = pos + "%";
+                } else {
+                    clearInterval(fall);
+                    ball.style.display = "none";
+                    let res = parseFloat(ball.style.left);
+                    let mult = 0.5; 
+                    if (res < 20 || res > 80) mult = 3;
+                    else if (res > 35 && res < 65) mult = 2;
+                    
+                    const win = Math.floor(bet * mult);
+                    coins += win;
+                    document.getElementById('msg-plinko').innerHTML = mult >= 1 ? `<span class="win-text">Gewinn: ${win}</span>` : `<span class="lose-text">Trostpreis: ${win}</span>`;
+                    updateUI();
+                }
+            }, 100);
+        }
+
+        // 5. Dice (Gewinn bei 4, 5 oder 6)
+        function playDice() {
+            const bet = validate('bet-dice', 'msg-dice');
+            if (!bet) return;
+            const v = document.getElementById('d-visual');
+            const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            let count = 0;
+            let roll = setInterval(() => {
+                v.innerText = faces[Math.floor(Math.random()*6)];
+                count++;
+                if (count > 12) {
+                    clearInterval(roll);
+                    const final = Math.floor(Math.random()*6) + 1;
+                    v.innerText = faces[final-1];
+                    if (final >= 4) {
+                        coins += bet * 2;
+                        document.getElementById('msg-dice').innerHTML = `<span class="win-text">Sieg! +${bet*2}</span>`;
+                    } else {
+                        document.getElementById('msg-dice').innerHTML = `<span class="lose-text">Pech gehabt.</span>`;
+                    }
+                    updateUI();
+                }
+            }, 80);
+        }
+
+        // 6. Mines
+        function playMines(idx) {
+            const bet = validate('bet-mines', 'msg-mines');
+            if (!bet) return;
+            const bomb = Math.floor(Math.random()*2);
+            if (idx === bomb) {
+                document.getElementById('msg-mines').innerHTML = `<span class="lose-text">BOOM!</span>`;
+            } else {
+                coins += bet * 2;
+                document.getElementById('msg-mines').innerHTML = `<span class="win-text">Glück! +${bet*2}</span>`;
+            }
+            updateUI();
+        }
+
+        // 7. Penalty
+        function playPen(dir) {
+            const bet = validate('bet-pen', 'msg-pen');
+            if (!bet) return;
+            const saved = Math.random() < 0.35;
+            const vp = document.getElementById('pen-vp');
+            if (saved) {
+                vp.innerText = "🧤⚽ 🥅";
+                document.getElementById('msg-pen').innerHTML = `<span class="lose-text">Parade!</span>`;
+            } else {
+                vp.innerText = "⚽ 🥅 🧤";
+                coins += Math.floor(bet * 2);
+                document.getElementById('msg-pen').innerHTML = `<span class="win-text">TOR! +${bet*2}</span>`;
+            }
+            updateUI();
+        }
+
+        // 8. Higher Lower
+        let curCard = 7;
+        function playHL(dir) {
+            const bet = validate('bet-hl', 'msg-hl');
+            if (!bet) return;
+            const next = Math.floor(Math.random()*13) + 1;
+            const win = (dir === 'up' && next >= curCard) || (dir === 'down' && next <= curCard);
+            document.getElementById('hl-vp').innerText = next;
+            if (win) {
+                coins += bet * 2;
+                document.getElementById('msg-hl').innerHTML = `<span class="win-text">Richtig! +${bet*2}</span>`;
+            } else {
+                document.getElementById('msg-hl').innerHTML = `<span class="lose-text">Falsch!</span>`;
+            }
+            curCard = next;
+            updateUI();
+        }
+
+        // 9. Fortune Wheel (30% Winrate)
+        let fDeg = 0;
+        function playFortune() {
+            const bet = validate('bet-wheel', 'msg-wheel');
+            if (!bet) return;
+            const w = document.getElementById('f-wheel');
+            fDeg += 1440 + Math.random()*360;
+            w.style.transform = `rotate(${fDeg}deg)`;
+            setTimeout(() => {
+                const win = Math.random() < 0.3; 
+                if (win) {
+                    coins += bet * 3;
+                    document.getElementById('msg-wheel').innerHTML = `<span class="win-text">GEWONNEN! +${bet*3}</span>`;
+                } else {
+                    document.getElementById('msg-wheel').innerHTML = `<span class="lose-text">Niete.</span>`;
+                }
+                updateUI();
+            }, 4000);
+        }
+
+        // 10. BJ Sim
+        function playBJ() {
+            const bet = validate('bet-bj', 'msg-bj');
+            if (!bet) return;
+            const p = Math.floor(Math.random()*8) + 14; // Spieler 14-21
+            const d = Math.floor(Math.random()*7) + 15; // Bank 15-21
+            const vp = document.getElementById('bj-vp');
+            vp.innerText = `${p} vs ${d}`;
+            
+            if (p > d || d > 21) {
+                coins += bet * 2;
+                document.getElementById('msg-bj').innerHTML = `<span class="win-text">Sieg! +${bet*2}</span>`;
+            } else if (p === d) {
+                coins += bet; // Einsatz zurück
+                document.getElementById('msg-bj').innerHTML = `<span class="win-text">Unentschieden! +/- 0</span>`;
+            } else {
+                document.getElementById('msg-bj').innerHTML = `<span class="lose-text">Bank gewinnt.</span>`;
+            }
+            updateUI();
+        }
+    </script>
+</body>
+</html>
