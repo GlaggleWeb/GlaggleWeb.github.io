@@ -170,25 +170,30 @@
 </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gridSize = 8; // Kleineres Grid für mehr Action
-        const tileSize = 400 / gridSize;
-        
-        let player = { x: 4, y: 4, renderX: 4, renderY: 4 };
-        let grid = []; // 0: Fest, 1: Rissig, 2: Sehr rissig, 3: Wasser
-        let startTime, currentTime, gameRunning = false;
-        let lastMoveTime = 0;
-        let lastStandTime = 0;
-        const moveCooldown = 150; 
-        const standDangerTime = 800; // Nach 0.8s bricht das Eis unter dir, wenn du stehst
-        
-        let bestTime = localStorage.getItem('glagglePenguinBest') || 0;
-        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-        let inputDirection = null;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const gridSize = 8; 
+const tileSize = 400 / gridSize;
 
-        document.getElementById('best-time').innerText = parseFloat(bestTime).toFixed(1) + "s";
-        document.getElementById('coin-count').innerText = coins;
+let player = { x: 4, y: 4, renderX: 4, renderY: 4 };
+let grid = []; 
+let startTime, currentTime, gameRunning = false;
+let lastMoveTime = 0;
+let lastStandTime = 0;
+const moveCooldown = 150; 
+const standDangerTime = 800; 
+
+// --- WICHTIG FÜR DAS GAMECENTER ---
+// Der Name muss exakt "icerun_highscore" sein
+const HIGHSCORE_KEY = 'icerun_highscore'; 
+
+let bestTime = localStorage.getItem(HIGHSCORE_KEY) || 0;
+let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+let inputDirection = null;
+
+// Anzeige initialisieren
+document.getElementById('best-time').innerText = parseFloat(bestTime).toFixed(1) + "s";
+document.getElementById('coin-count').innerText = coins;
 
         function initGame(mode) {
             document.getElementById('start-overlay').style.opacity = "0";
@@ -396,29 +401,33 @@
             ctx.fill();
         }
 
-        function gameOver() {
-            gameRunning = false;
-            const finalTime = parseFloat(currentTime);
-            
-            // Coins berechnen (1 Coin pro 25 Sekunden)
-            const earnedCoins = Math.floor(finalTime / 25);
-            if(earnedCoins > 0) {
-                coins += earnedCoins;
-                localStorage.setItem('glaggleCoins', coins);
-                document.getElementById('coin-count').innerText = coins;
-            }
+function gameOver() {
+    gameRunning = false;
+    const finalTime = parseFloat(currentTime);
+    
+    // Bestehende Zeit aus dem richtigen Key laden
+    let savedBest = parseFloat(localStorage.getItem(HIGHSCORE_KEY)) || 0;
 
-            if(finalTime > bestTime) {
-                bestTime = finalTime;
-                localStorage.setItem('glagglePenguinBest', bestTime);
-                document.getElementById('best-time').innerText = bestTime.toFixed(1) + "s";
-                document.getElementById('final-msg').innerText = "Neuer Rekord! " + bestTime.toFixed(1) + "s 🎉";
-            } else {
-                document.getElementById('final-msg').innerText = "Zeit: " + finalTime.toFixed(1) + "s";
-            }
-            
-            document.getElementById('death-overlay').style.display = "flex";
-        }
+    if (finalTime > savedBest) {
+        // Unter "icerun_highscore" speichern, damit das Gamecenter es sieht
+        localStorage.setItem(HIGHSCORE_KEY, finalTime); 
+        bestTime = finalTime;
+        document.getElementById('best-time').innerText = bestTime.toFixed(1) + "s";
+        document.getElementById('final-msg').innerText = "Neuer Rekord! " + bestTime.toFixed(1) + "s 🎉";
+    } else {
+        document.getElementById('final-msg').innerText = "Zeit: " + finalTime.toFixed(1) + "s";
+    }
+
+    // Coins (bleibt gleich)
+    const earnedCoins = Math.floor(finalTime / 25);
+    if(earnedCoins > 0) {
+        coins += earnedCoins;
+        localStorage.setItem('glaggleCoins', coins);
+        document.getElementById('coin-count').innerText = coins;
+    }
+    
+    document.getElementById('death-overlay').style.display = "flex";
+}
     </script>
 </body>
 </html>
