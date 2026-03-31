@@ -122,132 +122,126 @@
 </div>
 
     <script>
-        const canvas = document.getElementById('dashCanvas');
-        const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu-overlay');
+const canvas = document.getElementById('dashCanvas');
+const ctx = canvas.getContext('2d');
+const menu = document.getElementById('menu-overlay');
+
+let gameRunning = false;
+let score = 0;
+
+// --- WICHTIG FÜR GAMECENTER KOMPATIBILITÄT ---
+const HIGHSCORE_KEY = 'glagglejump_highscore'; 
+let highscore = localStorage.getItem(HIGHSCORE_KEY) || 0;
+document.getElementById('highscore').innerText = highscore;
+// ----------------------------------------------
+
+const glaggle = {
+    x: 60, y: 0, w: 35, h: 35,
+    vy: 0, gravity: 0.5, jumpPower: -10,
+    grounded: false
+};
+
+let obstacles = [];
+let nextObstacleTimer = 0;
+let gameSpeed = 4;
+
+function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+window.onresize = resize;
+resize();
+
+function startGame(e) {
+    if(e) e.stopPropagation();
+    score = 0;
+    gameSpeed = 4;
+    obstacles = [];
+    glaggle.y = canvas.height - 45;
+    glaggle.vy = 0;
+    nextObstacleTimer = 0;
+    gameRunning = true;
+    menu.style.display = "none";
+    document.getElementById('score').innerText = "0"; // Anzeige resetten
+    update();
+}
+
+function jump() {
+    if(gameRunning && glaggle.grounded) {
+        glaggle.vy = glaggle.jumpPower;
+        glaggle.grounded = false;
+    }
+}
+
+window.addEventListener("keydown", (e) => { if(e.code === "Space" || e.key === "w") jump(); });
+
+function update() {
+    if(!gameRunning) return;
+
+    glaggle.vy += glaggle.gravity;
+    glaggle.y += glaggle.vy;
+
+    if(glaggle.y + glaggle.h > canvas.height - 10) {
+        glaggle.y = canvas.height - 10 - glaggle.h;
+        glaggle.vy = 0;
+        glaggle.grounded = true;
+    }
+
+    nextObstacleTimer--;
+    if(nextObstacleTimer <= 0) {
+        let height = Math.random() * 30 + 30;
+        obstacles.push({ x: canvas.width, y: canvas.height - 10 - height, w: 25, h: height });
+        nextObstacleTimer = Math.random() * 50 + (100 / (gameSpeed/4));
+    }
+
+    obstacles.forEach((obs, i) => {
+        obs.x -= gameSpeed;
         
-        let gameRunning = false;
-        let score = 0;
-        let highscore = localStorage.getItem('glaggleDashHighscore') || 0;
-        document.getElementById('highscore').innerText = highscore;
-
-        // Player Physik (angepasst für faireres Springen)
-        const glaggle = {
-            x: 60, y: 0, w: 35, h: 35,
-            vy: 0, gravity: 0.5, jumpPower: -10,
-            grounded: false
-        };
-
-        let obstacles = [];
-        let nextObstacleTimer = 0;
-        let gameSpeed = 4;
-
-        function resize() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-        window.onresize = resize;
-        resize();
-
-        function startGame(e) {
-            if(e) e.stopPropagation();
-            score = 0;
-            gameSpeed = 4;
-            obstacles = [];
-            glaggle.y = canvas.height - 45;
-            glaggle.vy = 0;
-            nextObstacleTimer = 0;
-            gameRunning = true;
-            menu.style.display = "none";
-            update();
+        if(glaggle.x < obs.x + obs.w && glaggle.x + glaggle.w > obs.x &&
+           glaggle.y < obs.y + obs.h && glaggle.y + glaggle.h > obs.y) {
+            gameOver();
         }
 
-        function jump() {
-            if(gameRunning && glaggle.grounded) {
-                glaggle.vy = glaggle.jumpPower;
-                glaggle.grounded = false;
-            }
+        if(obs.x + obs.w < 0) {
+            obstacles.splice(i, 1);
+            score++;
+            document.getElementById('score').innerText = score;
+            gameSpeed += 0.03;
         }
+    });
 
-        window.addEventListener("keydown", (e) => { if(e.code === "Space" || e.key === "w") jump(); });
+    draw();
+    requestAnimationFrame(update);
+}
 
-        function update() {
-            if(!gameRunning) return;
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
+    ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    ctx.beginPath();
+    ctx.roundRect(glaggle.x, glaggle.y, glaggle.w, glaggle.h, 8);
+    ctx.fill();
+    ctx.fillStyle = "#FF6B6B";
+    obstacles.forEach(obs => {
+        ctx.beginPath();
+        ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 5);
+        ctx.fill();
+    });
+}
 
-            // Physik
-            glaggle.vy += glaggle.gravity;
-            glaggle.y += glaggle.vy;
-
-            if(glaggle.y + glaggle.h > canvas.height - 10) {
-                glaggle.y = canvas.height - 10 - glaggle.h;
-                glaggle.vy = 0;
-                glaggle.grounded = true;
-            }
-
-            // Hindernis-Spawning (Fairer Abstand)
-            nextObstacleTimer--;
-            if(nextObstacleTimer <= 0) {
-                let height = Math.random() * 30 + 30; // Zufällige Höhe
-                obstacles.push({ x: canvas.width, y: canvas.height - 10 - height, w: 25, h: height });
-                nextObstacleTimer = Math.random() * 50 + (100 / (gameSpeed/4)); // Abstand passt sich Speed an
-            }
-
-            obstacles.forEach((obs, i) => {
-                obs.x -= gameSpeed;
-                
-                // Kollisions-Check
-                if(glaggle.x < obs.x + obs.w && glaggle.x + glaggle.w > obs.x &&
-                   glaggle.y < obs.y + obs.h && glaggle.y + glaggle.h > obs.y) {
-                    gameOver();
-                }
-
-                if(obs.x + obs.w < 0) {
-                    obstacles.splice(i, 1);
-                    score++;
-                    document.getElementById('score').innerText = score;
-                    gameSpeed += 0.03;
-                }
-            });
-
-            draw();
-            requestAnimationFrame(update);
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Boden
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-border');
-            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
-
-            // Glaggle
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-            ctx.beginPath();
-            ctx.roundRect(glaggle.x, glaggle.y, glaggle.w, glaggle.h, 8);
-            ctx.fill();
-
-            // Hindernisse
-            ctx.fillStyle = "#FF6B6B";
-            obstacles.forEach(obs => {
-                ctx.beginPath();
-                ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 5);
-                ctx.fill();
-            });
-        }
-
-        function gameOver() {
+function gameOver() {
     gameRunning = false;
     
     if (score >= 5) {
         earnCoin();
     }
 
-    // ÄNDERUNG HIER: Eindeutiger Name für das Gamecenter
-    const storageKey = 'glagglejump_highscore'; 
-    let currentHighscore = localStorage.getItem(storageKey) || 0;
+    // Highscore Logik für Gamecenter
+    let currentHighscore = parseInt(localStorage.getItem(HIGHSCORE_KEY)) || 0;
 
     if(score > currentHighscore) {
-        localStorage.setItem(storageKey, score); // Speichern für Gamecenter
+        localStorage.setItem(HIGHSCORE_KEY, score); 
         document.getElementById('highscore').innerText = score;
         document.getElementById('msg').innerText = "Neuer Rekord! 🎉";
     } else {
@@ -255,20 +249,17 @@
     }
     menu.style.display = "flex";
 }
+
 function earnCoin() {
-    // 1. Coins aus Speicher laden und erhöhen
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     glaggleCoins++;
     localStorage.setItem('glaggleCoins', glaggleCoins);
 
-    // 2. UI finden
     const container = document.getElementById('coin-container');
     const countElement = document.getElementById('coin-count');
 
     if (container && countElement) {
         countElement.innerText = glaggleCoins;
-
-        // Animation auslösen
         container.classList.add('coin-animation');
         setTimeout(() => {
             container.classList.remove('coin-animation');
@@ -276,7 +267,6 @@ function earnCoin() {
     }
 }
 
-// Initialisierung beim Laden der Seite
 window.addEventListener('load', () => {
     const startCoins = localStorage.getItem('glaggleCoins') || 0;
     document.getElementById('coin-count').innerText = startCoins;
