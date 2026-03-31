@@ -419,7 +419,7 @@ function gameOver() {
     }
 
     // Coins (bleibt gleich)
-    const earnedCoins = Math.floor(finalTime / 25);
+    const earnedCoins = Math.floor(finalTime / 20);
     if(earnedCoins > 0) {
         coins += earnedCoins;
         localStorage.setItem('glaggleCoins', coins);
