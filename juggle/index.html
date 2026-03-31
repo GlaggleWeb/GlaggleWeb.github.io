@@ -142,22 +142,29 @@
 </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu-overlay');
-        const scoreEl = document.getElementById('score');
-        const highscoreEl = document.getElementById('highscore');
-        const coinEl = document.getElementById('coin-count');
-        const container = document.getElementById('game-container');
+      const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const menu = document.getElementById('menu-overlay');
+const scoreEl = document.getElementById('score');
+const highscoreEl = document.getElementById('highscore');
+const coinEl = document.getElementById('coin-count');
+const container = document.getElementById('game-container');
 
-        let gameRunning = false;
-        let score = 0;
-        let highscore = localStorage.getItem('glaggleSoccerHighscore') || 0;
-        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+let gameRunning = false;
+let score = 0;
 
-        highscoreEl.innerText = highscore;
-        coinEl.innerText = coins;
+// --- WICHTIG FÜR GAMECENTER KOMPATIBILITÄT ---
+// Der Name muss exakt zum 'value' im Gamecenter-Dropdown passen + _highscore
+const HIGHSCORE_KEY = 'juggle_highscore'; 
 
+// Lade Highscore und Coins (mit Fallback auf 0)
+let highscore = parseInt(localStorage.getItem(HIGHSCORE_KEY)) || 0;
+let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+// Anzeige beim Start befüllen
+highscoreEl.innerText = highscore;
+coinEl.innerText = coins;
+        
         const ball = {
             x: 0, y: 0, radius: 25,
             vx: 0, vy: 0,
@@ -316,27 +323,31 @@
             drawBall();
         }
 
-        function gameOver() {
-            gameRunning = false;
-            
-            if (score > highscore) {
-                highscore = score;
-                localStorage.setItem('glaggleSoccerHighscore', highscore);
-                highscoreEl.innerText = highscore;
-                document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
-            } else {
-                document.getElementById('msg').innerText = "Aus! Score: " + score;
-            }
+      function gameOver() {
+    gameRunning = false;
+    
+    // Prüfen, ob der aktuelle Score besser ist als der gespeicherte
+    let savedHighscore = parseInt(localStorage.getItem(HIGHSCORE_KEY)) || 0;
 
-            if (score > 0) {
-                let earned = Math.floor(score / 10) ;
-                coins += earned;
-                localStorage.setItem('glaggleCoins', coins);
-                coinEl.innerText = coins;
-            }
+    if (score > savedHighscore) {
+        localStorage.setItem(HIGHSCORE_KEY, score); // Speichern für das Gamecenter
+        highscore = score;
+        highscoreEl.innerText = highscore;
+        document.getElementById('msg').innerText = "🏆 Neuer Rekord!";
+    } else {
+        document.getElementById('msg').innerText = "Aus! Score: " + score;
+    }
 
-            menu.style.display = "flex";
-        }
+    // Coins vergeben (Beispiel: 1 Coin pro 10 Punkte)
+    if (score >= 10) {
+        let earned = Math.floor(score / 10);
+        coins += earned;
+        localStorage.setItem('glaggleCoins', coins);
+        coinEl.innerText = coins;
+    }
+
+    menu.style.display = "flex";
+}
     </script>
 </body>
 </html>
