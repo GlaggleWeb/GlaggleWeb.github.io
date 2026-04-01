@@ -460,38 +460,72 @@
 
     const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
-    // --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
-// --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
-    function generateFunnyName() {
-        const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
-        const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
-        const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
-        const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
-        const randomNum = Math.floor(Math.random() * 999);
-        return `${randomAdj} ${randomNom}-${randomNum}`;
-    }
+ // --- 2. NAMEN & COIN LOGIK (CLOUD & LOKAL) ---
 
-    let currentUserName = localStorage.getItem('glaggleUserName');
+// 1. Grund-Funktion für Namen (bleibt gleich)
+function generateFunnyName() {
+    const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
+    const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
+    const randomAdj = adjektive[Math.floor(Math.random() * adjektive.length)];
+    const randomNom = nomen[Math.floor(Math.random() * nomen.length)];
+    return `${randomAdj} ${randomNom}-${Math.floor(Math.random() * 999)}`;
+}
+
+// 2. Variablen initialisieren
+let currentUserName = localStorage.getItem('glaggleUserName');
+let glaggleID = localStorage.getItem('glaggleID'); 
+let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+// 3. UI Update Funktion
+function updateCoinDisplay() {
+    const countElement = document.getElementById('coin-count');
+    if (countElement) countElement.innerText = glaggleCoins.toLocaleString();
+}
+
+// 4. Synchronisierung & Account-Check
+async function syncAccountData() {
+    // Falls eine Glaggle ID existiert -> Daten vom Server holen
+    if (glaggleID) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('glaggle_accounts')
+                .select('total_coins, game_center_name')
+                .eq('glaggle_id', glaggleID)
+                .single();
+
+            if (data) {
+                glaggleCoins = data.total_coins;
+                currentUserName = data.game_center_name; 
+                localStorage.setItem('glaggleCoins', glaggleCoins);
+                localStorage.setItem('glaggleUserName', currentUserName);
+                console.log("Cloud-Sync erfolgreich: " + currentUserName);
+            }
+        } catch (e) {
+            console.warn("Sync fehlgeschlagen, nutze lokale Daten.");
+        }
+    } 
+    
+    // Falls immer noch kein Name da ist (neuer User ohne ID)
     if (!currentUserName) {
         currentUserName = generateFunnyName();
         localStorage.setItem('glaggleUserName', currentUserName);
     }
 
-    // Erst die Coins aus dem Speicher laden
-    let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-
-    // Temporärer Korrektur-Block: Korrigiert den Wert lokal im Browser des Nutzers
+    // Dein Korrektur-Block für Jelly Studios
     if (currentUserName === "Jelly Studios DEV" && glaggleCoins === 31202) {
         glaggleCoins = 800; 
         localStorage.setItem('glaggleCoins', 800);
     }
 
-    function updateCoinDisplay() {
-        const countElement = document.getElementById('coin-count');
-        if (countElement) countElement.innerText = glaggleCoins;
+    updateCoinDisplay();
+    // Chat-Placeholder aktualisieren, falls das Feld existiert
+    if (document.getElementById('chat-input')) {
+        document.getElementById('chat-input').placeholder = `${currentUserName}: Tippen...`;
     }
+}
 
-    // --- 3. GROQ MODERATION ---
+// Startet den Sync sofort
+syncAccountData();
     async function checkModeration(text) {
         const chatStatus = document.getElementById('chat-status');
         chatStatus.innerText = "Glaggle-Wächter prüft...";
