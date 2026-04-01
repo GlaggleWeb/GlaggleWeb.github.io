@@ -241,56 +241,57 @@
                 return Math.floor(100000 + Math.random() * 900000).toString();
             }
 
-            async function register() {
-                const user = usernameInput.value.trim();
-                const gameCenterUser = gcInput.value.trim() || user; // Fallback auf Hauptname falls leer
+           async function register() {
+    const user = usernameInput.value.trim();
+    const gameCenterUser = gcInput.value.trim() || user;
 
-                if (user.length < 3) {
-                    updateStatus("Der Benutzername muss mindestens 3 Zeichen haben.", "error");
-                    return;
+    if (user.length < 3) {
+        updateStatus("Der Benutzername muss mindestens 3 Zeichen haben.", "error");
+        return;
+    }
+
+    setLoading(true);
+    const newID = generateRandomID();
+
+    // WICHTIG: Wir holen die Coins, die der User JETZT gerade im Browser hat
+    const localCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+    try {
+        const { data, error } = await supabase
+            .from('glaggle_accounts')
+            .insert([
+                { 
+                    username: user, 
+                    game_center_name: gameCenterUser,
+                    glaggle_id: newID,
+                    total_coins: localCoins // Hier übertragen wir den Fortschritt!
                 }
+            ]);
 
-                setLoading(true);
-                const newID = generateRandomID();
-
-                try {
-                    // In deine NEUE Tabelle 'glaggle_accounts' einfügen
-                    const { data, error } = await supabase
-                        .from('glaggle_accounts')
-                        .insert([
-                            { 
-                                username: user, 
-                                game_center_name: gameCenterUser,
-                                glaggle_id: newID,
-                                total_coins: 0
-                            }
-                        ]);
-
-                    if (error) {
-                        // Fehlerbehandlung (z.B. Name existiert schon)
-                        if (error.code === '23505') {
-                            updateStatus("Dieser Benutzername ist leider schon vergeben.", "error");
-                        } else {
-                            updateStatus("Fehler: " + error.message, "error");
-                        }
-                        setLoading(false);
-                    } else {
-                        // Erfolg!
-                        localStorage.setItem('glaggleUserName', user);
-                        localStorage.setItem('glaggleGCName', gameCenterUser);
-                        localStorage.setItem('glaggleID', newID);
-
-                        formContainer.style.display = "none";
-                        updateStatus("Erfolgreich registriert!", "success");
-                        idDisplay.innerText = newID;
-                        idResultArea.style.display = "block";
-                    }
-
-                } catch (e) {
-                    updateStatus("Kritischer Fehler: Verbindung fehlgeschlagen.", "error");
-                    setLoading(false);
-                }
+        if (error) {
+            if (error.code === '23505') {
+                updateStatus("Benutzername oder ID bereits vergeben. Probier es nochmal!", "error");
+            } else {
+                updateStatus("Fehler: " + error.message, "error");
             }
+            setLoading(false);
+        } else {
+            // Speicher alles lokal für das Gamecenter
+            localStorage.setItem('glaggleUserName', user);
+            localStorage.setItem('glaggleGCName', gameCenterUser);
+            localStorage.setItem('glaggleID', newID);
+
+            formContainer.style.display = "none";
+            updateStatus("Erfolgreich registriert! Dein Fortschritt wurde übertragen.", "success");
+            idDisplay.innerText = newID;
+            idResultArea.style.display = "block";
+        }
+
+    } catch (e) {
+        updateStatus("Kritischer Fehler: Verbindung fehlgeschlagen.", "error");
+        setLoading(false);
+    }
+}
 
             function updateStatus(msg, type) {
                 statusMsg.innerText = msg;
