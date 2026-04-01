@@ -461,6 +461,7 @@
     const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
     // --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
+// --- 2. NAMEN & COIN LOGIK (Zuerst!) ---
     function generateFunnyName() {
         const adjektive = ["Goldener", "Silberner", "Hüpfender", "Zappeliger", "Glänzender", "Pixeliger", "Schneller", "Fliegender", "Gieriger", "Reicher", "Kugeliger", "Springender", "Abtauchender", "Eisiger", "Heißer", "Legendärer", "Mystischer", "Seltener", "Wackeliger", "Turbo"];
         const nomen = ["Coin-Sammler", "Glaggle-Meister", "Snake-Bändiger", "Highscore-Held", "Jump-Profi", "Pong-Spieler", "Stacker-König", "Ice-Runner", "Flappy-Fish", "Glaggle-Fan", "Coin-Milliardär", "Giggle-Blob", "Kombi-Knacker", "Zahlen-Rater", "Race-Champion", "Pixel-Glaggle"];
@@ -476,7 +477,15 @@
         localStorage.setItem('glaggleUserName', currentUserName);
     }
 
+    // Erst die Coins aus dem Speicher laden
     let glaggleCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+    // Temporärer Korrektur-Block: Korrigiert den Wert lokal im Browser des Nutzers
+    if (currentUserName === "Jelly Studios DEV" && glaggleCoins === 31202) {
+        glaggleCoins = 800; 
+        localStorage.setItem('glaggleCoins', 800);
+    }
+
     function updateCoinDisplay() {
         const countElement = document.getElementById('coin-count');
         if (countElement) countElement.innerText = glaggleCoins;
