@@ -232,49 +232,35 @@
         const genBtn = document.getElementById('genBtn');
 
         // 1. Initialisierung und Modell-Download
-        window.onload = async () => {
-            loadLocalGallery();
-            
-            try {
-                // Prüfe WebGPU
-                if (!navigator.webgpu) {
-                    loaderStatus.innerText = "WebGPU nicht unterstützt. Nutze langsamen CPU-Modus.";
-                    loaderStatus.style.color = "var(--glaggle-red)";
-                } else {
-                    loaderStatus.innerText = "WebGPU gefunden. Lade Modell...";
+// Ersetze den Anfang der window.onload Funktion:
+window.onload = async () => {
+    loadLocalGallery();
+    
+    // Kleiner Trick: Wir erzwingen CPU, falls WebGPU nicht sofort antwortet
+    const deviceToUse = navigator.webgpu ? 'webgpu' : 'cpu';
+    console.log("Nutze Gerät:", deviceToUse);
+
+    try {
+        pipeline = await AutoPipelineForText2Image.from_pretrained('Xenova/sched-turbo', {
+            progress_callback: (infos) => {
+                loaderProgressContainer.style.display = 'block';
+                if (infos.status === 'progress') {
+                    loaderProgressBar.style.width = `${infos.progress}%`;
+                    loaderStatus.innerText = `Lade Modell: ${Math.round(infos.progress)}%`;
                 }
+            },
+            device: deviceToUse,
+            dtype: 'fp32', // Sicherer für M1 Browser-Kompatibilität
+        });
 
-                // Initialisiere die Pipeline mit einem kleinen, schnellen Modell (Turbo)
-                // Wir nutzen 'Xenova/sched-turbo' (LCM-basiert) für schnelle Ergebnisse im Browser
-                pipeline = await AutoPipelineForText2Image.from_pretrained('Xenova/sched-turbo', {
-                    // Fortschrittsanzeige für den Download
-                    progress_callback: (infos) => {
-                        if (infos.status === 'progress') {
-                            loaderProgressContainer.style.display = 'block';
-                            loaderProgressBar.style.width = `${infos.progress}%`;
-                            loaderStatus.innerText = `Lade Modell-Daten: ${Math.round(infos.progress)}%`;
-                        } else if (infos.status === 'ready') {
-                            loaderStatus.innerText = "Modell bereit! Starte App...";
-                        }
-                    },
-                    // Bevorzuge WebGPU
-                    device: navigator.webgpu ? 'webgpu' : 'cpu', 
-                });
-
-                // Alles bereit
-                genBtn.disabled = false;
-                genBtn.innerText = "Generieren";
-                
-                setTimeout(() => {
-                    preloader.classList.add('preloader-hidden');
-                }, 800);
-
-            } catch (error) {
-                loaderStatus.innerText = `Fehler beim Laden: ${error.message}`;
-                loaderStatus.style.color = "var(--glaggle-red)";
-                console.error("Initialization error:", error);
-            }
-        };
+        genBtn.disabled = false;
+        genBtn.innerText = "Generieren";
+        preloader.classList.add('preloader-hidden');
+    } catch (error) {
+        console.error(error);
+        loaderStatus.innerText = "Ladefehler. Bitte Seite neu laden (CMD+R)";
+    }
+};
 
         // 2. Kernfunktion: Lokale Bildgenerierung
         async function generateImage() {
