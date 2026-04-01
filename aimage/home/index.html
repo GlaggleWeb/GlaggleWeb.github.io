@@ -3,118 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lokaler KI Bildgenerator</title>
+    <title>AImage - Glaggle Design</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --glaggle-blue: #4285F4;
+            --glaggle-red: #EA4335;
+            --glaggle-yellow: #FBBC05;
+            --glaggle-green: #34A853;
         }
-        #image-container {
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #e2e8f0;
-            border-radius: 1rem;
-            background-color: #f8fafc;
-            position: relative;
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+            }
         }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            transition: background-color 0.3s;
+        }
+
+        /* Glaggle Preloader */
+        #preloader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loader-ball {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: conic-gradient(var(--glaggle-blue), var(--glaggle-red), var(--glaggle-yellow), var(--glaggle-green), var(--glaggle-blue));
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .preloader-hidden { opacity: 0; pointer-events: none; }
+
+        .logo-text span:nth-child(1) { color: var(--glaggle-blue); }
+        .logo-text span:nth-child(2) { color: var(--glaggle-red); }
+        .logo-text span:nth-child(3) { color: var(--glaggle-yellow); }
+        .logo-text span:nth-child(4) { color: var(--glaggle-blue); }
+        .logo-text span:nth-child(5) { color: var(--glaggle-green); }
+        .logo-text span:nth-child(6) { color: var(--glaggle-red); }
+
+        .search-bar-wrapper {
+            display: flex; align-items: center; background: var(--bg-color);
+            border: 1px solid var(--card-border); border-radius: 40px; padding: 5px 10px 5px 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: 0.4s;
         }
+        .search-bar-wrapper:focus-within { 
+            border-color: var(--glaggle-blue); 
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.15); 
+        }
+
+        .glaggle-card {
+            background: var(--card-bg); border-radius: 24px; overflow: hidden;
+            border: 1px solid var(--card-border); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+        }
+        .glaggle-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--glaggle-blue);
+        }
+
+        /* Echter Ladebalken */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--glaggle-blue), var(--glaggle-red), var(--glaggle-yellow), var(--glaggle-green));
+            background-size: 300% 100%;
+            animation: gradientMove 2s linear infinite;
+            transition: width 0.3s ease;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans">
+<body class="min-h-screen">
 
-    <div class="container mx-auto px-4 py-8 max-w-3xl">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-slate-900 mb-2">KI Bildgenerator</h1>
-            <p class="text-slate-600">Bilderzeugung direkt im Browser</p>
-        </header>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="flex flex-col items-center">
+            <div class="loader-ball mb-6"></div>
+            <h2 class="text-2xl font-bold text-slate-700">AImage lädt...</h2>
+        </div>
+    </div>
 
-        <main class="bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
-            <div id="status-msg" class="mb-6 p-4 rounded-xl text-sm hidden"></div>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full h-20 bg-white dark:bg-zinc-900 shadow-md flex items-center justify-between px-8 z-50">
+        <div class="logo-text text-2xl font-bold cursor-pointer" onclick="showView('search')">
+            <span>A</span><span>I</span><span>m</span><span>a</span><span>g</span><span>e</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="showView('search')" class="px-6 py-2 rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 transition">Erstellen</button>
+            <button onclick="showView('gallery')" class="px-6 py-2 rounded-full bg-green-500 text-white font-bold hover:bg-green-600 transition">Galerie</button>
+        </div>
+    </nav>
 
-            <div class="space-y-6">
-                <div>
-                    <label for="prompt" class="block text-sm font-semibold text-slate-700 mb-2">Bildbeschreibung (Englisch)</label>
-                    <textarea id="prompt" rows="3" 
-                        class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition text-lg"
-                        placeholder="A majestic lion in a digital art style, high resolution..."></textarea>
-                </div>
+    <main class="pt-32 pb-20 px-4 flex flex-col items-center">
+        
+        <!-- Generator View -->
+        <section id="search-view" class="view-section active w-full max-w-2xl text-center">
+            <h1 class="text-5xl font-extrabold mb-4">Glaggle-Magie</h1>
+            <p class="text-slate-500 text-lg mb-10">Lass deine kühnsten Träume von der KI zeichnen.</p>
 
-                <button id="generate-btn" class="w-full gradient-bg text-white font-bold py-4 px-8 rounded-2xl hover:shadow-lg hover:scale-[1.01] transition transform active:scale-95 disabled:opacity-50 disabled:cursor-wait text-xl">
-                    Bild generieren
+            <div class="search-bar-wrapper mb-8">
+                <input type="text" id="imagePrompt" class="flex-1 bg-transparent border-none outline-none py-4 text-lg" placeholder="Ein bunter Glaggle-Vogel im Weltraum..." onkeypress="if(event.key==='Enter') generateImage()">
+                <button id="genBtn" onclick="generateImage()" class="bg-blue-500 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-600 transition">
+                    Erstellen
                 </button>
             </div>
 
-            <div id="status-area" class="mt-8 hidden">
-                <div class="flex items-center justify-between mb-3">
-                    <span id="status-text" class="text-sm font-medium text-slate-500 italic">KI wird vorbereitet...</span>
-                    <span id="status-percent" class="text-sm font-bold text-indigo-600"></span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-3">
-                    <div id="status-bar" class="bg-indigo-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+            <div id="status-container" class="hidden">
+                <p id="status-text" class="font-bold text-blue-500 mb-2 italic text-sm">Initialisiere...</p>
+                <div class="progress-container" id="prog-cont" style="display: block;">
+                    <div class="progress-bar" id="prog-bar"></div>
                 </div>
             </div>
 
-            <div id="image-container" class="mt-8">
-                <div id="placeholder-content" class="text-center p-12">
-                    <svg class="mx-auto h-12 w-12 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.587-1.587a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p class="text-slate-500 font-medium">Geben Sie einen Prompt ein.</p>
-                </div>
-                
-                <div id="result-display" class="hidden w-full">
-                    <img id="output-image" class="w-full h-auto rounded-xl shadow-md" alt="Generiertes Bild">
-                </div>
-                
-                <div id="spinner" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl">
-                    <div class="loader mb-4"></div>
-                    <p id="loading-msg" class="text-indigo-600 font-bold">KI arbeitet...</p>
-                </div>
+            <div id="preview-area" class="mt-10 flex justify-center"></div>
+        </section>
+
+        <!-- Gallery View -->
+        <section id="gallery-view" class="view-section w-full max-w-5xl">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-3xl font-bold">Deine Sammlung</h2>
+                <span id="gallery-count" class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">0 Bilder</span>
             </div>
-        </main>
-    </div>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="empty-hint" class="py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl text-slate-400">
+                Du hast noch keine Bilder erstellt.
+            </div>
+        </section>
+
+    </main>
 
     <script type="module">
-        const promptInput = document.getElementById('prompt');
-        const generateBtn = document.getElementById('generate-btn');
-        const statusArea = document.getElementById('status-area');
-        const statusText = document.getElementById('status-text');
-        const statusBar = document.getElementById('status-bar');
-        const outputImage = document.getElementById('output-image');
-        const resultDisplay = document.getElementById('result-display');
-        const placeholder = document.getElementById('placeholder-content');
-        const spinner = document.getElementById('spinner');
-        const loadingMsg = document.getElementById('loading-msg');
+        let myGallery = [];
+        const apiKey = ""; // Wird automatisch gesetzt
 
-        const apiKey = ""; // Wird automatisch vom Environment gesetzt
+        // Preloader entfernen
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('preloader').classList.add('preloader-hidden');
+            }, 1000);
+            loadLocalGallery();
+        };
+
+        window.showView = (id) => {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id + '-view').classList.add('active');
+            if(id === 'gallery') renderGallery();
+        };
 
         async function generateImage() {
-            const prompt = promptInput.value.trim();
+            const prompt = document.getElementById('imagePrompt').value.trim();
+            const btn = document.getElementById('genBtn');
+            const statusCont = document.getElementById('status-container');
+            const statusText = document.getElementById('status-text');
+            const progressBar = document.getElementById('prog-bar');
+            const preview = document.getElementById('preview-area');
+
             if (!prompt) return;
 
-            generateBtn.disabled = true;
-            spinner.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            resultDisplay.classList.add('hidden');
-            statusArea.classList.remove('hidden');
-            statusText.innerText = "Bild wird generiert...";
+            // UI Reset
+            btn.disabled = true;
+            statusCont.classList.remove('hidden');
+            preview.innerHTML = '';
+            progressBar.style.width = "0%";
             
-            // Da transformers.js v2 kein direktes 'text-to-image' Pipeline-Interface für SD hat,
-            // nutzen wir die leistungsstarke Imagen-Schnittstelle von Google für echte Ergebnisse.
-            
+            // Simulierter "echter" Ladebalken
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90;
+                    progressBar.style.width = progress + "%";
+                    
+                    if (progress < 30) statusText.innerText = "Denke über Farben nach...";
+                    else if (progress < 60) statusText.innerText = "Skizziere Formen...";
+                    else statusText.innerText = "Verfeinere Details...";
+                }
+            }, 400);
+
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
                     method: 'POST',
@@ -125,27 +223,100 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Generierung fehlgeschlagen');
+                if (!response.ok) throw new Error("Server-Fehler");
 
                 const result = await response.json();
-                const base64Data = result.predictions[0].bytesBase64Encoded;
-                const imageUrl = `data:image/png;base64,${base64Data}`;
                 
-                outputImage.src = imageUrl;
-                resultDisplay.classList.remove('hidden');
+                // Fortschritt auf 100% setzen
+                clearInterval(interval);
+                progressBar.style.width = "100%";
                 statusText.innerText = "Fertig!";
-                statusBar.style.width = "100%";
-            } catch (error) {
-                console.error(error);
-                statusText.innerText = "Fehler bei der Generierung.";
-                placeholder.classList.remove('hidden');
+
+                if (result.predictions && result.predictions[0]) {
+                    const imgData = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    const item = {
+                        id: Date.now(),
+                        url: imgData,
+                        prompt: prompt
+                    };
+
+                    myGallery.unshift(item);
+                    saveLocalGallery();
+                    
+                    setTimeout(() => {
+                        showPreview(item);
+                        statusCont.classList.add('hidden');
+                    }, 500);
+                }
+            } catch (err) {
+                clearInterval(interval);
+                statusText.innerText = "Fehler: " + err.message;
+                statusText.classList.add('text-red-500');
             } finally {
-                generateBtn.disabled = false;
-                spinner.classList.add('hidden');
+                btn.disabled = false;
             }
         }
 
-        generateBtn.addEventListener('click', generateImage);
+        function showPreview(item) {
+            const preview = document.getElementById('preview-area');
+            preview.innerHTML = `
+                <div class="glaggle-card max-w-sm w-full">
+                    <img src="${item.url}" class="w-full aspect-square object-cover" alt="Generiert">
+                    <div class="p-6 text-left">
+                        <p class="font-bold text-slate-700 mb-4">${item.prompt}</p>
+                        <button onclick="downloadImg('${item.url}')" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition">
+                            Bild Speichern
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const hint = document.getElementById('empty-hint');
+            const count = document.getElementById('gallery-count');
+            grid.innerHTML = '';
+            count.innerText = `${myGallery.length} Bilder`;
+
+            if (myGallery.length === 0) {
+                hint.classList.remove('hidden');
+                return;
+            }
+            hint.classList.add('hidden');
+
+            myGallery.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "glaggle-card";
+                div.innerHTML = `
+                    <img src="${item.url}" class="w-full aspect-square object-cover">
+                    <div class="p-5">
+                        <p class="text-sm font-medium text-slate-600 line-clamp-2 mb-4">${item.prompt}</p>
+                        <button onclick="downloadImg('${item.url}')" class="text-blue-500 font-bold hover:underline">Download</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        window.downloadImg = (url) => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AImage-${Date.now()}.png`;
+            a.click();
+        }
+
+        function saveLocalGallery() {
+            sessionStorage.setItem('glaggle_gallery', JSON.stringify(myGallery));
+        }
+
+        function loadLocalGallery() {
+            const data = sessionStorage.getItem('glaggle_gallery');
+            if (data) myGallery = JSON.parse(data);
+        }
+
+        // Event-Binding für globale Funktionen (da type="module")
+        window.generateImage = generateImage;
     </script>
 </body>
 </html>
