@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle - Suchmaschine</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">Glaggle</h1>
+            <p class="tagline">Die erste echte Suchmaschine</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Suchbegriff eingeben..." 
+                    autocomplete="off"
+                >
+                <button id="searchBtn">Suchen</button>
+            </div>
+
+            <div class="admin-panel">
+                <h3>Indexverwaltung</h3>
+                <div class="admin-form">
+                    <input 
+                        type="url" 
+                        id="crawlUrl" 
+                        placeholder="https://beispiel.com"
+                    >
+                    <input 
+                        type="number" 
+                        id="crawlDepth" 
+                        value="2" 
+                        min="1" 
+                        max="5"
+                    >
+                    <button id="crawlBtn">Indexieren</button>
+                </div>
+                <div id="stats" class="stats"></div>
+            </div>
+
+            <div id="results" class="results"></div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Glaggle Search Engine | <a href="#">Über uns</a> | <a href="#">Datenschutz</a></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
