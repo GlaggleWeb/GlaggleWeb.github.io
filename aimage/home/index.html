@@ -133,18 +133,18 @@
     <main class="pt-32 pb-20 px-4 flex flex-col items-center">
         
         <section id="search-view" class="view-section active w-full max-w-2xl text-center">
-            <h1 class="text-5xl font-extrabold mb-4">Glaggle-Magie</h1>
-            <p class="text-slate-500 text-lg mb-10">Lass deiner Fantasie freier lauf!</p>
+            <h1 class="text-5xl font-extrabold mb-4">Glaggle-Magic</h1>
+            <p class="text-slate-500 text-lg mb-10">Create a magic AImage</p>
 
             <div class="search-bar-wrapper mb-8">
-                <input type="text" id="prompt" class="flex-1 bg-transparent border-none outline-none py-4 text-lg dark:text-white" placeholder="Was soll GPT zeichnen?">
+                <input type="text" id="prompt" class="flex-1 bg-transparent border-none outline-none py-4 text-lg dark:text-white" placeholder="Magic Text...">
                 <button id="generateBtn" onclick="generateSVG()" class="bg-blue-500 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-600 transition">
                     Zeichnen
                 </button>
             </div>
 
             <div id="status-container" class="hidden">
-                <p id="status-text" class="font-bold text-blue-500 mb-2 italic text-sm">AImage berechnet Szene...</p>
+                <p id="status-text" class="font-bold text-blue-500 mb-2 italic text-sm">AImage calculates scene...</p>
                 <div class="progress-container" id="prog-cont" style="display: block;">
                     <div class="progress-bar" id="prog-bar"></div>
                 </div>
@@ -155,12 +155,12 @@
 
         <section id="gallery-view" class="view-section w-full max-w-5xl">
             <div class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-bold">Deine Sammlung</h2>
-                <span id="gallery-count" class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">0 Bilder</span>
+                <h2 class="text-3xl font-bold">Your collection</h2>
+                <span id="gallery-count" class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">0 Pictures</span>
             </div>
             <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             <div id="empty-hint" class="py-20 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700 rounded-3xl text-slate-400">
-                Keine Bilder vorhanden.
+                No pictures available.
             </div>
         </section>
 
