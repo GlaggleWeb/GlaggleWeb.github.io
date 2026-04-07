@@ -695,6 +695,7 @@ async function glaggleSearch() {
         // So bricht die ganze Suche nicht ab, wenn z.B. Wikipedia down ist
         await Promise.allSettled([
             fetchGroqAI(query),
+            searchGlaggleImages(query),
             (async () => {
                 try {
                     const favs = await getAiProcessedFavs(query);
@@ -1204,14 +1205,48 @@ window.addEventListener('load', function() {
     }, 500);
 });
 
-// Ermöglicht Suche durch 'Enter' auf der Handy-Tastatur
-document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // Verhindert Neuladen der Seite
-        glaggleSearch();
-        this.blur(); // Schließt die Tastatur auf dem Handy nach der Suche
+async function searchGlaggleImages(query) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    // Wikipedia API Suche speziell für Bilder
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=4&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json&origin=*`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.query && data.query.pages) {
+            const imageWrapper = document.createElement('div');
+            imageWrapper.className = 'glaggle-entry';
+            imageWrapper.style.display = "grid";
+            imageWrapper.style.gridTemplateColumns = "repeat(auto-fit, minmax(140px, 1fr))";
+            imageWrapper.style.gap = "10px";
+            
+            Object.values(data.query.pages).forEach(page => {
+                if (page.thumbnail) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.height = "150px";
+                    imgContainer.style.borderRadius = "12px";
+                    imgContainer.style.overflow = "hidden";
+                    
+                    const img = document.createElement('img');
+                    img.src = page.thumbnail.source;
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+                    
+                    imgContainer.appendChild(img);
+                    imageWrapper.appendChild(imgContainer);
+                }
+            });
+
+            if (imageWrapper.children.length > 0) {
+                resultsDiv.prepend(imageWrapper);
+            }
+        }
+    } catch (e) {
+        console.error("Wikipedia Bildersuche fehlgeschlagen", e);
     }
-});
+}
 </script>
 </body>
 </html>
