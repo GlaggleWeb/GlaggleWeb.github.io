@@ -1208,37 +1208,8 @@ window.addEventListener('load', function() {
         preloader.classList.add('preloader-hidden');
     }, 500);
 });
-
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
-    let imageWrapper = document.getElementById('glaggle-image-container');
-
-    // Falls es der erste Aufruf ist, erstellen wir den Container
-    if (!imageWrapper) {
-        imageWrapper = document.createElement('div');
-        imageWrapper.id = 'glaggle-image-container';
-        imageWrapper.className = 'glaggle-entry fav-project';
-        imageWrapper.style.marginTop = "15px";
-        imageWrapper.innerHTML = `
-            <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
-            <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s;">
-                ✨ Mehr Bilder laden
-            </button>
-        `;
-        resultsDiv.appendChild(imageWrapper);
-        
-        // Event Listener für den "Mehr laden" Button
-        document.getElementById('load-more-imgs').onclick = () => {
-            const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
-            searchGlaggleImages(query, currentCount);
-        };
-    }
-
-    const grid = document.getElementById('glaggle-image-grid');
-    const loadMoreBtn = document.getElementById('load-more-imgs');
-    loadMoreBtn.innerText = "Lade...";
-
-    // API-Abfrage mit 'gsroffset' für die Paginierung
     const limit = 8;
     const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
 
@@ -1246,43 +1217,76 @@ async function searchGlaggleImages(query, offset = 0) {
         const response = await fetch(url);
         const data = await response.json();
 
-        if (data.query && data.query.pages) {
-            Object.values(data.query.pages).forEach(page => {
-                if (page.thumbnail) {
-                    const imgContainer = document.createElement('div');
-                    imgContainer.style.height = "120px";
-                    imgContainer.style.borderRadius = "10px";
-                    imgContainer.style.overflow = "hidden";
-                    imgContainer.style.cursor = "zoom-in";
-                    imgContainer.style.border = "1px solid var(--card-border)";
-                    
-                    const img = document.createElement('img');
-                    img.src = page.thumbnail.source;
-                    img.style.width = "100%";
-                    img.style.height = "100%";
-                    img.style.objectFit = "cover";
+        // PRÜFUNG: Gibt es überhaupt Ergebnisse mit Bildern?
+        const hasImages = data.query && data.query.pages && 
+                          Object.values(data.query.pages).some(page => page.thumbnail);
 
-                    // Vollbild-Event
-                    imgContainer.onclick = () => {
-                        const modal = document.getElementById('imageModal');
-                        const modalImg = document.getElementById('modalImg');
-                        if(modal && modalImg) {
-                            modal.style.display = "flex";
-                            modalImg.src = page.thumbnail.source;
-                        }
-                    };
-
-                    imgContainer.appendChild(img);
-                    grid.appendChild(imgContainer);
-                }
-            });
-            loadMoreBtn.innerText = "Mehr Bilder...";
-        } else {
-            loadMoreBtn.style.display = "none"; // Keine weiteren Bilder vorhanden
+        if (!hasImages) {
+            // Wenn keine Bilder da sind und wir am Anfang sind (offset 0), 
+            // brechen wir einfach ab. Das Kästchen wird nie erstellt.
+            if (offset === 0) return; 
+            
+            // Wenn wir beim "Nachladen" sind, verstecken wir nur den Button
+            const loadMoreBtn = document.getElementById('load-more-imgs');
+            if (loadMoreBtn) loadMoreBtn.style.display = "none";
+            return;
         }
+
+        // Erst HIER erstellen wir das Kästchen, da wir wissen, dass Bilder existieren
+        let imageWrapper = document.getElementById('glaggle-image-container');
+        if (!imageWrapper) {
+            imageWrapper = document.createElement('div');
+            imageWrapper.id = 'glaggle-image-container';
+            imageWrapper.className = 'glaggle-entry fav-project';
+            imageWrapper.style.marginTop = "15px";
+            imageWrapper.innerHTML = `
+                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
+                <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
+                    Mehr Bilder laden...
+                </button>
+            `;
+            resultsDiv.appendChild(imageWrapper);
+            
+            document.getElementById('load-more-imgs').onclick = () => {
+                const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
+                searchGlaggleImages(query, currentCount);
+            };
+        }
+
+        const grid = document.getElementById('glaggle-image-grid');
+        const loadMoreBtn = document.getElementById('load-more-imgs');
+
+        Object.values(data.query.pages).forEach(page => {
+            if (page.thumbnail) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.height = "120px";
+                imgContainer.style.borderRadius = "10px";
+                imgContainer.style.overflow = "hidden";
+                imgContainer.style.cursor = "zoom-in";
+                imgContainer.style.border = "1px solid var(--card-border)";
+                
+                const img = document.createElement('img');
+                img.src = page.thumbnail.source;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+
+                imgContainer.onclick = () => {
+                    const modal = document.getElementById('imageModal');
+                    const modalImg = document.getElementById('modalImg');
+                    modal.style.display = "flex";
+                    modalImg.src = page.thumbnail.source;
+                };
+
+                imgContainer.appendChild(img);
+                grid.appendChild(imgContainer);
+            }
+        });
+
+        loadMoreBtn.innerText = "Mehr Bilder...";
+
     } catch (e) {
-        console.error("Fehler beim Nachladen", e);
-        loadMoreBtn.innerText = "Fehler beim Laden";
+        console.error("Fehler beim Bilderladen", e);
     }
 }
 </script>
