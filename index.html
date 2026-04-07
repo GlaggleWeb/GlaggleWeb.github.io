@@ -774,29 +774,73 @@ async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
     if (q.length < 3) return []; 
 
-    // Sofort-Check in favoriten.js
-    const sofort = meineLieblingsSeiten.filter(s => s.title.toLowerCase().includes(q));
+    // 1. VERBESSERTER SOFORT-CHECK (Sucht in Titel UND Beschreibung)
+    // Damit findet "Design" sofort "Canva", weil "Design" in der desc steht.
+    const sofort = meineLieblingsSeiten.filter(s => 
+        s.title.toLowerCase().includes(q) || 
+        s.desc.toLowerCase().includes(q)
+    );
 
     try {
+        // Wir begrenzen den Kontext etwas, falls die Liste zu lang wird (optional)
         const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
+        
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
-                messages: [{ role: "system", content: `Suche in: [${context}]. Gib passende Apps als JSON-Array zurück.` }, { role: "user", content: q }]
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Du bist ein intelligenter App-Finder für Glaggle. 
+                        DEINE AUFGABE: Suche in dieser Liste nach Apps: [${context}].
+                        REGELN:
+                        1. Finde Apps, die thematisch passen (z.B. Suche 'Designtool' -> finde 'Canva' oder 'Figma').
+                        2. Verstehe Synonyme (Tool = App = Plattform = Software).
+                        3. Wenn der Nutzer nach einer Marke sucht (z.B. 'Glaggle'), gib ALLE zugehörigen Apps zurück.
+                        4. Antworte AUSSCHLIESSLICH mit einem validen JSON-Array der gefundenen Objekte. Keine Einleitung, kein Text!` 
+                    }, 
+                    { role: "user", content: q }
+                ],
+                temperature: 0.1 // Niedrige Temperatur für präzisere Ergebnisse
             })
         });
-        const data = await res.json();
-        const content = data.choices[0].message.content;
-        const aiFavs = JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
-        
-        const gesamt = [...sofort];
-        aiFavs.forEach(af => { if(!gesamt.find(g => g.title === af.title)) gesamt.push(af); });
-        return gesamt;
-    } catch(e) { return sofort; }
-}
 
+        const data = await res.json();
+        if (!data.choices || data.choices.length === 0) return sofort;
+
+        const content = data.choices[0].message.content;
+        
+        // 2. ROBUSTES PARSING (Sucht sicher nach dem Array-Anfang und -Ende)
+        let aiFavs = [];
+        const start = content.indexOf("[");
+        const end = content.lastIndexOf("]") + 1;
+        
+        if (start !== -1 && end > 0) {
+            aiFavs = JSON.parse(content.substring(start, end));
+        }
+        
+        // 3. KOMBINIEREN & DUPLIKATE ENTFERNEN
+        const gesamt = [...sofort];
+        aiFavs.forEach(af => { 
+            // Wir prüfen, ob die App schon über den Sofort-Check gefunden wurde
+            if(!gesamt.find(g => g.title.toLowerCase() === af.title.toLowerCase())) {
+                gesamt.push(af);
+            }
+        });
+        
+        return gesamt;
+
+    } catch(e) { 
+        console.error("Glaggle AI Favs Error:", e);
+        return sofort; // Fallback auf normale Suche, wenn KI/Internet streikt
+    }
+}
+    
 function renderResult(title, text, url, type = "web") {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
