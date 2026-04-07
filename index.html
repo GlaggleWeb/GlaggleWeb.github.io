@@ -672,37 +672,40 @@ document.getElementById('glaggleQuery').addEventListener('keypress', function (e
 });
     
 async function glaggleSearch() {
-    if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-}
     const query = document.getElementById('glaggleQuery').value.trim();
+    if (!query) return;
+
+    // 1. Benachrichtigungen nur anfragen, wenn nötig und möglich
+    // Auf iOS funktioniert das oft nur, wenn die Seite vom Home-Bildschirm gestartet wird!
+    if (window.Notification && Notification.permission === "default") {
+        Notification.requestPermission().catch(console.error);
+    }
+
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
     
-    if (!query) return;
-
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // --- NEU: WIDGET CHECK ---
-    const widgetShown = checkWidgets(query);
-
-    // 1. KI-Box erstellen
+    checkWidgets(query);
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // 2. Alles parallel starten
-        await Promise.all([
+        // Verwende Promise.allSettled statt Promise.all
+        // So bricht die ganze Suche nicht ab, wenn z.B. Wikipedia down ist
+        await Promise.allSettled([
             fetchGroqAI(query),
             (async () => {
-                const favs = await getAiProcessedFavs(query);
-                favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+                try {
+                    const favs = await getAiProcessedFavs(query);
+                    if(favs) favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+                } catch (e) { console.error("Fav-Fehler", e); }
             })(),
-            searchWikipedia(query, 'de')
+            searchWikipedia(query, 'de').catch(e => console.error("Wiki-Fehler", e))
         ]);
 
     } catch (e) {
-        console.error("Suche fehlgeschlagen:", e);
+        console.error("Kritischer Fehler:", e);
     } finally {
         loader.style.display = "none";
     }
