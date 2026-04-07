@@ -744,7 +744,7 @@ async function fetchGroqAI(query) {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig." },
+                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert!" },
                     { role: "user", content: query }
                 ] 
             })
