@@ -711,11 +711,10 @@ async function glaggleSearch() {
         loader.style.display = "none";
     }
 }
-// WICHTIG: Diese Funktion hat gefehlt oder war nicht aktiv
 async function searchWikipedia(query, lang) {
     try {
-        // Erweiterte URL für Thumbnails und Snippets
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=2&format=json&origin=*`;
+        // Wir nutzen exsentences=3, um die Länge radikal zu kürzen
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
         
         const response = await fetch(url);
         const data = await response.json();
@@ -725,17 +724,22 @@ async function searchWikipedia(query, lang) {
                 const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
                 const thumb = page.thumbnail ? page.thumbnail.source : null;
                 
-                // Wir bauen das Bild direkt in den Text ein
+                // Falls der Text trotzdem noch zu lang ist (z.B. wegen Listen), 
+                // schneiden wir ihn hart nach 250 Zeichen ab und fügen "..." hinzu.
+                let shortExtract = page.extract;
+                if (shortExtract.length > 250) {
+                    shortExtract = shortExtract.substring(0, 250) + "...";
+                }
+
                 const content = thumb 
-                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${page.extract}` 
-                    : page.extract;
+                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
+                    : shortExtract;
 
                 renderResult(page.title, content, wikiUrl, "wiki");
             });
         }
     } catch (e) { console.error("Wiki Fehler", e); }
 }
-
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
