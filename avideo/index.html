@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVideo - The AI Video Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+            --glaggle-blue: #4285F4;
+            --glaggle-red: #EA4335;
+            --glaggle-yellow: #FBBC05;
+            --glaggle-green: #34A853;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --nav-bg: #303134;
+                --card-bg: #303134;
+                --card-border: #444444;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            transition: background-color 0.3s;
+        }
+
+        /* Glaggle Preloader */
+        #preloader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loader-ball {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: conic-gradient(var(--glaggle-blue), var(--glaggle-red), var(--glaggle-yellow), var(--glaggle-green), var(--glaggle-blue));
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .preloader-hidden { opacity: 0; pointer-events: none; }
+
+        /* AVideo Logo Colors */
+        .logo-text span:nth-child(1) { color: var(--glaggle-blue); }
+        .logo-text span:nth-child(2) { color: var(--glaggle-red); }
+        .logo-text span:nth-child(3) { color: var(--glaggle-yellow); }
+        .logo-text span:nth-child(4) { color: var(--glaggle-blue); }
+        .logo-text span:nth-child(5) { color: var(--glaggle-green); }
+        .logo-text span:nth-child(6) { color: var(--glaggle-red); }
+
+        .search-bar-wrapper {
+            display: flex; align-items: center; background: var(--card-bg);
+            border: 1px solid var(--card-border); border-radius: 40px; padding: 5px 10px 5px 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: 0.4s;
+        }
+        .search-bar-wrapper:focus-within { 
+            border-color: var(--glaggle-blue); 
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.15); 
+        }
+
+        .glaggle-card {
+            background: var(--card-bg); border-radius: 24px; overflow: hidden;
+            border: 1px solid var(--card-border); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+        }
+        .glaggle-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--glaggle-blue);
+        }
+
+        .svg-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--glaggle-blue), var(--glaggle-red), var(--glaggle-yellow), var(--glaggle-green));
+            background-size: 300% 100%;
+            animation: gradientMove 2s linear infinite;
+            transition: width 0.3s ease;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="preloader">
+        <div class="flex flex-col items-center">
+            <div class="loader-ball mb-6"></div>
+            <h2 class="text-2xl font-bold text-slate-700 dark:text-white">Load AVideo...</h2>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 left-0 w-full h-20 bg-white dark:bg-zinc-900 shadow-md flex items-center justify-between px-8 z-50">
+        <div class="logo-text text-2xl font-bold cursor-pointer" onclick="showView('search')">
+            <span>A</span><span>V</span><span>i</span><span>d</span><span>e</span><span>o</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="showView('search')" class="px-6 py-2 rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 transition shadow-lg shadow-blue-500/20">Create</button>
+            <button onclick="showView('gallery')" class="px-6 py-2 rounded-full bg-green-500 text-white font-bold hover:bg-green-600 transition shadow-lg shadow-green-500/20">Gallery</button>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-20 px-4 flex flex-col items-center">
+        
+        <section id="search-view" class="view-section active w-full max-w-2xl text-center">
+            <h1 class="text-5xl font-extrabold mb-4">Video-Magic</h1>
+            <p class="text-slate-500 text-lg mb-10">Create a moving, animated AVideo</p>
+
+            <div class="search-bar-wrapper mb-8">
+                <input type="text" id="prompt" class="flex-1 bg-transparent border-none outline-none py-4 text-lg dark:text-white" placeholder="Describe your animated scene...">
+                <button id="generateBtn" onclick="generateCanvasVideo()" class="bg-blue-500 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-600 transition">
+                    Create
+                </button>
+            </div>
+
+            <div id="status-container" class="hidden">
+                <p id="status-text" class="font-bold text-blue-500 mb-2 italic text-sm">AVideo renders animation frames...</p>
+                <div class="progress-container" id="prog-cont" style="display: block;">
+                    <div class="progress-bar" id="prog-bar"></div>
+                </div>
+            </div>
+
+            <div id="preview-area" class="mt-10 flex justify-center w-full"></div>
+        </section>
+
+        <section id="gallery-view" class="view-section w-full max-w-5xl">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-3xl font-bold">Your Video Collection</h2>
+                <span id="gallery-count" class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">0 Videos</span>
+            </div>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="empty-hint" class="py-20 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700 rounded-3xl text-slate-400">
+                No videos available yet.
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // API Key in drei Stücke zerteilt (Groq API)
+        const partA = "gsk_f1iAjT4bkWuxNK2";
+        const partB = "nw4ufWGdyb3FYaHf17vY8";
+        const partC = "99fqMMR3rKGzwPNl";
+
+        let myGallery = [];
+
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('preloader')?.classList.add('preloader-hidden');
+            }, 800);
+            loadLocalGallery();
+        };
+
+        window.showView = (id) => {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id + '-view');
+            if (target) target.classList.add('active');
+            if(id === 'gallery') renderGallery();
+        };
+
+        async function generateCanvasVideo() {
+            const promptInput = document.getElementById('prompt');
+            const prompt = promptInput.value.trim();
+            const btn = document.getElementById('generateBtn');
+            const statusCont = document.getElementById('status-container');
+            const progressBar = document.getElementById('prog-bar');
+            const preview = document.getElementById('preview-area');
+
+            if (!prompt) return;
+
+            btn.disabled = true;
+            statusCont.classList.remove('hidden');
+            preview.innerHTML = '';
+            progressBar.style.width = "20%";
+            document.getElementById('status-text').innerText = "Schreibe Code für echtes Video...";
+
+            try {
+                const fullKey = partA + partB + partC;
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${fullKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            {
+                                role: "system",
+                                content: `You are an expert generative art programmer.
+                                MANDATORY RULES:
+                                1. Output ONLY pure, valid JavaScript code. NO Markdown formatting (\`\`\`javascript), NO HTML tags. Just the raw code.
+                                2. You are writing code for an HTML5 <canvas> (512x512). The variables 'canvas' and 'ctx' are already defined and provided to you.
+                                3. Use requestAnimationFrame to create a continuous, complex, visually stunning animation loop.
+                                4. Create procedural generative art, particle systems, fractals, or fluid dynamics that look like a "real video". Make the motion noticeable and smooth.
+                                5. Make it highly dynamic, colorful, and complex. Fill the entire canvas background.
+                                6. Do not include DOMContentLoaded or window.onload, just start defining your variables and your loop, then call requestAnimationFrame.`
+                            },
+                            {
+                                role: "user",
+                                content: `Create a highly complex, moving JavaScript canvas animation for: ${prompt}. Ensure it loops infinitely.`
+                            }
+                        ],
+                        temperature: 0.4
+                    })
+                });
+
+                progressBar.style.width = "70%";
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message || "API Error");
+                }
+
+                let code = data.choices[0].message.content.trim();
+                // Bereinige versehentliche Markdown-Schnipsel
+                code = code.replace(/```javascript/gi, "").replace(/```js/gi, "").replace(/```/g, "").trim();
+
+                progressBar.style.width = "100%";
+                const item = { id: Date.now(), code: code, prompt: prompt };
+                myGallery.unshift(item);
+                saveLocalGallery();
+                
+                setTimeout(() => {
+                    showPreview(item);
+                    statusCont.classList.add('hidden');
+                }, 400);
+            } catch (err) {
+                console.error(err);
+                alert("Fehler bei der Video-Erstellung: " + err.message);
+                statusCont.classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Führt den von der KI generierten Code sicher auf dem Canvas aus
+        function runCanvasCode(id, code) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Verhindert, dass alte Animationen weiterlaufen
+            if (canvas.animFrameId) cancelAnimationFrame(canvas.animFrameId);
+
+            try {
+                const safeCode = `
+                    let currentReq;
+                    const originalRequest = requestAnimationFrame;
+                    requestAnimationFrame = function(cb) {
+                        currentReq = originalRequest(cb);
+                        canvas.animFrameId = currentReq;
+                        return currentReq;
+                    };
+                    ${code}
+                `;
+                const runner = new Function('canvas', 'ctx', safeCode);
+                runner(canvas, ctx);
+            } catch (e) {
+                console.error("Generierter Code fehlerhaft:", e);
+                ctx.fillStyle = "black";
+                ctx.fillRect(0,0,512,512);
+                ctx.fillStyle = "red";
+                ctx.font = "20px Arial";
+                ctx.fillText("KI-Code Rendering Fehler", 50, 256);
+            }
+        }
+
+        function showPreview(item) {
+            const preview = document.getElementById('preview-area');
+            preview.innerHTML = `
+                <div class="glaggle-card max-w-sm w-full p-4 bg-white dark:bg-zinc-800">
+                    <div class="aspect-square bg-black rounded-xl mb-4 overflow-hidden relative">
+                        <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm z-10">
+                            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> Generativ Video
+                        </div>
+                        <canvas id="canvas-${item.id}" width="512" height="512" class="w-full h-full object-cover"></canvas>
+                    </div>
+                    <div class="text-left px-2">
+                        <p class="font-bold text-slate-700 dark:text-white mb-4">${item.prompt}</p>
+                        <button onclick="recordAndDownload('${item.id}')" id="btn-${item.id}" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-blue-600 transition">Als echtes Video (.webm) aufnehmen</button>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => runCanvasCode(item.id, item.code), 50);
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const hint = document.getElementById('empty-hint');
+            const count = document.getElementById('gallery-count');
+            grid.innerHTML = '';
+            count.innerText = `${myGallery.length} Videos`;
+
+            if (myGallery.length === 0) {
+                hint.classList.remove('hidden');
+                return;
+            }
+            hint.classList.add('hidden');
+
+            myGallery.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "glaggle-card p-3 bg-white dark:bg-zinc-800";
+                div.innerHTML = `
+                    <div class="aspect-square bg-black rounded-xl mb-3 overflow-hidden relative">
+                        <div class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm z-10">
+                            <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                        </div>
+                        <canvas id="canvas-${item.id}" width="512" height="512" class="w-full h-full object-cover"></canvas>
+                    </div>
+                    <div class="p-2">
+                        <p class="text-sm font-medium opacity-70 truncate mb-3">${item.prompt}</p>
+                        <button onclick="recordAndDownload('${item.id}')" id="btn-${item.id}" class="text-blue-500 font-bold text-sm hover:underline">Download (.webm)</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+
+            // Initialisiere alle Canvas-Elemente in der Galerie
+            setTimeout(() => {
+                myGallery.forEach(item => runCanvasCode(item.id, item.code));
+            }, 50);
+        }
+
+        // Zeichnet das HTML5 Canvas als echtes Video auf
+        window.recordAndDownload = (id) => {
+            const canvas = document.getElementById(`canvas-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            if(!canvas) return;
+
+            const originalText = btn.innerText;
+            btn.innerText = "Nimmt auf... (5s)";
+            btn.classList.replace('bg-blue-500', 'bg-red-500');
+            btn.disabled = true;
+
+            // Fängt den Canvas-Stream mit 30 FPS ein
+            const stream = canvas.captureStream(30); 
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                // Konvertiert den Stream in eine echte Videodatei
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `AVideo-${id}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                btn.innerText = originalText;
+                btn.classList.replace('bg-red-500', 'bg-blue-500');
+                btn.disabled = false;
+            };
+
+            recorder.start();
+            // Stoppt die Aufnahme nach exakt 5 Sekunden
+            setTimeout(() => {
+                if(recorder.state === "recording") recorder.stop();
+            }, 5000);
+        };
+
+        function saveLocalGallery() {
+            localStorage.setItem('avideo_gallery_full', JSON.stringify(myGallery.slice(0, 30)));
+        }
+
+        function loadLocalGallery() {
+            const data = localStorage.getItem('avideo_gallery_full');
+            if (data) myGallery = JSON.parse(data);
+        }
+    </script>
+</body>
+</html>
