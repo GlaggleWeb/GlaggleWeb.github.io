@@ -378,26 +378,37 @@
             menu.style.display = "flex";
         }
 
-        function saveStats() {
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem(storageKey, highscore);
-                highscoreEl.innerText = highscore;
-            }
+       function saveStats() {
+    // Highscore speichern
+    if(score > highscore) {
+        highscore = score;
+        localStorage.setItem(storageKey, highscore);
+        highscoreEl.innerText = highscore;
+    }
 
-            // Coins: 1 Coin pro 200 Punkte (da es schwerer ist)
-            let earnedCoins = Math.floor(score / 200);
-            if(earnedCoins > 0) {
-                let currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-                currentCoins += earnedCoins;
-                localStorage.setItem('glaggleCoins', currentCoins);
-                coinEl.innerText = currentCoins;
-                
-                coinEl.parentElement.classList.add('pulse');
-                setTimeout(() => coinEl.parentElement.classList.remove('pulse'), 300);
-            }
-        }
+    // --- COIN LOGIK ---
+    // Wir berechnen die Coins basierend auf 100 Punkten
+    let earnedCoins = Math.floor(score / 100); 
 
+    if(earnedCoins > 0) {
+        // Aktuellen Stand aus dem Speicher holen (0 als Fallback)
+        let totalCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+        
+        // Addiere die neuen Coins zum Gesamtkonto
+        totalCoins += earnedCoins;
+        
+        // Im LocalStorage speichern
+        localStorage.setItem('glaggleCoins', totalCoins);
+        
+        // UI Update: Die Anzeige im Spiel aktualisieren
+        coinEl.innerText = totalCoins;
+        
+        // Kleiner Animationseffekt
+        const display = document.getElementById('coin-display');
+        display.classList.add('pulse');
+        setTimeout(() => display.classList.remove('pulse'), 300);
+    }
+}
     </script>
 </body>
 </html>
