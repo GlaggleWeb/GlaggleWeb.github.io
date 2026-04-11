@@ -1,7 +1,10 @@
 name: Glaggle Crawler Bot
 
 on:
-  workflow_dispatch: # Ermöglicht das manuelle Starten
+  workflow_dispatch: # Ermöglicht weiterhin das manuelle Starten
+  schedule:
+    # Läuft alle 30 Minuten (immer zur Minute 0 und 30)
+    - cron: '*/30 * * * *'
 
 jobs:
   run-crawler:
@@ -20,7 +23,6 @@ jobs:
 
       - name: Crawler ausführen
         env:
-          # DIESER TEIL IST ENTSCHEIDEND:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY1: ${{ secrets.SUPABASE_KEY1 }}
         run: python crawler.py
