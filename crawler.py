@@ -69,9 +69,11 @@ def crawl():
             supabase.table("crawl_queue").upsert(new_urls[:20], on_conflict='url').execute()
             
         # 5. Erfolgreich abschließen
-        supabase.table("crawl_queue").update({"status": "done"}).eq("url", target_url).execute()
-        print(f"DONE: {target_url} indiziert.")
-
+        # 5. Aus der Warteschlange LÖSCHEN statt auf 'done' setzen
+        # Das hält deine To-Do-Liste extrem sauber!
+        supabase.table("crawl_queue").delete().eq("url", target_url).execute()
+        print(f"ERFOLG: {target_url} indiziert und aus Queue entfernt.")
+        
     except Exception as e:
         print(f"FEHLER: {e}")
         supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
