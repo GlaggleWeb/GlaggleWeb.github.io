@@ -36,12 +36,22 @@ def crawl():
         meta_desc = soup.find("meta", attrs={"name": "description"})
         description = (meta_desc["content"][:250] if meta_desc and meta_desc.get("content") else "Keine Beschreibung verfügbar")
 
-        # In den Index speichern (Upsert überschreibt, falls URL schon da)
-        supabase.table("search_index").upsert({
-            "url": target_url, 
-            "title": title, 
-            "description": description
-        }).execute()
+# ... (vorheriger Code-Teil bleibt gleich)
+
+        # 3. In den Index speichern mit ON CONFLICT Logik
+        # Das verhindert den 'duplicate key' Fehler
+        supabase.table("search_index").upsert(
+            {
+                "url": target_url, 
+                "title": title, 
+                "description": description
+            },
+            on_conflict='url' 
+        ).execute()
+        
+        print(f"ERFOLG: {target_url} gespeichert/aktualisiert.")
+
+        # ... (Rest des Codes bleibt gleich)
         
         # 4. Neue Links finden
         links = soup.find_all('a', href=True)
