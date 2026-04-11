@@ -63,10 +63,10 @@ def crawl(target_url):
         print(f"Erfolgreich gecrawlt: {target_url}")
         return True
 
-    except Exception as e:
-        print(f"Fehler bei {target_url}: {e}")
-        supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
-        return True
+   except Exception as e:
+        print(f"KRITISCHER FEHLER bei {target_url}: {str(e)}")
+        # Optional: Zeige mehr Details vom Fehlerobjekt
+        if hasattr(e, 'message'): print(f"Nachricht: {e.message}")
 
 # Der Bot arbeitet pro GitHub-Lauf 10 Seiten ab
 for _ in range(10):
