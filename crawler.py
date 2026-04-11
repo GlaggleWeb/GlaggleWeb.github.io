@@ -48,7 +48,7 @@ def crawl(target_url):
         links = soup.find_all('a', href=True)
         new_urls = []
         for l in links:
-            full_url = urljoin(target_url, l['href']).split('#')[0].rstrip('/')
+            full_url = urljoin(target_url, l['href']).split('#')[0].split('?')[0].rstrip('/')
             
             # WICHTIG: Prüfen, dass es kein Wikipedia ist
             if full_url.startswith('http') and "wikipedia.org" not in full_url:
