@@ -31,29 +31,37 @@ def crawl():
 
         soup = BeautifulSoup(r.text, 'html.parser')
         
-        # 3. Metadaten extrahieren
+     # ... (Schritt 2: Seite laden bleibt gleich)
+
+        # 3. Metadaten extrahieren & Index-Check
         title = (soup.title.string or "Kein Titel")[:150].strip()
         meta_desc = soup.find("meta", attrs={"name": "description"})
         description = (meta_desc["content"][:250] if meta_desc and meta_desc.get("content") else "Keine Beschreibung verfügbar")
 
-        # In den Such-Index speichern
-        supabase.table("search_index").upsert(
-            {"url": target_url, "title": title, "description": description},
-            on_conflict='url'
-        ).execute()
+        # NEU: Nur in den Index speichern, wenn es NICHT Wikipedia ist
+        if "wikipedia.org" not in target_url:
+            supabase.table("search_index").upsert(
+                {"url": target_url, "title": title, "description": description},
+                on_conflict='url'
+            ).execute()
+            print(f"Index Update: {title}")
+        else:
+            print("Wikipedia-Quelle erkannt: Scanne nur nach externen Links...")
 
-        # 4. Links sammeln und EXTREM filtern (Nur Root-URLs)
+        # 4. Links sammeln (HIER erlauben wir alles, was eine Root-Domain ist)
         links = soup.find_all('a', href=True)
         unique_links = {}
         
         for l in links:
-            # URL normalisieren und aufräumen
             full = urljoin(target_url, l['href']).split('#')[0].split('?')[0].rstrip('/')
-            
-            # Parsen, um den Pfad zu prüfen
             parsed = urlparse(full)
-            # path ist "/" oder leer bei Root-Domains (z.B. https://google.de)
             path = parsed.path.strip("/")
+            
+            # Filter: Wir nehmen nur Root-Domains, die NICHT Wikipedia sind
+            if full.startswith('http') and not path and "wikipedia.org" not in full:
+                unique_links[full] = {"url": full, "status": "todo"}
+        
+        # ... (Rest wie gehabt: speichern und löschen)
             
             # FILTER: 
             # 1. Muss mit http starten
