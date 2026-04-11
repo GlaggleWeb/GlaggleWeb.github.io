@@ -47,25 +47,32 @@ def crawl():
             print(f"Index Update: {title}")
         else:
             print("Wikipedia-Quelle erkannt: Scanne nur nach externen Links...")
-# 4. Links sammeln & auf Root-Ebene kürzen
+# 4. Links sammeln, JEDEN Link zulassen, aber beim Speichern splitten
         links = soup.find_all('a', href=True)
         unique_links = {}
         
         for l in links:
+            # 1. Den vollen Link bauen (auch mit /pfad/...)
             full = urljoin(target_url, l['href']).split('#')[0].split('?')[0].rstrip('/')
+            
             parsed = urlparse(full)
             
             if parsed.scheme and parsed.netloc:
-                root_url = f"{parsed.scheme}://{parsed.netloc}".lower()
+                # 2. DER SPLITTER: Wir nehmen nur das 'netloc' (z.B. srf.ch oder shop.abs.ch)
+                # Wir werfen alles nach dem / weg.
+                domain_only = f"{parsed.scheme}://{parsed.netloc}".lower()
                 
-                # VERBESSERTER FILTER:
-                # Blockiert wikipedia, wikimedia, wikivoyage, wiktionary etc.
-                is_wiki = "wiki" in root_url
-                # Blockiert typische Werbenetzwerke oder Müll-Domains
-                is_trash = "doubleclick" in root_url or "adservice" in root_url
-                
-                if not is_wiki and not is_trash and len(root_url) < 100:
-                    unique_links[root_url] = {"url": root_url, "status": "todo"}
+                # 3. FILTER (nur gegen Müll und Wikis)
+                is_wiki = "wiki" in domain_only
+                if not is_wiki and len(domain_only) < 100:
+                    unique_links[domain_only] = {"url": domain_only, "status": "todo"}
+        
+        new_urls = list(unique_links.values())
+        
+        if new_urls:
+            # Wir speichern die ersten 40 gefundenen (gesplitteten) Domains
+            print(f"Splitter hat {len(new_urls[:40])} Domains extrahiert.")
+            supabase.table("crawl_queue").upsert(new_urls[:40], on_conflict='url').execute()
             
         # 5. Erfolgreich abschließen
         # 5. Aus der Warteschlange LÖSCHEN statt auf 'done' setzen
