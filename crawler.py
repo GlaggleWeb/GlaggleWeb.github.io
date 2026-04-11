@@ -3,87 +3,68 @@ import requests
 from bs4 import BeautifulSoup
 from supabase import create_client
 from urllib.parse import urljoin
-import sys
 
 # Verbindung zu Supabase
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY1")
-
-print(f"DEBUG: Versuche Verbindung mit URL: {url[:15]}...")
-
-try:
-    supabase = create_client(url, key)
-    print("DEBUG: Supabase-Client erfolgreich erstellt.")
-except Exception as e:
-    print(f"KRITISCHER FEHLER beim Client-Setup: {e}")
-    sys.exit(1)
+supabase = create_client(url, key)
 
 def crawl():
-    # 1. URL holen
-    try:
-        res = supabase.table("crawl_queue").select("url").eq("status", "todo").limit(1).execute()
-        if not res.data:
-            print("INFO: Warteschlange leer.")
-            return
-        target_url = res.data[0]['url']
-        print(f"START: Verarbeite URL: {target_url}")
-    except Exception as e:
-        print(f"FEHLER beim Abrufen der Warteschlange: {e}")
+    # 1. Nächste URL holen
+    res = supabase.table("crawl_queue").select("url").eq("status", "todo").limit(1).execute()
+    if not res.data:
+        print("Warteschlange leer.")
         return
+    
+    target_url = res.data[0]['url']
+    print(f"Crawle jetzt: {target_url}")
     
     try:
         # 2. Seite laden
-        headers = {'User-Agent': 'GlaggleBot/1.0'}
+        headers = {'User-Agent': 'GlaggleBot/1.1'}
         r = requests.get(target_url, timeout=10, headers=headers)
-        
         if r.status_code != 200:
-            print(f"WARNUNG: Status {r.status_code} für {target_url}")
             supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
             return
 
         soup = BeautifulSoup(r.text, 'html.parser')
+        
+        # 3. Titel und Description extrahieren
         title = (soup.title.string or "Kein Titel")[:150].strip()
         
-        # 3. In search_index speichern
-        print(f"DEBUG: Versuche in search_index zu schreiben: {title}")
-        try:
-            # Wir speichern hier nur URL und Titel, um Fehler durch fehlende Spalten zu minimieren
-            supabase.table("search_index").upsert({"url": target_url, "title": title}).execute()
-            print("ERFOLG: In search_index gespeichert.")
-        except Exception as e:
-            print(f"FEHLER beim Schreiben in search_index (Check deine Spalten!): {e}")
-            # Wir machen trotzdem weiter mit den Links
+        # Description suchen (meta name="description")
+        meta_desc = soup.find("meta", attrs={"name": "description"})
+        description = (meta_desc["content"][:250] if meta_desc and meta_desc.get("content") else "Keine Beschreibung verfügbar")
+
+        # In den Index speichern (Upsert überschreibt, falls URL schon da)
+        supabase.table("search_index").upsert({
+            "url": target_url, 
+            "title": title, 
+            "description": description
+        }).execute()
         
-        # 4. Links finden
+        # 4. Neue Links finden
         links = soup.find_all('a', href=True)
         new_urls = []
         for l in links:
             full = urljoin(target_url, l['href']).split('#')[0].split('?')[0].rstrip('/')
-            if full.startswith('http') and "wikipedia.org" not in full:
+            # Filter: Nur http, kein Wikipedia, keine extrem langen URLs
+            if full.startswith('http') and "wikipedia.org" not in full and len(full) < 255:
                 new_urls.append({"url": full, "status": "todo"})
         
+        # Neue URLs speichern (die Datenbank ignoriert Duplikate durch den Unique Constraint)
         if new_urls:
-            print(f"DEBUG: Versuche {len(new_urls[:20])} neue Links zu speichern...")
-            try:
-                supabase.table("crawl_queue").upsert(new_urls[:20], on_conflict='url').execute()
-                print("ERFOLG: Neue Links in Warteschlange ergänzt.")
-            except Exception as e:
-                print(f"FEHLER beim Speichern neuer Links: {e}")
+            # Wir nehmen die ersten 30 Links der Seite
+            supabase.table("crawl_queue").upsert(new_urls[:30], on_conflict='url').execute()
             
-        # 5. Status auf 'done' setzen
-        print(f"DEBUG: Markiere {target_url} als 'done'...")
+        # 5. Fertig markieren
         supabase.table("crawl_queue").update({"status": "done"}).eq("url", target_url).execute()
-        print(f"KOMPLETT-ERFOLG: {target_url} ist fertig.")
+        print(f"Erfolg: {target_url} indiziert.")
 
     except Exception as e:
-        print(f"HAUPT-FEHLER bei {target_url}: {e}")
-        # Letzter Rettungsversuch: Status auf Error setzen
-        try:
-            supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
-        except Exception as e2:
-            print(f"DOPPELTER FEHLER: Konnte Status nicht mal auf 'error' setzen: {e2}")
+        print(f"Fehler bei {target_url}: {e}")
+        supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
 
-# 10 mal ausführen
-for i in range(10):
-    print(f"\n--- Durchlauf {i+1} ---")
+# Erhöhen wir die Schlagzahl: 20 Seiten pro Durchlauf
+for _ in range(20):
     crawl()
