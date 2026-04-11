@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 # Verbindung zu Supabase
 SUPA_URL = os.environ.get("SUPABASE_URL")
-SUPA_KEY = os.environ.get("SUPABASE_KEY")
+SUPA_KEY = os.environ.get("SUPABASE_KEY1")
 supabase = create_client(SUPA_URL, SUPA_KEY)
 
 def crawl():
