@@ -77,5 +77,5 @@ def crawl():
         supabase.table("crawl_queue").update({"status": "error"}).eq("url", target_url).execute()
 
 # Durchlauf-Schleife
-for i in range(20):
+for i in range(80):
     crawl()
