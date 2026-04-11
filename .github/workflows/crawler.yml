@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Ermöglicht weiterhin das manuelle Starten
   schedule:
     # Läuft alle 30 Minuten (immer zur Minute 0 und 30)
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'
 
 jobs:
   run-crawler:
