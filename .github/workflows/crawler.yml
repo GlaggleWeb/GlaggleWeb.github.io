@@ -1,0 +1,27 @@
+name: Glaggle Crawler Bot
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Startet automatisch jede Stunde
+  workflow_dispatch: # Erlaubt dir, den Bot jederzeit manuell zu starten
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code herunterladen
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Pakete installieren
+        run: pip install -r requirements.txt
+
+      - name: Crawler ausführen
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python crawler.py
