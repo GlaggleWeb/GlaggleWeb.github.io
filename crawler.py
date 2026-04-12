@@ -68,5 +68,5 @@ def crawl():
         supabase.table("crawl_queue").delete().eq("url", target_url).execute()
 
 # 100 Seiten pro Lauf
-for i in range(100):
+for i in range(200):
     crawl()
