@@ -600,9 +600,11 @@
 <script src="favoriten.js"></script>
 
 <script>
-// --- 1. NEU: SUPABASE INITIALISIERUNG ---
-const SB_URL = "SUPABASE_URL"; // Hier anpassen!
-const SB_KEY = "SUPABASE_KEY1"; // Hier anpassen!
+<script>
+// --- 1. INITIALISIERUNG ---
+// WICHTIG: Ersetze diese Platzhalter mit deinen echten Supabase-Daten!
+const SB_URL = "DEINE_SUPABASE_URL"; 
+const SB_KEY = "DEINE_SUPABASE_KEY"; 
 const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
 const p1 = "gsk_"; 
@@ -611,7 +613,7 @@ const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r";
 
 function getGKey() { return p1 + p2 + p3; }
 
-// --- 2. NEU: URL-PARAMETER LOGIK (Automatisches Suchen beim Laden) ---
+// --- 2. URL-PARAMETER LOGIK (Automatisches Suchen beim Laden) ---
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const queryFromUrl = urlParams.get('q');
@@ -619,7 +621,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (queryFromUrl) {
         const inputField = document.getElementById('glaggleQuery');
         inputField.value = decodeURIComponent(queryFromUrl);
-        executeSearch(decodeURIComponent(queryFromUrl)); // Nutzt deine bestehende Logik
+        executeSearch(decodeURIComponent(queryFromUrl));
     }
 });
 
@@ -640,12 +642,11 @@ function createAiPlaceholder() {
     return aiBox;
 }
 
-// --- 3. MODIFIZIERT: Deine Such-Funktion (Jetzt mit URL-Update) ---
+// --- 3. SUCH-FUNKTIONEN ---
 async function glaggleSearch() {
     const query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
-    // NEU: URL ändern ohne Neuladen (glaggle.ch/search?q=kuchen)
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(query);
     window.history.pushState({ path: newUrl }, '', newUrl);
 
@@ -656,7 +657,6 @@ async function glaggleSearch() {
     executeSearch(query);
 }
 
-// Deine Haupt-Logik bleibt erhalten, wir fügen nur searchSupabase hinzu
 async function executeSearch(query) {
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
@@ -670,7 +670,7 @@ async function executeSearch(query) {
     try {
         await Promise.allSettled([
             fetchGroqAI(query),
-            searchSupabase(query), // <--- NEU: Deine 744+ Seiten abrufen
+            searchSupabase(query),
             searchGlaggleImages(query),
             (async () => {
                 try {
@@ -680,7 +680,6 @@ async function executeSearch(query) {
             })(),
             searchWikipedia(query, 'de').catch(e => console.error("Wiki-Fehler", e))
         ]);
-
     } catch (e) {
         console.error("Kritischer Fehler:", e);
     } finally {
@@ -688,11 +687,11 @@ async function executeSearch(query) {
     }
 }
 
-// --- 4. NEU: SUPABASE SUCH-FUNKTION ---
+// --- 4. SUPABASE ---
 async function searchSupabase(query) {
     try {
         const { data, error } = await supabaseClient
-            .from('search_index') // Name deiner Tabelle prüfen!
+            .from('search_index')
             .select('*')
             .or(`title.ilike.%${query}%,description.ilike.%${query}%,url.ilike.%${query}%`)
             .limit(10);
@@ -707,8 +706,7 @@ async function searchSupabase(query) {
     }
 }
 
-// --- AB HIER BLEIBT ALLES EXAKT DEIN CODE ---
-
+// --- 5. WIKIPEDIA ---
 async function searchWikipedia(query, lang) {
     try {
         const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
@@ -727,6 +725,7 @@ async function searchWikipedia(query, lang) {
     } catch (e) { console.error("Wiki Fehler", e); }
 }
 
+// --- 6. AI & GROQ ---
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
@@ -736,7 +735,7 @@ async function fetchGroqAI(query) {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma). Antworte kurz, präzise auf Deutsch." },
+                    { role: "system", content: "Du bist Glaggle AI. Antworte kurz, präzise auf Deutsch." },
                     { role: "user", content: query }
                 ] 
             })
@@ -759,591 +758,173 @@ async function fetchGroqAI(query) {
 async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
     if (q.length < 3) return []; 
-
-    // 1. VERBESSERTER SOFORT-CHECK (Sucht in Titel UND Beschreibung)
-    // Damit findet "Design" sofort "Canva", weil "Design" in der desc steht.
-    const sofort = meineLieblingsSeiten.filter(s => 
-        s.title.toLowerCase().includes(q) || 
-        s.desc.toLowerCase().includes(q)
-    );
-
+    const sofort = meineLieblingsSeiten.filter(s => s.title.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
     try {
-        // Wir begrenzen den Kontext etwas, falls die Liste zu lang wird (optional)
         const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
-        
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
-                messages: [
-                    { 
-                        role: "system", 
-                        content: `Du bist ein intelligenter App-Finder für Glaggle. 
-                        DEINE AUFGABE: Suche in dieser Liste nach Apps: [${context}].
-                        REGELN:
-                        1. Finde Apps, die thematisch passen (z.B. Suche 'Designtool' -> finde 'Canva' oder 'Figma'. Oder zb. Weltraumorganisation -> "Nasa" oder "Esa").
-                        2. Verstehe Synonyme (Tool = App = Plattform = Software).
-                        3. Wenn der Nutzer nach einer Marke sucht (z.B. 'Glaggle'), gib ALLE zugehörigen Apps zurück.
-                        4. Antworte AUSSCHLIESSLICH mit einem validen JSON-Array der gefundenen Objekte. Keine Einleitung, kein Text!` 
-                    }, 
-                    { role: "user", content: q }
-                ],
-                temperature: 0.1 // Niedrige Temperatur für präzisere Ergebnisse
+                messages: [{ role: "system", content: `App-Finder JSON-Array. Kontext: [${context}]` }, { role: "user", content: q }],
+                temperature: 0.1
             })
         });
-
         const data = await res.json();
-        if (!data.choices || data.choices.length === 0) return sofort;
-
+        if (!data.choices) return sofort;
         const content = data.choices[0].message.content;
-        
-        // 2. ROBUSTES PARSING (Sucht sicher nach dem Array-Anfang und -Ende)
-        let aiFavs = [];
         const start = content.indexOf("[");
         const end = content.lastIndexOf("]") + 1;
-        
-        if (start !== -1 && end > 0) {
-            aiFavs = JSON.parse(content.substring(start, end));
-        }
-        
-        // 3. KOMBINIEREN & DUPLIKATE ENTFERNEN
+        let aiFavs = (start !== -1) ? JSON.parse(content.substring(start, end)) : [];
         const gesamt = [...sofort];
-        aiFavs.forEach(af => { 
-            // Wir prüfen, ob die App schon über den Sofort-Check gefunden wurde
-            if(!gesamt.find(g => g.title.toLowerCase() === af.title.toLowerCase())) {
-                gesamt.push(af);
-            }
-        });
-        
+        aiFavs.forEach(af => { if(!gesamt.find(g => g.title.toLowerCase() === af.title.toLowerCase())) gesamt.push(af); });
         return gesamt;
-
-    } catch(e) { 
-        console.error("Glaggle AI Favs Error:", e);
-        return sofort; // Fallback auf normale Suche, wenn KI/Internet streikt
-    }
+    } catch(e) { return sofort; }
 }
-    
+
+// --- 7. RENDER LOGIK ---
 function renderResult(title, text, url, type = "web") {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
     const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    
     const div = document.createElement('div');
-    
-    // Wenn es ein Favorit ist, weisen wir die spezielle Klasse zu
-    if(type === "fav") {
-        div.className = 'glaggle-entry fav-project';
-    } else {
-        div.className = 'glaggle-entry';
-    }
+    div.className = (type === "fav") ? 'glaggle-entry fav-project' : 'glaggle-entry';
 
     div.innerHTML = `
         <div class="result-header">
             <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
-            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE AI EMPFIEHLT!" : domain}</small>
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ EMPFEHLUNG" : domain}</small>
         </div>
         <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.3rem;' : ''}">${title}</a>
         <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
     `;
-    
     const aiBox = document.getElementById('ai-container');
-    // Favoriten immer direkt unter der KI-Box anzeigen
-    if (type === "fav" && aiBox) {
-        aiBox.after(div);
-    } else {
-        resultsDiv.appendChild(div);
-    }
+    if (type === "fav" && aiBox) { aiBox.after(div); } else { resultsDiv.appendChild(div); }
 }
 
-const input = document.getElementById('glaggleQuery');
-const container = document.querySelector('.search-bar-container');
-// Wir suchen gezielt das Caret im Container
-const fakeCaret = container.querySelector('.custom-caret');
-
-function updateCaret() {
-    // Prüfen, ob das Element überhaupt existiert, bevor wir darauf zugreifen
-    if (!fakeCaret) return; 
-
-    if (document.activeElement === input) {
-        fakeCaret.style.display = 'block';
-        
-        const inputStyle = window.getComputedStyle(input);
-        const measurementSpan = document.createElement('span');
-        
-        measurementSpan.style.font = inputStyle.font;
-        measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
-        measurementSpan.style.textTransform = inputStyle.textTransform;
-        measurementSpan.style.whiteSpace = 'pre';
-        measurementSpan.style.visibility = 'hidden';
-        measurementSpan.style.position = 'absolute';
-        
-        measurementSpan.textContent = input.value.substring(0, input.selectionStart);
-        document.body.appendChild(measurementSpan);
-        
-        const textWidth = measurementSpan.offsetWidth;
-        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
-        fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
-        
-        document.body.removeChild(measurementSpan);
-    } else {
-        fakeCaret.style.display = 'none';
-    }
-}
-
-// Events für die Live-Verfolgung
-['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
-    input.addEventListener(event, updateCaret);
-});
-
-input.addEventListener('blur', () => {
-    setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
-});
-
-// Initial aufrufen
-updateCaret();
-
-// --- 2. KI SUCHOPTIMIERUNG ---
+// --- 8. OPTIMIERUNG ---
 async function optimizeSearch() {
-    const query = input.value.trim();
+    const inputField = document.getElementById('glaggleQuery');
+    const query = inputField.value.trim();
     if (!query) return;
-
     const magicBtn = document.querySelector('.ai-magic-btn');
-    magicBtn.innerText = "⏳"; // Lade-Status
-
+    magicBtn.innerText = "⏳";
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
-                messages: [
-                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert (wenn es zb schreibfehler hat korrigiere das wort so dass es korrekt geschrieben ist). Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. (nur Beispiel) der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
-                    { role: "user", content: query }
-                ] 
+                messages: [{ role: "system", content: "Optimiere Suchbegriff (2-4 Wörter). Nur Ergebnis." }, { role: "user", content: query }] 
             })
         });
         const data = await res.json();
-        const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Anführungszeichen entfernen
-        
-        input.value = optimizedQuery;
-        updateCaret();
-        glaggleSearch(); // Starte Suche direkt mit dem neuen Begriff
-    } catch (e) {
-        console.error("Optimierung fehlgeschlagen", e);
-    } finally {
-        magicBtn.innerText = "✨";
-    }
+        inputField.value = data.choices[0].message.content.replace(/"/g, '');
+        glaggleSearch();
+    } catch (e) { console.error(e); } finally { magicBtn.innerText = "✨"; }
 }
 
-    function checkWidgets(query) {
+// --- 9. WIDGETS ---
+function checkWidgets(query) {
     const q = query.toLowerCase();
-    const resultsDiv = document.getElementById('glaggleResults');
-
-const mathRegex = /^[0-9+\-*/().\s^%]+$/;
-if (q === "rechner" || q === "calculator") {
-    renderCalculatorWidget("");
-    return true;
-} else if (mathRegex.test(q) && /[0-9]/.test(q) && /[+\-*/^%]/.test(q)) {
-    renderCalculatorWidget(q);
-    return true;
-}
-
-    // --- TIMER ---
-   // In deiner checkWidgets Funktion:
-if (q === "timer") {
-    renderTimerWidget(0); // Startet bei Null
-    return true;
-} else if (q.includes("timer") || q.includes("minuten")) {
-    const mins = q.match(/\d+/) ? parseInt(q.match(/\d+/)[0]) : 0;
-    renderTimerWidget(mins);
-    return true;
-}
-
-    // --- WETTER (Simuliert für das Beispiel) ---
-    if (q.includes("wetter")) {
-        const city = q.replace("wetter", "").replace("in", "").trim() || "deinen Standort";
-        renderWidget("☁️ Wetter", `Wetter für <strong>${city}</strong>`, `
-            <div style="display:flex; align-items:center; gap:20px; justify-content:center;">
-                <span style="font-size:3rem;">☀️</span>
-                <span style="font-size:2rem; font-weight:bold;">22°C</span>
-            </div>
-            <p style="margin:5px 0 0 0;">Heiter bis sonnig - Glaggle-Tag!</p>
-        `);
-        return true;
+    const mathRegex = /^[0-9+\-*/().\s^%]+$/;
+    if (q === "rechner" || q === "calculator") { renderCalculatorWidget(""); return true; }
+    if (mathRegex.test(q) && /[0-9]/.test(q) && /[+\-*/^%]/.test(q)) { renderCalculatorWidget(q); return true; }
+    if (q === "timer" || q.includes("minuten")) {
+        const mins = q.match(/\d+/) ? parseInt(q.match(/\d+/)[0]) : 0;
+        renderTimerWidget(mins); return true;
     }
-
     return false;
-}
-
-// Universal-Funktion für einfache Widgets
-function renderWidget(title, subtitle, content) {
-    const resultsDiv = document.getElementById('glaggleResults');
-    const div = document.createElement('div');
-    div.className = 'glaggle-entry fav-project'; // Dein schöner bunter Rahmen
-    div.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <strong style="color:var(--link-color);">${title}</strong>
-        </div>
-        <p style="margin-bottom:15px;">${subtitle}</p>
-        <div style="text-align:center;">${content}</div>
-    `;
-    resultsDiv.prepend(div);
 }
 
 function renderTimerWidget(initialMinutes) {
     const resultsDiv = document.getElementById('glaggleResults');
     let totalSeconds = initialMinutes * 60;
     let interval = null;
-
     const div = document.createElement('div');
     div.className = 'glaggle-entry fav-project';
     div.style.textAlign = 'center';
-    
     div.innerHTML = `
-        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.75rem;">Glaggle Timekeeper</div>
-        
-        <div style="margin: 15px 0;">
-            <input type="text" id="timer-display-input" value="${formatTime(totalSeconds)}" 
-                style="background: transparent; border: none; color: var(--text-color); font-size: 4.5rem; font-family: sans-serif; text-align: center; width: 100%; outline: none; font-weight: 800; letter-spacing: -2px;">
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px;">
-            ${[0.5, 1, 3, 5, 10, 15, 30, 60].map(m => `
-                <button class="quick-btn" data-sec="${m * 60}" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-                    ${m < 1 ? '30s' : m >= 60 ? '1h' : m + 'm'}
-                </button>
-            `).join('')}
-        </div>
-
-        <div style="display: flex; gap: 12px; justify-content: center;">
-            <button id="timer-run-btn" style="padding: 14px 35px; border-radius: 35px; border: none; background: #34A853; color: white; font-weight: bold; cursor: pointer; min-width: 140px; box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);">START</button>
-            <button id="timer-clear-btn" style="padding: 14px 20px; border-radius: 35px; border: 1px solid var(--card-border); background: transparent; color: var(--text-color); cursor: pointer;">RESET</button>
-        </div>
-        
-        <audio id="timer-audio-element" loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+        <div style="color: var(--link-color); font-weight: bold;">Glaggle Timer</div>
+        <input type="text" id="timer-display-input" value="${Math.floor(totalSeconds/60).toString().padStart(2,'0')}:${(totalSeconds%60).toString().padStart(2,'0')}" style="background:transparent; border:none; color:white; font-size:3rem; text-align:center; width:100%;">
+        <button id="timer-run-btn" style="padding:10px; background:#34A853; color:white; border:none; border-radius:20px; cursor:pointer;">START</button>
+        <audio id="timer-audio" loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     `;
-    
     resultsDiv.prepend(div);
-
-    const displayInput = div.querySelector('#timer-display-input');
     const runBtn = div.querySelector('#timer-run-btn');
-    const clearBtn = div.querySelector('#timer-clear-btn');
-    const audio = div.querySelector('#timer-audio-element');
-    const quickBtns = div.querySelectorAll('.quick-btn');
-
-    function formatTime(sec) {
-        let m = Math.floor(sec / 60);
-        let s = sec % 60;
-        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    // WICHTIG: Erfasst manuelles Tippen sofort
-    function syncInput() {
-        const val = displayInput.value;
-        if (val.includes(':')) {
-            const [m, s] = val.split(':').map(v => parseInt(v) || 0);
-            totalSeconds = (m * 60) + s;
-        } else {
-            totalSeconds = (parseInt(val) || 0) * 60;
-        }
-    }
-
-    displayInput.oninput = syncInput;
-
-    function triggerAlarm() {
-        audio.play().catch(e => console.log("Audio braucht Nutzerinteraktion"));
-        div.style.animation = "pulse-red 1.5s infinite";
-        runBtn.innerText = "ALARM STOPPEN";
-        runBtn.style.background = "#EA4335";
-
-        // Notification Logik
-        if (Notification.permission === "granted") {
-            new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!", icon: "favicon.ico" });
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!" });
-            });
-        }
-    }
+    const display = div.querySelector('#timer-display-input');
+    const audio = div.querySelector('#timer-audio');
 
     runBtn.onclick = () => {
-        // Falls Alarm läuft: Stoppen
-        if (!audio.paused) {
-            audio.pause();
-            audio.currentTime = 0;
-            div.style.animation = "none";
-            runBtn.innerText = "START";
-            runBtn.style.background = "#34A853";
-            return;
-        }
-
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-            runBtn.innerText = "WEITER";
-            runBtn.style.background = "#34A853";
-        } else {
-            syncInput(); // Letzte manuelle Änderung übernehmen
-            if (totalSeconds <= 0) return;
-            
-            runBtn.innerText = "PAUSE";
-            runBtn.style.background = "#FBBC05";
-            
+        if (interval) { clearInterval(interval); interval = null; runBtn.innerText = "WEITER"; }
+        else {
             interval = setInterval(() => {
+                if (totalSeconds <= 0) { clearInterval(interval); audio.play(); runBtn.innerText = "STOP"; return; }
                 totalSeconds--;
-                displayInput.value = formatTime(totalSeconds);
-                if (totalSeconds <= 0) {
-                    clearInterval(interval);
-                    interval = null;
-                    triggerAlarm();
-                }
+                display.value = Math.floor(totalSeconds/60).toString().padStart(2,'0') + ":" + (totalSeconds%60).toString().padStart(2,'0');
             }, 1000);
+            runBtn.innerText = "PAUSE";
         }
     };
-
-    clearBtn.onclick = () => {
-        clearInterval(interval);
-        interval = null;
-        audio.pause();
-        audio.currentTime = 0;
-        div.style.animation = "none";
-        totalSeconds = 0;
-        displayInput.value = "00:00";
-        runBtn.innerText = "START";
-        runBtn.style.background = "#34A853";
-    };
-
-    quickBtns.forEach(btn => {
-        btn.onclick = () => {
-            totalSeconds += parseInt(btn.dataset.sec);
-            displayInput.value = formatTime(totalSeconds);
-        };
-    });
 }
+
 function renderCalculatorWidget(initialQuery) {
     const resultsDiv = document.getElementById('glaggleResults');
     const div = document.createElement('div');
     div.className = 'glaggle-entry fav-project';
-    div.style.maxWidth = "350px"; // App-Format
-    div.style.margin = "0 auto 20px auto";
-
-    div.innerHTML = `
-        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.8rem; text-align:center;">Glaggle Math</div>
-        
-        <div style="background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 15px; text-align: right;">
-            <div id="calc-history" style="font-size: 0.8rem; opacity: 0.6; min-height: 1.2em;"></div>
-            <div id="calc-display" style="font-size: 2rem; font-family: 'Courier New', monospace; overflow: hidden; white-space: nowrap;">${initialQuery || '0'}</div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;" id="calc-buttons">
-            <button class="calc-btn" data-val="C" style="background:#EA4335; color:white;">C</button>
-            <button class="calc-btn" data-val="(">(</button>
-            <button class="calc-btn" data-val=")">)</button>
-            <button class="calc-btn" data-val="/" style="background:var(--nav-bg); color:var(--link-color);">÷</button>
-            
-            <button class="calc-btn" data-val="7">7</button>
-            <button class="calc-btn" data-val="8">8</button>
-            <button class="calc-btn" data-val="9">9</button>
-            <button class="calc-btn" data-val="*" style="background:var(--nav-bg); color:var(--link-color);">×</button>
-            
-            <button class="calc-btn" data-val="4">4</button>
-            <button class="calc-btn" data-val="5">5</button>
-            <button class="calc-btn" data-val="6">6</button>
-            <button class="calc-btn" data-val="-" style="background:var(--nav-bg); color:var(--link-color);">-</button>
-            
-            <button class="calc-btn" data-val="1">1</button>
-            <button class="calc-btn" data-val="2">2</button>
-            <button class="calc-btn" data-val="3">3</button>
-            <button class="calc-btn" data-val="+" style="background:var(--nav-bg); color:var(--link-color);">+</button>
-            
-            <button class="calc-btn" data-val="0" style="grid-column: span 2;">0</button>
-            <button class="calc-btn" data-val=".">.</button>
-            <button class="calc-btn" data-val="=" style="background:#34A853; color:white;">=</button>
-        </div>
-    `;
-
+    div.innerHTML = `<div id="calc-display" style="font-size:1.5rem; text-align:right; padding:10px; background:black;">${initialQuery || 0}</div>
+                     <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:10px;">
+                        ${['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+'].map(b => `<button onclick="calcInput('${b}')" style="padding:10px;">${b}</button>`).join('')}
+                     </div>`;
     resultsDiv.prepend(div);
-
-    const display = div.querySelector('#calc-display');
-    const history = div.querySelector('#calc-history');
-    let currentInput = initialQuery || "";
-
-    // Event Delegation für die Buttons
-    div.querySelector('#calc-buttons').onclick = (e) => {
-        const val = e.target.dataset.val;
-        if (!val) return;
-
-        if (val === "C") {
-            currentInput = "";
-            display.innerText = "0";
-            history.innerText = "";
-        } else if (val === "=") {
-            try {
-                const result = Function('"use strict";return (' + currentInput.replace(/x/g, '*') + ')')();
-                history.innerText = currentInput + " =";
-                currentInput = result.toString();
-                display.innerText = currentInput;
-            } catch (e) {
-                display.innerText = "Fehler";
-                currentInput = "";
-            }
-        } else {
-            if (display.innerText === "0" || display.innerText === "Fehler") {
-                currentInput = val;
-            } else {
-                currentInput += val;
-            }
-            display.innerText = currentInput;
-        }
-    };
-
-    // Style für die Buttons
-    const buttons = div.querySelectorAll('.calc-btn');
-    buttons.forEach(btn => {
-        Object.assign(btn.style, {
-            padding: "15px 5px",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "1rem",
-            transition: "0.2s"
-        });
-        btn.onmouseover = () => btn.style.filter = "brightness(0.9)";
-        btn.onmouseout = () => btn.style.filter = "brightness(1)";
-    });
-
-    // Direkt berechnen, wenn initial eine Formel da war
-    if (initialQuery) {
-        div.querySelector('[data-val="="]').click();
-    }
 }
+
+// Hilfsfunktion für Calculator
+window.calcInput = (val) => {
+    const d = document.getElementById('calc-display');
+    if (val === "=") d.innerText = eval(d.innerText);
+    else if (val === "C") d.innerText = "0";
+    else d.innerText = (d.innerText === "0" ? "" : d.innerText) + val;
+};
+
+// --- 10. BILDER ---
+async function searchGlaggleImages(query, offset = 0) {
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=8&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.query) return;
+        let grid = document.getElementById('glaggle-image-grid');
+        if (!grid) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'glaggle-entry fav-project';
+            wrapper.innerHTML = `<div id="glaggle-image-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;"></div>`;
+            document.getElementById('glaggleResults').appendChild(wrapper);
+            grid = document.getElementById('glaggle-image-grid');
+        }
+        Object.values(data.query.pages).forEach(p => {
+            if (p.thumbnail) {
+                const img = document.createElement('img');
+                img.src = p.thumbnail.source;
+                img.style.width = "100%"; img.style.borderRadius = "8px";
+                grid.appendChild(img);
+            }
+        });
+    } catch(e) {}
+}
+
+// --- 11. PRELOADER & LOGO ---
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    setTimeout(() => { preloader.classList.add('preloader-hidden'); }, 500);
+});
 
 function toggleMenu() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    
-    sidebar.classList.toggle("active");
-    overlay.classList.toggle("active");
+    document.getElementById("sidebar")?.classList.toggle("active");
+    document.getElementById("overlay")?.classList.toggle("active");
 }
-
-window.addEventListener('load', function() {
-    const preloader = document.getElementById('preloader');
-    // Wir geben der Seite eine kleine Extra-Zehntelsekunde für den Wow-Effekt
-    setTimeout(() => {
-        preloader.classList.add('preloader-hidden');
-    }, 500);
-});
-async function searchGlaggleImages(query, offset = 0) {
-    const resultsDiv = document.getElementById('glaggleResults');
-    const limit = 8;
-    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        // PRÜFUNG: Gibt es überhaupt Ergebnisse mit Bildern?
-        const hasImages = data.query && data.query.pages && 
-                          Object.values(data.query.pages).some(page => page.thumbnail);
-
-        if (!hasImages) {
-            // Wenn keine Bilder da sind und wir am Anfang sind (offset 0), 
-            // brechen wir einfach ab. Das Kästchen wird nie erstellt.
-            if (offset === 0) return; 
-            
-            // Wenn wir beim "Nachladen" sind, verstecken wir nur den Button
-            const loadMoreBtn = document.getElementById('load-more-imgs');
-            if (loadMoreBtn) loadMoreBtn.style.display = "none";
-            return;
-        }
-
-        // Erst HIER erstellen wir das Kästchen, da wir wissen, dass Bilder existieren
-        let imageWrapper = document.getElementById('glaggle-image-container');
-        if (!imageWrapper) {
-            imageWrapper = document.createElement('div');
-            imageWrapper.id = 'glaggle-image-container';
-            imageWrapper.className = 'glaggle-entry fav-project';
-            imageWrapper.style.marginTop = "15px";
-            imageWrapper.innerHTML = `
-                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
-                <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
-                    Mehr Bilder laden...
-                </button>
-            `;
-            resultsDiv.appendChild(imageWrapper);
-            
-            document.getElementById('load-more-imgs').onclick = () => {
-                const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
-                searchGlaggleImages(query, currentCount);
-            };
-        }
-
-        const grid = document.getElementById('glaggle-image-grid');
-        const loadMoreBtn = document.getElementById('load-more-imgs');
-
-        Object.values(data.query.pages).forEach(page => {
-            if (page.thumbnail) {
-                const imgContainer = document.createElement('div');
-                imgContainer.style.height = "120px";
-                imgContainer.style.borderRadius = "10px";
-                imgContainer.style.overflow = "hidden";
-                imgContainer.style.cursor = "zoom-in";
-                imgContainer.style.border = "1px solid var(--card-border)";
-                
-                const img = document.createElement('img');
-                img.src = page.thumbnail.source;
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.objectFit = "cover";
-
-                imgContainer.onclick = () => {
-                    const modal = document.getElementById('imageModal');
-                    const modalImg = document.getElementById('modalImg');
-                    modal.style.display = "flex";
-                    modalImg.src = page.thumbnail.source;
-                };
-
-                imgContainer.appendChild(img);
-                grid.appendChild(imgContainer);
-            }
-        });
-
-        loadMoreBtn.innerText = "Mehr Bilder...";
-
-    } catch (e) {
-        console.error("Fehler beim Bilderladen", e);
-    }
-}
-
-window.addEventListener('load', function() {
-    const preloader = document.getElementById('preloader');
-    const gif = document.getElementById('glaggle-gif');
-    const staticLogo = document.getElementById('static-logo');
-
-    setTimeout(() => {
-        // 1. Preloader weg
-        preloader.classList.add('preloader-hidden');
-        
-        // 2. GIF-Animation erzwingen
-        const currentSrc = gif.src;
-        gif.src = "";
-        gif.src = currentSrc + "?t=" + new Date().getTime();
-
-        // 3. Nach X Millisekunden (z.B. 3000ms = 3 Sek) zum Standbild wechseln
-        setTimeout(() => {
-            gif.style.display = 'none';
-            staticLogo.style.display = 'block';
-        }, 2000); // <-- Hier Dauer deines GIFs in Millisekunden eintragen!
-
-    }, 500);
-});
 </script>
-
+    
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
     <img id="modalImg" style="max-width:95%; max-height:95%; border-radius:8px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
     <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
