@@ -3,55 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle - Suchmaschine</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Glaggle Suche</title>
+    
+    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
+    <!-- Externe Bibliotheken -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --nav-bg: #ffffff;
+        --card-bg: #fdfdfd;
+        --card-border: #eeeeee;
+        --link-color: #2E94D1;
+        --desc-color: #555555;
+        --input-bg: #ffffff;
+        --accent-color: #70C4F7;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-color: #202124;
+            --text-color: #e8eaed;
+            --nav-bg: #303134;
+            --card-bg: #303134;
+            --card-border: #444444;
+            --link-color: #8cc9f5;
+            --desc-color: #bdc1c6;
+            --input-bg: #3c4043;
+        }
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
+        margin: 0; padding: 0;
+        min-height: 100vh; transition: background-color 0.3s;
+    }
+
+    /* KOPFZEILE DESIGN */
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 15px 30px;
+        background-color: var(--nav-bg);
+        border-bottom: 1px solid var(--card-border);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-sizing: border-box;
+    }
+
+    .small-logo {
+        position: absolute;
+        left: 30px;
+        height: 35px;
+        width: auto;
+        cursor: pointer;
+    }
+
+    .search-bar-container {
+        position: relative;
+        display: flex; 
+        align-items: center; 
+        background: var(--input-bg);
+        border: 1px solid #dfe1e5; 
+        border-radius: 30px; 
+        padding: 5px 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.3s ease-in-out;
+        width: 100%;
+        max-width: 650px;
+    }
+
+    .search-bar-container:focus-within { 
+        box-shadow: 0 4px 15px rgba(112, 196, 247, 0.3); 
+        border-color: var(--accent-color); 
+    }
+
+    #glaggleQuery {
+        flex: 1; 
+        border: none; 
+        outline: none; 
+        padding: 8px 12px;
+        font-size: 16px; 
+        background: transparent; 
+        color: var(--text-color);
+        /* Normaler Caret wieder aktiviert */
+        caret-color: var(--accent-color);
+    }
+
+    .search-icon-btn {
+        background: none; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; padding: 0;
+    }
+
+    .search-icon-btn::before {
+        content: ""; display: block; width: 20px; height: 20px;
+        background-color: var(--accent-color);
+        mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+        -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+        mask-size: contain;
+    }
+
+    /* MAIN AREA */
+    .main-content { 
+        padding: 30px 20px; 
+        width: 100%; 
+        max-width: 750px; 
+        margin: 0 auto; 
+        box-sizing: border-box; 
+    }
+
+    .results-container {
+        display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .glaggle-entry {
+        background: var(--card-bg); padding: 25px; 
+        border-radius: 18px; border: 1px solid var(--card-border);
+        text-align: left; transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .glaggle-entry:hover { 
+        transform: translateY(-3px); 
+        border-color: var(--accent-color); 
+        box-shadow: 0 8px 20px rgba(112, 196, 247, 0.15); 
+    }
+
+    .glaggle-entry a { color: var(--link-color); text-decoration: none; font-size: 1.2rem; font-weight: bold; }
+    .glaggle-entry p { color: var(--desc-color); margin-top: 8px; font-size: 0.95rem; line-height: 1.5; }
+
+    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .favicon { width: 18px; height: 18px; border-radius: 4px; }
+
+    .fav-project {
+        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
+                    linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
+        border: 2px solid transparent !important;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--desc-color);
+        margin: 25px 0 5px 10px;
+        font-weight: bold;
+    }
+
+    .loader { display: none; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    #imageModal {
+        backdrop-filter: blur(10px); 
+        transition: opacity 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .top-bar { padding: 15px; flex-direction: column; gap: 15px; }
+        .small-logo { position: static; margin: 0 auto; }
+        .main-content { padding: 15px; }
+    }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 class="logo">Glaggle</h1>
-            <p class="tagline">Die erste echte Suchmaschine</p>
-        </header>
 
-        <main>
-            <div class="search-box">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    placeholder="Suchbegriff eingeben..." 
-                    autocomplete="off"
-                >
-                <button id="searchBtn">Suchen</button>
-            </div>
+<nav class="top-bar">
+    <a href="/"><img src="glagglelogo.png" onerror="this.src='https://via.placeholder.com/100x40?text=Glaggle'" class="small-logo" alt="Glaggle Logo"></a>
+    
+    <form class="search-bar-container" onsubmit="handleSearchSubmit(event)">
+        <!-- Custom Caret entfernt -->
+        <input type="search" id="glaggleQuery" name="q" placeholder="The AI-Powered Searchmachine..." autocomplete="off">
+        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
+    </form>
+</nav>
 
-            <div class="admin-panel">
-                <h3>Indexverwaltung</h3>
-                <div class="admin-form">
-                    <input 
-                        type="url" 
-                        id="crawlUrl" 
-                        placeholder="https://beispiel.com"
-                    >
-                    <input 
-                        type="number" 
-                        id="crawlDepth" 
-                        value="2" 
-                        min="1" 
-                        max="5"
-                    >
-                    <button id="crawlBtn">Indexieren</button>
-                </div>
-                <div id="stats" class="stats"></div>
-            </div>
-
-            <div id="results" class="results"></div>
-        </main>
-
-        <footer>
-            <p>&copy; 2026 Glaggle Search Engine | <a href="#">Über uns</a> | <a href="#">Datenschutz</a></p>
-        </footer>
+<main class="main-content">
+    <div class="loader" id="glaggleLoader"></div>
+    <div id="glaggleResults" class="results-container">
+        <p style="color: var(--desc-color); text-align: center;">Bitte gib einen Suchbegriff ein.</p>
     </div>
+</main>
 
-    <script src="script.js"></script>
+<div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;" onclick="this.style.display='none'">
+    <img id="modalImg" style="max-width:90%; max-height:90%; border-radius:8px;">
+</div>
+
+<script>
+/**
+ * KONFIGURATION
+ * Bitte hier deine echten Werte aus Supabase einfügen
+ */
+const SUPABASE_URL = ""; 
+const SUPABASE_KEY = ""; 
+
+let supabaseClient = null;
+if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (e) {
+        console.error("Supabase Init Fehler:", e);
+    }
+}
+
+const p1 = "gsk_"; 
+const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
+const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
+function getGKey() { return p1 + p2 + p3; }
+
+const meineFavoriten = [
+    { title: "Canva", desc: "Design und Grafik Tool für alle", url: "https://canva.com" },
+    { title: "Glaggle Gamecenter", desc: "Spiele gratis Online-Games", url: "https://glaggle.ch/gamecenter" }
+];
+
+// --- APP START ---
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let query = urlParams.get('q');
+    if (query) {
+        document.getElementById('glaggleQuery').value = query;
+        glaggleSearch(query);
+    }
+});
+
+function handleSearchSubmit(e) {
+    e.preventDefault();
+    const query = document.getElementById('glaggleQuery').value.trim();
+    if (!query) return;
+    
+    // history.pushState entfernt, um SecurityError in Blob-Umgebungen zu vermeiden
+    glaggleSearch(query);
+}
+
+async function glaggleSearch(query) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const loader = document.getElementById('glaggleLoader');
+    
+    resultsDiv.innerHTML = "";
+    loader.style.display = "block";
+
+    // 1. Widgets (Rechner / Timer)
+    checkWidgets(query);
+    
+    // 2. AI Box
+    resultsDiv.appendChild(createAiBox());
+    fetchGroqAI(query);
+
+    // 3. Bilder
+    await searchImages(query);
+
+    // 4. Wikipedia
+    await searchWiki(query);
+
+    // 5. SUPABASE (Zupasse Index)
+    await searchMyIndex(query);
+
+    // 6. Favoriten
+    const favs = meineFavoriten.filter(s => s.title.toLowerCase().includes(query.toLowerCase()));
+    if(favs.length > 0) {
+        renderTitle("Favoriten");
+        favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+    }
+
+    loader.style.display = "none";
+}
+
+async function searchMyIndex(query) {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('search_index')
+            .select('*')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .limit(5);
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+            renderTitle("Glaggle Web Index");
+            data.forEach(item => {
+                renderResult(item.title || "Unbekannte Seite", item.description || "", item.url, "web");
+            });
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function searchWiki(query) {
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=extracts&exintro&explaintext&exsentences=2&format=json&origin=*`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data.query && data.query.pages) {
+            renderTitle("Wikipedia Wissen");
+            Object.values(data.query.pages).forEach(p => {
+                renderResult(p.title, p.extract, `https://de.wikipedia.org/wiki/${encodeURIComponent(p.title)}`, "wiki");
+            });
+        }
+    } catch(e){}
+}
+
+async function searchImages(query) {
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data.query && data.query.pages) {
+            const wrap = document.createElement('div');
+            wrap.className = 'glaggle-entry';
+            wrap.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px;" id="img-grid"></div>`;
+            document.getElementById('glaggleResults').appendChild(wrap);
+            Object.values(data.query.pages).forEach(p => {
+                if(p.thumbnail) {
+                    const img = document.createElement('img');
+                    img.src = p.thumbnail.source;
+                    img.style = "width:100%; height:80px; object-fit:cover; border-radius:8px; cursor:zoom-in;";
+                    img.onclick = () => { document.getElementById('modalImg').src = img.src; document.getElementById('imageModal').style.display='flex'; };
+                    document.getElementById('img-grid').appendChild(img);
+                }
+            });
+        }
+    } catch(e){}
+}
+
+function createAiBox() {
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry';
+    div.style.borderLeft = "4px solid var(--accent-color)";
+    div.innerHTML = `<strong style="color:var(--accent-color);">✨ KI Zusammenfassung</strong><div id="ai-response" style="margin-top:10px; line-height:1.6;">Lade Analyse...</div>`;
+    return div;
+}
+
+async function fetchGroqAI(query) {
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [{ role: "system", content: "Fasse das Suchthema kurz und prägnant auf Deutsch zusammen." }, { role: "user", content: query }] 
+            })
+        });
+        const data = await res.json();
+        document.getElementById('ai-response').innerHTML = marked.parse(data.choices[0].message.content);
+    } catch(e) { document.getElementById('ai-response').innerText = "Analyse derzeit nicht möglich."; }
+}
+
+function renderTitle(text) {
+    const t = document.createElement('div'); t.className = "section-title"; t.innerText = text;
+    document.getElementById('glaggleResults').appendChild(t);
+}
+
+function renderResult(title, desc, url, type) {
+    const domain = new URL(url).hostname;
+    const div = document.createElement('div');
+    div.className = type === "fav" ? 'glaggle-entry fav-project' : 'glaggle-entry';
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="https://www.google.com/s2/favicons?domain=${domain}" class="favicon">
+            <small style="color:#34a853;">${domain}</small>
+        </div>
+        <a href="${url}" target="_blank">${title}</a>
+        <p>${desc.substring(0, 180)}${desc.length > 180 ? '...' : ''}</p>
+    `;
+    document.getElementById('glaggleResults').appendChild(div);
+}
+
+function checkWidgets(query) {
+    const q = query.toLowerCase();
+    if(q.includes("timer")) {
+        renderTitle("Widget: Timer");
+        const div = document.createElement('div'); div.className='glaggle-entry fav-project';
+        div.innerHTML = `<div style="text-align:center;"><h2>05:00</h2><button style="padding:8px 20px; border-radius:15px; border:none; background:#34A853; color:white;">START</button></div>`;
+        document.getElementById('glaggleResults').appendChild(div);
+    }
+}
+</script>
 </body>
 </html>
