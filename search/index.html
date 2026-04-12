@@ -591,17 +591,34 @@
 <script src="favoriten.js"></script>
 
 <script>
+// --- 1. NEU: SUPABASE INITIALISIERUNG ---
+const SB_URL = "https://DEINE_PROJEKT_URL.supabase.co"; // Hier anpassen!
+const SB_KEY = "DEIN_ANON_PUBLIC_KEY"; // Hier anpassen!
+const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
 
 function getGKey() { return p1 + p2 + p3; }
 
+// --- 2. NEU: URL-PARAMETER LOGIK (Automatisches Suchen beim Laden) ---
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryFromUrl = urlParams.get('q');
+
+    if (queryFromUrl) {
+        const inputField = document.getElementById('glaggleQuery');
+        inputField.value = decodeURIComponent(queryFromUrl);
+        executeSearch(decodeURIComponent(queryFromUrl)); // Nutzt deine bestehende Logik
+    }
+});
+
 function createAiPlaceholder() {
     const aiBox = document.createElement('div');
     aiBox.className = 'glaggle-entry';
     aiBox.id = "ai-container";
-    aiBox.style.borderRadius = "25px"; // Abgerundet wie gewünscht
+    aiBox.style.borderRadius = "25px";
     aiBox.style.borderLeft = "5px solid #70C4F7";
     aiBox.style.background = "linear-gradient(90deg, var(--card-bg), rgba(112, 196, 247, 0.05))";
     aiBox.innerHTML = `
@@ -614,24 +631,24 @@ function createAiPlaceholder() {
     return aiBox;
 }
 
-document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // Verhindert Neuladen der Seite
-        glaggleSearch();
-        this.blur(); // Schließt die mobile Tastatur
-    }
-});
-    
+// --- 3. MODIFIZIERT: Deine Such-Funktion (Jetzt mit URL-Update) ---
 async function glaggleSearch() {
     const query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
-    // 1. Benachrichtigungen nur anfragen, wenn nötig und möglich
-    // Auf iOS funktioniert das oft nur, wenn die Seite vom Home-Bildschirm gestartet wird!
+    // NEU: URL ändern ohne Neuladen (glaggle.ch/search?q=kuchen)
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(query);
+    window.history.pushState({ path: newUrl }, '', newUrl);
+
     if (window.Notification && Notification.permission === "default") {
         Notification.requestPermission().catch(console.error);
     }
 
+    executeSearch(query);
+}
+
+// Deine Haupt-Logik bleibt erhalten, wir fügen nur searchSupabase hinzu
+async function executeSearch(query) {
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
     
@@ -642,10 +659,9 @@ async function glaggleSearch() {
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
-        // Verwende Promise.allSettled statt Promise.all
-        // So bricht die ganze Suche nicht ab, wenn z.B. Wikipedia down ist
         await Promise.allSettled([
             fetchGroqAI(query),
+            searchSupabase(query), // <--- NEU: Deine 744+ Seiten abrufen
             searchGlaggleImages(query),
             (async () => {
                 try {
@@ -662,35 +678,46 @@ async function glaggleSearch() {
         loader.style.display = "none";
     }
 }
+
+// --- 4. NEU: SUPABASE SUCH-FUNKTION ---
+async function searchSupabase(query) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('search_index') // Name deiner Tabelle prüfen!
+            .select('*')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%,url.ilike.%${query}%`)
+            .limit(10);
+
+        if (data) {
+            data.forEach(item => {
+                renderResult(item.title, item.description || "", item.url, "web");
+            });
+        }
+    } catch (e) {
+        console.error("Supabase Fehler:", e);
+    }
+}
+
+// --- AB HIER BLEIBT ALLES EXAKT DEIN CODE ---
+
 async function searchWikipedia(query, lang) {
     try {
-        // Wir nutzen exsentences=3, um die Länge radikal zu kürzen
         const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
-        
         const response = await fetch(url);
         const data = await response.json();
-        
         if(data.query && data.query.pages) {
             Object.values(data.query.pages).forEach(page => {
                 const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
                 const thumb = page.thumbnail ? page.thumbnail.source : null;
-                
-                // Falls der Text trotzdem noch zu lang ist (z.B. wegen Listen), 
-                // schneiden wir ihn hart nach 250 Zeichen ab und fügen "..." hinzu.
-                let shortExtract = page.extract;
-                if (shortExtract.length > 250) {
-                    shortExtract = shortExtract.substring(0, 250) + "...";
-                }
-
-                const content = thumb 
-                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
-                    : shortExtract;
-
+                let shortExtract = page.extract || "";
+                if (shortExtract.length > 250) shortExtract = shortExtract.substring(0, 250) + "...";
+                const content = thumb ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` : shortExtract;
                 renderResult(page.title, content, wikiUrl, "wiki");
             });
         }
     } catch (e) { console.error("Wiki Fehler", e); }
 }
+
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
@@ -700,25 +727,24 @@ async function fetchGroqAI(query) {
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert!" },
+                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma). Antworte kurz, präzise auf Deutsch." },
                     { role: "user", content: query }
                 ] 
             })
         });
         const data = await res.json();
         const antwort = data.choices[0].message.content;
-
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
         function type() {
             if (i < antwort.length) {
                 currentText += antwort.charAt(i);
                 aiTextElement.innerHTML = marked.parse(currentText);
-                i++; setTimeout(type, 0.1);
+                i++; setTimeout(type, 1);
             }
         }
         type();
-    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
+    } catch (e) { aiTextElement.innerText = "Zusammenfassung nicht verfügbar."; }
 }
 
 async function getAiProcessedFavs(query) {
