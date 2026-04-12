@@ -3,14 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Suche</title>
+    <title>Glaggle</title>
+    
+    <meta name="description" content="Glaggle your life!">
+    <meta name="keywords" content="Glaggle your life! Nutze die KI-gestützte GlaggleWebSearch, chatte mit Glame AI, erstelle deine eigenen Quize im Quiz Studio Pro, oder besuche unser Gamecenter. Jetzt entdecken auf Glaggle.ch.">
+    <meta name="author" content="Glaggle">
     
     <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
-    <!-- Externe Bibliotheken -->
+    <link rel="canonical" href="https://glaggle.ch">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <meta property="og:type" content="website">
+<meta property="og:url" content="https://glaggle.ch/">
+<meta property="og:title" content="Glaggle">
+<meta property="og:description" content="Glaggle - Glaggle your life! GlaggleWebSearch (AI Powered), Glaggle Gamecenter, Glame AI">
+<meta property="og:image" content="https://glaggle.ch/glagglelogo.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Glaggle">
+<meta name="twitter:description" content="Glaggle - Glaggle your life!">
+<meta name="twitter:image" content="https://glaggle.ch/glagglelogo.png"> 
+
+<meta name="theme-color" content="#ffffff"> 
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Glaggle">
+
+<meta name="referrer" content="no-referrer-when-downgrade">
+
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Glaggle",
+  "url": "https://glaggle.ch/",
+  "description": "Glaggle your life! AI Powered Web Search and The Glame AI Chatbot.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Glaggle",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://glaggle.ch/glagglelogo.png"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://glaggle.ch/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 
     <style>
+        
     :root {
         --bg-color: #ffffff;
         --text-color: #333333;
@@ -20,7 +86,6 @@
         --link-color: #2E94D1;
         --desc-color: #555555;
         --input-bg: #ffffff;
-        --accent-color: #70C4F7;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -41,88 +106,121 @@
         color: var(--text-color);
         font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
         margin: 0; padding: 0;
+        display: flex; flex-direction: column; align-items: center; 
         min-height: 100vh; transition: background-color 0.3s;
     }
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color, #ffffff); /* Nutzt deine Hintergrundfarbe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Immer ganz oben */
+    transition: opacity 0.5s ease;
+}
 
-    /* KOPFZEILE DESIGN */
-    .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 15px 30px;
-        background-color: var(--nav-bg);
-        border-bottom: 1px solid var(--card-border);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        box-sizing: border-box;
+.loader-logo {
+    width: 150px; /* Oder deine gewünschte Größe */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+/* Versteckt den Preloader */
+.preloader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+    /* NAVIGATION */
+    .navbar {
+        display: flex; align-items: center; justify-content: space-between;
+        width: 100%; height: 80px; background-color: var(--nav-bg);
+        padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
     }
 
-    .small-logo {
-        position: absolute;
-        left: 30px;
-        height: 35px;
-        width: auto;
-        cursor: pointer;
+    .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
+    .nav-center { justify-content: center; }
+    .nav-right { justify-content: flex-end; gap: 10px; }
+    .logo-img { height: 40px; width: auto; }
+    .nav-slogan { font-size: 18px; font-weight: bold; color: var(--text-color); white-space: nowrap; }
+
+    .nav-button {
+        text-decoration: none; color: white; background-color: #8cc9f5;
+        padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px;
+        transition: 0.3s; white-space: nowrap;
     }
+    .nav-button:hover { background-color: #7ab8e6; transform: scale(1.05); }
+
+    /* HAUPTINHALT */
+    .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
+
+    /* --- HIER SIND DEINE GEWÜNSCHTEN ÄNDERUNGEN --- */
+
+    .large-logo { 
+        width: 100%; 
+        max-width: 600px; /* Genau so breit wie die Suche */
+        height: auto; 
+        margin-bottom: 40px; /* Abstand zum Suchbalken */
+    }
+
+    .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
 
     .search-bar-container {
-        position: relative;
-        display: flex; 
-        align-items: center; 
-        background: var(--input-bg);
-        border: 1px solid #dfe1e5; 
-        border-radius: 30px; 
-        padding: 5px 15px;
+        display: flex; align-items: center; background: var(--input-bg);
+        border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        transition: all 0.3s ease-in-out;
-        width: 100%;
-        max-width: 650px;
+        margin-bottom: 60px; /* DEUTLICHER ABSTAND ZU DEN ERGEBNISSEN */
+        transition: all 0.5s ease-in-out;
     }
 
-    .search-bar-container:focus-within { 
-        box-shadow: 0 4px 15px rgba(112, 196, 247, 0.3); 
-        border-color: var(--accent-color); 
-    }
+    /* -------------------------------------------- */
+
+    .search-bar-container:focus-within { box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); border-color: #70C4F7; }
 
     #glaggleQuery {
-        flex: 1; 
-        border: none; 
-        outline: none; 
-        padding: 8px 12px;
-        font-size: 16px; 
-        background: transparent; 
-        color: var(--text-color);
-        /* Normaler Caret wieder aktiviert */
-        caret-color: var(--accent-color);
+        flex: 1; border: none; outline: none; padding: 12px;
+        font-size: 18px; background: transparent; color: var(--text-color);
     }
-
-    .search-icon-btn {
-        background: none; border: none; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; padding: 0;
-    }
-
-    .search-icon-btn::before {
-        content: ""; display: block; width: 20px; height: 20px;
-        background-color: var(--accent-color);
-        mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-        -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-        mask-size: contain;
-    }
-
-    /* MAIN AREA */
-    .main-content { 
-        padding: 30px 20px; 
-        width: 100%; 
-        max-width: 750px; 
-        margin: 0 auto; 
-        box-sizing: border-box; 
-    }
-
+.search-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; 
+    height: 44px;
+    padding: 0;
+    position: relative;
+    z-index: 10; /* Höher als der Cursor */
+    flex-shrink: 0;
+    -webkit-appearance: none; /* Verhindert iOS Button-Styles */
+}
+.search-icon-btn::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 24px;
+    background-color: #70C4F7;
+    /* Deine SVG Maske */
+    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+    -webkit-mask-size: contain;
+}
     .results-container {
-        display: flex; flex-direction: column; gap: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Abstand zwischen den Ergebnissen */
     }
 
     .glaggle-entry {
@@ -131,259 +229,1090 @@
         text-align: left; transition: all 0.3s;
         box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
-
     .glaggle-entry:hover { 
-        transform: translateY(-3px); 
-        border-color: var(--accent-color); 
-        box-shadow: 0 8px 20px rgba(112, 196, 247, 0.15); 
-    }
-
+    transform: translateY(-5px) scale(1.02); /* Schiebt es hoch UND macht es 2% größer */
+    border-color: #70C4F7; 
+    box-shadow: 0 10px 25px rgba(112, 196, 247, 0.2); 
+    z-index: 10;
+    transition: all 0.5s ease-in-out;/* Stellt sicher, dass das vergrößerte Element über den anderen liegt */
+}
     .glaggle-entry a { color: var(--link-color); text-decoration: none; font-size: 1.2rem; font-weight: bold; }
     .glaggle-entry p { color: var(--desc-color); margin-top: 8px; font-size: 0.95rem; line-height: 1.5; }
 
     .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .favicon { width: 18px; height: 18px; border-radius: 4px; }
 
-    .fav-project {
-        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
-                    linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
-        border: 2px solid transparent !important;
-    }
-
-    .section-title {
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--desc-color);
-        margin: 25px 0 5px 10px;
-        font-weight: bold;
-    }
-
-    .loader { display: none; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    .loader { display: none; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #70C4F7; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    #imageModal {
-        backdrop-filter: blur(10px); 
-        transition: opacity 0.3s ease;
+    .button-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 30px; }
+    .web-button {
+        display: inline-block; padding: 15px 25px; background-color: #70C4F7;
+        color: white; text-decoration: none; font-weight: bold;
+        border-radius: 50px; transition: 0.5s; min-width: 180px;
+    }
+    .web-button:hover { background-color: #2E94D1; transform: translateY(-2px); }
+
+    @media (max-width: 700px) {
+        .nav-center { display: none; }
+        .navbar { padding: 0 15px; }
     }
 
-    @media (max-width: 768px) {
-        .top-bar { padding: 15px; flex-direction: column; gap: 15px; }
-        .small-logo { position: static; margin: 0 auto; }
-        .main-content { padding: 15px; }
-    }
-    </style>
-</head>
-<body>
+/* Markdown Styling für die KI Box */
+#ai-text ul, #ai-text ol {
+    text-align: left;
+    margin-left: 20px;
+    padding-left: 0;
+}
 
-<nav class="top-bar">
-    <a href="/"><img src="glagglelogo.png" onerror="this.src='https://via.placeholder.com/100x40?text=Glaggle'" class="small-logo" alt="Glaggle Logo"></a>
+#ai-text code {
+    background: rgba(112, 196, 247, 0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+#ai-text strong {
+    color: var(--link-color);
+}
+
+/* Den echten Strich unsichtbar machen */
+#glaggleQuery {
+    caret-color: transparent;
+}
+
+.search-bar-container {
+    position: relative; /* WICHTIG: Damit der Cursor im Balken bleibt */
+    display: flex; 
+    align-items: center; 
+    background: var(--input-bg);
+    border: 1px solid #dfe1e5; 
+    border-radius: 30px; 
+    padding: 5px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 60px;
+    transition: all 0.5s ease-in-out;
+}
+
+.custom-caret {
+    position: absolute;
+    width: 3px;
+    height: 24px;
+    background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853, #FF6D00);
+    background-size: 100% 300%;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 5px;
+    animation: glaggleFlow 3s infinite alternate ease-in-out;
+    display: none;
+    /* Vertikale Zentrierung innerhalb des Containers */
+    top: 50%;
+    transform: translateY(-50%);
+}
+/* Die Farben wandern sanft auf und ab */
+@keyframes glaggleFlow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
+}
+
+/* Styling für den KI-Optimierer Button */
+.ai-magic-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    filter: grayscale(0.5);
+}
+
+.ai-magic-btn:hover {
+    transform: scale(1.2) rotate(10deg);
+    filter: grayscale(0);
+}
+
+/* Verhindert, dass der Button das Layout zerschießt */
+.search-bar-container {
+    gap: 5px;
+}
+
+/* Spezielles Styling für offizielle Projekte */
+/* Spezielles Styling für offizielle Projekte */
+.glaggle-entry.fav-project {
+    border-radius: 25px !important;
+    border: 2px solid transparent !important;
+    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
+                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out !important;
+}
+
+.glaggle-entry.fav-project:hover {
+    /* Gleicher Hub (-5px) und gleiche Skalierung (1.02) wie normale Container */
+    transform: translateY(-5px) scale(1.02); 
     
-    <form class="search-bar-container" onsubmit="handleSearchSubmit(event)">
-        <!-- Custom Caret entfernt -->
-        <input type="search" id="glaggleQuery" name="q" placeholder="The AI-Powered Searchmachine..." autocomplete="off">
-        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
-    </form>
-</nav>
+    /* Ein weicheres, farbiges Glühen statt eines harten Schattens */
+    box-shadow: 0 10px 25px rgba(112, 196, 247, 0.25) !important;
+    
+    /* Rand bleibt bunt, wird aber durch den Schatten weicher unterstützt */
+    border-color: transparent !important;
+    z-index: 20;
+}
 
-<main class="main-content">
-    <div class="loader" id="glaggleLoader"></div>
-    <div id="glaggleResults" class="results-container">
-        <p style="color: var(--desc-color); text-align: center;">Bitte gib einen Suchbegriff ein.</p>
-    </div>
-</main>
+.quick-time-btn:hover {
+    background: #70C4F7 !important;
+    color: white !important;
+    border-color: #70C4F7 !important;
+}
 
-<div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;" onclick="this.style.display='none'">
-    <img id="modalImg" style="max-width:90%; max-height:90%; border-radius:8px;">
-</div>
+@keyframes pulse-red {
+    0% { background-color: var(--card-bg); box-shadow: 0 0 0px rgba(234, 67, 53, 0); }
+    50% { background-color: rgba(234, 67, 53, 0.2); box-shadow: 0 0 20px rgba(234, 67, 53, 0.4); }
+    100% { background-color: var(--card-bg); box-shadow: 0 0 0px rgba(234, 67, 53, 0); }
+}
 
-<script>
-/**
- * KONFIGURATION
- * Bitte hier deine echten Werte aus Supabase einfügen
- */
-const SUPABASE_URL = ""; 
-const SUPABASE_KEY = ""; 
+/* Widget-Breite für Desktop */
+.timer-container {
+    width: 100%;
+    max-width: 650px; /* Viel breiter auf PC */
+    margin: 0 auto 20px auto;
+}
 
-let supabaseClient = null;
-if (SUPABASE_URL && SUPABASE_KEY) {
-    try {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch (e) {
-        console.error("Supabase Init Fehler:", e);
+/* Der Fortschrittsbalken */
+.timer-progress-bg {
+    width: 100%;
+    height: 12px;
+    background: var(--card-border);
+    border-radius: 10px;
+    margin-top: 25px;
+    overflow: hidden;
+}
+
+.timer-progress-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #70C4F7, #34A853);
+    transition: width 1s linear;
+}
+
+/* Hamburger Icon Styling */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
+}
+
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    height: 100%;
+    width: 0; /* Startet geschlossen */
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: var(--nav-bg);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.sidebar-link {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--card-border);
+    transition: 0.3s;
+}
+
+.sidebar-link:hover {
+    color: var(--link-color);
+    background-color: var(--card-bg);
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 36px;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Overlay Effekt */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+}
+
+/* Wenn aktiv */
+.sidebar.active { width: 250px; }
+.overlay.active { display: block; }
+
+/* Größere Schrift auf Desktop */
+@media (min-width: 768px) {
+    #timer-display-input {
+        font-size: 8rem !important; /* Massive Anzeige für PC */
+    }
+    .quick-btn {
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
     }
 }
 
+    /* Sidebar Styling - Basis beibehalten */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: var(--nav-bg);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* --- NEU: Styling für Unterkategorien --- */
+
+.sidebar-category {
+    border-bottom: 1px solid var(--card-border);
+}
+
+.sidebar-category summary {
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    cursor: pointer;
+    list-style: none; /* Entfernt Standard-Pfeil */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.sidebar-category summary:hover {
+    background-color: var(--card-bg);
+    color: var(--link-color);
+}
+
+/* Ein kleiner schicker Pfeil rechts */
+.sidebar-category summary::after {
+    content: '›'; 
+    font-size: 1.5rem;
+    transition: transform 0.3s;
+}
+
+/* Dreht den Pfeil, wenn ausgeklappt */
+.sidebar-category[open] summary::after {
+    transform: rotate(90deg);
+}
+
+/* Die Links innerhalb der Kategorie */
+.sidebar-category .sidebar-link {
+    padding: 12px 20px 12px 40px; /* Weiter nach rechts eingerückt */
+    font-size: 1rem;
+    border-bottom: none; /* Entfernt die Linie zwischen Unterpunkten */
+    display: block;
+    background-color: rgba(0,0,0,0.05); /* Leichte Abhebung */
+}
+
+/* Entfernt den Standard-Pfeil im Safari */
+.sidebar-category summary::-webkit-details-marker {
+    display: none;
+}
+</style>
+</head>
+<body>
+    
+<div id="preloader">
+    <img src="glagglelogo.png" alt="Glaggle Loading..." class="loader-logo">
+</div>
+    
+<nav class="navbar" id="search-nav" style="justify-content: flex-start; gap: 20px; padding: 10px 20px; position: fixed; top: 0; width: 100%; z-index: 1000; background: var(--nav-bg); border-bottom: 1px solid var(--card-border); display: flex; align-items: center;">
+    <div class="nav-left">
+        <a href="https://glaggle.ch">
+            <img src="glagglelogo.png" style="height: 40px;" alt="Glaggle Logo">
+        </a>
+    </div>
+    
+    <div class="search-bar-container" style="margin-bottom: 0; max-width: 600px; flex: 1; position: relative;">
+        <input type="search" id="glaggleQuery" placeholder="Suche..." autocomplete="off" style="width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color);">
+        <div class="custom-caret" style="display: none; position: absolute; width: 2px; height: 20px; background: red; top: 12px;"></div>
+    </div>
+</nav>
+
+<main class="main-content" style="margin-top: 100px; padding: 20px; max-width: 800px;">
+    <div class="loader" id="glaggleLoader" style="display:none;">Lade Ergebnisse...</div>
+    <div id="glaggleResults"></div>
+</main>
+
+</div>
+</div> 
+
+<div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+<footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
+    &copy; 2026 Glaggle — Glaggle your life!
+</footer>
+<script src="favoriten.js"></script>
+
+<script>
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
+
 function getGKey() { return p1 + p2 + p3; }
 
-const meineFavoriten = [
-    { title: "Canva", desc: "Design und Grafik Tool für alle", url: "https://canva.com" },
-    { title: "Glaggle Gamecenter", desc: "Spiele gratis Online-Games", url: "https://glaggle.ch/gamecenter" }
-];
-
-// --- APP START ---
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    let query = urlParams.get('q');
-    if (query) {
-        document.getElementById('glaggleQuery').value = query;
-        glaggleSearch(query);
-    }
-});
-
-function handleSearchSubmit(e) {
-    e.preventDefault();
-    const query = document.getElementById('glaggleQuery').value.trim();
-    if (!query) return;
-    
-    // history.pushState entfernt, um SecurityError in Blob-Umgebungen zu vermeiden
-    glaggleSearch(query);
+function createAiPlaceholder() {
+    const aiBox = document.createElement('div');
+    aiBox.className = 'glaggle-entry';
+    aiBox.id = "ai-container";
+    aiBox.style.borderRadius = "25px"; // Abgerundet wie gewünscht
+    aiBox.style.borderLeft = "5px solid #70C4F7";
+    aiBox.style.background = "linear-gradient(90deg, var(--card-bg), rgba(112, 196, 247, 0.05))";
+    aiBox.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:1.2rem;">✨</span>
+            <strong style="color:var(--link-color);">Glaggle AI Zusammenfassung</strong>
+        </div>
+        <p id="ai-text" style="font-style: italic; color: var(--desc-color);">Glaggle denkt nach...</p>
+    `;
+    return aiBox;
 }
 
-async function glaggleSearch(query) {
+document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Verhindert Neuladen der Seite
+        glaggleSearch();
+        this.blur(); // Schließt die mobile Tastatur
+    }
+});
+    
+async function glaggleSearch() {
+    const query = document.getElementById('glaggleQuery').value.trim();
+    if (!query) return;
+
+    // 1. Benachrichtigungen nur anfragen, wenn nötig und möglich
+    // Auf iOS funktioniert das oft nur, wenn die Seite vom Home-Bildschirm gestartet wird!
+    if (window.Notification && Notification.permission === "default") {
+        Notification.requestPermission().catch(console.error);
+    }
+
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
     
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
 
-    // 1. Widgets (Rechner / Timer)
     checkWidgets(query);
-    
-    // 2. AI Box
-    resultsDiv.appendChild(createAiBox());
-    fetchGroqAI(query);
+    resultsDiv.appendChild(createAiPlaceholder());
 
-    // 3. Bilder
-    await searchImages(query);
+    try {
+        // Verwende Promise.allSettled statt Promise.all
+        // So bricht die ganze Suche nicht ab, wenn z.B. Wikipedia down ist
+        await Promise.allSettled([
+            fetchGroqAI(query),
+            searchGlaggleImages(query),
+            (async () => {
+                try {
+                    const favs = await getAiProcessedFavs(query);
+                    if(favs) favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+                } catch (e) { console.error("Fav-Fehler", e); }
+            })(),
+            searchWikipedia(query, 'de').catch(e => console.error("Wiki-Fehler", e))
+        ]);
 
-    // 4. Wikipedia
-    await searchWiki(query);
-
-    // 5. SUPABASE (Zupasse Index)
-    await searchMyIndex(query);
-
-    // 6. Favoriten
-    const favs = meineFavoriten.filter(s => s.title.toLowerCase().includes(query.toLowerCase()));
-    if(favs.length > 0) {
-        renderTitle("Favoriten");
-        favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+    } catch (e) {
+        console.error("Kritischer Fehler:", e);
+    } finally {
+        loader.style.display = "none";
     }
-
-    loader.style.display = "none";
 }
-
-async function searchMyIndex(query) {
-    if (!supabaseClient) return;
+async function searchWikipedia(query, lang) {
     try {
-        const { data, error } = await supabaseClient
-            .from('search_index')
-            .select('*')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-            .limit(5);
-
-        if (error) throw error;
-        if (data && data.length > 0) {
-            renderTitle("Glaggle Web Index");
-            data.forEach(item => {
-                renderResult(item.title || "Unbekannte Seite", item.description || "", item.url, "web");
-            });
-        }
-    } catch (e) { console.error(e); }
-}
-
-async function searchWiki(query) {
-    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=extracts&exintro&explaintext&exsentences=2&format=json&origin=*`;
-    try {
-        const res = await fetch(url);
-        const data = await res.json();
+        // Wir nutzen exsentences=3, um die Länge radikal zu kürzen
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
         if(data.query && data.query.pages) {
-            renderTitle("Wikipedia Wissen");
-            Object.values(data.query.pages).forEach(p => {
-                renderResult(p.title, p.extract, `https://de.wikipedia.org/wiki/${encodeURIComponent(p.title)}`, "wiki");
-            });
-        }
-    } catch(e){}
-}
-
-async function searchImages(query) {
-    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages&pithumbsize=400&format=json&origin=*`;
-    try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if(data.query && data.query.pages) {
-            const wrap = document.createElement('div');
-            wrap.className = 'glaggle-entry';
-            wrap.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px;" id="img-grid"></div>`;
-            document.getElementById('glaggleResults').appendChild(wrap);
-            Object.values(data.query.pages).forEach(p => {
-                if(p.thumbnail) {
-                    const img = document.createElement('img');
-                    img.src = p.thumbnail.source;
-                    img.style = "width:100%; height:80px; object-fit:cover; border-radius:8px; cursor:zoom-in;";
-                    img.onclick = () => { document.getElementById('modalImg').src = img.src; document.getElementById('imageModal').style.display='flex'; };
-                    document.getElementById('img-grid').appendChild(img);
+            Object.values(data.query.pages).forEach(page => {
+                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
+                const thumb = page.thumbnail ? page.thumbnail.source : null;
+                
+                // Falls der Text trotzdem noch zu lang ist (z.B. wegen Listen), 
+                // schneiden wir ihn hart nach 250 Zeichen ab und fügen "..." hinzu.
+                let shortExtract = page.extract;
+                if (shortExtract.length > 250) {
+                    shortExtract = shortExtract.substring(0, 250) + "...";
                 }
+
+                const content = thumb 
+                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
+                    : shortExtract;
+
+                renderResult(page.title, content, wikiUrl, "wiki");
             });
         }
-    } catch(e){}
+    } catch (e) { console.error("Wiki Fehler", e); }
 }
-
-function createAiBox() {
-    const div = document.createElement('div');
-    div.className = 'glaggle-entry';
-    div.style.borderLeft = "4px solid var(--accent-color)";
-    div.innerHTML = `<strong style="color:var(--accent-color);">✨ KI Zusammenfassung</strong><div id="ai-response" style="margin-top:10px; line-height:1.6;">Lade Analyse...</div>`;
-    return div;
-}
-
 async function fetchGroqAI(query) {
+    const aiTextElement = document.getElementById('ai-text');
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
-                messages: [{ role: "system", content: "Fasse das Suchthema kurz und prägnant auf Deutsch zusammen." }, { role: "user", content: query }] 
+                messages: [
+                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert!" },
+                    { role: "user", content: query }
+                ] 
             })
         });
         const data = await res.json();
-        document.getElementById('ai-response').innerHTML = marked.parse(data.choices[0].message.content);
-    } catch(e) { document.getElementById('ai-response').innerText = "Analyse derzeit nicht möglich."; }
+        const antwort = data.choices[0].message.content;
+
+        aiTextElement.style.fontStyle = "normal";
+        let i = 0; let currentText = "";
+        function type() {
+            if (i < antwort.length) {
+                currentText += antwort.charAt(i);
+                aiTextElement.innerHTML = marked.parse(currentText);
+                i++; setTimeout(type, 0.1);
+            }
+        }
+        type();
+    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
 }
 
-function renderTitle(text) {
-    const t = document.createElement('div'); t.className = "section-title"; t.innerText = text;
-    document.getElementById('glaggleResults').appendChild(t);
-}
+async function getAiProcessedFavs(query) {
+    const q = query.toLowerCase().trim();
+    if (q.length < 3) return []; 
 
-function renderResult(title, desc, url, type) {
-    const domain = new URL(url).hostname;
-    const div = document.createElement('div');
-    div.className = type === "fav" ? 'glaggle-entry fav-project' : 'glaggle-entry';
-    div.innerHTML = `
-        <div class="result-header">
-            <img src="https://www.google.com/s2/favicons?domain=${domain}" class="favicon">
-            <small style="color:#34a853;">${domain}</small>
-        </div>
-        <a href="${url}" target="_blank">${title}</a>
-        <p>${desc.substring(0, 180)}${desc.length > 180 ? '...' : ''}</p>
-    `;
-    document.getElementById('glaggleResults').appendChild(div);
-}
+    // 1. VERBESSERTER SOFORT-CHECK (Sucht in Titel UND Beschreibung)
+    // Damit findet "Design" sofort "Canva", weil "Design" in der desc steht.
+    const sofort = meineLieblingsSeiten.filter(s => 
+        s.title.toLowerCase().includes(q) || 
+        s.desc.toLowerCase().includes(q)
+    );
 
-function checkWidgets(query) {
-    const q = query.toLowerCase();
-    if(q.includes("timer")) {
-        renderTitle("Widget: Timer");
-        const div = document.createElement('div'); div.className='glaggle-entry fav-project';
-        div.innerHTML = `<div style="text-align:center;"><h2>05:00</h2><button style="padding:8px 20px; border-radius:15px; border:none; background:#34A853; color:white;">START</button></div>`;
-        document.getElementById('glaggleResults').appendChild(div);
+    try {
+        // Wir begrenzen den Kontext etwas, falls die Liste zu lang wird (optional)
+        const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
+        
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Authorization": "Bearer " + getGKey(), 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Du bist ein intelligenter App-Finder für Glaggle. 
+                        DEINE AUFGABE: Suche in dieser Liste nach Apps: [${context}].
+                        REGELN:
+                        1. Finde Apps, die thematisch passen (z.B. Suche 'Designtool' -> finde 'Canva' oder 'Figma'. Oder zb. Weltraumorganisation -> "Nasa" oder "Esa").
+                        2. Verstehe Synonyme (Tool = App = Plattform = Software).
+                        3. Wenn der Nutzer nach einer Marke sucht (z.B. 'Glaggle'), gib ALLE zugehörigen Apps zurück.
+                        4. Antworte AUSSCHLIESSLICH mit einem validen JSON-Array der gefundenen Objekte. Keine Einleitung, kein Text!` 
+                    }, 
+                    { role: "user", content: q }
+                ],
+                temperature: 0.1 // Niedrige Temperatur für präzisere Ergebnisse
+            })
+        });
+
+        const data = await res.json();
+        if (!data.choices || data.choices.length === 0) return sofort;
+
+        const content = data.choices[0].message.content;
+        
+        // 2. ROBUSTES PARSING (Sucht sicher nach dem Array-Anfang und -Ende)
+        let aiFavs = [];
+        const start = content.indexOf("[");
+        const end = content.lastIndexOf("]") + 1;
+        
+        if (start !== -1 && end > 0) {
+            aiFavs = JSON.parse(content.substring(start, end));
+        }
+        
+        // 3. KOMBINIEREN & DUPLIKATE ENTFERNEN
+        const gesamt = [...sofort];
+        aiFavs.forEach(af => { 
+            // Wir prüfen, ob die App schon über den Sofort-Check gefunden wurde
+            if(!gesamt.find(g => g.title.toLowerCase() === af.title.toLowerCase())) {
+                gesamt.push(af);
+            }
+        });
+        
+        return gesamt;
+
+    } catch(e) { 
+        console.error("Glaggle AI Favs Error:", e);
+        return sofort; // Fallback auf normale Suche, wenn KI/Internet streikt
     }
 }
+    
+function renderResult(title, text, url, type = "web") {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    const div = document.createElement('div');
+    
+    // Wenn es ein Favorit ist, weisen wir die spezielle Klasse zu
+    if(type === "fav") {
+        div.className = 'glaggle-entry fav-project';
+    } else {
+        div.className = 'glaggle-entry';
+    }
+
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE AI EMPFIEHLT!" : domain}</small>
+        </div>
+        <a href="${url}" target="_blank" style="${type === 'fav' ? 'font-size: 1.3rem;' : ''}">${title}</a>
+        <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
+    `;
+    
+    const aiBox = document.getElementById('ai-container');
+    // Favoriten immer direkt unter der KI-Box anzeigen
+    if (type === "fav" && aiBox) {
+        aiBox.after(div);
+    } else {
+        resultsDiv.appendChild(div);
+    }
+}
+
+const input = document.getElementById('glaggleQuery');
+const container = document.querySelector('.search-bar-container');
+// Wir suchen gezielt das Caret im Container
+const fakeCaret = container.querySelector('.custom-caret');
+
+function updateCaret() {
+    // Prüfen, ob das Element überhaupt existiert, bevor wir darauf zugreifen
+    if (!fakeCaret) return; 
+
+    if (document.activeElement === input) {
+        fakeCaret.style.display = 'block';
+        
+        const inputStyle = window.getComputedStyle(input);
+        const measurementSpan = document.createElement('span');
+        
+        measurementSpan.style.font = inputStyle.font;
+        measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
+        measurementSpan.style.textTransform = inputStyle.textTransform;
+        measurementSpan.style.whiteSpace = 'pre';
+        measurementSpan.style.visibility = 'hidden';
+        measurementSpan.style.position = 'absolute';
+        
+        measurementSpan.textContent = input.value.substring(0, input.selectionStart);
+        document.body.appendChild(measurementSpan);
+        
+        const textWidth = measurementSpan.offsetWidth;
+        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
+        fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
+        
+        document.body.removeChild(measurementSpan);
+    } else {
+        fakeCaret.style.display = 'none';
+    }
+}
+
+// Events für die Live-Verfolgung
+['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
+    input.addEventListener(event, updateCaret);
+});
+
+input.addEventListener('blur', () => {
+    setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
+});
+
+// Initial aufrufen
+updateCaret();
+
+// --- 2. KI SUCHOPTIMIERUNG ---
+async function optimizeSearch() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    const magicBtn = document.querySelector('.ai-magic-btn');
+    magicBtn.innerText = "⏳"; // Lade-Status
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert (wenn es zb schreibfehler hat korrigiere das wort so dass es korrekt geschrieben ist). Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. (nur Beispiel) der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
+                    { role: "user", content: query }
+                ] 
+            })
+        });
+        const data = await res.json();
+        const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Anführungszeichen entfernen
+        
+        input.value = optimizedQuery;
+        updateCaret();
+        glaggleSearch(); // Starte Suche direkt mit dem neuen Begriff
+    } catch (e) {
+        console.error("Optimierung fehlgeschlagen", e);
+    } finally {
+        magicBtn.innerText = "✨";
+    }
+}
+
+    function checkWidgets(query) {
+    const q = query.toLowerCase();
+    const resultsDiv = document.getElementById('glaggleResults');
+
+const mathRegex = /^[0-9+\-*/().\s^%]+$/;
+if (q === "rechner" || q === "calculator") {
+    renderCalculatorWidget("");
+    return true;
+} else if (mathRegex.test(q) && /[0-9]/.test(q) && /[+\-*/^%]/.test(q)) {
+    renderCalculatorWidget(q);
+    return true;
+}
+
+    // --- TIMER ---
+   // In deiner checkWidgets Funktion:
+if (q === "timer") {
+    renderTimerWidget(0); // Startet bei Null
+    return true;
+} else if (q.includes("timer") || q.includes("minuten")) {
+    const mins = q.match(/\d+/) ? parseInt(q.match(/\d+/)[0]) : 0;
+    renderTimerWidget(mins);
+    return true;
+}
+
+    // --- WETTER (Simuliert für das Beispiel) ---
+    if (q.includes("wetter")) {
+        const city = q.replace("wetter", "").replace("in", "").trim() || "deinen Standort";
+        renderWidget("☁️ Wetter", `Wetter für <strong>${city}</strong>`, `
+            <div style="display:flex; align-items:center; gap:20px; justify-content:center;">
+                <span style="font-size:3rem;">☀️</span>
+                <span style="font-size:2rem; font-weight:bold;">22°C</span>
+            </div>
+            <p style="margin:5px 0 0 0;">Heiter bis sonnig - Glaggle-Tag!</p>
+        `);
+        return true;
+    }
+
+    return false;
+}
+
+// Universal-Funktion für einfache Widgets
+function renderWidget(title, subtitle, content) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project'; // Dein schöner bunter Rahmen
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <strong style="color:var(--link-color);">${title}</strong>
+        </div>
+        <p style="margin-bottom:15px;">${subtitle}</p>
+        <div style="text-align:center;">${content}</div>
+    `;
+    resultsDiv.prepend(div);
+}
+
+function renderTimerWidget(initialMinutes) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    let totalSeconds = initialMinutes * 60;
+    let interval = null;
+
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.textAlign = 'center';
+    
+    div.innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.75rem;">Glaggle Timekeeper</div>
+        
+        <div style="margin: 15px 0;">
+            <input type="text" id="timer-display-input" value="${formatTime(totalSeconds)}" 
+                style="background: transparent; border: none; color: var(--text-color); font-size: 4.5rem; font-family: sans-serif; text-align: center; width: 100%; outline: none; font-weight: 800; letter-spacing: -2px;">
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px;">
+            ${[0.5, 1, 3, 5, 10, 15, 30, 60].map(m => `
+                <button class="quick-btn" data-sec="${m * 60}" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); cursor: pointer; font-size: 0.8rem; font-weight: bold;">
+                    ${m < 1 ? '30s' : m >= 60 ? '1h' : m + 'm'}
+                </button>
+            `).join('')}
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="timer-run-btn" style="padding: 14px 35px; border-radius: 35px; border: none; background: #34A853; color: white; font-weight: bold; cursor: pointer; min-width: 140px; box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);">START</button>
+            <button id="timer-clear-btn" style="padding: 14px 20px; border-radius: 35px; border: 1px solid var(--card-border); background: transparent; color: var(--text-color); cursor: pointer;">RESET</button>
+        </div>
+        
+        <audio id="timer-audio-element" loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    `;
+    
+    resultsDiv.prepend(div);
+
+    const displayInput = div.querySelector('#timer-display-input');
+    const runBtn = div.querySelector('#timer-run-btn');
+    const clearBtn = div.querySelector('#timer-clear-btn');
+    const audio = div.querySelector('#timer-audio-element');
+    const quickBtns = div.querySelectorAll('.quick-btn');
+
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60);
+        let s = sec % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // WICHTIG: Erfasst manuelles Tippen sofort
+    function syncInput() {
+        const val = displayInput.value;
+        if (val.includes(':')) {
+            const [m, s] = val.split(':').map(v => parseInt(v) || 0);
+            totalSeconds = (m * 60) + s;
+        } else {
+            totalSeconds = (parseInt(val) || 0) * 60;
+        }
+    }
+
+    displayInput.oninput = syncInput;
+
+    function triggerAlarm() {
+        audio.play().catch(e => console.log("Audio braucht Nutzerinteraktion"));
+        div.style.animation = "pulse-red 1.5s infinite";
+        runBtn.innerText = "ALARM STOPPEN";
+        runBtn.style.background = "#EA4335";
+
+        // Notification Logik
+        if (Notification.permission === "granted") {
+            new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!", icon: "favicon.ico" });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!" });
+            });
+        }
+    }
+
+    runBtn.onclick = () => {
+        // Falls Alarm läuft: Stoppen
+        if (!audio.paused) {
+            audio.pause();
+            audio.currentTime = 0;
+            div.style.animation = "none";
+            runBtn.innerText = "START";
+            runBtn.style.background = "#34A853";
+            return;
+        }
+
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+            runBtn.innerText = "WEITER";
+            runBtn.style.background = "#34A853";
+        } else {
+            syncInput(); // Letzte manuelle Änderung übernehmen
+            if (totalSeconds <= 0) return;
+            
+            runBtn.innerText = "PAUSE";
+            runBtn.style.background = "#FBBC05";
+            
+            interval = setInterval(() => {
+                totalSeconds--;
+                displayInput.value = formatTime(totalSeconds);
+                if (totalSeconds <= 0) {
+                    clearInterval(interval);
+                    interval = null;
+                    triggerAlarm();
+                }
+            }, 1000);
+        }
+    };
+
+    clearBtn.onclick = () => {
+        clearInterval(interval);
+        interval = null;
+        audio.pause();
+        audio.currentTime = 0;
+        div.style.animation = "none";
+        totalSeconds = 0;
+        displayInput.value = "00:00";
+        runBtn.innerText = "START";
+        runBtn.style.background = "#34A853";
+    };
+
+    quickBtns.forEach(btn => {
+        btn.onclick = () => {
+            totalSeconds += parseInt(btn.dataset.sec);
+            displayInput.value = formatTime(totalSeconds);
+        };
+    });
+}
+function renderCalculatorWidget(initialQuery) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.maxWidth = "350px"; // App-Format
+    div.style.margin = "0 auto 20px auto";
+
+    div.innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.8rem; text-align:center;">Glaggle Math</div>
+        
+        <div style="background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 15px; text-align: right;">
+            <div id="calc-history" style="font-size: 0.8rem; opacity: 0.6; min-height: 1.2em;"></div>
+            <div id="calc-display" style="font-size: 2rem; font-family: 'Courier New', monospace; overflow: hidden; white-space: nowrap;">${initialQuery || '0'}</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;" id="calc-buttons">
+            <button class="calc-btn" data-val="C" style="background:#EA4335; color:white;">C</button>
+            <button class="calc-btn" data-val="(">(</button>
+            <button class="calc-btn" data-val=")">)</button>
+            <button class="calc-btn" data-val="/" style="background:var(--nav-bg); color:var(--link-color);">÷</button>
+            
+            <button class="calc-btn" data-val="7">7</button>
+            <button class="calc-btn" data-val="8">8</button>
+            <button class="calc-btn" data-val="9">9</button>
+            <button class="calc-btn" data-val="*" style="background:var(--nav-bg); color:var(--link-color);">×</button>
+            
+            <button class="calc-btn" data-val="4">4</button>
+            <button class="calc-btn" data-val="5">5</button>
+            <button class="calc-btn" data-val="6">6</button>
+            <button class="calc-btn" data-val="-" style="background:var(--nav-bg); color:var(--link-color);">-</button>
+            
+            <button class="calc-btn" data-val="1">1</button>
+            <button class="calc-btn" data-val="2">2</button>
+            <button class="calc-btn" data-val="3">3</button>
+            <button class="calc-btn" data-val="+" style="background:var(--nav-bg); color:var(--link-color);">+</button>
+            
+            <button class="calc-btn" data-val="0" style="grid-column: span 2;">0</button>
+            <button class="calc-btn" data-val=".">.</button>
+            <button class="calc-btn" data-val="=" style="background:#34A853; color:white;">=</button>
+        </div>
+    `;
+
+    resultsDiv.prepend(div);
+
+    const display = div.querySelector('#calc-display');
+    const history = div.querySelector('#calc-history');
+    let currentInput = initialQuery || "";
+
+    // Event Delegation für die Buttons
+    div.querySelector('#calc-buttons').onclick = (e) => {
+        const val = e.target.dataset.val;
+        if (!val) return;
+
+        if (val === "C") {
+            currentInput = "";
+            display.innerText = "0";
+            history.innerText = "";
+        } else if (val === "=") {
+            try {
+                const result = Function('"use strict";return (' + currentInput.replace(/x/g, '*') + ')')();
+                history.innerText = currentInput + " =";
+                currentInput = result.toString();
+                display.innerText = currentInput;
+            } catch (e) {
+                display.innerText = "Fehler";
+                currentInput = "";
+            }
+        } else {
+            if (display.innerText === "0" || display.innerText === "Fehler") {
+                currentInput = val;
+            } else {
+                currentInput += val;
+            }
+            display.innerText = currentInput;
+        }
+    };
+
+    // Style für die Buttons
+    const buttons = div.querySelectorAll('.calc-btn');
+    buttons.forEach(btn => {
+        Object.assign(btn.style, {
+            padding: "15px 5px",
+            borderRadius: "8px",
+            border: "1px solid var(--card-border)",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            transition: "0.2s"
+        });
+        btn.onmouseover = () => btn.style.filter = "brightness(0.9)";
+        btn.onmouseout = () => btn.style.filter = "brightness(1)";
+    });
+
+    // Direkt berechnen, wenn initial eine Formel da war
+    if (initialQuery) {
+        div.querySelector('[data-val="="]').click();
+    }
+}
+
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
+}
+
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    // Wir geben der Seite eine kleine Extra-Zehntelsekunde für den Wow-Effekt
+    setTimeout(() => {
+        preloader.classList.add('preloader-hidden');
+    }, 500);
+});
+async function searchGlaggleImages(query, offset = 0) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const limit = 8;
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // PRÜFUNG: Gibt es überhaupt Ergebnisse mit Bildern?
+        const hasImages = data.query && data.query.pages && 
+                          Object.values(data.query.pages).some(page => page.thumbnail);
+
+        if (!hasImages) {
+            // Wenn keine Bilder da sind und wir am Anfang sind (offset 0), 
+            // brechen wir einfach ab. Das Kästchen wird nie erstellt.
+            if (offset === 0) return; 
+            
+            // Wenn wir beim "Nachladen" sind, verstecken wir nur den Button
+            const loadMoreBtn = document.getElementById('load-more-imgs');
+            if (loadMoreBtn) loadMoreBtn.style.display = "none";
+            return;
+        }
+
+        // Erst HIER erstellen wir das Kästchen, da wir wissen, dass Bilder existieren
+        let imageWrapper = document.getElementById('glaggle-image-container');
+        if (!imageWrapper) {
+            imageWrapper = document.createElement('div');
+            imageWrapper.id = 'glaggle-image-container';
+            imageWrapper.className = 'glaggle-entry fav-project';
+            imageWrapper.style.marginTop = "15px";
+            imageWrapper.innerHTML = `
+                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
+                <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
+                    Mehr Bilder laden...
+                </button>
+            `;
+            resultsDiv.appendChild(imageWrapper);
+            
+            document.getElementById('load-more-imgs').onclick = () => {
+                const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
+                searchGlaggleImages(query, currentCount);
+            };
+        }
+
+        const grid = document.getElementById('glaggle-image-grid');
+        const loadMoreBtn = document.getElementById('load-more-imgs');
+
+        Object.values(data.query.pages).forEach(page => {
+            if (page.thumbnail) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.height = "120px";
+                imgContainer.style.borderRadius = "10px";
+                imgContainer.style.overflow = "hidden";
+                imgContainer.style.cursor = "zoom-in";
+                imgContainer.style.border = "1px solid var(--card-border)";
+                
+                const img = document.createElement('img');
+                img.src = page.thumbnail.source;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+
+                imgContainer.onclick = () => {
+                    const modal = document.getElementById('imageModal');
+                    const modalImg = document.getElementById('modalImg');
+                    modal.style.display = "flex";
+                    modalImg.src = page.thumbnail.source;
+                };
+
+                imgContainer.appendChild(img);
+                grid.appendChild(imgContainer);
+            }
+        });
+
+        loadMoreBtn.innerText = "Mehr Bilder...";
+
+    } catch (e) {
+        console.error("Fehler beim Bilderladen", e);
+    }
+}
+
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    const gif = document.getElementById('glaggle-gif');
+    const staticLogo = document.getElementById('static-logo');
+
+    setTimeout(() => {
+        // 1. Preloader weg
+        preloader.classList.add('preloader-hidden');
+        
+        // 2. GIF-Animation erzwingen
+        const currentSrc = gif.src;
+        gif.src = "";
+        gif.src = currentSrc + "?t=" + new Date().getTime();
+
+        // 3. Nach X Millisekunden (z.B. 3000ms = 3 Sek) zum Standbild wechseln
+        setTimeout(() => {
+            gif.style.display = 'none';
+            staticLogo.style.display = 'block';
+        }, 2000); // <-- Hier Dauer deines GIFs in Millisekunden eintragen!
+
+    }, 500);
+});
 </script>
+
+<div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
+    <img id="modalImg" style="max-width:95%; max-height:95%; border-radius:8px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+    <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
+</div>
+    
 </body>
 </html>
