@@ -616,21 +616,21 @@
 .nav-item {
     color: #9aa0a6;
     text-decoration: none;
-    padding: 12px 10px;
-    font-size: 0.9rem;
+    padding: 8px 16px; /* Etwas mehr Platz */
+    font-size: 0.95rem;
     white-space: nowrap;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.nav-item:hover {
-    color: #fff;
+    border-radius: 20px; /* Abgerundet statt Balken */
+    transition: all 0.3s ease;
 }
 
 .nav-item.active {
     color: #fff;
-    border-bottom: 3px solid #fff; /* Der weiße Balken unter "Alle" */
+    background: rgba(255, 255, 255, 0.1); /* Dezenter Hintergrund für Aktive */
+    border-bottom: 2px solid #fff; /* Balken etwas feiner */
+}
+
+.nav-item:hover {
+    color: #fff;
 }
 
 /* Weiches Scrollen mit Abstand für die Leiste */
