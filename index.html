@@ -1547,18 +1547,20 @@ async function searchSupabase(query) {
         console.error("Kritischer Supabase Fehler:", e);
     }
 }
-
+// Den Button aus dem HTML greifen
 const backToTopBtn = document.getElementById("backToTop");
 
+// Den Scroll-Vorgang überwachen
 window.addEventListener('scroll', () => {
-    // Sobald mehr als 1 Pixel gescrollt wurde
+    // Prüfen: Ist der Nutzer weiter als 1px von oben weg?
     if (window.scrollY > 1) {
-        backToTopBtn.classList.add("show");
+        backToTopBtn.classList.add("show"); // Klasse für Sichtbarkeit hinzufügen
     } else {
-        backToTopBtn.classList.remove("show");
+        backToTopBtn.classList.remove("show"); // Klasse entfernen, wenn ganz oben
     }
 });
 
+// Die Klick-Funktion: Sanft nach oben gleiten
 backToTopBtn.addEventListener('click', () => {
     window.scrollTo({
         top: 0,
