@@ -786,6 +786,9 @@ async function glaggleSearch() {
     const query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
+    const navLeiste = document.querySelector('.glaggle-nav');
+    if (navLeiste) navLeiste.style.display = 'block';
+
     // 1. Benachrichtigungen nur anfragen, wenn nötig und möglich
     // Auf iOS funktioniert das oft nur, wenn die Seite vom Home-Bildschirm gestartet wird!
     if (window.Notification && Notification.permission === "default") {
