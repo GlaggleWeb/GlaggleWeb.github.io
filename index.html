@@ -1486,22 +1486,21 @@ async function searchSupabase(query) {
 
 const backToTopBtn = document.getElementById("backToTop");
 
-window.onscroll = function() {
-    // Wenn man mehr als 300px nach unten scrollt, zeig den Button
-    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+window.addEventListener('scroll', () => {
+    // Sobald mehr als 1 Pixel gescrollt wurde
+    if (window.scrollY > 1) {
         backToTopBtn.classList.add("show");
     } else {
         backToTopBtn.classList.remove("show");
     }
-};
+});
 
-// Die eigentliche Funktion zum Hochspringen
-backToTopBtn.onclick = function() {
+backToTopBtn.addEventListener('click', () => {
     window.scrollTo({
         top: 0,
-        behavior: 'smooth' // Sanftes Scrollen statt hartem Sprung
+        behavior: 'smooth'
     });
-};
+});
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
