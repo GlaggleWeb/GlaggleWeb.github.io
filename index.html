@@ -552,6 +552,40 @@
 .sidebar-category summary::-webkit-details-marker {
     display: none;
 }
+
+#backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    width: 50px;
+    height: 50px;
+    border: none;
+    outline: none;
+    background-color: var(--nav-bg); /* Nutzt deine Variablen */
+    color: var(--link-color);
+    cursor: pointer;
+    border-radius: 50%; /* Rundes Design */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#backToTop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#backToTop:hover {
+    background-color: var(--link-color);
+    color: white;
+    transform: translateY(-5px); /* Kleiner Hüpf-Effekt */
+}
+        
 </style>
 </head>
 <body>
@@ -1447,12 +1481,35 @@ async function searchSupabase(query) {
         console.error("Kritischer Supabase Fehler:", e);
     }
 }
+
+const backToTopBtn = document.getElementById("backToTop");
+
+window.onscroll = function() {
+    // Wenn man mehr als 300px nach unten scrollt, zeig den Button
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        backToTopBtn.classList.add("show");
+    } else {
+        backToTopBtn.classList.remove("show");
+    }
+};
+
+// Die eigentliche Funktion zum Hochspringen
+backToTopBtn.onclick = function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // Sanftes Scrollen statt hartem Sprung
+    });
+};
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
     <img id="modalImg" style="max-width:95%; max-height:95%; border-radius:8px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
     <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
 </div>
+
+<button id="backToTop" title="Nach oben">
+    <span style="font-size: 20px;">↑</span>
+</button>
     
 </body>
 </html>
