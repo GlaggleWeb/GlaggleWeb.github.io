@@ -1369,32 +1369,42 @@ window.addEventListener('load', function() {
 
 async function searchSupabase(query) {
     const resultsDiv = document.getElementById('glaggleResults');
-    
+    if (!resultsDiv || !query) return;
+
+    // 1. Verhindern, dass die Box bei Mehrfachsuche doppelt erscheint
+    const oldWebBox = document.getElementById('glaggle-web-search-box');
+    if (oldWebBox) oldWebBox.remove();
+
     try {
-        // Wir suchen nach Übereinstimmungen in Titel oder Beschreibung
-        const { data, error } = await supabase
+        // Suche in Supabase (Achte darauf, dass 'supabaseClient' korrekt initialisiert ist!)
+        const { data, error } = await supabaseClient
             .from('search_index')
             .select('*')
             .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
             .limit(5);
 
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase Query Fehler:", error.message);
+            return;
+        }
+
+        // Wenn keine Daten gefunden wurden, beenden wir die Funktion einfach
         if (!data || data.length === 0) return;
 
-        // Container für WebSearch erstellen
+        // 2. Container für WebSearch erstellen
         const webBox = document.createElement('div');
+        webBox.id = 'glaggle-web-search-box'; // Eindeutige ID zum Löschen/Finden
         webBox.className = 'glaggle-entry fav-project';
-        webBox.style.borderLeft = "5px solid #34A853"; // Grüner Rand für Websuche
+        webBox.style.borderLeft = "5px solid #34A853"; 
         webBox.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span style="font-size:1.2rem;">🌐</span>
-                <strong style="color:#34A853;">Glaggle WebSearch</strong>
+                <strong style="color:#34A853; letter-spacing:0.5px;">GLAGGLE WEBSEARCH</strong>
             </div>
             <div id="supabase-results-list"></div>
         `;
         
-        // Positionierung: Zwischen Favoriten und Bildern
-        // Wir suchen das Bild-Kästchen, um es davor einzufügen
+        // 3. Positionierung
         const imgBox = document.getElementById('glaggle-image-container');
         if (imgBox) {
             imgBox.before(webBox);
@@ -1403,23 +1413,38 @@ async function searchSupabase(query) {
         }
 
         const list = webBox.querySelector('#supabase-results-list');
+
+        // 4. Ergebnisse rendern
         data.forEach(res => {
             const item = document.createElement('div');
-            item.style.marginBottom = "12px";
-            item.style.paddingBottom = "8px";
+            item.className = 'supabase-result-item'; // Für CSS Styling falls nötig
+            item.style.marginBottom = "15px";
+            item.style.paddingBottom = "10px";
             item.style.borderBottom = "1px solid var(--card-border)";
             
-            const domain = new URL(res.url).hostname;
+            // Domain extrahieren (Fallback falls URL ungültig)
+            let domain = "Link";
+            try {
+                domain = new URL(res.url).hostname.replace('www.', '');
+            } catch(e) {}
+
             item.innerHTML = `
-                <small style="color:var(--desc-color);">${domain}</small><br>
-                <a href="${res.url}" target="_blank" style="color:var(--link-color); text-decoration:none; font-weight:bold;">${res.title}</a>
-                <p style="margin:4px 0; font-size:0.85rem; color:var(--text-color);">${res.description || 'Keine Beschreibung verfügbar.'}</p>
+                <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;">
+                    <small style="color:var(--desc-color); font-size:0.75rem;">${domain}</small>
+                </div>
+                <a href="${res.url}" target="_blank" style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
+                    ${res.title}
+                </a>
+                <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;">
+                    ${res.description || 'Keine weitere Beschreibung verfügbar.'}
+                </p>
             `;
             list.appendChild(item);
         });
 
     } catch (e) {
-        console.error("Supabase Fehler:", e);
+        console.error("Kritischer Supabase Fehler:", e);
     }
 }
 </script>
