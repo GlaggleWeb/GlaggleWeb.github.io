@@ -612,24 +612,25 @@
 .nav-scroll-wrapper::-webkit-scrollbar {
     display: none; /* Versteckt Scrollbar in Chrome/Safari */
 }
+
 .nav-item {
     color: #9aa0a6;
     text-decoration: none;
-    padding: 8px 16px; /* Etwas mehr Platz */
-    font-size: 0.95rem;
+    padding: 12px 10px;
+    font-size: 0.9rem;
     white-space: nowrap;
-    border-radius: 20px; /* Abgerundet statt Balken */
-    transition: all 0.3s ease;
-}
-
-.nav-item.active {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1); /* Dezenter Hintergrund für Aktive */
-    border-bottom: 2px solid #fff; /* Balken etwas feiner */
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-weight: 500;
 }
 
 .nav-item:hover {
     color: #fff;
+}
+
+.nav-item.active {
+    color: #fff;
+    border-bottom: 3px solid #fff; /* Der weiße Balken unter "Alle" */
 }
 
 /* Weiches Scrollen mit Abstand für die Leiste */
@@ -721,11 +722,11 @@ html {
 
     <nav class="glaggle-nav">
         <div class="nav-scroll-wrapper">
-            <a href="#ai-container" id="nav-ai" class="nav-item" style="display:none;">Glaggle AI</a>
-            <a href="#fav-section" id="nav-fav" class="nav-item" style="display:none;">Empfehlungen</a>
-            <a href="#glaggle-web-search-box" id="nav-web" class="nav-item" style="display:none;">WebSearch</a>
-            <a href="#glaggle-image-container" id="nav-img" class="nav-item" style="display:none;">Bilder</a>
-            <a href="#wiki-section" id="nav-wiki" class="nav-item" style="display:none;">Wikipedia</a>
+            <a href="#ai-container" class="nav-item active">Glaggle AI</a>
+            <a href="#fav-section" class="nav-item">Empfehlungen</a>
+            <a href="#glaggle-web-search-box" class="nav-item">WebSearch</a>
+            <a href="#glaggle-image-grid" class="nav-item">Bilder</a>
+            <a href="#glaggleResults" class="nav-item">Wikipedia</a>
         </div>
     </nav>
 
@@ -1567,20 +1568,16 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
+// In deiner glaggleSearch() Funktion ganz oben hinzufügen:
+document.querySelector('.glaggle-nav').style.display = 'block';
+
+// Klick-Logik für den aktiven Balken
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function(e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
-
-        if (targetElement) {
-            // Springt so, dass das Element in der Mitte des Bildschirms landet
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Aktiv-Klasse setzen
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            this.classList.add('active');
-        }
+        // Entferne 'active' von allen anderen
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        // Füge es dem geklickten hinzu
+        this.classList.add('active');
     });
 });
 </script>
