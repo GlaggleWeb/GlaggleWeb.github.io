@@ -587,6 +587,57 @@
     transform: scale(1.1);
     background-color: #2d9147;
 }
+
+.glaggle-nav {
+    background: var(--nav-bg, #171717); /* Nutzt deine Hintergrundvariable */
+    border-bottom: 1px solid var(--card-border, #333);
+    position: sticky;
+    top: 0; /* Bleibt ganz oben kleben */
+    z-index: 1000;
+    width: 100%;
+    margin-top: 10px;
+    display: none; /* Erst anzeigen, wenn eine Suche läuft */
+}
+
+.nav-scroll-wrapper {
+    display: flex;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 10px;
+    overflow-x: auto; /* Scrollbar für schmale Bildschirme */
+    scrollbar-width: none; /* Versteckt Scrollbar in Firefox */
+}
+
+.nav-scroll-wrapper::-webkit-scrollbar {
+    display: none; /* Versteckt Scrollbar in Chrome/Safari */
+}
+
+.nav-item {
+    color: #9aa0a6;
+    text-decoration: none;
+    padding: 12px 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.nav-item:hover {
+    color: #fff;
+}
+
+.nav-item.active {
+    color: #fff;
+    border-bottom: 3px solid #fff; /* Der weiße Balken unter "Alle" */
+}
+
+/* Weiches Scrollen mit Abstand für die Leiste */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 60px; /* Damit die Überschrift nicht unter der Leiste landet */
+}
         
 </style>
 </head>
@@ -668,6 +719,16 @@
         <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
         <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
     </form>
+
+    <nav class="glaggle-nav">
+        <div class="nav-scroll-wrapper">
+            <a href="#ai-container" class="nav-item active">Glaggle AI</a>
+            <a href="#fav-section" class="nav-item">Empfehlungen</a>
+            <a href="#glaggle-web-search-box" class="nav-item">WebSearch</a>
+            <a href="#glaggle-image-grid" class="nav-item">Bilder</a>
+            <a href="#glaggleResults" class="nav-item">Wikipedia</a>
+        </div>
+    </nav>
 
     <div class="loader" id="glaggleLoader"></div>
     <div id="glaggleResults" class="results-container"></div>
@@ -1499,6 +1560,19 @@ backToTopBtn.addEventListener('click', () => {
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
+    });
+});
+
+// In deiner glaggleSearch() Funktion ganz oben hinzufügen:
+document.querySelector('.glaggle-nav').style.display = 'block';
+
+// Klick-Logik für den aktiven Balken
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        // Entferne 'active' von allen anderen
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        // Füge es dem geklickten hinzu
+        this.classList.add('active');
     });
 });
 </script>
