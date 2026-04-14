@@ -646,12 +646,18 @@
     &copy; 2026 Glaggle — Glaggle your life!
 </footer>
 <script src="favoriten.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+
 const p1 = "gsk_"; 
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
 const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
 
+const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
 function getGKey() { return p1 + p2 + p3; }
 
 function createAiPlaceholder() {
@@ -698,23 +704,19 @@ async function glaggleSearch() {
     checkWidgets(query);
     resultsDiv.appendChild(createAiPlaceholder());
 
-    try {
-        // Verwende Promise.allSettled statt Promise.all
-        // So bricht die ganze Suche nicht ab, wenn z.B. Wikipedia down ist
+try {
         await Promise.allSettled([
             fetchGroqAI(query),
-            searchGlaggleImages(query),
             (async () => {
-                try {
-                    const favs = await getAiProcessedFavs(query);
-                    if(favs) favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
-                } catch (e) { console.error("Fav-Fehler", e); }
+                const favs = await getAiProcessedFavs(query);
+                if(favs) favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
             })(),
-            searchWikipedia(query, 'de').catch(e => console.error("Wiki-Fehler", e))
+            searchSupabase(query), // <--- NEU: Hier wird die Datenbank abgefragt
+            searchGlaggleImages(query),
+            searchWikipedia(query, 'de')
         ]);
-
     } catch (e) {
-        console.error("Kritischer Fehler:", e);
+        console.error(e);
     } finally {
         loader.style.display = "none";
     }
@@ -1364,6 +1366,62 @@ window.addEventListener('load', function() {
 
     }, 500);
 });
+
+async function searchSupabase(query) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    
+    try {
+        // Wir suchen nach Übereinstimmungen in Titel oder Beschreibung
+        const { data, error } = await supabase
+            .from('search_index')
+            .select('*')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .limit(5);
+
+        if (error) throw error;
+        if (!data || data.length === 0) return;
+
+        // Container für WebSearch erstellen
+        const webBox = document.createElement('div');
+        webBox.className = 'glaggle-entry fav-project';
+        webBox.style.borderLeft = "5px solid #34A853"; // Grüner Rand für Websuche
+        webBox.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span style="font-size:1.2rem;">🌐</span>
+                <strong style="color:#34A853;">Glaggle WebSearch</strong>
+            </div>
+            <div id="supabase-results-list"></div>
+        `;
+        
+        // Positionierung: Zwischen Favoriten und Bildern
+        // Wir suchen das Bild-Kästchen, um es davor einzufügen
+        const imgBox = document.getElementById('glaggle-image-container');
+        if (imgBox) {
+            imgBox.before(webBox);
+        } else {
+            resultsDiv.appendChild(webBox);
+        }
+
+        const list = webBox.querySelector('#supabase-results-list');
+        data.forEach(res => {
+            const item = document.createElement('div');
+            item.style.marginBottom = "12px";
+            item.style.paddingBottom = "8px";
+            item.style.borderBottom = "1px solid var(--card-border)";
+            
+            const domain = new URL(res.url).hostname;
+            item.innerHTML = `
+                <small style="color:var(--desc-color);">${domain}</small><br>
+                <a href="${res.url}" target="_blank" style="color:var(--link-color); text-decoration:none; font-weight:bold;">${res.title}</a>
+                <p style="margin:4px 0; font-size:0.85rem; color:var(--text-color);">${res.description || 'Keine Beschreibung verfügbar.'}</p>
+            `;
+            list.appendChild(item);
+        });
+
+    } catch (e) {
+        console.error("Supabase Fehler:", e);
+    }
+}
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
