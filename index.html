@@ -917,14 +917,15 @@ async function fetchGroqAI(query) {
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
        function type() {
-    if (i < antwort.length) {
-        currentText += antwort.charAt(i);
+if (i < antwort.length) {
+    currentText += antwort.charAt(i);
+    if (i % 20 === 0) { // alle 10 Zeichen
         aiTextElement.innerHTML = marked.parse(currentText);
-        i++; 
-        // Verkürze die Wartezeit auf 0,01 Sekunden
-        setTimeout(type, 0.00000000001); 
     }
+    i++; 
+    setTimeout(type, 1); // 10 Millisekunden
 }
+
 
         type();
     } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
