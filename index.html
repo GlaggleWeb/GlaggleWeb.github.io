@@ -724,15 +724,15 @@ html {
         <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
     </form>
 
-    <nav class="glaggle-nav">
-        <div class="nav-scroll-wrapper">
-            <a href="#ai-container" class="nav-item active">Glaggle AI</a>
-            <a href="#fav-section" class="nav-item">Empfehlungen</a>
-            <a href="#glaggle-web-search-box" class="nav-item">WebSearch</a>
-            <a href="#glaggle-image-grid" class="nav-item">Bilder</a>
-            <a href="#glaggleResults" class="nav-item">Wikipedia</a>
-        </div>
-    </nav>
+<nav class="glaggle-nav" id="main-nav">
+    <div class="nav-scroll-wrapper">
+        <a href="#ai-container" id="nav-ai" class="nav-item">Glaggle AI</a>
+        <a href="#fav-section" id="nav-fav" class="nav-item">Empfehlungen</a>
+        <a href="#glaggle-web-search-box" id="nav-web" class="nav-item">WebSearch</a>
+        <a href="#glaggle-image-container" id="nav-img" class="nav-item">Bilder</a>
+        <a href="#wiki-section" id="nav-wiki" class="nav-item">Wikipedia</a>
+    </div>
+</nav>
 
     <div class="loader" id="glaggleLoader"></div>
     <div id="glaggleResults" class="results-container"></div>
