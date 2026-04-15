@@ -1629,114 +1629,52 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
-// 1. Klick-Logik mit Zentrierung
-document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
-
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
-});
-
-// 2. Scroll-Spy: Markiert automatisch den Bereich, in dem du gerade bist
-window.addEventListener('scroll', () => {
-    let current = "";
-    const sections = [
-        document.getElementById('ai-container'),
-        document.getElementById('fav-section'),
-        document.getElementById('glaggle-web-search-box'),
-        document.getElementById('glaggle-image-container'),
-        document.getElementById('wiki-section')
-    ];
-
-    sections.forEach(section => {
-        if (section && section.style.display !== 'none') {
-            const sectionTop = section.offsetTop;
-            // Wir prüfen, ob wir uns im Bereich des Elements befinden
-            if (scrollY >= sectionTop - 200) {
-                current = section.getAttribute('id');
-            }
-        }
-    });
-
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href').substring(1) === current) {
-            item.classList.add('active');
-        }
-    });
-});
-
+// 1. Zentrale Klick-Logik
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
         e.preventDefault();
+        
+        // Alle aktiven Klassen entfernen
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        // Geklicktes Element aktiv setzen
+        e.target.classList.add('active');
+
         const targetId = e.target.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
             targetElement.scrollIntoView({ 
                 behavior: 'smooth', 
-                block: 'center' // Das schiebt es in die Mitte!
+                block: 'center' 
             });
-            
-            // Aktiv-Klasse wechseln
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            e.target.classList.add('active');
         }
     }
 });
 
-document.querySelectorAll('.nav-item').forEach(link => {
-    link.addEventListener('click', function(e) {
-        // 1. Alle anderen Nav-Items "deaktivieren" (Klasse entfernen)
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-
-        // 2. Das geklickte Element "aktivieren"
-        this.classList.add('active');
-
-        // 3. Sanft zum Ziel scrollen (Zentriert!)
-        const targetId = this.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
-        
-        if (targetElement) {
-            e.preventDefault();
-            targetElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-        }
-    });
-});
-
+// 2. Präziser Scroll-Spy
 window.addEventListener('scroll', () => {
     let currentSection = "";
     
-    // Liste deiner Sektionen
+    // WICHTIG: Die IDs müssen exakt so im HTML/RenderResult vergeben sein!
     const sections = [
         { id: 'ai-container', navId: 'nav-ai' },
         { id: 'fav-section', navId: 'nav-fav' },
         { id: 'glaggle-web-search-box', navId: 'nav-web' },
+        { id: 'glaggle-image-container', navId: 'nav-img' },
         { id: 'wiki-section', navId: 'nav-wiki' }
     ];
 
     sections.forEach(section => {
         const el = document.getElementById(section.id);
-        if (el) {
+        if (el && el.style.display !== 'none') {
             const rect = el.getBoundingClientRect();
-            // Wenn die Sektion die Bildschirmmitte kreuzt
+            // Wenn die Mitte des Elements die Mitte des Bildschirms berührt
             if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
                 currentSection = section.navId;
             }
         }
     });
 
-    // Update der Klassen
     if (currentSection) {
         document.querySelectorAll('.nav-item').forEach(nav => {
             nav.classList.remove('active');
