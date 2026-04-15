@@ -891,13 +891,16 @@ async function fetchGroqAI(query) {
 
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
-        function type() {
-            if (i < antwort.length) {
-                currentText += antwort.charAt(i);
-                aiTextElement.innerHTML = marked.parse(currentText);
-                i++; setTimeout(type, 0.1);
-            }
-        }
+       function type() {
+    if (i < antwort.length) {
+        currentText += antwort.charAt(i);
+        aiTextElement.innerHTML = marked.parse(currentText);
+        i++; 
+        // Verkürze die Wartezeit auf 0,01 Sekunden
+        setTimeout(type, 100); 
+    }
+}
+
         type();
     } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
 }
@@ -973,18 +976,29 @@ async function getAiProcessedFavs(query) {
     }
 }
     
-function renderResult(title, text, url, type = "web") {
+function renderResult(title, text, url, type = "web", elementId = null) {
     const resultsDiv = document.getElementById('glaggleResults');
     const domain = new URL(url).hostname.replace('www.', '');
     const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
     
     const div = document.createElement('div');
     
+    // NEU: ID zuweisen, falls eine mitgegeben wurde (für den Zentrier-Sprung)
+    if (elementId) {
+        div.id = elementId;
+    }
+    
     // Wenn es ein Favorit ist, weisen wir die spezielle Klasse zu
     if(type === "fav") {
         div.className = 'glaggle-entry fav-project';
+        // Sicherstellen, dass der Button in der Nav-Leiste erscheint
+        const btnFav = document.getElementById('nav-fav');
+        if(btnFav) btnFav.style.display = 'block';
     } else {
         div.className = 'glaggle-entry';
+        // Wenn normale Web-Ergebnisse kommen, Button einblenden
+        const btnWeb = document.getElementById('nav-web');
+        if(btnWeb) btnWeb.style.display = 'block';
     }
 
     div.innerHTML = `
@@ -997,6 +1011,7 @@ function renderResult(title, text, url, type = "web") {
     `;
     
     const aiBox = document.getElementById('ai-container');
+    
     // Favoriten immer direkt unter der KI-Box anzeigen
     if (type === "fav" && aiBox) {
         aiBox.after(div);
@@ -1491,6 +1506,8 @@ window.addEventListener('load', function() {
 
 async function searchSupabase(query) {
     const resultsDiv = document.getElementById('glaggleResults');
+    const navWebBtn = document.getElementById('nav-web'); // Der Button in der Nav-Leiste
+    
     if (!resultsDiv || !query) return;
 
     // 1. Verhindern, dass die Box bei Mehrfachsuche doppelt erscheint
@@ -1498,7 +1515,7 @@ async function searchSupabase(query) {
     if (oldWebBox) oldWebBox.remove();
 
     try {
-        // Suche in Supabase (Achte darauf, dass 'supabaseClient' korrekt initialisiert ist!)
+        // Suche in Supabase
         const { data, error } = await supabaseClient
             .from('search_index')
             .select('*')
@@ -1510,14 +1527,22 @@ async function searchSupabase(query) {
             return;
         }
 
-        // Wenn keine Daten gefunden wurden, beenden wir die Funktion einfach
-        if (!data || data.length === 0) return;
+        // Wenn keine Daten gefunden wurden, Button verstecken und Funktion beenden
+        if (!data || data.length === 0) {
+            if (navWebBtn) navWebBtn.style.display = 'none';
+            return;
+        }
+
+        // --- NEU: NAV-BUTTON EINBLENDEN ---
+        if (navWebBtn) navWebBtn.style.display = 'block';
 
         // 2. Container für WebSearch erstellen
         const webBox = document.createElement('div');
-        webBox.id = 'glaggle-web-search-box'; // Eindeutige ID zum Löschen/Finden
+        webBox.id = 'glaggle-web-search-box'; // ID FÜR DEN NAV-SPRUNG
         webBox.className = 'glaggle-entry fav-project';
         webBox.style.borderLeft = "5px solid #34A853"; 
+        webBox.style.scrollMarginTop = "100px"; // Sorgt für Puffer beim Springen
+        
         webBox.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span style="font-size:1.2rem;">🌐</span>
@@ -1526,7 +1551,7 @@ async function searchSupabase(query) {
             <div id="supabase-results-list"></div>
         `;
         
-        // 3. Positionierung
+        // 3. Positionierung (Vor den Bildern oder am Ende)
         const imgBox = document.getElementById('glaggle-image-container');
         if (imgBox) {
             imgBox.before(webBox);
@@ -1539,12 +1564,11 @@ async function searchSupabase(query) {
         // 4. Ergebnisse rendern
         data.forEach(res => {
             const item = document.createElement('div');
-            item.className = 'supabase-result-item'; // Für CSS Styling falls nötig
+            item.className = 'supabase-result-item';
             item.style.marginBottom = "15px";
             item.style.paddingBottom = "10px";
             item.style.borderBottom = "1px solid var(--card-border)";
             
-            // Domain extrahieren (Fallback falls URL ungültig)
             let domain = "Link";
             try {
                 domain = new URL(res.url).hostname.replace('www.', '');
@@ -1552,7 +1576,7 @@ async function searchSupabase(query) {
 
             item.innerHTML = `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
-                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;">
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;" onerror="this.style.display='none'">
                     <small style="color:var(--desc-color); font-size:0.75rem;">${domain}</small>
                 </div>
                 <a href="${res.url}" target="_blank" style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
