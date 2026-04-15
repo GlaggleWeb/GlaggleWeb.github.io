@@ -836,20 +836,27 @@ async function glaggleSearch() {
 }
 async function searchWikipedia(query, lang) {
     try {
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&exintro&explaintext&exsentences=3&format=json&origin=*`;
+        // KORREKTUR: prop=pageimages|extracts und die entsprechenden Parameter für Bilder hinzugefügt
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
         
         const response = await fetch(url);
         const data = await response.json();
         
         if(data.query && data.query.pages) {
             // BUTTON EINBLENDEN
-            document.getElementById('nav-wiki').style.display = 'block';
-            Object.values(data.query.pages).forEach((page, index) => {
-                if (page.extract) {
+            const navWiki = document.getElementById('nav-wiki');
+            if(navWiki) navWiki.style.display = 'block';
+
+            // Wikipedia gibt die Seiten unsortiert zurück, wir wandeln sie in ein Array um
+            const pages = Object.values(data.query.pages);
+
+            pages.forEach((page, index) => {
+                // Wir prüfen auf extract ODER title, falls mal kein Text da ist
+                if (page.extract || page.title) {
                     const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
                     const thumb = page.thumbnail ? page.thumbnail.source : null;
                     
-                    let shortExtract = page.extract;
+                    let shortExtract = page.extract || "";
                     if (shortExtract.length > 250) {
                         shortExtract = shortExtract.substring(0, 250) + "...";
                     }
@@ -858,20 +865,23 @@ async function searchWikipedia(query, lang) {
                         ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
                         : shortExtract;
 
-                   // ID NUR BEIM ERSTEN ELEMENT SETZEN
+                    // ID NUR BEIM ERSTEN ELEMENT SETZEN (für den Sprung aus der Nav)
                     const id = (index === 0) ? "wiki-section" : null;
+                    
                     renderResult(page.title, content, wikiUrl, "wiki", id);
                 }
             });
         } else {
-            document.getElementById('nav-wiki').style.display = 'none';
+            // Falls keine Ergebnisse: Button verstecken
+            const navWiki = document.getElementById('nav-wiki');
+            if(navWiki) navWiki.style.display = 'none';
         }
     } catch (e) { 
         console.error("Wiki Fehler", e); 
-        document.getElementById('nav-wiki').style.display = 'none';
+        const navWiki = document.getElementById('nav-wiki');
+        if(navWiki) navWiki.style.display = 'none';
     }
 }
-
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
