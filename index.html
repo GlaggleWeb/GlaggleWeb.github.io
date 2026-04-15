@@ -1654,6 +1654,47 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
+// Sicherer Zugriff auf den Button
+document.addEventListener('DOMContentLoaded', () => {
+    const backToTopBtn = document.getElementById('backToTopBtn'); // Prüfe die ID in deinem HTML!
+
+    if (backToTopBtn) {
+        // Nur wenn der Button existiert, Listener hinzufügen
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('active'); // Oder 'visible', je nach CSS
+            }
+        });
+    }
+});
+
+// Kopiere dies in dein Script (nicht innerhalb einer anderen Funktion)
+function refreshObserver() {
+    const targets = [
+        'ai-container', 
+        'fav-section', 
+        'glaggle-web-search-box', 
+        'glaggle-image-container', 
+        'wiki-section'
+    ];
+    
+    // Falls du den IntersectionObserver aus der letzten Nachricht nutzt:
+    if (typeof observer !== 'undefined') {
+        targets.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+    } else {
+        console.warn("Observer ist noch nicht definiert.");
+    }
+}
+    
 // 1. Klick-Logik mit sofortiger Status-Änderung
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
