@@ -1631,6 +1631,25 @@ window.addEventListener('scroll', () => {
         }
     });
 });
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('nav-item')) {
+        e.preventDefault();
+        const targetId = e.target.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+            targetElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' // Das schiebt es in die Mitte!
+            });
+            
+            // Aktiv-Klasse wechseln
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            e.target.classList.add('active');
+        }
+    }
+});
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
