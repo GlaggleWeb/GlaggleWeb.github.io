@@ -790,14 +790,15 @@ async function glaggleSearch() {
     const query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
+    // 1. Alles zurücksetzen
     const navLeiste = document.querySelector('.glaggle-nav');
-    if (navLeiste) navLeiste.style.display = 'block';
-
-    // 1. Benachrichtigungen nur anfragen, wenn nötig und möglich
-    // Auf iOS funktioniert das oft nur, wenn die Seite vom Home-Bildschirm gestartet wird!
-    if (window.Notification && Notification.permission === "default") {
-        Notification.requestPermission().catch(console.error);
-    }
+    if (navLeiste) navLeiste.style.display = 'block'; 
+    
+    // Alle Buttons in der Leiste erst mal verstecken
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.display = 'none';
+        item.classList.remove('active');
+    });
 
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
@@ -808,14 +809,22 @@ async function glaggleSearch() {
     checkWidgets(query);
     resultsDiv.appendChild(createAiPlaceholder());
 
-try {
+    try {
         await Promise.allSettled([
             fetchGroqAI(query),
             (async () => {
                 const favs = await getAiProcessedFavs(query);
-                if(favs) favs.forEach(res => renderResult(res.title, res.desc, res.url, "fav"));
+                if(favs && favs.length > 0) {
+                    // Button einblenden
+                    document.getElementById('nav-fav').style.display = 'block';
+                    favs.forEach((res, index) => {
+                        // ID nur beim ersten Favoriten setzen für den Sprung
+                        const id = (index === 0) ? "fav-section" : null;
+                        renderResult(res.title, res.desc, res.url, "fav", id);
+                    });
+                }
             })(),
-            searchSupabase(query), // <--- NEU: Hier wird die Datenbank abgefragt
+            searchSupabase(query),
             searchGlaggleImages(query),
             searchWikipedia(query, 'de')
         ]);
@@ -834,6 +843,8 @@ async function searchWikipedia(query, lang) {
         const data = await response.json();
         
         if(data.query && data.query.pages) {
+            // BUTTON EINBLENDEN
+            document.getElementById('nav-wiki').style.display = 'block';
             Object.values(data.query.pages).forEach(page => {
                 const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
                 const thumb = page.thumbnail ? page.thumbnail.source : null;
@@ -849,7 +860,9 @@ async function searchWikipedia(query, lang) {
                     ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
                     : shortExtract;
 
-                renderResult(page.title, content, wikiUrl, "wiki");
+               // ID NUR BEIM ERSTEN ELEMENT SETZEN
+                const id = (index === 0) ? "wiki-section" : null;
+                renderResult(page.title, content, wikiUrl, "wiki", id);
             });
         }
     } catch (e) { console.error("Wiki Fehler", e); }
@@ -870,6 +883,11 @@ async function fetchGroqAI(query) {
         });
         const data = await res.json();
         const antwort = data.choices[0].message.content;
+
+        // BUTTON EINBLENDEN
+        document.getElementById('nav-ai').style.display = 'block';
+        // Aktive Klasse setzen, da AI meistens zuerst kommt
+        document.getElementById('nav-ai').classList.add('active');
 
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
