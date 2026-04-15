@@ -1633,48 +1633,37 @@ async function searchSupabase(query) {
         console.error("Kritischer Supabase Fehler:", e);
     }
 }
-// Den Button aus dem HTML greifen
-const backToTopBtn = document.getElementById("backToTop");
+// NUR DIESER EINE BLOCK FÜR DEN BUTTON:
+window.addEventListener('DOMContentLoaded', () => {
+    // Wir suchen den Button (achte darauf, dass im HTML id="backToTopBtn" steht!)
+    const btn = document.getElementById('backToTopBtn');
 
-// Den Scroll-Vorgang überwachen
-window.addEventListener('scroll', () => {
-    // Prüfen: Ist der Nutzer weiter als 1px von oben weg?
-    if (window.scrollY > 1) {
-        backToTopBtn.classList.add("show"); // Klasse für Sichtbarkeit hinzufügen
-    } else {
-        backToTopBtn.classList.remove("show"); // Klasse entfernen, wenn ganz oben
-    }
-});
-
-// Die Klick-Funktion: Sanft nach oben gleiten
-backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-});
-
-// Sicherer Zugriff auf den Button
-document.addEventListener('DOMContentLoaded', () => {
-    const backToTopBtn = document.getElementById('backToTopBtn'); // Prüfe die ID in deinem HTML!
-
-    if (backToTopBtn) {
-        // Nur wenn der Button existiert, Listener hinzufügen
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (btn) {
+        // 1. Klick-Logik
+        btn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
 
+        // 2. Sichtbarkeits-Logik beim Scrollen
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
-                backToTopBtn.classList.add('visible');
+                // Wir nutzen beides: Klasse für CSS-Animationen und Display für Sicherheit
+                btn.classList.add('show');
+                btn.style.display = "block";
             } else {
-                backToTopBtn.classList.remove('active'); // Oder 'visible', je nach CSS
+                btn.classList.remove('show');
+                btn.style.display = "none";
             }
         });
+    } else {
+        console.warn("Glaggle Debug: Button mit ID 'backToTopBtn' nicht im HTML gefunden.");
     }
 });
 
-// Kopiere dies in dein Script (nicht innerhalb einer anderen Funktion)
+// 1. Die refreshObserver Funktion (Bleibt so, wie du sie hast)
 function refreshObserver() {
     const targets = [
         'ai-container', 
@@ -1684,31 +1673,31 @@ function refreshObserver() {
         'wiki-section'
     ];
     
-    // Falls du den IntersectionObserver aus der letzten Nachricht nutzt:
     if (typeof observer !== 'undefined') {
         targets.forEach(id => {
             const el = document.getElementById(id);
             if (el) observer.observe(el);
         });
     } else {
-        console.warn("Observer ist noch nicht definiert.");
+        // Falls du kein Observer-Objekt hast, ist das nicht schlimm,
+        // da dein Scroll-Spy unten die Arbeit übernimmt.
+        console.log("Glaggle Info: Scroll-Spy aktiv.");
     }
 }
-    
-// 1. Klick-Logik mit sofortiger Status-Änderung
+
+// 2. Klick-Logik mit Korrektur (Verhindert doppeltes Triggern)
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
         e.preventDefault();
         
-        // Sofortiger visueller Wechsel
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        e.target.classList.add('active');
-
         const targetId = e.target.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
-            // Wir scrollen etwas weiter oben als "Mitte", damit der Fokus sicher wechselt
+            // Visueller Wechsel sofort
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            e.target.classList.add('active');
+
             const offset = 100; 
             const bodyRect = document.body.getBoundingClientRect().top;
             const elementRect = targetElement.getBoundingClientRect().top;
@@ -1723,7 +1712,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// 2. Präziser Scroll-Spy (Der "Einfrier-Schutz")
+// 3. Dein Präziser Scroll-Spy (Optimiert)
 window.addEventListener('scroll', () => {
     const sections = [
         'ai-container', 
@@ -1735,26 +1724,31 @@ window.addEventListener('scroll', () => {
 
     let currentSection = "";
 
-    // Wir suchen die Sektion, die am weitesten unten ist, aber die 160px Marke unterschritten hat
     sections.forEach(id => {
         const el = document.getElementById(id);
+        // WICHTIG: Prüfen, ob das Element existiert und sichtbar ist
         if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
             const rect = el.getBoundingClientRect();
-            // Reagiert, wenn die Oberkante der Sektion im Bereich der Navigationsleiste ist
+            // Die Logik "Was ist unter 160px" funktioniert super für Overlays
             if (rect.top <= 160) {
                 currentSection = id;
             }
         }
     });
 
-    // Falls wir ganz oben sind (über der ersten Box), erzwingen wir AI
-    if (window.scrollY < 100) currentSection = "ai-container";
+    // Spezialfall: Wenn wir ganz oben sind, immer AI markieren
+    if (window.scrollY < 100) {
+        currentSection = "ai-container";
+    }
 
+    // Nur aktualisieren, wenn wir eine Sektion gefunden haben
     if (currentSection) {
         document.querySelectorAll('.nav-item').forEach(nav => {
-            nav.classList.remove('active');
-            if (nav.getAttribute('href') === `#${currentSection}`) {
+            const href = nav.getAttribute('href');
+            if (href === `#${currentSection}`) {
                 nav.classList.add('active');
+            } else {
+                nav.classList.remove('active');
             }
         });
     }
