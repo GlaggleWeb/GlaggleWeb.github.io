@@ -723,7 +723,7 @@ html {
         <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
         <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
     </form>
-
+    
 <nav class="glaggle-nav" id="main-nav">
     <div class="nav-scroll-wrapper">
         <a href="#ai-container" id="nav-ai" class="nav-item">Glaggle AI</a>
@@ -1629,14 +1629,14 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
-// 1. Zentrale Klick-Logik
+// 1. Klick-Logik: Wechselt die Farbe sofort beim Klicken
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
         e.preventDefault();
         
-        // Alle aktiven Klassen entfernen
+        // Alle aktiven Markierungen entfernen
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        // Geklicktes Element aktiv setzen
+        // Das geklickte Element sofort weiß markieren
         e.target.classList.add('active');
 
         const targetId = e.target.getAttribute('href').substring(1);
@@ -1651,11 +1651,10 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// 2. Präziser Scroll-Spy
+// 2. Scroll-Spy: Markiert den Button, dessen Inhalt in der Mitte ist
 window.addEventListener('scroll', () => {
     let currentSection = "";
     
-    // WICHTIG: Die IDs müssen exakt so im HTML/RenderResult vergeben sein!
     const sections = [
         { id: 'ai-container', navId: 'nav-ai' },
         { id: 'fav-section', navId: 'nav-fav' },
@@ -1666,24 +1665,29 @@ window.addEventListener('scroll', () => {
 
     sections.forEach(section => {
         const el = document.getElementById(section.id);
-        if (el && el.style.display !== 'none') {
+        // Prüfen, ob das Element existiert und sichtbar ist
+        if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
             const rect = el.getBoundingClientRect();
-            // Wenn die Mitte des Elements die Mitte des Bildschirms berührt
+            // Wenn die Mitte des Elements die Bildschirmmitte kreuzt
             if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
                 currentSection = section.navId;
             }
         }
     });
 
+    // Nur aktualisieren, wenn wir wirklich in einer neuen Sektion sind
     if (currentSection) {
         document.querySelectorAll('.nav-item').forEach(nav => {
-            nav.classList.remove('active');
             if (nav.id === currentSection) {
                 nav.classList.add('active');
+            } else {
+                nav.classList.remove('active');
             }
         });
     }
 });
+
+
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
