@@ -1631,60 +1631,65 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
-// 1. Klick-Logik (Sanftes Scrollen)
+// 1. Klick-Logik mit sofortiger Status-Änderung
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
         e.preventDefault();
+        
+        // Sofortiger visueller Wechsel
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        e.target.classList.add('active');
+
         const targetId = e.target.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
-            targetElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' // 'start' ist oft zuverlässiger als 'center' für den Fokus
+            // Wir scrollen etwas weiter oben als "Mitte", damit der Fokus sicher wechselt
+            const offset = 100; 
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = targetElement.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
             });
         }
     }
 });
 
-// 2. Der „Fokus-Fix“ (Intersection Observer)
-const observerOptions = {
-    root: null,
-    rootMargin: '-20% 0px -70% 0px', // Reagiert, wenn das Element im oberen Drittel ist
-    threshold: 0
-};
-
-const observerCallback = (entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const id = entry.target.id;
-            // Alle Items deaktivieren
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            
-            // Passenden Nav-Punkt finden
-            const activeNav = document.querySelector(`.nav-item[href="#${id}"]`);
-            if (activeNav) activeNav.classList.add('active');
-        }
-    });
-};
-
-const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-// Diese Funktion rufen wir am Ende von glaggleSearch auf, 
-// um die neuen Elemente zu überwachen
-function refreshObserver() {
-    const targets = [
+// 2. Präziser Scroll-Spy (Der "Einfrier-Schutz")
+window.addEventListener('scroll', () => {
+    let currentSection = "ai-container"; // Standardmäßig AI
+    
+    const sections = [
         'ai-container', 
         'fav-section', 
         'glaggle-web-search-box', 
         'glaggle-image-container', 
         'wiki-section'
     ];
-    targets.forEach(id => {
+
+    sections.forEach(id => {
         const el = document.getElementById(id);
-        if (el) observer.observe(el);
+        if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
+            const rect = el.getBoundingClientRect();
+            // Sobald die Oberkante eines Elements den Bereich 150px unter dem Top erreicht
+            if (rect.top <= 150) {
+                currentSection = id;
+            }
+        }
     });
-}
+
+    // Update der Buttons
+    document.querySelectorAll('.nav-item').forEach(nav => {
+        nav.classList.remove('active');
+        if (nav.getAttribute('href') === `#${currentSection}`) {
+            nav.classList.add('active');
+        }
+    });
+}, { passive: true });
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
