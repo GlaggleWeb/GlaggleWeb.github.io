@@ -836,7 +836,6 @@ async function glaggleSearch() {
 }
 async function searchWikipedia(query, lang) {
     try {
-        // Wir nutzen exsentences=3, um die Länge radikal zu kürzen
         const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&exintro&explaintext&exsentences=3&format=json&origin=*`;
         
         const response = await fetch(url);
@@ -846,23 +845,23 @@ async function searchWikipedia(query, lang) {
             // BUTTON EINBLENDEN
             document.getElementById('nav-wiki').style.display = 'block';
             Object.values(data.query.pages).forEach((page, index) => {
-                const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
-                const thumb = page.thumbnail ? page.thumbnail.source : null;
-                
-                // Falls der Text trotzdem noch zu lang ist (z.B. wegen Listen), 
-                // schneiden wir ihn hart nach 250 Zeichen ab und fügen "..." hinzu.
-                let shortExtract = page.extract;
-                if (shortExtract.length > 250) {
-                    shortExtract = shortExtract.substring(0, 250) + "...";
+                if (page.extract) {
+                    const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
+                    const thumb = page.thumbnail ? page.thumbnail.source : null;
+                    
+                    let shortExtract = page.extract;
+                    if (shortExtract.length > 250) {
+                        shortExtract = shortExtract.substring(0, 250) + "...";
+                    }
+
+                    const content = thumb 
+                        ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
+                        : shortExtract;
+
+                   // ID NUR BEIM ERSTEN ELEMENT SETZEN
+                    const id = (index === 0) ? "wiki-section" : null;
+                    renderResult(page.title, content, wikiUrl, "wiki", id);
                 }
-
-                const content = thumb 
-                    ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
-                    : shortExtract;
-
-               // ID NUR BEIM ERSTEN ELEMENT SETZEN
-                const id = (index === 0) ? "wiki-section" : null;
-                renderResult(page.title, content, wikiUrl, "wiki", id);
             });
         } else {
             document.getElementById('nav-wiki').style.display = 'none';
