@@ -588,17 +588,6 @@
     background-color: #2d9147;
 }
 
-.glaggle-nav {
-    background: var(--nav-bg, #171717); /* Nutzt deine Hintergrundvariable */
-    border-bottom: 1px solid var(--card-border, #333);
-    position: sticky;
-    top: 0; /* Bleibt ganz oben kleben */
-    z-index: 1000;
-    width: 100%;
-    margin-top: 10px;
-    display: none; /* Erst anzeigen, wenn eine Suche läuft */
-}
-
 .nav-scroll-wrapper {
     display: flex;
     gap: 20px;
@@ -612,21 +601,36 @@
 .nav-scroll-wrapper::-webkit-scrollbar {
     display: none; /* Versteckt Scrollbar in Chrome/Safari */
 }
-
-.nav-item {
-    color: #9aa0a6;
-    text-decoration: none;
-    padding: 8px 16px; /* Etwas mehr Platz */
-    font-size: 0.95rem;
-    white-space: nowrap;
-    border-radius: 20px; /* Abgerundet statt Balken */
-    transition: all 0.3s ease;
+.glaggle-nav {
+    background: #171717;
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    /* Abstände: Oben mehr zum Suchbalken, unten etwas weniger zur KI-Box */
+    margin-top: 25px; 
+    margin-bottom: 15px; 
+    display: none;
 }
 
+.nav-item {
+    display: none;
+    color: #9aa0a6;
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 25px; /* Wie in deinem Wunsch-Bild */
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+/* Der Fokus-Zustand */
 .nav-item.active {
     color: #fff;
-    background: rgba(255, 255, 255, 0.1); /* Dezenter Hintergrund für Aktive */
-    border-bottom: 2px solid #fff; /* Balken etwas feiner */
+    background: rgba(255, 255, 255, 0.1); 
+    border-bottom: 3px solid #fff; /* Weißer Balken unten */
 }
 
 .nav-item:hover {
@@ -1568,16 +1572,45 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
-// In deiner glaggleSearch() Funktion ganz oben hinzufügen:
-document.querySelector('.glaggle-nav').style.display = 'block';
-
-// Klick-Logik für den aktiven Balken
+// 1. Klick-Logik mit Zentrierung
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function(e) {
-        // Entferne 'active' von allen anderen
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        // Füge es dem geklickten hinzu
-        this.classList.add('active');
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+});
+
+// 2. Scroll-Spy: Markiert automatisch den Bereich, in dem du gerade bist
+window.addEventListener('scroll', () => {
+    let current = "";
+    const sections = [
+        document.getElementById('ai-container'),
+        document.getElementById('fav-section'),
+        document.getElementById('glaggle-web-search-box'),
+        document.getElementById('glaggle-image-container'),
+        document.getElementById('wiki-section')
+    ];
+
+    sections.forEach(section => {
+        if (section && section.style.display !== 'none') {
+            const sectionTop = section.offsetTop;
+            // Wir prüfen, ob wir uns im Bereich des Elements befinden
+            if (scrollY >= sectionTop - 200) {
+                current = section.getAttribute('id');
+            }
+        }
+    });
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href').substring(1) === current) {
+            item.classList.add('active');
+        }
     });
 });
 </script>
