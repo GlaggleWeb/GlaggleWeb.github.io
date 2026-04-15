@@ -658,11 +658,6 @@ html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-#ai-response-container {
-    transition: all 0.2s ease-in-out;
-    line-height: 1.6; /* Besseres Lesen bei schnellem Text */
-}
 </style>
 </head>
 <body>
@@ -908,10 +903,7 @@ async function fetchGroqAI(query) {
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 model: "llama-3.1-8b-instant", 
                 messages: [
@@ -920,36 +912,30 @@ async function fetchGroqAI(query) {
                 ] 
             })
         });
-        
         const data = await res.json();
         const antwort = data.choices[0].message.content;
 
         // BUTTON EINBLENDEN
-        const navAi = document.getElementById('nav-ai');
-        if (navAi) {
-            navAi.style.display = 'block';
-            navAi.classList.add('active');
-        }
+        document.getElementById('nav-ai').style.display = 'block';
+        // Aktive Klasse setzen, da AI meistens zuerst kommt
+        document.getElementById('nav-ai').classList.add('active');
 
         aiTextElement.style.fontStyle = "normal";
-        aiTextElement.innerHTML = ""; // Vorher leeren
-
-        // --- WORT-FÜR-WORT EFFEKT START ---
-        const words = antwort.split(" ");
-        const speed = 30; // Geschwindigkeit in ms (niedriger = schneller)
-
-        for (let i = 0; i < words.length; i++) {
-            aiTextElement.innerHTML += words[i] + " ";
-            // Kleiner Trick: Wir warten kurz nach jedem Wort
-            await new Promise(resolve => setTimeout(resolve, speed));
-        }
-        // --- WORT-FÜR-WORT EFFEKT ENDE ---
-
-    } catch (e) { 
-        console.error(e);
-        aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; 
+        let i = 0; let currentText = "";
+       function type() {
+    if (i < antwort.length) {
+        currentText += antwort.charAt(i);
+        aiTextElement.innerHTML = marked.parse(currentText);
+        i++; 
+        // Verkürze die Wartezeit auf 0,01 Sekunden
+        setTimeout(type, 0.00000000001); 
     }
 }
+
+        type();
+    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
+}
+
 async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
     if (q.length < 3) return []; 
