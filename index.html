@@ -837,7 +837,7 @@ async function glaggleSearch() {
 async function searchWikipedia(query, lang) {
     try {
         // Wir nutzen exsentences=3, um die Länge radikal zu kürzen
-        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&exintro&explaintext&exsentences=3&format=json&origin=*`;
         
         const response = await fetch(url);
         const data = await response.json();
@@ -845,7 +845,7 @@ async function searchWikipedia(query, lang) {
         if(data.query && data.query.pages) {
             // BUTTON EINBLENDEN
             document.getElementById('nav-wiki').style.display = 'block';
-            Object.values(data.query.pages).forEach(page => {
+            Object.values(data.query.pages).forEach((page, index) => {
                 const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
                 const thumb = page.thumbnail ? page.thumbnail.source : null;
                 
@@ -864,9 +864,15 @@ async function searchWikipedia(query, lang) {
                 const id = (index === 0) ? "wiki-section" : null;
                 renderResult(page.title, content, wikiUrl, "wiki", id);
             });
+        } else {
+            document.getElementById('nav-wiki').style.display = 'none';
         }
-    } catch (e) { console.error("Wiki Fehler", e); }
+    } catch (e) { 
+        console.error("Wiki Fehler", e); 
+        document.getElementById('nav-wiki').style.display = 'none';
+    }
 }
+
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
