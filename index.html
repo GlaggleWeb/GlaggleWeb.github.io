@@ -643,7 +643,15 @@ html {
     scroll-behavior: smooth;
     scroll-padding-top: 60px; /* Damit die Überschrift nicht unter der Leiste landet */
 }
-        
+
+/* Erzeugt einen Puffer oben, damit die Überschrift nicht von der Nav verdeckt wird */
+#ai-container, 
+#fav-section, 
+#glaggle-web-search-box, 
+#glaggle-image-container, 
+#wiki-section {
+    scroll-margin-top: 120px;
+}
 </style>
 </head>
 <body>
@@ -1670,8 +1678,6 @@ document.addEventListener('click', function(e) {
 
 // 2. Präziser Scroll-Spy (Der "Einfrier-Schutz")
 window.addEventListener('scroll', () => {
-    let currentSection = "ai-container"; // Standardmäßig AI
-    
     const sections = [
         'ai-container', 
         'fav-section', 
@@ -1680,24 +1686,31 @@ window.addEventListener('scroll', () => {
         'wiki-section'
     ];
 
+    let currentSection = "";
+
+    // Wir suchen die Sektion, die am weitesten unten ist, aber die 160px Marke unterschritten hat
     sections.forEach(id => {
         const el = document.getElementById(id);
         if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
             const rect = el.getBoundingClientRect();
-            // Sobald die Oberkante eines Elements den Bereich 150px unter dem Top erreicht
-            if (rect.top <= 150) {
+            // Reagiert, wenn die Oberkante der Sektion im Bereich der Navigationsleiste ist
+            if (rect.top <= 160) {
                 currentSection = id;
             }
         }
     });
 
-    // Update der Buttons
-    document.querySelectorAll('.nav-item').forEach(nav => {
-        nav.classList.remove('active');
-        if (nav.getAttribute('href') === `#${currentSection}`) {
-            nav.classList.add('active');
-        }
-    });
+    // Falls wir ganz oben sind (über der ersten Box), erzwingen wir AI
+    if (window.scrollY < 100) currentSection = "ai-container";
+
+    if (currentSection) {
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.remove('active');
+            if (nav.getAttribute('href') === `#${currentSection}`) {
+                nav.classList.add('active');
+            }
+        });
+    }
 }, { passive: true });
 </script>
 
