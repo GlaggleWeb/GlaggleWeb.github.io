@@ -1430,20 +1430,17 @@ async function searchGlaggleImages(query, offset = 0) {
 
         if (!hasImages) {
             if (offset === 0) return; 
-            
             const loadMoreBtn = document.getElementById('load-more-imgs');
             if (loadMoreBtn) loadMoreBtn.style.display = "none";
             return;
         }
 
-        // --- ERGÄNZUNG: Button in der Nav-Leiste einblenden ---
         const navImg = document.getElementById('nav-img');
         if (navImg) navImg.style.display = 'block';
 
         let imageWrapper = document.getElementById('glaggle-image-container');
         if (!imageWrapper) {
             imageWrapper = document.createElement('div');
-            // WICHTIG: Die ID für die Navigation (muss mit href="#glaggle-image-container" übereinstimmen)
             imageWrapper.id = 'glaggle-image-container'; 
             imageWrapper.className = 'glaggle-entry fav-project';
             imageWrapper.style.marginTop = "15px";
@@ -1464,32 +1461,45 @@ async function searchGlaggleImages(query, offset = 0) {
         const grid = document.getElementById('glaggle-image-grid');
         const loadMoreBtn = document.getElementById('load-more-imgs');
 
+        // --- DUPLIKAT-FILTER START ---
+        // Wir sammeln alle bisherigen Bild-URLs im Grid
+        const existingSrcs = new Set();
+        document.querySelectorAll('#glaggle-image-grid img').forEach(img => existingSrcs.add(img.src));
+
         Object.values(data.query.pages).forEach(page => {
-            if (page.thumbnail) {
-                const imgContainer = document.createElement('div');
-                imgContainer.style.height = "120px";
-                imgContainer.style.borderRadius = "10px";
-                imgContainer.style.overflow = "hidden";
-                imgContainer.style.cursor = "zoom-in";
-                imgContainer.style.border = "1px solid var(--card-border)";
-                
-                const img = document.createElement('img');
-                img.src = page.thumbnail.source;
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.objectFit = "cover";
+            if (page.thumbnail && page.thumbnail.source) {
+                const src = page.thumbnail.source;
 
-                imgContainer.onclick = () => {
-                    const modal = document.getElementById('imageModal');
-                    const modalImg = document.getElementById('modalImg');
-                    modal.style.display = "flex";
-                    modalImg.src = page.thumbnail.source;
-                };
+                // Nur hinzufügen, wenn das Bild noch nicht im Grid ist
+                if (!existingSrcs.has(src)) {
+                    existingSrcs.add(src); // Sofort zum Set hinzufügen für diese Schleife
 
-                imgContainer.appendChild(img);
-                grid.appendChild(imgContainer);
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.height = "120px";
+                    imgContainer.style.borderRadius = "10px";
+                    imgContainer.style.overflow = "hidden";
+                    imgContainer.style.cursor = "zoom-in";
+                    imgContainer.style.border = "1px solid var(--card-border)";
+                    
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+
+                    imgContainer.onclick = () => {
+                        const modal = document.getElementById('imageModal');
+                        const modalImg = document.getElementById('modalImg');
+                        modal.style.display = "flex";
+                        modalImg.src = src;
+                    };
+
+                    imgContainer.appendChild(img);
+                    grid.appendChild(imgContainer);
+                }
             }
         });
+        // --- DUPLIKAT-FILTER ENDE ---
 
         loadMoreBtn.innerText = "Mehr Bilder...";
 
@@ -1497,7 +1507,6 @@ async function searchGlaggleImages(query, offset = 0) {
         console.error("Fehler beim Bilderladen", e);
     }
 }
-
 window.addEventListener('load', function() {
     const preloader = document.getElementById('preloader');
     const gif = document.getElementById('glaggle-gif');
