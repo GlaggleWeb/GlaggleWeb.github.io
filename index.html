@@ -658,6 +658,11 @@ html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+#ai-response-container {
+    transition: all 0.2s ease-in-out;
+    line-height: 1.6; /* Besseres Lesen bei schnellem Text */
+}
 </style>
 </head>
 <body>
@@ -922,13 +927,22 @@ async function fetchGroqAI(query) {
 
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
-       function type() {
-    if (i < antwort.length) {
-        currentText += antwort.charAt(i);
-        aiTextElement.innerHTML = marked.parse(currentText);
-        i++; 
-        // Verkürze die Wartezeit auf 0,01 Sekunden
-        setTimeout(type, 0.00000000001); 
+     async function type(text, elementId, speed = 40) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    element.innerHTML = ""; // Container leeren
+    const words = text.split(" "); // Text in Wörter zerlegen
+    
+    for (let i = 0; i < words.length; i++) {
+        // Wort hinzufügen + ein Leerzeichen
+        element.innerHTML += words[i] + " ";
+        
+        // Kurze Pause bis zum nächsten Wort
+        await new Promise(resolve => setTimeout(resolve, speed));
+        
+        // Optional: Automatisches Mit-Scrollen, falls der Text lang wird
+        // window.scrollTo(0, document.body.scrollHeight);
     }
 }
 
