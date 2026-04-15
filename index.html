@@ -602,37 +602,38 @@
     display: none; /* Versteckt Scrollbar in Chrome/Safari */
 }
 .glaggle-nav {
-    background: #171717;
-    border-bottom: 1px solid #333;
+    display: none; /* Wird per JS eingeblendet */
     position: sticky;
-    top: 0;
+    top: 10px;
     z-index: 1000;
-    width: 100%;
-    /* Abstände: Oben mehr zum Suchbalken, unten etwas weniger zur KI-Box */
-    margin-top: 25px; 
-    margin-bottom: 15px; 
-    display: none;
+    background: #1a1a1a; /* Dein Schwarz */
+    padding: 8px 15px;
+    margin: 10px auto;
+    width: fit-content;
+    max-width: 90%;
+    /* HIER SIND DIE RUNDEN ECKEN */
+    border-radius: 50px; 
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .nav-item {
-    display: none;
-    color: #9aa0a6;
+    color: #999;
     text-decoration: none;
-    padding: 10px 20px;
-    font-size: 0.95rem;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.9rem;
     font-weight: 500;
-    border-radius: 25px; /* Wie in deinem Wunsch-Bild */
     transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
+    white-space: nowrap;
 }
 
-/* Der Fokus-Zustand */
+/* Der aktive Status mit dem weißen „Pillen-Look“ */
 .nav-item.active {
+    background: #333;
     color: #fff;
-    background: rgba(255, 255, 255, 0.1); 
-    border-bottom: 3px solid #fff; /* Weißer Balken unten */
+    box-shadow: inset 0 0 0 1px #555;
 }
-
 .nav-item:hover {
     color: #fff;
 }
@@ -832,6 +833,7 @@ async function glaggleSearch() {
         console.error(e);
     } finally {
         loader.style.display = "none";
+        setTimeout(refreshObserver, 500);
     }
 }
 async function searchWikipedia(query, lang) {
@@ -1629,65 +1631,60 @@ backToTopBtn.addEventListener('click', () => {
     });
 });
 
-// 1. Klick-Logik: Wechselt die Farbe sofort beim Klicken
+// 1. Klick-Logik (Sanftes Scrollen)
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('nav-item')) {
         e.preventDefault();
-        
-        // Alle aktiven Markierungen entfernen
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        // Das geklickte Element sofort weiß markieren
-        e.target.classList.add('active');
-
         const targetId = e.target.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
             targetElement.scrollIntoView({ 
                 behavior: 'smooth', 
-                block: 'center' 
+                block: 'start' // 'start' ist oft zuverlässiger als 'center' für den Fokus
             });
         }
     }
 });
 
-// 2. Scroll-Spy: Markiert den Button, dessen Inhalt in der Mitte ist
-window.addEventListener('scroll', () => {
-    let currentSection = "";
-    
-    const sections = [
-        { id: 'ai-container', navId: 'nav-ai' },
-        { id: 'fav-section', navId: 'nav-fav' },
-        { id: 'glaggle-web-search-box', navId: 'nav-web' },
-        { id: 'glaggle-image-container', navId: 'nav-img' },
-        { id: 'wiki-section', navId: 'nav-wiki' }
-    ];
+// 2. Der „Fokus-Fix“ (Intersection Observer)
+const observerOptions = {
+    root: null,
+    rootMargin: '-20% 0px -70% 0px', // Reagiert, wenn das Element im oberen Drittel ist
+    threshold: 0
+};
 
-    sections.forEach(section => {
-        const el = document.getElementById(section.id);
-        // Prüfen, ob das Element existiert und sichtbar ist
-        if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
-            const rect = el.getBoundingClientRect();
-            // Wenn die Mitte des Elements die Bildschirmmitte kreuzt
-            if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-                currentSection = section.navId;
-            }
+const observerCallback = (entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const id = entry.target.id;
+            // Alle Items deaktivieren
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            
+            // Passenden Nav-Punkt finden
+            const activeNav = document.querySelector(`.nav-item[href="#${id}"]`);
+            if (activeNav) activeNav.classList.add('active');
         }
     });
+};
 
-    // Nur aktualisieren, wenn wir wirklich in einer neuen Sektion sind
-    if (currentSection) {
-        document.querySelectorAll('.nav-item').forEach(nav => {
-            if (nav.id === currentSection) {
-                nav.classList.add('active');
-            } else {
-                nav.classList.remove('active');
-            }
-        });
-    }
-});
+const observer = new IntersectionObserver(observerCallback, observerOptions);
 
-
+// Diese Funktion rufen wir am Ende von glaggleSearch auf, 
+// um die neuen Elemente zu überwachen
+function refreshObserver() {
+    const targets = [
+        'ai-container', 
+        'fav-section', 
+        'glaggle-web-search-box', 
+        'glaggle-image-container', 
+        'wiki-section'
+    ];
+    targets.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+    });
+}
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
