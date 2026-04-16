@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Cross Road</title>
+    <style>
+        :root {
+            --bg-color: #0b2d41;
+            --text-color: #ffffff;
+            --nav-bg: #1a4b66;
+            --card-bg: #1a4b66;
+            --card-border: #2E94D1;
+            --accent: #70C4F7;
+            --danger: #FF6B6B;
+            --coin-gold: #FFD700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 65px; 
+            background-color: var(--nav-bg);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed; 
+            top: 0; 
+            z-index: 1000;
+        }
+
+        .nav-logo { height: 35px; }
+
+        .main-content { margin-top: 85px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
+
+        #game-container {
+            position: relative; 
+            width: 100%; 
+            height: 500px; 
+            background: #051a26;
+            border: 4px solid var(--card-border);
+            border-radius: 20px; 
+            overflow: hidden; 
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .score-val { font-size: 14px; opacity: 0.9; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; backdrop-filter: blur(5px);
+        }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0px #2E94D1; margin-bottom: 10px;
+            width: 200px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #2E94D1; }
+
+        #coin-display {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--nav-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .coin-img { width: 24px; height: 24px; }
+
+        @keyframes coin-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); border-color: gold; }
+            100% { transform: scale(1); }
+        }
+        .pulse { animation: coin-pulse 0.6s ease-out; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="/" style="text-decoration: none;"><img src="glagglelogo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'"></a>
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Cross Road</div>
+        <div style="font-size: 24px;">😃</div>
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Weite <b id="score">0</b></div>
+            <div class="score-val">Rekord <b id="highscore">0</b></div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="menu-overlay" class="overlay">
+                <h1 id="msg">Glaggle Crossy!</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Klicke zum Hüpfen!<br>Erreiche 15 für einen Coin!</p>
+                <button class="btn" onclick="startGame(event)">Starten</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-display">
+        <img src="coin.png" class="coin-img" alt="Coin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>'">
+        <span id="coin-count">0</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu-overlay');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const coinEl = document.getElementById('coin-count');
+        const container = document.getElementById('game-container');
+
+        const GRID = 50;
+        let gameRunning = false;
+        let score = 0;
+        let highscore = localStorage.getItem('glaggleCrossHighscore') || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+        highscoreEl.innerText = highscore;
+        coinEl.innerText = coins;
+
+        // Player State
+        const player = {
+            gridX: 3,
+            gridY: 0,
+            screenX: 0,
+            screenY: 0,
+            jumpProgress: 0,
+            isJumping: false
+        };
+
+        let lanes = [];
+        let cameraY = 0;
+
+        const TYPES = {
+            GRASS: { color: '#1a4b66', obstacle: null },
+            ROAD: { color: '#0b2d41', obstacle: 'CAR' },
+            WATER: { color: '#2E94D1', obstacle: 'LOG' }
+        };
+
+        function resize() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function createLane(index) {
+            let type;
+            if (index <= 3) type = TYPES.GRASS;
+            else {
+                const r = Math.random();
+                if (r < 0.3) type = TYPES.GRASS;
+                else if (r < 0.7) type = TYPES.ROAD;
+                else type = TYPES.WATER;
+            }
+
+            const speed = (Math.random() * 2 + 1.5) * (Math.random() > 0.5 ? 1 : -1);
+            const entities = [];
+            const count = type.obstacle ? 3 : 0;
+            const spacing = 200 + Math.random() * 100;
+
+            for (let i = 0; i < count; i++) {
+                entities.push({
+                    x: i * spacing,
+                    w: type.obstacle === 'CAR' ? 70 : 120
+                });
+            }
+
+            return { y: index, type, speed, entities };
+        }
+
+        function startGame(e) {
+            if (e) e.stopPropagation();
+            score = 0;
+            player.gridX = Math.floor((canvas.width / GRID) / 2);
+            player.gridY = 0;
+            player.isJumping = false;
+            player.jumpProgress = 0;
+            cameraY = 0;
+            lanes = [];
+            for (let i = 0; i < 15; i++) lanes.push(createLane(i));
+            
+            scoreEl.innerText = "0";
+            gameRunning = true;
+            menu.style.display = "none";
+            requestAnimationFrame(gameLoop);
+        }
+
+        function jump() {
+            if (!gameRunning || player.isJumping) return;
+            player.isJumping = true;
+            player.jumpProgress = 0;
+        }
+
+        container.addEventListener('mousedown', jump);
+        container.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, {passive: false});
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // 1. Update Player Jump
+            if (player.isJumping) {
+                player.jumpProgress += 0.15;
+                if (player.jumpProgress >= 1) {
+                    player.isJumping = false;
+                    player.jumpProgress = 0;
+                    player.gridY++;
+                    score = player.gridY;
+                    scoreEl.innerText = score;
+                    // Add new lanes
+                    if (lanes.length < player.gridY + 15) {
+                        lanes.push(createLane(lanes.length));
+                    }
+                }
+            }
+
+            // 2. Update Entities
+            lanes.forEach(lane => {
+                lane.entities.forEach(ent => {
+                    ent.x += lane.speed;
+                    if (lane.speed > 0 && ent.x > canvas.width) ent.x = -ent.w;
+                    if (lane.speed < 0 && ent.x < -ent.w) ent.x = canvas.width;
+                });
+            });
+
+            // 3. Collision & Water Logic
+            const currentLaneY = player.isJumping && player.jumpProgress < 0.5 ? player.gridY : (player.isJumping ? player.gridY + 1 : player.gridY);
+            const activeLane = lanes.find(l => l.y === currentLaneY);
+            
+            player.screenX = player.gridX * GRID;
+
+            if (activeLane) {
+                if (activeLane.type.obstacle === 'CAR') {
+                    activeLane.entities.forEach(car => {
+                        const buffer = 10;
+                        if (player.screenX + GRID - buffer > car.x && player.screenX + buffer < car.x + car.w) {
+                            if (!player.isJumping || player.jumpProgress < 0.2 || player.jumpProgress > 0.8) {
+                                gameOver();
+                            }
+                        }
+                    });
+                } else if (activeLane.type.obstacle === 'LOG') {
+                    let onLog = false;
+                    activeLane.entities.forEach(log => {
+                        if (player.screenX + GRID/2 > log.x && player.screenX + GRID/2 < log.x + log.w) {
+                            onLog = true;
+                            if (!player.isJumping) {
+                                player.gridX += activeLane.speed / GRID;
+                            }
+                        }
+                    });
+                    if (!onLog && !player.isJumping) gameOver();
+                }
+            }
+
+            // 4. Out of bounds
+            if (player.gridX < 0 || player.gridX * GRID > canvas.width - GRID) gameOver();
+
+            // 5. Camera follow
+            const targetCam = player.gridY * GRID - 150;
+            cameraY += (targetCam - cameraY) * 0.1;
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(0, cameraY);
+
+            // Draw Lanes
+            lanes.forEach(lane => {
+                const drawY = canvas.height - (lane.y * GRID) - GRID;
+                
+                // Ground
+                ctx.fillStyle = lane.type.color;
+                ctx.fillRect(0, drawY, canvas.width, GRID);
+                ctx.strokeStyle = "rgba(0,0,0,0.1)";
+                ctx.strokeRect(0, drawY, canvas.width, GRID);
+
+                // Road markings
+                if (lane.type === TYPES.ROAD) {
+                    ctx.fillStyle = "rgba(255,255,255,0.2)";
+                    for(let i=0; i<canvas.width; i+=40) ctx.fillRect(i, drawY + GRID/2 - 2, 20, 4);
+                }
+
+                // Entities
+                lane.entities.forEach(ent => {
+                    if (lane.type.obstacle === 'CAR') {
+                        ctx.fillStyle = "#FF6B6B";
+                        drawRoundedRect(ctx, ent.x + 5, drawY + 8, ent.w - 10, GRID - 16, 8);
+                        ctx.fillStyle = "white"; // Windows
+                        if (lane.speed > 0) ctx.fillRect(ent.x + ent.w - 20, drawY + 12, 10, GRID - 24);
+                        else ctx.fillRect(ent.x + 10, drawY + 12, 10, GRID - 24);
+                    } else {
+                        ctx.fillStyle = "#5d4037"; // Log
+                        drawRoundedRect(ctx, ent.x, drawY + 5, ent.w, GRID - 10, 5);
+                    }
+                });
+            });
+
+            // Draw Player
+            const jumpYOffset = player.isJumping ? Math.sin(player.jumpProgress * Math.PI) * 25 : 0;
+            const smoothY = (player.gridY + (player.isJumping ? player.jumpProgress : 0)) * GRID;
+            const drawPlayerY = canvas.height - smoothY - GRID - jumpYOffset;
+            const drawPlayerX = player.gridX * GRID;
+
+            // Glaggle Body
+            ctx.fillStyle = "#FFD700";
+            ctx.beginPath();
+            ctx.arc(drawPlayerX + GRID/2, drawPlayerY + GRID/2, 18 + (jumpYOffset/5), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Eyes
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(drawPlayerX + GRID/2 - 6, drawPlayerY + GRID/2 - 4, 2.5, 0, Math.PI * 2);
+            ctx.arc(drawPlayerX + GRID/2 + 6, drawPlayerY + GRID/2 - 4, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Smile
+            ctx.beginPath();
+            ctx.arc(drawPlayerX + GRID/2, drawPlayerY + GRID/2 + 2, 8, 0.2 * Math.PI, 0.8 * Math.PI);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawRoundedRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            
+            // Coin Logik ab 15
+            if (score >= 15) {
+                coins++;
+                localStorage.setItem('glaggleCoins', coins);
+                coinEl.innerText = coins;
+                document.getElementById('coin-display').classList.add('pulse');
+                setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 600);
+            }
+
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('glaggleCrossHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                document.getElementById('msg').innerText = "🏆 Rekord!";
+            } else {
+                document.getElementById('msg').innerText = "Crash! Weite: " + score;
+            }
+            
+            menu.style.display = "flex";
+        }
+    </script>
+</body>
+</html>
