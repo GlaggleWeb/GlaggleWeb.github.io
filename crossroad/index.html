@@ -149,7 +149,7 @@
         const GRID = 50;
         let gameRunning = false;
         let score = 0;
-        let highscore = localStorage.getItem('glaggleCrossHighscore') || 0;
+        let highscore = localStorage.getItem('glagglecross_highscore') || 0;
         let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
         highscoreEl.innerText = highscore;
@@ -397,7 +397,7 @@
 
             if (score > highscore) {
                 highscore = score;
-                localStorage.setItem('glaggleCrossHighscore', highscore);
+                localStorage.setItem('glagglecross_highscore', highscore);
                 highscoreEl.innerText = highscore;
                 document.getElementById('msg').innerText = "🏆 Rekord!";
             } else {
