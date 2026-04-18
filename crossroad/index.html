@@ -127,7 +127,7 @@
             <div id="menu-overlay" class="overlay">
                 <h1 id="msg">Glaggle Crossy!</h1>
                 <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Klicke zum Hüpfen!<br>Erreiche 15 für einen Coin!</p>
-                <button class="btn" onclick="startGame(event)">Starten</button>
+                <button class="btn" onclick="event.stopPropagation(); startGame(event)">Starten</button>
             </div>
         </div>
     </div>
@@ -230,7 +230,16 @@
         }
 
         container.addEventListener('mousedown', jump);
-        container.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, {passive: false});
+        container.addEventListener('touchstart', (e) => {
+    // Wenn das Ziel des Touches der Button ist, tu nichts und lass den Klick durch
+    if (e.target.classList.contains('btn')) {
+        return; 
+    }
+    
+    // Ansonsten: Verhindere Standard-Verhalten (Scrollen) und springe
+    e.preventDefault(); 
+    jump();
+}, {passive: false});
 
         function gameLoop() {
             if (!gameRunning) return;
