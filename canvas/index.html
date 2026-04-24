@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersiver Raum - Kraftvolles Flow Field</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000; /* Tiefschwarz für maximalen Kontrast */
+            cursor: crosshair;
+        }
+
+        /* Falls Fullscreen-API fehlschlägt, nutzen wir diese Klasse als Fallback */
+        .fake-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+        }
+
+        #hintergrundCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            /* Verstärkter Bloom-Effekt durch CSS Filter */
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        /* Fullscreen Button Style */
+        #fullscreenBtn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        #fullscreenBtn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="hintergrundCanvas"></canvas>
+    <button id="fullscreenBtn">Vollbild aktivieren</button>
+
+    <script>
+        const canvas = document.getElementById('hintergrundCanvas');
+        const ctx = canvas.getContext('2d');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+        let partikelArray = [];
+        let zeit = 0;
+        let farbTon = 20; // Startet bei intensivem Rost-Gold
+        let isFakeFullscreen = false;
+
+        let maus = {
+            x: undefined,
+            y: undefined,
+            radius: 250 // Größerer Einflussradius
+        };
+
+        // Fullscreen Logik mit Fallback
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement && !isFakeFullscreen) {
+                // Versuche echtes Fullscreen
+                document.documentElement.requestFullscreen().then(() => {
+                    fullscreenBtn.innerText = "Vollbild beenden";
+                }).catch(err => {
+                    // Fallback: Fake Fullscreen (einfach das Canvas groß machen)
+                    console.warn("Natives Fullscreen blockiert. Nutze Fallback.");
+                    toggleFakeFullscreen(true);
+                });
+            } else {
+                // Beenden
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else if (isFakeFullscreen) {
+                    toggleFakeFullscreen(false);
+                }
+            }
+        });
+
+        function toggleFakeFullscreen(enable) {
+            isFakeFullscreen = enable;
+            if (enable) {
+                canvas.classList.add('fake-fullscreen');
+                fullscreenBtn.innerText = "Vollbild beenden";
+            } else {
+                canvas.classList.remove('fake-fullscreen');
+                fullscreenBtn.innerText = "Vollbild aktivieren";
+            }
+            resizeCanvas();
+        }
+
+        // Button Text aktualisieren, wenn Fullscreen via ESC verlassen wird
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                fullscreenBtn.innerText = "Vollbild aktivieren";
+                resizeCanvas();
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            maus.x = e.x;
+            maus.y = e.y;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        }
+
+        class Partikel {
+            constructor() {
+                this.reset();
+                this.lebensdauer = Math.random() * 200 + 100;
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.letzteX = this.x;
+                this.letzteY = this.y;
+                this.geschwindigkeit = Math.random() * 3 + 1.5; // Schneller
+                this.alter = 0;
+                this.maxAlter = Math.random() * 200 + 150;
+            }
+
+            aktualisiere() {
+                this.letzteX = this.x;
+                this.letzteY = this.y;
+
+                // Komplexeres Rausch-Feld durch Überlagerung mehrerer Wellen
+                let skalierung = 0.0015;
+                let n1 = Math.sin(this.x * skalierung + zeit);
+                let n2 = Math.cos(this.y * skalierung - zeit);
+                let n3 = Math.sin((this.x + this.y) * skalierung * 2 + zeit * 0.5);
+                
+                let winkel = (n1 + n2 + n3) * Math.PI * 2;
+
+                // Maus-Interaktion (Sog-Effekt)
+                if (maus.x !== undefined) {
+                    let dx = maus.x - this.x;
+                    let dy = maus.y - this.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < maus.radius) {
+                        let kraft = (maus.radius - dist) / maus.radius;
+                        let mausWinkel = Math.atan2(dy, dx);
+                        // Wirbelt die Partikel um die Maus herum
+                        winkel += mausWinkel * kraft * 2;
+                    }
+                }
+
+                this.x += Math.cos(winkel) * this.geschwindigkeit;
+                this.y += Math.sin(winkel) * this.geschwindigkeit;
+
+                // Lebenszyklus für stetige Erneuerung
+                this.alter++;
+                if (this.alter > this.maxAlter || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+
+                this.zeichne();
+            }
+
+            zeichne() {
+                ctx.beginPath();
+                ctx.moveTo(this.letzteX, this.letzteY);
+                ctx.lineTo(this.x, this.y);
+                
+                // Stärkere Sättigung und Leuchtkraft
+                // Die Helligkeit korreliert mit dem Alter des Partikels (Ein- und Ausblenden)
+                let alpha = Math.sin((this.alter / this.maxAlter) * Math.PI) * 0.6;
+                ctx.strokeStyle = `hsla(${farbTon + (this.x / 20)}, 90%, 65%, ${alpha})`;
+                ctx.lineWidth = 2; // Dickere Linien für mehr Präsenz
+                ctx.stroke();
+            }
+        }
+
+        function init() {
+            partikelArray = [];
+            let dichte = 4000; // Deutlich mehr Partikel
+            for (let i = 0; i < dichte; i++) {
+                partikelArray.push(new Partikel());
+            }
+            // Hintergrund initial füllen
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function animiere() {
+            // "Ghosting" Effekt reduzieren für schärfere, stärkere Linien
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Additive Farbmischung für "Glow"-Effekt
+            ctx.globalCompositeOperation = 'lighter';
+            for (let p of partikelArray) {
+                p.aktualisiere();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+
+            zeit += 0.005; // Schnellere zeitliche Veränderung
+            farbTon += 0.15; // Schnellerer Farbwechsel
+            
+            requestAnimationFrame(animiere);
+        }
+
+        resizeCanvas();
+        animiere();
+    </script>
+</body>
+</html>
