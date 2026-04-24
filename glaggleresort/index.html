@@ -607,11 +607,52 @@ body {
     left: 0;
   }
 }
+
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.room {
+  background: #0f3a54;
+  border: 2px solid #2E94D1;
+  border-radius: 10px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.room:hover {
+  transform: scale(1.05);
+  border-color: #70C4F7;
+}
+
+.room.occupied {
+  background: #0e3d26;
+}
+
+.room.vip {
+  background: #3d2e00;
+  border-color: gold;
+}
+
+.room.locked {
+  background: #0a1f2e;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+  
 </style>
 </head>
 <body>
 
-<div id="canvas-container"></div>
+<div id="room-grid" class="room-grid"></div>
 
 <div class="ui-overlay">
   <!-- Welcome Screen -->
