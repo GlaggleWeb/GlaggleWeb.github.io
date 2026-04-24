@@ -750,7 +750,23 @@ body {
     <!-- Upgrades -->
     <div class="sidebar-section">
       <div class="sidebar-title">🔧 Verfügbare Upgrades</div>
-      <div id="upgrade-grid"></div>
+      <div id="upgrade-grid">
+
+  <div class="upgrade-card" onclick="gameManager.buyUpgrade('moreCoins')">
+    
+    <div class="upgrade-header">
+      <div class="upgrade-icon">💰</div>
+      <div class="upgrade-title">Mehr Coins</div>
+      <div class="upgrade-cost">50 🪙</div>
+    </div>
+
+    <div class="upgrade-desc">
+      Gäste zahlen mehr Geld
+    </div>
+
+  </div>
+
+</div>
     </div>
   </div>
 
@@ -957,6 +973,10 @@ class GameManager {
 
     this.renderRooms();
     this.updateAllUI();
+
+    this.upgrades = {
+        moreCoins: { cost: 50, bought: false }
+    };
   }
 
   initRooms() {
@@ -1117,6 +1137,24 @@ class GameManager {
     item.innerText = msg;
     feed.prepend(item);
   }
+}
+
+buyUpgrade(id) {
+  const u = this.upgrades[id];
+
+  if (!u || u.bought) return;
+
+  if (this.coins < u.cost) {
+    this.addLog("❌ Nicht genug Coins!");
+    return;
+  }
+
+  this.coins -= u.cost;
+  u.bought = true;
+
+  this.addLog("🔧 Upgrade gekauft!");
+
+  this.updateAllUI();
 }
 
 // ==========================================
