@@ -13,6 +13,18 @@ body {
   overflow: hidden;
   height: 100vh;
 }
+  
+.ui-overlay {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.navbar,
+.sidebar,
+.main-content {
+  position: relative;
+  z-index: 10;
+}
 
 #canvas-container {
   width: 100%;
