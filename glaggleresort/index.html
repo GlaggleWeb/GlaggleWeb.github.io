@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Glaggle Resort 🐠</title>
+<style>
+:root {
+  --bg: #0b2d41;
+  --nav-bg: #1a4b66;
+  --card-bg: #1a4b66;
+  --card-bg2: #0f3a54;
+  --border: #2E94D1;
+  --accent: #70C4F7;
+  --accent2: #2E94D1;
+  --gold: #FFD700;
+  --gold2: #FFA500;
+  --green: #2ecc71;
+  --red: #FF6B6B;
+  --text: #ffffff;
+  --text-muted: rgba(255,255,255,0.65);
+  --shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Arial Rounded MT Bold', 'Nunito', Arial, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Underwater animated bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(46,148,209,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(112,196,247,0.05) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Bubbles animation */
+.bubble { position: fixed; border-radius: 50%; border: 1.5px solid rgba(112,196,247,0.3); pointer-events: none; animation: rise linear infinite; z-index: 0; }
+@keyframes rise { from { transform: translateY(110vh) scale(1); opacity:0.6; } to { transform: translateY(-10vh) scale(1.2); opacity:0; } }
+
+/* Navbar */
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; height: 60px;
+  background: var(--nav-bg);
+  padding: 0 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.4);
+  position: sticky; top: 0; z-index: 1000;
+  border-bottom: 2px solid var(--border);
+}
+.nav-logo { font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 1px; }
+.nav-coins {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card-bg2); border: 2px solid var(--gold);
+  padding: 5px 14px; border-radius: 30px; font-weight: bold;
+}
+.nav-coins .coin-icon { font-size: 18px; }
+.nav-coins span { color: var(--gold); font-size: 16px; }
+
+/* Layout */
+.game-wrapper {
+  max-width: 520px; margin: 0 auto;
+  padding: 12px; position: relative; z-index: 1;
+}
+
+/* Top stats bar */
+.stats-bar {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
+}
+.stat-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  text-align: center;
+}
+.stat-card .s-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+.stat-card .s-val { font-size: 22px; font-weight: bold; color: var(--accent); line-height: 1.2; }
+.stat-card .s-val.gold { color: var(--gold); }
+.stat-card .s-val.green { color: var(--green); }
+
+/* Hotel Building */
+.hotel-area {
+  background: linear-gradient(180deg, #0d3650 0%, #0b2d41 100%);
+  border: 3px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  position: relative;
+  height: 220px;
+  box-shadow: var(--shadow);
+}
+.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  height: 100%;
+  gap: 4px;
+  padding: 8px;
+}
+.room {
+  background: var(--card-bg2);
+  border: 2px solid var(--accent2);
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+  font-size: 11px;
+  user-select: none;
+}
+.room:hover { transform: scale(1.04); border-color: var(--accent); }
+.room:active { transform: scale(0.97); }
+.room.occupied { background: #0e3d26; border-color: var(--green); }
+.room.vip { background: #3d2e00; border-color: var(--gold); }
+.room.locked {
+  background: #0a1f2e;
+  border-color: #1a4b66;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.room-emoji { font-size: 26px; line-height: 1; }
+.room-label { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+.room-timer {
+  position: absolute; bottom: 2px; left: 0; right: 0;
+  height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
+}
+.room-timer-bar { height: 100%; background: var(--green); transition: width 0.1s linear; border-radius: 2px; }
+.room.vip .room-timer-bar { background: var(--gold); }
+
+.hotel-sign {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  background: var(--nav-bg); border: 2px solid var(--gold);
+  padding: 3px 14px; border-radius: 20px;
+  font-size: 11px; font-weight: bold; color: var(--gold);
+  letter-spacing: 1px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* Guest queue */
+.queue-section {
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 12px; color: var(--text-muted); 
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 6px; padding-left: 4px;
+}
+.guest-queue {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding-bottom: 4px;
+}
+.guest-queue::-webkit-scrollbar { height: 3px; }
+.guest-queue::-webkit-scrollbar-track { background: transparent; }
+.guest-queue::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
+.guest-card {
+  min-width: 72px; background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 6px; text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  position: relative;
+}
+.guest-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.guest-card:active { transform: scale(0.95); }
+.guest-card.selected {
+  border-color: var(--gold);
+  background: #2a2000;
+  box-shadow: 0 0 12px rgba(255,215,0,0.3);
+}
+.guest-card.vip-guest { border-color: var(--gold); }
+.guest-emoji { font-size: 28px; line-height: 1; }
+.guest-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+.guest-pay { font-size: 11px; font-weight: bold; color: var(--gold); }
+.vip-badge {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--gold); color: #000;
+  font-size: 8px; font-weight: bold;
+  padding: 1px 5px; border-radius: 8px;
+}
+
+/* Upgrades */
+.upgrades-section { margin-bottom: 12px; }
+.upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.upgrade-btn {
+  background: var(--card-bg2);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  text-align: left;
+  color: var(--text);
+}
+.upgrade-btn:hover:not(:disabled) { border-color: var(--accent); background: #1a4b66; }
+.upgrade-btn:active:not(:disabled) { transform: scale(0.97); }
+.upgrade-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.upgrade-btn.bought { border-color: var(--green); background: #0e3d26; cursor: default; }
+.upgrade-icon { font-size: 24px; flex-shrink: 0; }
+.upgrade-info .u-name { font-size: 12px; font-weight: bold; }
+.upgrade-info .u-cost { font-size: 11px; color: var(--gold); }
+.upgrade-info .u-desc { font-size: 10px; color: var(--text-muted); }
+
+/* Events / Notifications */
+.event-feed {
+  background: var(--card-bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 12px;
+  max-height: 90px; overflow-y: auto;
+  margin-bottom: 12px;
+}
+.event-feed::-webkit-scrollbar { width: 3px; }
+.event-feed::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 3px; }
+.event-item {
+  font-size: 12px; padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; gap: 6px;
+  animation: fadeIn 0.3s ease;
+}
+.event-item:last-child { border-bottom: none; }
+@keyframes fadeIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+
+/* Checkout popup */
+.popup {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+}
+.popup-box {
+  background: var(--card-bg);
+  border: 3px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 24px;
+  text-align: center;
+  width: 280px;
+  box-shadow: var(--shadow);
+  animation: popIn 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+@keyframes popIn { from { transform: scale(0.7); opacity:0; } to { transform: scale(1); opacity:1; } }
+.popup-emoji { font-size: 52px; margin-bottom: 8px; }
+.popup-title { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+.popup-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.popup-earnings { font-size: 28px; font-weight: bold; color: var(--gold); margin-bottom: 20px; }
+.popup-btn {
+  background: var(--accent); color: white; border: none;
+  padding: 12px 40px; border-radius: 30px;
+  font-size: 15px; font-weight: bold; cursor: pointer;
+  box-shadow: 0 4px 0 var(--accent2);
+  transition: transform 0.1s;
+}
+.popup-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent2); }
+
+/* Floating +coin */
+.float-coin {
+  position: fixed; pointer-events: none; font-size: 18px; font-weight: bold;
+  color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  animation: floatUp 1s ease-out forwards;
+  z-index: 3000;
+}
+@keyframes floatUp { 
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
+}
+
+/* Welcome screen */
+#welcome-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 5000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 30px;
+}
+.welcome-title { font-size: 36px; font-weight: bold; color: var(--accent); margin-bottom: 6px; }
+.welcome-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; max-width: 320px; }
+.welcome-fish { font-size: 64px; margin-bottom: 20px; animation: bob 2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.start-btn {
+  background: var(--accent); color: white; border: none;
+  padding: 16px 60px; border-radius: 40px;
+  font-size: 18px; font-weight: bold; cursor: pointer;
+  box-shadow: 0 6px 0 var(--accent2);
+  transition: transform 0.1s;
+}
+.start-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--accent2); }
+.how-to {
+  background: var(--card-bg); border: 2px solid var(--border);
+  border-radius: 16px; padding: 16px 20px;
+  margin-bottom: 28px; max-width: 320px;
+  text-align: left;
+}
+.how-to li { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; padding-left: 4px; list-style: none; }
+.how-to li::before { content: '🌊 '; }
+</style>
+</head>
+<body>
+
+<!-- Bubbles -->
+<div id="bubbles-container"></div>
+
+<!-- Welcome Screen -->
+<div id="welcome-screen">
+  <div class="welcome-fish">🐠</div>
+  <div class="welcome-title">Glaggle Resort</div>
+  <div class="welcome-sub">Baue das schönste Tiefsee-Resort und bring die Meeresbewohner zum Staunen!</div>
+  <ul class="how-to">
+    <li>Wähle einen Gast aus der Warteschlange</li>
+    <li>Weise ihm ein freies Zimmer zu</li>
+    <li>Kassiere beim Check-out & verdiene Coins</li>
+    <li>Kaufe Upgrades für mehr Gäste & Einnahmen</li>
+  </ul>
+  <button class="start-btn" onclick="startGame()">Resort eröffnen 🏖️</button>
+</div>
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="nav-logo">🌊 Glaggle</div>
+  <div style="font-size: 13px; color: var(--accent);">RESORT</div>
+  <div class="nav-coins">
+    <span class="coin-icon">🪙</span>
+    <span id="coin-display">0</span>
+  </div>
+</div>
+
+<!-- Game -->
+<div class="game-wrapper">
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="s-label">Tag</div>
+      <div class="s-val" id="day-display">1</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Gäste heute</div>
+      <div class="s-val green" id="guests-today">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Einnahmen</div>
+      <div class="s-val gold" id="earnings-today">0🪙</div>
+    </div>
+  </div>
+
+  <!-- Hotel Building -->
+  <div class="hotel-area">
+    <div class="hotel-sign" id="hotel-sign">⭐ GLAGGLE RESORT ⭐</div>
+    <div class="hotel-grid" id="hotel-grid"></div>
+  </div>
+
+  <!-- Guest Queue -->
+  <div class="queue-section">
+    <div class="section-title">🐟 Warteschlange</div>
+    <div class="guest-queue" id="guest-queue"></div>
+  </div>
+
+  <!-- Upgrades -->
+  <div class="upgrades-section">
+    <div class="section-title">🔧 Upgrades</div>
+    <div class="upgrade-grid" id="upgrade-grid"></div>
+  </div>
+
+  <!-- Event Feed -->
+  <div class="section-title">📋 Resort-Log</div>
+  <div class="event-feed" id="event-feed">
+    <div class="event-item">🌊 Resort wurde noch nicht eröffnet...</div>
+  </div>
+</div>
+
+<!-- Checkout Popup -->
+<div class="popup" id="checkout-popup" style="display:none;">
+  <div class="popup-box" id="popup-box">
+    <div class="popup-emoji" id="popup-emoji">🐠</div>
+    <div class="popup-title" id="popup-title">Check-out!</div>
+    <div class="popup-subtitle" id="popup-subtitle">Dankeschön!</div>
+    <div class="popup-earnings" id="popup-earnings">+8 🪙</div>
+    <button class="popup-btn" onclick="closePopup()">Kassieren ✅</button>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+let day = 1;
+let guestsToday = 0;
+let earningsToday = 0;
+let selectedGuest = null;
+let gameActive = false;
+let dayTimer = null;
+let guestSpawnTimer = null;
+let pendingCheckout = null;
+
+// Room states: null = free, {guest, timer, endTime, pay} = occupied
+let rooms = Array(8).fill(null).map((_,i) => ({
+  id: i, guest: null, timer: null, endTime: null, pay: 0, locked: i >= 6, vip: false
+}));
+
+const GUESTS = [
+  { name: 'Nemo', emoji: '🐠', pay: 5, stayTime: 8000, vip: false },
+  { name: 'Dori', emoji: '🐟', pay: 6, stayTime: 7000, vip: false },
+  { name: 'Krake', emoji: '🐙', pay: 7, stayTime: 9000, vip: false },
+  { name: 'Shari', emoji: '🦈', pay: 4, stayTime: 6000, vip: false },
+  { name: 'Robbi', emoji: '🦑', pay: 8, stayTime: 10000, vip: false },
+  { name: 'Kobi', emoji: '🦀', pay: 6, stayTime: 8000, vip: false },
+  { name: 'Perli', emoji: '🦪', pay: 5, stayTime: 7500, vip: false },
+  { name: 'Schildi', emoji: '🐢', pay: 7, stayTime: 12000, vip: false },
+  { name: 'Wal-König', emoji: '🐳', pay: 20, stayTime: 15000, vip: true },
+  { name: 'Delphin-Star', emoji: '🐬', pay: 18, stayTime: 13000, vip: true },
+  { name: 'Seepferdchen-Graf', emoji: '🦭', pay: 22, stayTime: 16000, vip: true },
+];
+
+const UPGRADES = [
+  { id: 'pool', name: 'Korallenpool', icon: '🪸', cost: 20, desc: '+2 Coin/Gast', bought: false, apply: () => { incomeBonus += 2; } },
+  { id: 'restaurant', name: 'Tiefsee-Restaurant', icon: '🍽️', cost: 35, desc: 'Gäste bleiben länger', bought: false, apply: () => { stayBonus += 0.3; } },
+  { id: 'spa', name: 'Algen-Spa', icon: '💆', cost: 50, desc: '+5 Coin bei VIP', bought: false, apply: () => { vipBonus += 5; } },
+  { id: 'concierge', name: 'Concierge', icon: '🎩', cost: 40, desc: 'Mehr VIP-Gäste', bought: false, apply: () => { vipChance += 0.15; } },
+  { id: 'rooms1', name: 'Zimmer freischalten', icon: '🔓', cost: 30, desc: 'Zimmer 7 & 8 öffnen', bought: false, apply: () => { rooms[6].locked = false; rooms[7].locked = false; renderRooms(); } },
+  { id: 'disco', name: 'Unterwasser-Disco', icon: '🪩', cost: 60, desc: 'Gäste kommen schneller', bought: false, apply: () => { spawnInterval = Math.max(3000, spawnInterval - 1500); } },
+];
+
+let incomeBonus = 0;
+let stayBonus = 0;
+let vipBonus = 0;
+let vipChance = 0.1;
+let spawnInterval = 5500;
+let queue = [];
+let maxQueue = 4;
+
+// ===== INIT BUBBLES =====
+function initBubbles() {
+  const container = document.getElementById('bubbles-container');
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = Math.random() * 18 + 6;
+    b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;bottom:-20px;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s`;
+    container.appendChild(b);
+  }
+}
+
+// ===== START GAME =====
+function startGame() {
+  document.getElementById('welcome-screen').style.display = 'none';
+  gameActive = true;
+  updateCoinDisplay();
+  renderRooms();
+  renderUpgrades();
+  spawnGuest();
+  startDayTimer();
+  log('🏖️ Resort eröffnet! Willkommen im Glaggle Resort!');
+  log('🐠 Die ersten Gäste warten bereits in der Schlange!');
+}
+
+// ===== DAY TIMER =====
+function startDayTimer() {
+  clearInterval(dayTimer);
+  dayTimer = setInterval(() => {
+    day++;
+    guestsToday = 0;
+    earningsToday = 0;
+    document.getElementById('day-display').innerText = day;
+    document.getElementById('guests-today').innerText = 0;
+    document.getElementById('earnings-today').innerText = '0🪙';
+    if (day % 3 === 0) {
+      maxQueue = Math.min(6, maxQueue + 1);
+      log(`🌟 Tag ${day}: Dein Resort wird bekannter! (Warteschlange: ${maxQueue})`);
+    } else {
+      log(`🌅 Guten Morgen! Tag ${day} beginnt.`);
+    }
+  }, 45000);
+}
+
+// ===== SPAWN GUESTS =====
+function spawnGuest() {
+  if (!gameActive) return;
+  const doSpawn = () => {
+    if (queue.length < maxQueue) {
+      const pool = [...GUESTS.slice(0, -3)];
+      const isVip = Math.random() < vipChance;
+      const vipPool = GUESTS.slice(-3);
+      const template = isVip ? vipPool[Math.floor(Math.random()*vipPool.length)] : pool[Math.floor(Math.random()*pool.length)];
+      const guest = { ...template, id: Date.now() + Math.random() };
+      queue.push(guest);
+      renderQueue();
+      if (isVip) log(`✨ VIP-Gast ${template.name} ist angekommen!`);
+    }
+    guestSpawnTimer = setTimeout(doSpawn, spawnInterval + Math.random()*1500 - 750);
+  };
+  guestSpawnTimer = setTimeout(doSpawn, 1200);
+}
+
+// ===== RENDER ROOMS =====
+function renderRooms() {
+  const grid = document.getElementById('hotel-grid');
+  grid.innerHTML = '';
+  rooms.forEach((room, i) => {
+    const div = document.createElement('div');
+    div.className = 'room' + (room.guest ? (room.vip ? ' vip' : ' occupied') : '') + (room.locked ? ' locked' : '');
+    div.dataset.id = i;
+    if (room.locked) {
+      div.innerHTML = `<div class="room-emoji">🔒</div><div class="room-label">Gesperrt</div>`;
+    } else if (room.guest) {
+      div.innerHTML = `
+        <div class="room-emoji">${room.guest.emoji}</div>
+        <div class="room-label">${room.guest.name}</div>
+        <div class="room-timer"><div class="room-timer-bar" id="timer-bar-${i}" style="width:100%"></div></div>`;
+    } else {
+      div.innerHTML = `<div class="room-emoji">🪸</div><div class="room-label">Zimmer ${i+1}</div>`;
+    }
+    div.addEventListener('click', () => onRoomClick(i));
+    grid.appendChild(div);
+  });
+}
+
+// ===== RENDER QUEUE =====
+function renderQueue() {
+  const el = document.getElementById('guest-queue');
+  el.innerHTML = '';
+  if (queue.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:10px;">Keine Gäste in der Warteschlange</div>';
+    return;
+  }
+  queue.forEach(guest => {
+    const card = document.createElement('div');
+    card.className = 'guest-card' + (guest.vip ? ' vip-guest' : '') + (selectedGuest && selectedGuest.id === guest.id ? ' selected' : '');
+    card.innerHTML = `
+      ${guest.vip ? '<div class="vip-badge">VIP</div>' : ''}
+      <div class="guest-emoji">${guest.emoji}</div>
+      <div class="guest-name">${guest.name}</div>
+      <div class="guest-pay">${guest.pay + incomeBonus + (guest.vip ? vipBonus : 0)}🪙</div>`;
+    card.addEventListener('click', () => selectGuest(guest));
+    el.appendChild(card);
+  });
+}
+
+// ===== SELECT GUEST =====
+function selectGuest(guest) {
+  selectedGuest = guest;
+  renderQueue();
+  log(`👆 ${guest.name} ausgewählt – wähle jetzt ein Zimmer!`);
+}
+
+// ===== ROOM CLICK =====
+function onRoomClick(roomIndex) {
+  const room = rooms[roomIndex];
+  if (room.locked) { log('🔒 Dieses Zimmer ist noch gesperrt. Kaufe das Upgrade!'); return; }
+  if (room.guest) {
+    // Check if ready for checkout
+    if (Date.now() >= room.endTime) {
+      checkoutRoom(roomIndex);
+    } else {
+      const left = Math.ceil((room.endTime - Date.now()) / 1000);
+      log(`⏳ ${room.guest.name} ist noch ${left}s im Zimmer.`);
+    }
+    return;
+  }
+  if (!selectedGuest) { log('👆 Wähle zuerst einen Gast aus der Warteschlange!'); return; }
+  
+  // Assign guest to room
+  const earn = selectedGuest.pay + incomeBonus + (selectedGuest.vip ? vipBonus : 0);
+  const stay = selectedGuest.stayTime * (1 + stayBonus);
+  room.guest = selectedGuest;
+  room.vip = selectedGuest.vip;
+  room.pay = earn;
+  room.endTime = Date.now() + stay;
+  
+  queue = queue.filter(g => g.id !== selectedGuest.id);
+  log(`🛎️ ${selectedGuest.name} eingecheckt in Zimmer ${roomIndex+1}! (${Math.round(stay/1000)}s Aufenthalt)`);
+  selectedGuest = null;
+  renderRooms();
+  renderQueue();
+  
+  // Start countdown
+  startRoomTimer(roomIndex, stay);
+}
+
+// ===== ROOM TIMER =====
+function startRoomTimer(roomIndex, duration) {
+  const startTime = Date.now();
+  const endTime = startTime + duration;
+  rooms[roomIndex].endTime = endTime;
+  
+  const tick = () => {
+    const bar = document.getElementById(`timer-bar-${roomIndex}`);
+    if (!bar || !rooms[roomIndex].guest) return;
+    const elapsed = Date.now() - startTime;
+    const pct = Math.max(0, 100 - (elapsed / duration * 100));
+    bar.style.width = pct + '%';
+    if (pct <= 0) {
+      bar.style.width = '0%';
+      bar.style.background = '#FFD700';
+      // Show checkout indicator
+      const roomEl = document.querySelector(`[data-id="${roomIndex}"]`);
+      if (roomEl) {
+        roomEl.style.animation = 'pulse 1s ease-in-out infinite';
+        roomEl.style.borderColor = '#FFD700';
+      }
+      log(`✅ ${rooms[roomIndex].guest.name} in Zimmer ${roomIndex+1} ist bereit zum Check-out! Tippe das Zimmer!`);
+      return;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// ===== CHECKOUT =====
+function checkoutRoom(roomIndex) {
+  const room = rooms[roomIndex];
+  if (!room.guest) return;
+  pendingCheckout = { guest: room.guest, pay: room.pay, roomIndex };
+  showCheckoutPopup(room.guest, room.pay);
+}
+
+function showCheckoutPopup(guest, pay) {
+  document.getElementById('popup-emoji').innerText = guest.emoji;
+  document.getElementById('popup-title').innerText = `${guest.name} checkt aus!`;
+  document.getElementById('popup-subtitle').innerText = guest.vip ? '⭐ VIP-Gast – danke für den Besuch!' : 'Danke für den Besuch!';
+  document.getElementById('popup-earnings').innerText = `+${pay} 🪙`;
+  document.getElementById('checkout-popup').style.display = 'flex';
+}
+
+function closePopup() {
+  if (!pendingCheckout) return;
+  const { guest, pay, roomIndex } = pendingCheckout;
+  
+  coins
