@@ -34,147 +34,175 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  height: 60px;
-  background: rgba(26, 75, 102, 0.95);
+  height: 70px;
+  background: linear-gradient(135deg, rgba(26, 75, 102, 0.98), rgba(15, 58, 84, 0.98));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 2px solid #2E94D1;
+  padding: 0 30px;
+  border-bottom: 3px solid #2E94D1;
   z-index: 200;
   pointer-events: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.nav-left {
+  display: flex;
+  gap: 20px;
+  align-items: center;
 }
 
 .nav-logo { 
-  font-size: 20px; 
+  font-size: 22px; 
   font-weight: bold; 
   color: #70C4F7; 
-  letter-spacing: 1px; 
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.nav-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+}
+
+.stat-badge {
+  background: rgba(15, 58, 84, 0.8);
+  border: 1px solid #2E94D1;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-badge.gold { border-color: #FFD700; }
+.stat-badge.green { border-color: #2ecc71; }
+
+.nav-center {
+  display: flex;
+  gap: 20px;
 }
 
 .nav-coins {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(15, 58, 84, 0.9);
-  border: 2px solid #FFD700;
-  padding: 8px 16px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  padding: 10px 20px;
   border-radius: 30px;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 18px;
+  color: #000;
+  box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
 }
 
-.nav-coins span {
-  color: #FFD700;
+.nav-right {
+  display: flex;
+  gap: 10px;
 }
 
-.hud-panel {
-  position: fixed;
-  right: 20px;
-  top: 80px;
-  background: rgba(26, 75, 102, 0.95);
-  border: 2px solid #2E94D1;
-  border-radius: 14px;
-  padding: 15px;
-  max-width: 300px;
-  z-index: 200;
-  pointer-events: auto;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.stat-item {
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.stat-label {
-  color: rgba(255,255,255,0.65);
-  font-size: 12px;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
+.nav-btn {
+  background: rgba(112, 196, 247, 0.2);
+  border: 2px solid #70C4F7;
   color: #70C4F7;
-}
-
-.stat-value.gold {
-  color: #FFD700;
-}
-
-.stat-value.green {
-  color: #2ecc71;
-}
-
-.guest-queue-panel {
-  position: fixed;
-  left: 20px;
-  top: 80px;
-  background: rgba(26, 75, 102, 0.95);
-  border: 2px solid #2E94D1;
-  border-radius: 14px;
-  padding: 15px;
-  max-width: 350px;
-  z-index: 200;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
   pointer-events: auto;
-  max-height: 500px;
-  overflow-y: auto;
+  font-size: 12px;
 }
 
-.guest-queue-title {
-  font-size: 12px;
-  color: rgba(255,255,255,0.65);
+.nav-btn:hover {
+  background: rgba(112, 196, 247, 0.4);
+  transform: scale(1.05);
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 70px;
+  width: 380px;
+  height: calc(100vh - 70px);
+  background: linear-gradient(180deg, rgba(26, 75, 102, 0.95), rgba(15, 58, 84, 0.95));
+  border-right: 2px solid #2E94D1;
+  overflow-y: auto;
+  padding: 20px;
+  z-index: 180;
+  pointer-events: auto;
+}
+
+.sidebar-section {
+  margin-bottom: 20px;
+  background: rgba(15, 58, 84, 0.6);
+  border: 1px solid #2E94D1;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.sidebar-title {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
   text-transform: uppercase;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .guest-card {
-  background: rgba(15, 58, 84, 0.8);
+  background: rgba(15, 58, 84, 0.7);
   border: 2px solid #2E94D1;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.2s;
   pointer-events: auto;
-  text-align: center;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .guest-card:hover {
-  transform: translateY(-2px);
+  transform: translateX(5px);
   border-color: #70C4F7;
-  background: rgba(15, 58, 84, 1);
+  background: rgba(15, 58, 84, 0.9);
 }
 
 .guest-card.selected {
   border-color: #FFD700;
-  background: rgba(61, 46, 0, 0.8);
-  box-shadow: 0 0 12px rgba(255,215,0,0.3);
+  background: rgba(61, 46, 0, 0.6);
+  box-shadow: 0 0 15px rgba(255,215,0,0.4);
 }
 
 .guest-card.vip {
-  border-color: #FFD700;
+  border: 2px dashed #FFD700;
+  background: rgba(61, 46, 0, 0.4);
 }
 
 .guest-emoji {
-  font-size: 24px;
-  margin-bottom: 5px;
+  font-size: 28px;
+  min-width: 30px;
+}
+
+.guest-info {
+  flex: 1;
 }
 
 .guest-name {
-  font-size: 11px;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #70C4F7;
 }
 
 .guest-pay {
-  font-size: 13px;
+  font-size: 11px;
   color: #FFD700;
-  font-weight: bold;
 }
 
 .vip-badge {
@@ -184,107 +212,142 @@ body {
   font-size: 9px;
   padding: 2px 6px;
   border-radius: 6px;
-  margin-bottom: 5px;
   font-weight: bold;
 }
 
-.upgrades-panel {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(26, 75, 102, 0.95);
-  border: 2px solid #2E94D1;
-  border-radius: 14px;
-  padding: 15px;
-  max-width: 400px;
-  z-index: 200;
-  pointer-events: auto;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.upgrades-title {
-  font-size: 12px;
-  color: rgba(255,255,255,0.65);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-}
-
-.upgrade-btn {
-  background: rgba(15, 58, 84, 0.8);
+.upgrade-card {
+  background: rgba(15, 58, 84, 0.7);
   border: 2px solid #2E94D1;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
   margin-bottom: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   transition: all 0.2s;
   pointer-events: auto;
-  color: #ffffff;
 }
 
-.upgrade-btn:hover:not(:disabled) {
+.upgrade-card:hover:not(:disabled) {
   border-color: #70C4F7;
-  background: rgba(15, 58, 84, 1);
+  background: rgba(15, 58, 84, 0.9);
+  transform: translateY(-2px);
 }
 
-.upgrade-btn:disabled {
-  opacity: 0.45;
+.upgrade-card:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.upgrade-btn.bought {
+.upgrade-card.bought {
   border-color: #2ecc71;
-  background: rgba(14, 61, 38, 0.8);
+  background: rgba(14, 61, 38, 0.6);
+}
+
+.upgrade-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .upgrade-icon {
-  font-size: 20px;
-  flex-shrink: 0;
+  font-size: 24px;
 }
 
-.upgrade-info {
-  flex: 1;
-  font-size: 11px;
-}
-
-.upgrade-name {
+.upgrade-title {
   font-weight: bold;
-  margin-bottom: 2px;
+  color: #70C4F7;
+  flex: 1;
+  font-size: 12px;
 }
 
 .upgrade-cost {
   color: #FFD700;
   font-weight: bold;
+  font-size: 12px;
 }
 
 .upgrade-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.main-content {
+  position: fixed;
+  left: 380px;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  pointer-events: auto;
+}
+
+.info-panel {
+  background: rgba(26, 75, 102, 0.95);
+  border: 2px solid #2E94D1;
+  border-radius: 12px;
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.info-title {
+  font-size: 13px;
   color: rgba(255,255,255,0.6);
-  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.info-stat {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.info-stat-label {
+  color: rgba(255,255,255,0.7);
+}
+
+.info-stat-value {
+  color: #70C4F7;
+  font-weight: bold;
+}
+
+.info-stat-value.gold {
+  color: #FFD700;
+}
+
+.info-stat-value.green {
+  color: #2ecc71;
 }
 
 .event-log {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(15, 58, 84, 0.95);
-  border: 1.5px solid #2E94D1;
-  border-radius: 14px;
-  padding: 12px;
-  max-width: 350px;
-  max-height: 200px;
+  background: rgba(26, 75, 102, 0.95);
+  border: 2px solid #2E94D1;
+  border-radius: 12px;
+  padding: 15px;
+  max-height: 400px;
   overflow-y: auto;
-  z-index: 200;
-  pointer-events: auto;
+  flex: 1;
 }
 
 .event-item {
   font-size: 12px;
-  padding: 4px 0;
+  padding: 6px 0;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
   animation: slideIn 0.3s ease;
 }
 
@@ -319,13 +382,14 @@ body {
 }
 
 .popup-box {
-  background: rgba(26, 75, 102, 0.95);
+  background: linear-gradient(135deg, rgba(26, 75, 102, 0.98), rgba(15, 58, 84, 0.98));
   border: 3px solid #2E94D1;
   border-radius: 20px;
   padding: 30px;
   text-align: center;
-  min-width: 300px;
+  min-width: 350px;
   animation: popIn 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes popIn {
@@ -340,60 +404,70 @@ body {
 }
 
 .popup-emoji {
-  font-size: 50px;
-  margin-bottom: 10px;
+  font-size: 60px;
+  margin-bottom: 15px;
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
 }
 
 .popup-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  color: #70C4F7;
 }
 
 .popup-subtitle {
   font-size: 14px;
   color: rgba(255,255,255,0.7);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .popup-earnings {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: bold;
   color: #FFD700;
   margin-bottom: 20px;
 }
 
 .popup-btn {
-  background: #70C4F7;
+  background: linear-gradient(135deg, #70C4F7, #5ab5e8);
   color: white;
   border: none;
-  padding: 12px 40px;
+  padding: 14px 40px;
   border-radius: 30px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
   pointer-events: auto;
+  box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4);
 }
 
 .popup-btn:hover {
-  background: #5ab5e8;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(112, 196, 247, 0.6);
 }
 
 .popup-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
 }
 
 .welcome-screen {
   position: fixed;
   inset: 0;
-  background: #0b2d41;
+  background: linear-gradient(135deg, #0b2d41, #1a4b66);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1001;
   text-align: center;
+  pointer-events: auto;
 }
 
 .welcome-screen.hidden {
@@ -401,58 +475,38 @@ body {
 }
 
 .welcome-title {
-  font-size: 48px;
+  font-size: 56px;
   font-weight: bold;
   color: #70C4F7;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .welcome-sub {
   font-size: 18px;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 30px;
-  max-width: 400px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 40px;
+  max-width: 450px;
 }
 
 .welcome-emoji {
-  font-size: 80px;
+  font-size: 100px;
   margin-bottom: 20px;
   animation: bob 2s ease-in-out infinite;
 }
 
 @keyframes bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-.start-btn {
-  background: #70C4F7;
-  color: white;
-  border: none;
-  padding: 16px 60px;
-  border-radius: 40px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  pointer-events: auto;
-}
-
-.start-btn:hover {
-  background: #5ab5e8;
-}
-
-.start-btn:active {
-  transform: scale(0.98);
+  50% { transform: translateY(-20px); }
 }
 
 .instructions {
   background: rgba(26, 75, 102, 0.8);
   border: 2px solid #2E94D1;
   border-radius: 14px;
-  padding: 20px;
+  padding: 25px;
   margin-bottom: 30px;
-  max-width: 400px;
+  max-width: 450px;
   text-align: left;
 }
 
@@ -462,9 +516,9 @@ body {
 
 .instructions-list li {
   font-size: 14px;
-  color: rgba(255,255,255,0.8);
-  margin-bottom: 8px;
-  padding-left: 20px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 10px;
+  padding-left: 25px;
   position: relative;
 }
 
@@ -474,29 +528,53 @@ body {
   left: 0;
 }
 
+.start-btn {
+  background: linear-gradient(135deg, #70C4F7, #5ab5e8);
+  color: white;
+  border: none;
+  padding: 16px 60px;
+  border-radius: 40px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  pointer-events: auto;
+  box-shadow: 0 6px 20px rgba(112, 196, 247, 0.4);
+}
+
+.start-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(112, 196, 247, 0.6);
+}
+
+.start-btn:active {
+  transform: scale(0.95);
+}
+
 .float-coin {
   position: fixed;
   pointer-events: none;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   color: #FFD700;
-  animation: floatUp 1s ease-out forwards;
+  animation: floatUp 1.2s ease-out forwards;
   z-index: 999;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 @keyframes floatUp {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotate(0deg);
     opacity: 1;
   }
   100% {
-    transform: translateY(-80px) scale(1.3);
+    transform: translateY(-100px) scale(1.4) rotate(360deg);
     opacity: 0;
   }
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -505,7 +583,29 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #2E94D1;
-  border-radius: 3px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #70C4F7;
+}
+
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 300px;
+  }
+  .main-content {
+    left: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+  .main-content {
+    left: 0;
+  }
 }
 </style>
 </head>
@@ -518,62 +618,91 @@ body {
   <div class="welcome-screen" id="welcome-screen">
     <div class="welcome-emoji">🐠</div>
     <div class="welcome-title">Glaggle Resort 3D</div>
-    <div class="welcome-sub">Baue das schönste Tiefsee-Resort und verdiene Millionen!</div>
+    <div class="welcome-sub">Baue das größte Unterwasser-Resort und verdiene Millionen! 💰</div>
     <div class="instructions">
       <ul class="instructions-list">
-        <li>Klick auf einen Gast in der Queue</li>
-        <li>Wähle ein freies Zimmer im 3D-Resort</li>
-        <li>Nach Check-out: Geld verdienen!</li>
-        <li>Upgrades kaufen für mehr Einnahmen</li>
+        <li><strong>Schritt 1:</strong> Wähle einen Gast aus der Queue</li>
+        <li><strong>Schritt 2:</strong> Klicke auf ein freies Zimmer im 3D-Resort</li>
+        <li><strong>Schritt 3:</strong> Warte bis der Gast auscheckt</li>
+        <li><strong>Schritt 4:</strong> Verdiene Coins & kaufe Upgrades!</li>
       </ul>
     </div>
-    <button class="start-btn" onclick="gameManager.startGame()">Resort eröffnen 🏖️</button>
+    <button class="start-btn" onclick="gameManager.startGame()">🚀 Resort eröffnen</button>
   </div>
 
   <!-- Navbar -->
   <div class="navbar">
-    <div class="nav-logo">🌊 Glaggle Resort 3D</div>
-    <div class="nav-coins">
-      <span>🪙</span>
-      <span id="coin-display">0</span>
+    <div class="nav-left">
+      <div class="nav-logo">🌊 Glaggle Resort</div>
+      <div class="nav-stats">
+        <div class="stat-badge">
+          📅 Tag <span id="nav-day">1</span>
+        </div>
+        <div class="stat-badge green">
+          🐟 <span id="nav-guests">0</span> heute
+        </div>
+        <div class="stat-badge gold">
+          💰 <span id="nav-earnings">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-center">
+      <div class="nav-coins">
+        <span>🪙</span>
+        <span id="coin-display">0</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="gameManager.showSettings()">⚙️ Optionen</button>
+      <button class="nav-btn" onclick="gameManager.showStats()">📊 Statistiken</button>
     </div>
   </div>
 
-  <!-- Guest Queue Panel -->
-  <div class="guest-queue-panel" id="guest-queue-panel">
-    <div class="guest-queue-title">🐟 Warteschlange</div>
-    <div id="guest-queue"></div>
-  </div>
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <!-- Guest Queue -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">🐟 Gast-Warteschlange</div>
+      <div id="guest-queue"></div>
+    </div>
 
-  <!-- HUD Panel (Stats) -->
-  <div class="hud-panel">
-    <div class="stat-item">
-      <div class="stat-label">Tag</div>
-      <div class="stat-value" id="day-display">1</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Gäste heute</div>
-      <div class="stat-value green" id="guests-today">0</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Einnahmen heute</div>
-      <div class="stat-value gold" id="earnings-today">0</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Belegte Zimmer</div>
-      <div class="stat-value" id="occupied-rooms">0/8</div>
+    <!-- Upgrades -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">🔧 Verfügbare Upgrades</div>
+      <div id="upgrade-grid"></div>
     </div>
   </div>
 
-  <!-- Upgrades Panel -->
-  <div class="upgrades-panel">
-    <div class="upgrades-title">🔧 Upgrades</div>
-    <div id="upgrade-grid"></div>
-  </div>
+  <!-- Right Panel -->
+  <div class="main-content">
+    <div class="right-panel">
+      <!-- Stats -->
+      <div class="info-panel">
+        <div class="info-title">📊 Statistiken</div>
+        <div class="info-stat">
+          <span class="info-stat-label">Belegte Zimmer:</span>
+          <span class="info-stat-value" id="occupied-rooms">0/8</span>
+        </div>
+        <div class="info-stat">
+          <span class="info-stat-label">Durchschnitt pro Gast:</span>
+          <span class="info-stat-value gold" id="avg-pay">0</span>
+        </div>
+        <div class="info-stat">
+          <span class="info-stat-label">Gäste in Queue:</span>
+          <span class="info-stat-value green" id="queue-size">0</span>
+        </div>
+        <div class="info-stat">
+          <span class="info-stat-label">Level:</span>
+          <span class="info-stat-value" id="level">1</span>
+        </div>
+      </div>
 
-  <!-- Event Log -->
-  <div class="event-log">
-    <div id="event-feed"></div>
+      <!-- Event Log -->
+      <div class="event-log">
+        <div class="info-title">📋 Event-Log</div>
+        <div id="event-feed"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Checkout Popup -->
@@ -581,9 +710,44 @@ body {
     <div class="popup-box">
       <div class="popup-emoji" id="popup-emoji">🐠</div>
       <div class="popup-title" id="popup-title">Check-out!</div>
-      <div class="popup-subtitle" id="popup-subtitle">Danke!</div>
+      <div class="popup-subtitle" id="popup-subtitle">Danke für deinen Besuch!</div>
       <div class="popup-earnings" id="popup-earnings">+50 🪙</div>
-      <button class="popup-btn" onclick="gameManager.closePopup()">Kassieren ✅</button>
+      <button class="popup-btn" onclick="gameManager.closePopup()">✅ Kassieren</button>
+    </div>
+  </div>
+
+  <!-- Settings Popup -->
+  <div class="popup" id="settings-popup">
+    <div class="popup-box" style="min-width: 400px;">
+      <div class="popup-title" style="margin-bottom: 20px;">⚙️ Optionen</div>
+      <button class="popup-btn" onclick="gameManager.saveGame()" style="margin-bottom: 10px; width: 100%;">💾 Speiel speichern</button>
+      <button class="popup-btn" onclick="gameManager.loadGame()" style="margin-bottom: 10px; width: 100%; background: linear-gradient(135deg, #2ecc71, #27ae60);">📂 Spiel laden</button>
+      <button class="popup-btn" onclick="gameManager.resetGame()" style="margin-bottom: 10px; width: 100%; background: linear-gradient(135deg, #FF6B6B, #ff5252);">🔄 Zurücksetzen</button>
+      <button class="popup-btn" onclick="document.getElementById('settings-popup').classList.remove('active')" style="width: 100%;">❌ Schließen</button>
+    </div>
+  </div>
+
+  <!-- Stats Popup -->
+  <div class="popup" id="stats-popup">
+    <div class="popup-box" style="min-width: 450px; max-height: 500px; overflow-y: auto;">
+      <div class="popup-title" style="margin-bottom: 20px;">📊 Detaillierte Statistiken</div>
+      <div class="info-stat" style="justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2E94D1;">
+        <span>Gesamt-Einnahmen:</span>
+        <span class="info-stat-value gold" id="stats-total-earnings">0</span>
+      </div>
+      <div class="info-stat" style="justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2E94D1;">
+        <span>Gäste bedient:</span>
+        <span class="info-stat-value green" id="stats-total-guests">0</span>
+      </div>
+      <div class="info-stat" style="justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2E94D1;">
+        <span>Upgrades gekauft:</span>
+        <span class="info-stat-value" id="stats-upgrades">0</span>
+      </div>
+      <div class="info-stat" style="justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2E94D1;">
+        <span>Aktuelle Runde:</span>
+        <span class="info-stat-value" id="stats-day">1</span>
+      </div>
+      <button class="popup-btn" onclick="document.getElementById('stats-popup').classList.remove('active')" style="width: 100%; margin-top: 20px;">❌ Schließen</button>
     </div>
   </div>
 </div>
@@ -592,11 +756,107 @@ body {
 
 <script>
 // ==========================================
-// GAME STATE & CONFIGURATION
+// STORAGE MANAGER
+// ==========================================
+class StorageManager {
+  constructor(storageName = 'GlaggleResortData') {
+    this.storageName = storageName;
+    this.data = this.load() || this.getDefaultData();
+  }
+
+  getDefaultData() {
+    return {
+      coins: 0,
+      totalEarnings: 0,
+      totalGuests: 0,
+      day: 1,
+      upgradesBought: 0,
+      upgrades: {},
+      timestamp: Date.now(),
+    };
+  }
+
+  save() {
+    try {
+      localStorage.setItem(this.storageName, JSON.stringify(this.data));
+      return true;
+    } catch (e) {
+      console.error('Fehler beim Speichern:', e);
+      return false;
+    }
+  }
+
+  load() {
+    try {
+      const data = localStorage.getItem(this.storageName);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      console.error('Fehler beim Laden:', e);
+      return null;
+    }
+  }
+
+  clear() {
+    try {
+      localStorage.removeItem(this.storageName);
+      this.data = this.getDefaultData();
+      return true;
+    } catch (e) {
+      console.error('Fehler beim Löschen:', e);
+      return false;
+    }
+  }
+
+  getCoins() {
+    return this.data.coins;
+  }
+
+  setCoins(amount) {
+    this.data.coins = amount;
+    this.save();
+  }
+
+  addCoins(amount) {
+    this.data.coins += amount;
+    this.data.totalEarnings += amount;
+    this.save();
+  }
+
+  getUpgrades() {
+    return this.data.upgrades;
+  }
+
+  setUpgrade(id, bought) {
+    this.data.upgrades[id] = bought;
+    if (bought) this.data.upgradesBought++;
+    this.save();
+  }
+
+  getStats() {
+    return {
+      coins: this.data.coins,
+      totalEarnings: this.data.totalEarnings,
+      totalGuests: this.data.totalGuests,
+      day: this.data.day,
+      upgradesBought: this.data.upgradesBought,
+    };
+  }
+
+  updateStats(coins, totalEarnings, totalGuests, day) {
+    this.data.coins = coins;
+    this.data.totalEarnings = totalEarnings;
+    this.data.totalGuests = totalGuests;
+    this.data.day = day;
+    this.data.timestamp = Date.now();
+    this.save();
+  }
+}
+
+// ==========================================
+// GAME CONFIGURATION
 // ==========================================
 const GAME_CONFIG = {
   ROOM_COUNT: 8,
-  INITIAL_COINS: 0,
   DAY_DURATION: 45000,
   GUEST_SPAWN_BASE: 5500,
   GUEST_SPAWN_VARIANCE: 1500,
@@ -620,11 +880,11 @@ const GUESTS_DATA = [
 
 const UPGRADES_DATA = [
   { id: 'pool', name: 'Korallenpool', icon: '🪸', cost: 20, desc: '+2 Coin/Gast', effect: 'income', value: 2 },
-  { id: 'restaurant', name: 'Tiefsee-Restaurant', icon: '🍽️', cost: 35, desc: 'Länger Aufenthalt', effect: 'stay', value: 0.3 },
+  { id: 'restaurant', name: 'Tiefsee-Restaurant', icon: '🍽️', cost: 35, desc: '+0,3 Aufenthalt', effect: 'stay', value: 0.3 },
   { id: 'spa', name: 'Algen-Spa', icon: '💆', cost: 50, desc: '+5 Coin bei VIP', effect: 'vip', value: 5 },
-  { id: 'concierge', name: 'Concierge', icon: '🎩', cost: 40, desc: '+VIP-Chance', effect: 'vipchance', value: 0.15 },
+  { id: 'concierge', name: 'Concierge', icon: '🎩', cost: 40, desc: '+15% VIP-Chance', effect: 'vipchance', value: 0.15 },
   { id: 'rooms', name: 'Zimmer freischalten', icon: '🔓', cost: 30, desc: 'Zimmer 7 & 8', effect: 'unlock', value: 0 },
-  { id: 'disco', name: 'Unterwasser-Disco', icon: '🪩', cost: 60, desc: 'Schneller spawnen', effect: 'spawn', value: 1500 },
+  { id: 'disco', name: 'Unterwasser-Disco', icon: '🪩', cost: 60, desc: '-1,5s Spawn-Zeit', effect: 'spawn', value: 1500 },
 ];
 
 // ==========================================
@@ -632,10 +892,13 @@ const UPGRADES_DATA = [
 // ==========================================
 class GameManager {
   constructor() {
-    this.coins = parseInt(localStorage.getItem('glaggleCoins')) || GAME_CONFIG.INITIAL_COINS;
-    this.day = 1;
+    this.storage = new StorageManager('GlaggleResortData');
+    
+    this.coins = this.storage.getCoins();
+    this.day = this.storage.data.day;
     this.guestsToday = 0;
     this.earningsToday = 0;
+    this.totalGuests = this.storage.data.totalGuests;
     this.gameActive = false;
     this.selectedGuest = null;
     this.pendingCheckout = null;
@@ -658,8 +921,9 @@ class GameManager {
     };
     
     this.init3D();
+    this.updateAllUI();
   }
-  
+
   initRooms() {
     return Array(GAME_CONFIG.ROOM_COUNT).fill(null).map((_, i) => ({
       id: i,
@@ -668,188 +932,206 @@ class GameManager {
       pay: 0,
       locked: i >= 6,
       vip: false,
-      position: i,
     }));
   }
-  
+
   initUpgrades() {
+    const savedUpgrades = this.storage.getUpgrades();
     return UPGRADES_DATA.map(data => ({
       ...data,
-      bought: false,
+      bought: savedUpgrades[data.id] || false,
     }));
   }
-  
+
   init3D() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0b2d41);
-    
+    this.scene.fog = new THREE.Fog(0x0b2d41, 50, 100);
+
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 5, 10);
-    this.camera.lookAt(0, 0, 0);
-    
+    this.camera.position.set(0, 6, 12);
+    this.camera.lookAt(0, 2, 0);
+
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFShadowShadowMap;
     document.getElementById('canvas-container').appendChild(this.renderer.domElement);
-    
+
     this.addLighting();
     this.createResort();
     this.animate();
-    
+
     window.addEventListener('resize', () => this.onWindowResize());
     window.addEventListener('click', (e) => this.onCanvasClick(e));
   }
-  
+
   addLighting() {
-    const ambientLight = new THREE.AmbientLight(0x70C4F7, 0.6);
+    const ambientLight = new THREE.AmbientLight(0x70C4F7, 0.7);
     this.scene.add(ambientLight);
-    
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 20, 10);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    directionalLight.position.set(15, 25, 15);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.far = 100;
+    directionalLight.shadow.camera.left = -30;
+    directionalLight.shadow.camera.right = 30;
+    directionalLight.shadow.camera.top = 30;
+    directionalLight.shadow.camera.bottom = -30;
     this.scene.add(directionalLight);
-    
-    const pointLight = new THREE.PointLight(0x2E94D1, 0.5, 100);
-    pointLight.position.set(0, 3, 0);
+
+    const pointLight = new THREE.PointLight(0x2E94D1, 0.8, 100);
+    pointLight.position.set(0, 8, 0);
     this.scene.add(pointLight);
   }
-  
+
   createResort() {
     // Ocean floor
-    const groundGeometry = new THREE.PlaneGeometry(30, 30);
+    const groundGeometry = new THREE.PlaneGeometry(50, 50);
     const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x1a4b66 });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
-    
-    // Create hotel building with rooms
+
+    // Main building
+    const buildingGeometry = new THREE.BoxGeometry(12, 6, 12);
+    const buildingMaterial = new THREE.MeshPhongMaterial({ color: 0x0f3a54 });
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    building.position.y = 3;
+    building.castShadow = true;
+    building.receiveShadow = true;
+    this.scene.add(building);
+
+    // Create hotel rooms
     this.roomMeshes = [];
     const roomsPerRow = 4;
-    const rowCount = 2;
-    const spacing = 2.5;
-    
+    const spacing = 2.8;
+
     for (let i = 0; i < GAME_CONFIG.ROOM_COUNT; i++) {
       const row = Math.floor(i / roomsPerRow);
       const col = i % roomsPerRow;
-      
+
       const x = (col - 1.5) * spacing;
       const z = (row - 0.5) * spacing;
-      const y = 1;
-      
+      const y = 2.5;
+
       const roomMesh = this.createRoom(i, x, y, z);
       this.roomMeshes.push(roomMesh);
       this.scene.add(roomMesh);
     }
-    
-    // Add decorations
+
+    // Decorations
     this.addDecorations();
   }
-  
+
   createRoom(id, x, y, z) {
     const group = new THREE.Group();
     group.position.set(x, y, z);
-    
-    // Room box
-    const geometry = new THREE.BoxGeometry(1.8, 1.8, 1.8);
-    const material = new THREE.MeshPhongMaterial({ 
-      color: this.rooms[id].vip ? 0x3d2e00 : (this.rooms[id].locked ? 0x0a1f2e : 0x0f3a54)
-    });
+
+    const room = this.rooms[id];
+    let color = 0x0f3a54;
+    if (room.locked) color = 0x0a1f2e;
+    if (room.guest) color = 0x0e3d26;
+    if (room.vip) color = 0x3d2e00;
+
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const material = new THREE.MeshPhongMaterial({ color });
     const box = new THREE.Mesh(geometry, material);
     box.castShadow = true;
     box.receiveShadow = true;
     box.userData = { roomId: id };
     group.add(box);
-    
+
     // Door
-    const doorGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.1);
+    const doorGeometry = new THREE.BoxGeometry(0.7, 1.3, 0.15);
     const doorMaterial = new THREE.MeshPhongMaterial({ color: 0x2E94D1 });
     const door = new THREE.Mesh(doorGeometry, doorMaterial);
-    door.position.z = 0.95;
+    door.position.z = 1.05;
     door.castShadow = true;
     group.add(door);
-    
-    // Number
+
+    // Room number
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFD700';
-    ctx.font = '48px Arial';
+    ctx.font = 'bold 48px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${id + 1}`, 32, 32);
-    
+
     const texture = new THREE.CanvasTexture(canvas);
-    const signGeometry = new THREE.PlaneGeometry(0.5, 0.5);
+    const signGeometry = new THREE.PlaneGeometry(0.6, 0.6);
     const signMaterial = new THREE.MeshBasicMaterial({ map: texture });
     const sign = new THREE.Mesh(signGeometry, signMaterial);
-    sign.position.z = 1;
-    sign.position.y = 0.6;
+    sign.position.z = 1.1;
+    sign.position.y = 0.7;
     group.add(sign);
-    
+
     return group;
   }
-  
+
   addDecorations() {
     // Corals
-    for (let i = 0; i < 5; i++) {
-      const coralGeometry = new THREE.ConeGeometry(0.3, 1.5, 8);
+    for (let i = 0; i < 8; i++) {
+      const coralGeometry = new THREE.ConeGeometry(0.4, 2, 8);
+      const colors = [0xFF6B9D, 0xC06C84, 0x6C567B, 0xA8DADC];
       const coralMaterial = new THREE.MeshPhongMaterial({ 
-        color: Math.random() * 0xffffff 
+        color: colors[i % colors.length]
       });
       const coral = new THREE.Mesh(coralGeometry, coralMaterial);
       coral.position.set(
-        Math.random() * 20 - 10,
-        0.75,
-        Math.random() * 20 - 10
+        Math.random() * 30 - 15,
+        0.8,
+        Math.random() * 30 - 15
       );
       coral.castShadow = true;
+      coral.receiveShadow = true;
       this.scene.add(coral);
     }
-    
-    // Fish (animated)
-    for (let i = 0; i < 3; i++) {
-      const fishGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+
+    // Fish
+    for (let i = 0; i < 5; i++) {
+      const fishGeometry = new THREE.SphereGeometry(0.25, 8, 8);
+      const fishColors = [0x2ecc71, 0x3498db, 0xe74c3c, 0xf39c12];
       const fishMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x2ecc71 
+        color: fishColors[i % fishColors.length]
       });
       const fish = new THREE.Mesh(fishGeometry, fishMaterial);
       fish.position.set(
-        Math.random() * 20 - 10,
-        Math.random() * 4 + 1,
-        Math.random() * 20 - 10
+        Math.random() * 40 - 20,
+        Math.random() * 5 + 3,
+        Math.random() * 40 - 20
       );
       fish.castShadow = true;
-      fish.userData.speed = Math.random() * 0.02 + 0.01;
+      fish.userData.speed = Math.random() * 0.025 + 0.01;
+      fish.userData.type = 'fish';
       this.scene.add(fish);
     }
   }
-  
+
   startGame() {
     document.getElementById('welcome-screen').classList.add('hidden');
     this.gameActive = true;
-    this.updateCoinDisplay();
-    this.renderRooms();
-    this.renderUpgrades();
+    this.updateAllUI();
     this.spawnGuest();
     this.startDayTimer();
-    this.addLog('🏖️ Resort eröffnet! Willkommen!');
+    this.addLog('����️ Resort eröffnet! Willkommen!');
     this.addLog('🐠 Erste Gäste sind angekommen!');
   }
-  
+
   startDayTimer() {
     clearInterval(this.timers.day);
     this.timers.day = setInterval(() => {
       this.day++;
       this.guestsToday = 0;
       this.earningsToday = 0;
-      document.getElementById('day-display').innerText = this.day;
-      document.getElementById('guests-today').innerText = 0;
-      document.getElementById('earnings-today').innerText = 0;
-      
+      this.updateNavbar();
+
       if (this.day % 3 === 0) {
         this.maxQueueSize = Math.min(GAME_CONFIG.MAX_QUEUE_SIZE, this.maxQueueSize + 1);
         this.addLog(`🌟 Tag ${this.day}: Resort wird bekannter! (Queue: ${this.maxQueueSize})`);
@@ -858,111 +1140,107 @@ class GameManager {
       }
     }, GAME_CONFIG.DAY_DURATION);
   }
-  
+
   spawnGuest() {
     if (!this.gameActive) return;
-    
+
     const doSpawn = () => {
       if (this.queue.length < this.maxQueueSize) {
         const isVip = Math.random() < this.vipChance;
         const pool = isVip 
           ? GUESTS_DATA.slice(-3) 
           : GUESTS_DATA.slice(0, -3);
-        
+
         const template = pool[Math.floor(Math.random() * pool.length)];
         const guest = {
           ...template,
           id: Date.now() + Math.random(),
         };
-        
+
         this.queue.push(guest);
         this.renderQueue();
-        
+
         if (isVip) {
           this.addLog(`✨ VIP-Gast ${template.name} angekommen!`);
         }
       }
-      
+
       this.timers.spawn = setTimeout(doSpawn, this.spawnInterval + Math.random() * GAME_CONFIG.GUEST_SPAWN_VARIANCE - GAME_CONFIG.GUEST_SPAWN_VARIANCE / 2);
     };
-    
+
     this.timers.spawn = setTimeout(doSpawn, 1200);
   }
-  
-  renderRooms() {
-    this.roomMeshes.forEach((mesh, i) => {
-      const room = this.rooms[i];
-      const color = room.vip ? 0x3d2e00 : (room.locked ? 0x0a1f2e : (room.guest ? 0x0e3d26 : 0x0f3a54));
-      mesh.children[0].material.color.setHex(color);
-    });
-    
-    const occupied = this.rooms.filter(r => r.guest).length;
-    document.getElementById('occupied-rooms').innerText = `${occupied}/${GAME_CONFIG.ROOM_COUNT}`;
-  }
-  
+
   renderQueue() {
     const el = document.getElementById('guest-queue');
     el.innerHTML = '';
-    
+
     if (this.queue.length === 0) {
-      el.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:12px;">Keine Gäste</div>';
+      el.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:12px;padding:10px;">Keine Gäste</div>';
       return;
     }
-    
+
     this.queue.forEach(guest => {
       const card = document.createElement('div');
+      const pay = guest.pay + this.incomeBonus + (guest.vip ? this.vipBonus : 0);
       card.className = `guest-card ${guest.vip ? 'vip' : ''} ${this.selectedGuest?.id === guest.id ? 'selected' : ''}`;
       card.innerHTML = `
-        ${guest.vip ? '<div class="vip-badge">VIP</div>' : ''}
         <div class="guest-emoji">${guest.emoji}</div>
-        <div class="guest-name">${guest.name}</div>
-        <div class="guest-pay">${guest.pay + this.incomeBonus + (guest.vip ? this.vipBonus : 0)}🪙</div>
+        <div class="guest-info">
+          ${guest.vip ? '<div class="vip-badge">VIP</div>' : ''}
+          <div class="guest-name">${guest.name}</div>
+          <div class="guest-pay">${pay}🪙</div>
+        </div>
       `;
       card.addEventListener('click', () => this.selectGuest(guest));
       el.appendChild(card);
     });
+
+    document.getElementById('queue-size').innerText = this.queue.length;
   }
-  
+
   selectGuest(guest) {
     this.selectedGuest = guest;
     this.renderQueue();
-    this.addLog(`👆 ${guest.name} ausgewählt!`);
+    this.addLog(`👆 ${guest.name} ausgewählt! Klick auf ein Zimmer.`);
   }
-  
+
   onCanvasClick(e) {
-    if (e.target !== this.renderer.domElement) return;
+    if (!this.renderer.domElement.contains(e.target)) return;
     if (!this.selectedGuest) {
       this.addLog('👆 Wähle zuerst einen Gast!');
       return;
     }
-    
+
     const rect = this.renderer.domElement.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width * 2 - 1;
-    const y = -(e.clientY - rect.top) / rect.height * 2 + 1;
-    
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
-    
+
     const intersects = raycaster.intersectObjects(this.roomMeshes, true);
-    
+
     if (intersects.length > 0) {
-      const clicked = intersects[0].object;
-      const mesh = this.roomMeshes.find(m => m.children.includes(clicked) || m === clicked);
+      const mesh = this.roomMeshes.find(m => 
+        m.children[0] === intersects[0].object || 
+        m.children.includes(intersects[0].object)
+      );
       if (mesh) {
         const roomId = this.roomMeshes.indexOf(mesh);
         this.assignGuest(roomId);
       }
     }
   }
-  
+
   assignGuest(roomIndex) {
     const room = this.rooms[roomIndex];
-    
+
     if (room.locked) {
-      this.addLog('🔒 Zimmer gesperrt! Kaufe Upgrade!');
+      this.addLog('🔒 Zimmer gesperrt! Kaufe "Zimmer freischalten"!');
       return;
     }
-    
+
     if (room.guest) {
       if (Date.now() >= room.endTime) {
         this.checkoutRoom(roomIndex);
@@ -972,57 +1250,57 @@ class GameManager {
       }
       return;
     }
-    
-    const earn = this.selectedGuest.pay + this.incomeBonus + (this.selectedGuest.vip ? this.vipBonus : 0);
+
+    const pay = this.selectedGuest.pay + this.incomeBonus + (this.selectedGuest.vip ? this.vipBonus : 0);
     const stay = this.selectedGuest.stayTime * (1 + this.stayBonus);
-    
+
     room.guest = this.selectedGuest;
     room.vip = this.selectedGuest.vip;
-    room.pay = earn;
+    room.pay = pay;
     room.endTime = Date.now() + stay;
-    
+
     this.queue = this.queue.filter(g => g.id !== this.selectedGuest.id);
     this.addLog(`🛎️ ${this.selectedGuest.name} eingecheckt! (${Math.round(stay/1000)}s)`);
-    
+
     this.selectedGuest = null;
-    this.renderRooms();
+    this.updateRoomColors();
     this.renderQueue();
-    
+
     this.startRoomTimer(roomIndex, stay);
   }
-  
+
   startRoomTimer(roomIndex, duration) {
     const startTime = Date.now();
-    
+
     const tick = () => {
       const room = this.rooms[roomIndex];
       if (!room.guest) return;
-      
+
       const elapsed = Date.now() - startTime;
       if (elapsed >= duration) {
         this.addLog(`✅ ${room.guest.name} bereit zum Check-out!`);
         return;
       }
-      
+
       requestAnimationFrame(tick);
     };
-    
+
     requestAnimationFrame(tick);
   }
-  
+
   checkoutRoom(roomIndex) {
     const room = this.rooms[roomIndex];
     if (!room.guest) return;
-    
+
     this.pendingCheckout = {
       guest: room.guest,
       pay: room.pay,
       roomIndex,
     };
-    
+
     this.showCheckoutPopup(room.guest, room.pay);
   }
-  
+
   showCheckoutPopup(guest, pay) {
     document.getElementById('popup-emoji').innerText = guest.emoji;
     document.getElementById('popup-title').innerText = `${guest.name} checkt aus!`;
@@ -1030,21 +1308,22 @@ class GameManager {
     document.getElementById('popup-earnings').innerText = `+${pay} 🪙`;
     document.getElementById('checkout-popup').classList.add('active');
   }
-  
+
   closePopup() {
     if (!this.pendingCheckout) return;
-    
+
     const { guest, pay, roomIndex } = this.pendingCheckout;
-    
+
     this.coins += pay;
     this.guestsToday++;
     this.earningsToday += pay;
-    
+    this.totalGuests++;
+
     this.rooms[roomIndex].guest = null;
     this.rooms[roomIndex].vip = false;
     this.rooms[roomIndex].endTime = null;
-    
-    // Float coin animation
+
+    // Float coin
     const popup = document.getElementById('checkout-popup');
     const rect = popup.getBoundingClientRect();
     const coin = document.createElement('div');
@@ -1053,119 +1332,181 @@ class GameManager {
     coin.style.left = rect.left + rect.width / 2 + 'px';
     coin.style.top = rect.top + rect.height / 2 + 'px';
     document.body.appendChild(coin);
-    setTimeout(() => coin.remove(), 1000);
-    
-    this.updateCoinDisplay();
-    this.updateStats();
-    this.renderRooms();
+    setTimeout(() => coin.remove(), 1200);
+
+    this.updateAllUI();
+    this.updateRoomColors();
     document.getElementById('checkout-popup').classList.remove('active');
     this.addLog(`💰 ${pay} 🪙 verdient!`);
-    
+
     this.pendingCheckout = null;
   }
-  
+
   renderUpgrades() {
     const grid = document.getElementById('upgrade-grid');
     grid.innerHTML = '';
-    
+
     this.upgrades.forEach(upgrade => {
       const btn = document.createElement('button');
-      btn.className = `upgrade-btn ${upgrade.bought ? 'bought' : ''}`;
+      btn.className = `upgrade-card ${upgrade.bought ? 'bought' : ''}`;
       btn.disabled = !upgrade.bought && this.coins < upgrade.cost;
       btn.innerHTML = `
-        <div class="upgrade-icon">${upgrade.icon}</div>
-        <div class="upgrade-info">
-          <div class="upgrade-name">${upgrade.name}</div>
-          <div class="upgrade-cost">${upgrade.bought ? '✅ Gekauft' : `${upgrade.cost}🪙`}</div>
-          <div class="upgrade-desc">${upgrade.desc}</div>
+        <div class="upgrade-header">
+          <div class="upgrade-icon">${upgrade.icon}</div>
+          <div class="upgrade-title">${upgrade.name}</div>
+          <div class="upgrade-cost">${upgrade.bought ? '✅' : `${upgrade.cost}🪙`}</div>
         </div>
+        <div class="upgrade-desc">${upgrade.desc}</div>
       `;
       btn.addEventListener('click', () => this.buyUpgrade(upgrade));
       grid.appendChild(btn);
     });
   }
-  
+
   buyUpgrade(upgrade) {
     if (upgrade.bought) {
       this.addLog('✅ Bereits gekauft!');
       return;
     }
-    
+
     if (this.coins < upgrade.cost) {
-      this.addLog('❌ Nicht genug Coins!');
+      this.addLog(`❌ Nicht genug Coins! (${this.coins}/${upgrade.cost})`);
       return;
     }
-    
+
     this.coins -= upgrade.cost;
     upgrade.bought = true;
-    
-    // Apply upgrade effects
+    this.storage.setUpgrade(upgrade.id, true);
+
     switch (upgrade.effect) {
       case 'income':
         this.incomeBonus += upgrade.value;
+        this.addLog(`💰 +${upgrade.value} Coin pro Gast!`);
         break;
       case 'stay':
         this.stayBonus += upgrade.value;
+        this.addLog(`⏱️ Gäste bleiben ${Math.round(upgrade.value * 100)}% länger!`);
         break;
       case 'vip':
         this.vipBonus += upgrade.value;
+        this.addLog(`👑 +${upgrade.value} Coin bei VIP-Gästen!`);
         break;
       case 'vipchance':
         this.vipChance += upgrade.value;
+        this.addLog(`✨ VIP-Chance erhöht!`);
         break;
       case 'spawn':
         this.spawnInterval = Math.max(3000, this.spawnInterval - upgrade.value);
+        this.addLog(`🎵 Gäste kommen schneller!`);
         break;
       case 'unlock':
         this.rooms[6].locked = false;
         this.rooms[7].locked = false;
-        this.renderRooms();
+        this.updateRoomColors();
+        this.addLog(`🔓 Zimmer 7 & 8 freigeschaltet!`);
         break;
     }
-    
+
     this.addLog(`🎉 ${upgrade.name} gekauft!`);
+    this.updateAllUI();
+  }
+
+  updateRoomColors() {
+    this.roomMeshes.forEach((mesh, i) => {
+      const room = this.rooms[i];
+      let color = 0x0f3a54;
+      if (room.locked) color = 0x0a1f2e;
+      if (room.guest) color = room.vip ? 0x3d2e00 : 0x0e3d26;
+      mesh.children[0].material.color.setHex(color);
+    });
+  }
+
+  updateAllUI() {
+    this.updateNavbar();
     this.updateCoinDisplay();
     this.renderUpgrades();
-    this.renderRooms();
+    this.renderQueue();
+    this.updateStats();
   }
-  
-  updateStats() {
-    document.getElementById('guests-today').innerText = this.guestsToday;
-    document.getElementById('earnings-today').innerText = this.earningsToday;
+
+  updateNavbar() {
+    document.getElementById('nav-day').innerText = this.day;
+    document.getElementById('nav-guests').innerText = this.guestsToday;
+    document.getElementById('nav-earnings').innerText = this.earningsToday;
   }
-  
+
   updateCoinDisplay() {
     document.getElementById('coin-display').innerText = this.coins;
-    localStorage.setItem('glaggleCoins', this.coins);
-    this.renderUpgrades();
+    this.storage.setCoins(this.coins);
   }
-  
+
+  updateStats() {
+    const occupied = this.rooms.filter(r => r.guest).length;
+    document.getElementById('occupied-rooms').innerText = `${occupied}/${GAME_CONFIG.ROOM_COUNT}`;
+    
+    const avgPay = this.totalGuests > 0 ? Math.round(this.storage.data.totalEarnings / this.totalGuests) : 0;
+    document.getElementById('avg-pay').innerText = avgPay;
+    
+    const level = Math.floor(this.coins / 500) + 1;
+    document.getElementById('level').innerText = level;
+  }
+
   addLog(msg) {
     const feed = document.getElementById('event-feed');
     const item = document.createElement('div');
     item.className = 'event-item';
     item.innerText = msg;
     feed.insertBefore(item, feed.firstChild);
-    
-    while (feed.children.length > 20) {
+
+    while (feed.children.length > 25) {
       feed.removeChild(feed.lastChild);
     }
   }
-  
+
+  showSettings() {
+    document.getElementById('settings-popup').classList.add('active');
+  }
+
+  showStats() {
+    const stats = this.storage.getStats();
+    document.getElementById('stats-total-earnings').innerText = stats.totalEarnings;
+    document.getElementById('stats-total-guests').innerText = stats.totalGuests;
+    document.getElementById('stats-upgrades').innerText = stats.upgradesBought;
+    document.getElementById('stats-day').innerText = stats.day;
+    document.getElementById('stats-popup').classList.add('active');
+  }
+
+  saveGame() {
+    this.storage.updateStats(this.coins, this.storage.data.totalEarnings, this.totalGuests, this.day);
+    this.addLog('💾 Spiel gespeichert!');
+    document.getElementById('settings-popup').classList.remove('active');
+  }
+
+  loadGame() {
+    location.reload();
+  }
+
+  resetGame() {
+    if (confirm('Wirklich alles zurücksetzen?')) {
+      this.storage.clear();
+      location.reload();
+    }
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
-    
+
     // Animate fish
     this.scene.children.forEach(obj => {
-      if (obj.userData.speed) {
+      if (obj.userData.type === 'fish') {
         obj.position.x += obj.userData.speed;
-        if (obj.position.x > 15) obj.position.x = -15;
+        if (obj.position.x > 25) obj.position.x = -25;
       }
     });
-    
+
     this.renderer.render(this.scene, this.camera);
   }
-  
+
   onWindowResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
@@ -1174,14 +1515,12 @@ class GameManager {
 }
 
 // ==========================================
-// INITIALIZE GAME
+// INIT
 // ==========================================
 let gameManager;
 
 window.addEventListener('DOMContentLoaded', () => {
   gameManager = new GameManager();
-  gameManager.updateCoinDisplay();
-  gameManager.renderUpgrades();
 });
 </script>
 </body>
