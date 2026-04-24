@@ -1051,6 +1051,8 @@ class GameManager {
 
     this.updateAllUI();
     this.renderRooms();
+
+    this.storage.data.totalEarnings += room.guest.pay;
   }
 
   // =========================
@@ -1102,6 +1104,10 @@ class GameManager {
   updateAllUI() {
     document.getElementById('coin-display').innerText = this.coins;
     this.storage.setCoins(this.coins);
+
+    document.getElementById('nav-earnings').innerText = this.storage.data.totalEarnings;
+    document.getElementById('nav-guests').innerText = this.storage.data.totalGuests;
+    document.getElementById('nav-day').innerText = this.day;
   }
 
   addLog(msg) {
