@@ -15,6 +15,8 @@
 
     <meta property="og:type" content="website">
     
+    <meta name="msvalidate.01" content="A0C60E86E6016FC8B90A3EC932FF0F78" />
+    
 <meta property="og:url" content="https://glaggle.ch/">
 <meta property="og:title" content="Glaggle">
 <meta property="og:description" content="Glaggle - Glaggle your life! GlaggleWebSearch (AI Powered), Glaggle Gamecenter, Glame AI">
@@ -666,8 +668,6 @@ html {
 <div id="preloader">
     <img src="glagglelogo.png" alt="Glaggle Loading..." class="loader-logo">
 </div>
-
-<h1 class="visually-hidden">Glaggle your life! Nutze die KI-gestützte GlaggleWebSearch, chatte mit Glame AI, erstelle deine eigenen Quize im Quiz Studio Pro, oder besuche unser Gamecenter. Jetzt entdecken auf Glaggle.ch.</h1>
     
    <nav class="navbar">
     <div class="nav-left">
@@ -698,7 +698,6 @@ html {
         <details class="sidebar-category">
             <summary>Glaggle Tools</summary>
             <a href="https://glaggle.ch/designstudio" class="sidebar-link">Glaggle Design Studio</a>
-            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschrimschoner</a>
         </details>
 
         <details class="sidebar-category">
@@ -926,16 +925,18 @@ async function fetchGroqAI(query) {
 
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
-      function type() {
-    const batchSize = 5; // Füge 5 Zeichen auf einmal hinzu
+       function type() {
     if (i < antwort.length) {
-        currentText += antwort.substr(i, batchSize);
+        currentText += antwort.charAt(i);
         aiTextElement.innerHTML = marked.parse(currentText);
-        i += batchSize;
-        
-        // requestAnimationFrame ist sauberer für das Rendering als setTimeout
-        requestAnimationFrame(type);
+        i++; 
+        // Verkürze die Wartezeit auf 0,01 Sekunden
+        setTimeout(type, 0.00000000001); 
     }
+}
+
+        type();
+    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
 }
 
 async function getAiProcessedFavs(query) {
@@ -1762,17 +1763,6 @@ async function registerClick(id) {
         console.error("Tracking Fehler:", err);
     }
 }
-// Preloader ausblenden wenn Seite geladen ist
-window.addEventListener('load', function() {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.classList.add('preloader-hidden');
-        // Optional: aus DOM entfernen nach Animation
-        setTimeout(() => {
-            preloader.style.display = 'none';
-        }, 500);
-    }
-});
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
