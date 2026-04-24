@@ -668,6 +668,16 @@ body {
 .right-panel {
   flex: 1;
 }
+
+.room-grid {
+  pointer-events: auto;
+  position: relative;
+  z-index: 300;
+}
+
+.room {
+  pointer-events: auto;
+}
 </style>
 </head>
 <body>
@@ -732,10 +742,9 @@ body {
     </div>
   </div>
 
-  <!-- Right Panel -->
-  <div class="main-content">
+<div class="main-content">
   
-  <div id="room-grid" class="room-grid"></div>
+  <div id="room-grid" class="room-grid" style="pointer-events: auto;"></div>
 
   <div class="right-panel">
       <!-- Stats -->
