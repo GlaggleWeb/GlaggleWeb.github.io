@@ -1067,12 +1067,23 @@ class GameManager {
     this.addLog(`💰 +${room.guest.pay} Coins`);
 
     room.guest = null;
-    room.endTime = null;
+    const pay = room.guest.pay;
+
+this.coins += pay;
+this.storage.data.totalEarnings += pay;
+
+this.addLog(`💰 +${pay} Coins`);
+
+room.guest = null;
+room.endTime = null;
+
+this.updateAllUI();
+this.renderRooms();
 
     this.updateAllUI();
     this.renderRooms();
 
-    this.storage.data.totalEarnings += room.guest.pay;
+   
   }
 
   // =========================
