@@ -402,8 +402,10 @@ let spawnInterval = 5500;
 let queue = [];
 let maxQueue = 4;
 
+// ===== INIT BUBBLES =====
 function initBubbles() {
   const container = document.getElementById('bubbles-container');
+  container.innerHTML = '';
   for (let i = 0; i < 12; i++) {
     const b = document.createElement('div');
     b.className = 'bubble';
@@ -413,6 +415,7 @@ function initBubbles() {
   }
 }
 
+// ===== START GAME =====
 function startGame() {
   document.getElementById('welcome-screen').style.display = 'none';
   gameActive = true;
@@ -425,6 +428,7 @@ function startGame() {
   log('🐠 Die ersten Gäste warten bereits in der Schlange!');
 }
 
+// ===== DAY TIMER =====
 function startDayTimer() {
   clearInterval(dayTimer);
   dayTimer = setInterval(() => {
@@ -443,6 +447,7 @@ function startDayTimer() {
   }, 45000);
 }
 
+// ===== SPAWN GUESTS =====
 function spawnGuest() {
   if (!gameActive) return;
   const doSpawn = () => {
@@ -461,6 +466,7 @@ function spawnGuest() {
   guestSpawnTimer = setTimeout(doSpawn, 1200);
 }
 
+// ===== RENDER ROOMS =====
 function renderRooms() {
   const grid = document.getElementById('hotel-grid');
   grid.innerHTML = '';
@@ -483,6 +489,7 @@ function renderRooms() {
   });
 }
 
+// ===== RENDER QUEUE =====
 function renderQueue() {
   const el = document.getElementById('guest-queue');
   el.innerHTML = '';
@@ -503,15 +510,20 @@ function renderQueue() {
   });
 }
 
+// ===== SELECT GUEST =====
 function selectGuest(guest) {
   selectedGuest = guest;
   renderQueue();
   log(`👆 ${guest.name} ausgewählt – wähle jetzt ein Zimmer!`);
 }
 
+// ===== ROOM CLICK =====
 function onRoomClick(roomIndex) {
   const room = rooms[roomIndex];
-  if (room.locked) { log('🔒 Dieses Zimmer ist noch gesperrt. Kaufe das Upgrade!'); return; }
+  if (room.locked) { 
+    log('🔒 Dieses Zimmer ist noch gesperrt. Kaufe das Upgrade!'); 
+    return; 
+  }
   if (room.guest) {
     if (Date.now() >= room.endTime) {
       checkoutRoom(roomIndex);
@@ -521,7 +533,10 @@ function onRoomClick(roomIndex) {
     }
     return;
   }
-  if (!selectedGuest) { log('👆 Wähle zuerst einen Gast aus der Warteschlange!'); return; }
+  if (!selectedGuest) { 
+    log('👆 Wähle zuerst einen Gast aus der Warteschlange!'); 
+    return; 
+  }
   
   const earn = selectedGuest.pay + incomeBonus + (selectedGuest.vip ? vipBonus : 0);
   const stay = selectedGuest.stayTime * (1 + stayBonus);
@@ -539,6 +554,7 @@ function onRoomClick(roomIndex) {
   startRoomTimer(roomIndex, stay);
 }
 
+// ===== ROOM TIMER =====
 function startRoomTimer(roomIndex, duration) {
   const startTime = Date.now();
   const endTime = startTime + duration;
@@ -566,6 +582,7 @@ function startRoomTimer(roomIndex, duration) {
   requestAnimationFrame(tick);
 }
 
+// ===== CHECKOUT =====
 function checkoutRoom(roomIndex) {
   const room = rooms[roomIndex];
   if (!room.guest) return;
@@ -611,6 +628,7 @@ function closePopup() {
   pendingCheckout = null;
 }
 
+// ===== RENDER UPGRADES =====
 function renderUpgrades() {
   const grid = document.getElementById('upgrade-grid');
   grid.innerHTML = '';
@@ -630,9 +648,16 @@ function renderUpgrades() {
   });
 }
 
+// ===== BUY UPGRADE =====
 function buyUpgrade(upgrade) {
-  if (upgrade.bought) { log('✅ Du hast dieses Upgrade bereits gekauft!'); return; }
-  if (coins < upgrade.cost) { log('❌ Nicht genug Coins!'); return; }
+  if (upgrade.bought) { 
+    log('✅ Du hast dieses Upgrade bereits gekauft!'); 
+    return; 
+  }
+  if (coins < upgrade.cost) { 
+    log('❌ Nicht genug Coins!'); 
+    return; 
+  }
   
   coins -= upgrade.cost;
   upgrade.bought = true;
@@ -640,18 +665,23 @@ function buyUpgrade(upgrade) {
   log(`🎉 Upgrade gekauft: ${upgrade.name}!`);
   updateCoinDisplay();
   renderUpgrades();
+  renderRooms();
 }
 
+// ===== UPDATE STATS =====
 function updateStats() {
   document.getElementById('guests-today').innerText = guestsToday;
   document.getElementById('earnings-today').innerText = earningsToday + '🪙';
 }
 
+// ===== UPDATE COIN DISPLAY =====
 function updateCoinDisplay() {
   document.getElementById('coin-display').innerText = coins;
   localStorage.setItem('glaggleCoins', coins);
+  renderUpgrades();
 }
 
+// ===== LOG MESSAGE =====
 function log(msg) {
   const feed = document.getElementById('event-feed');
   const item = document.createElement('div');
@@ -661,6 +691,7 @@ function log(msg) {
   if (feed.children.length > 15) feed.removeChild(feed.lastChild);
 }
 
+// ===== INIT =====
 window.addEventListener('DOMContentLoaded', () => {
   initBubbles();
 });
