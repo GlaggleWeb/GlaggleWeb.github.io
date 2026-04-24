@@ -927,18 +927,16 @@ async function fetchGroqAI(query) {
 
         aiTextElement.style.fontStyle = "normal";
         let i = 0; let currentText = "";
-       function type() {
+      function type() {
+    const batchSize = 5; // Füge 5 Zeichen auf einmal hinzu
     if (i < antwort.length) {
-        currentText += antwort.charAt(i);
+        currentText += antwort.substr(i, batchSize);
         aiTextElement.innerHTML = marked.parse(currentText);
-        i++; 
-        // Verkürze die Wartezeit auf 0,01 Sekunden
-        setTimeout(type, 0.00000000001); 
+        i += batchSize;
+        
+        // requestAnimationFrame ist sauberer für das Rendering als setTimeout
+        requestAnimationFrame(type);
     }
-}
-
-        type();
-    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
 }
 
 async function getAiProcessedFavs(query) {
