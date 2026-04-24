@@ -1762,6 +1762,17 @@ async function registerClick(id) {
         console.error("Tracking Fehler:", err);
     }
 }
+// Preloader ausblenden wenn Seite geladen ist
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.classList.add('preloader-hidden');
+        // Optional: aus DOM entfernen nach Animation
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 500);
+    }
+});
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
