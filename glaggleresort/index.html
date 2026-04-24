@@ -870,7 +870,7 @@ class StorageManager {
       totalGuests: 0,
       day: 1,
       upgradesBought: 0,
-      upgrades: {},
+      upgrades: {}
     };
   }
 
@@ -879,7 +879,13 @@ class StorageManager {
   }
 
   load() {
-    return JSON.parse(localStorage.getItem(this.storageName));
+    const data = localStorage.getItem(this.storageName);
+    return data ? JSON.parse(data) : null;
+  }
+
+  // ✅ FIX: FEHLTE BEI DIR
+  getCoins() {
+    return this.data.coins || 0;
   }
 
   setCoins(amount) {
@@ -918,6 +924,7 @@ class GameManager {
 
     this.coins = this.storage.getCoins();
     this.day = this.storage.data.day;
+
     this.queue = [];
     this.rooms = this.initRooms();
 
@@ -929,30 +936,15 @@ class GameManager {
     };
 
     this.renderRooms();
+    this.renderUpgrades(); // ✅ WICHTIG FIX
     this.updateAllUI();
   }
 
-  buyUpgrade(id) {
-    const u = this.upgrades[id];
-
-    if (!u || u.bought) return;
-
-    if (this.coins < u.cost) {
-      this.addLog("❌ Nicht genug Coins!");
-      return;
-    }
-
-    this.coins -= u.cost;
-    u.bought = true;
-
-    this.addLog("🔧 Upgrade gekauft!");
-    this.updateAllUI();
-  }
-  // =========================
+  // =====================
   // ROOMS
-  // =========================
+  // =====================
   initRooms() {
-    return Array(GAME_CONFIG.ROOM_COUNT).fill(null).map((_, i) => ({
+    return Array(8).fill(null).map((_, i) => ({
       id: i,
       guest: null,
       endTime: null,
@@ -961,18 +953,18 @@ class GameManager {
   }
 
   renderRooms() {
-    const grid = document.getElementById('room-grid');
-    grid.innerHTML = '';
+    const grid = document.getElementById("room-grid");
+    grid.innerHTML = "";
 
     this.rooms.forEach(room => {
-      const div = document.createElement('div');
-      div.className = 'room';
+      const div = document.createElement("div");
+      div.className = "room";
 
-      if (room.locked) div.classList.add('locked');
-      if (room.guest) div.classList.add('occupied');
+      if (room.locked) div.classList.add("locked");
+      if (room.guest) div.classList.add("occupied");
 
       div.innerHTML = room.locked
-        ? '🔒'
+        ? "🔒"
         : room.guest
           ? room.guest.emoji
           : `Zimmer ${room.id + 1}`;
@@ -987,7 +979,6 @@ class GameManager {
     const room = this.rooms[id];
 
     if (room.locked) return this.addLog("🔒 gesperrt");
-
     if (!this.selectedGuest) return this.addLog("👆 Gast wählen");
 
     if (room.guest) {
@@ -1018,30 +1009,37 @@ class GameManager {
     this.renderQueue();
   }
 
- checkoutRoom(id) {
-  const room = this.rooms[id];
+  checkoutRoom(id) {
+    const room = this.rooms[id];
 
-  const pay = room.guest.pay; // zuerst speichern!
+    const pay = room.guest.pay;
 
-  this.coins += pay;
-  this.storage.data.totalEarnings += pay;
+    this.coins += pay;
+    this.storage.data.totalEarnings += pay;
 
-  this.addLog(`💰 +${pay} Coins`);
+    this.addLog(`💰 +${pay} Coins`);
 
-  room.guest = null;
-  room.endTime = null;
+    room.guest = null;
+    room.endTime = null;
 
-  this.updateAllUI();
-  this.renderRooms();
-}
+    this.updateAllUI();
+    this.renderRooms();
+  }
 
-  // =========================
+  // =====================
   // GUESTS
-  // =========================
+  // =====================
   spawnGuest() {
     if (!this.gameActive) return;
 
-    const g = GUESTS_DATA[Math.floor(Math.random() * GUESTS_DATA.length)];
+    const guests = [
+      { name: 'Nemo', emoji: '🐠', pay: 5, stayTime: 8000 },
+      { name: 'Dori', emoji: '🐟', pay: 6, stayTime: 7000 },
+      { name: 'Krake', emoji: '🐙', pay: 7, stayTime: 9000 },
+      { name: 'Sharky', emoji: '🦈', pay: 10, stayTime: 8000 }
+    ];
+
+    const g = guests[Math.floor(Math.random() * guests.length)];
     this.queue.push(g);
 
     this.renderQueue();
@@ -1050,12 +1048,12 @@ class GameManager {
   }
 
   renderQueue() {
-    const el = document.getElementById('guest-queue');
-    el.innerHTML = '';
+    const el = document.getElementById("guest-queue");
+    el.innerHTML = "";
 
     this.queue.forEach(g => {
-      const div = document.createElement('div');
-      div.className = 'guest-card';
+      const div = document.createElement("div");
+      div.className = "guest-card";
       div.innerHTML = `${g.emoji} ${g.name} (${g.pay})`;
 
       div.onclick = () => {
@@ -1067,17 +1065,19 @@ class GameManager {
     });
   }
 
-  // =========================
+  // =====================
   // UPGRADES
-  // =========================
+  // =====================
   renderUpgrades() {
-    const grid = document.getElementById('upgrade-grid');
-    grid.innerHTML = '';
+    const grid = document.getElementById("upgrade-grid");
+    if (!grid) return;
+
+    grid.innerHTML = "";
 
     Object.entries(this.upgrades).forEach(([id, u]) => {
-      const div = document.createElement('div');
-      div.className = 'upgrade-card';
-      if (u.bought) div.classList.add('bought');
+      const div = document.createElement("div");
+      div.className = "upgrade-card";
+      if (u.bought) div.classList.add("bought");
 
       div.innerHTML = `
         <div class="upgrade-header">
@@ -1105,48 +1105,43 @@ class GameManager {
     this.coins -= u.cost;
     u.bought = true;
 
-    // Effekte
-    if (id === "unlockRoom") {
-      this.rooms.find(r => r.locked)?.locked = false;
-      this.renderRooms();
-    }
-
     this.addLog("🔧 Upgrade gekauft!");
+
     this.updateAllUI();
     this.renderUpgrades();
   }
 
-  // =========================
-  // GAME FLOW
-  // =========================
+  // =====================
+  // GAME START
+  // =====================
   startGame() {
-    document.getElementById('welcome-screen').classList.add('hidden');
+    document.getElementById("welcome-screen").classList.add("hidden");
     this.gameActive = true;
 
     this.spawnGuest();
-    this.addLog("🏝️ gestartet");
+    this.addLog("🏝️ Spiel gestartet!");
   }
 
-  // =========================
+  // =====================
   // UI
-  // =========================
+  // =====================
   updateAllUI() {
-    document.getElementById('coin-display').innerText = this.coins;
-    document.getElementById('nav-earnings').innerText = this.storage.data.totalEarnings;
-    document.getElementById('nav-day').innerText = this.day;
+    document.getElementById("coin-display").innerText = this.coins;
 
     this.storage.setCoins(this.coins);
+
+    document.getElementById("nav-earnings").innerText = this.storage.data.totalEarnings;
+    document.getElementById("nav-day").innerText = this.day;
   }
 
   addLog(msg) {
-    const feed = document.getElementById('event-feed');
-    const div = document.createElement('div');
-    div.className = 'event-item';
+    const feed = document.getElementById("event-feed");
+    const div = document.createElement("div");
+    div.className = "event-item";
     div.innerText = msg;
     feed.prepend(div);
   }
 }
-
 // INIT
 let gameManager;
   
