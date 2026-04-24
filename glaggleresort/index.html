@@ -20,6 +20,14 @@ body {
   position: relative;
 }
 
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 600px;
+}
 .ui-overlay {
   position: fixed;
   top: 0;
@@ -647,7 +655,19 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
-  
+
+.main-content {
+  display: flex;
+  gap: 20px;
+}
+
+.room-grid {
+  flex: 2;
+}
+
+.right-panel {
+  flex: 1;
+}
 </style>
 </head>
 <body>
