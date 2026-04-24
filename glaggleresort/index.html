@@ -977,6 +977,24 @@ class GameManager {
     this.upgrades = {
         moreCoins: { cost: 50, bought: false }
     };
+
+    buyUpgrade(id) {
+  const u = this.upgrades[id];
+
+  if (!u || u.bought) return;
+
+  if (this.coins < u.cost) {
+    this.addLog("❌ Nicht genug Coins!");
+    return;
+  }
+
+  this.coins -= u.cost;
+  u.bought = true;
+
+  this.addLog("🔧 Upgrade gekauft!");
+
+  this.updateAllUI();
+}
   }
 
   initRooms() {
@@ -1148,24 +1166,6 @@ this.renderRooms();
     item.innerText = msg;
     feed.prepend(item);
   }
-}
-
-buyUpgrade(id) {
-  const u = this.upgrades[id];
-
-  if (!u || u.bought) return;
-
-  if (this.coins < u.cost) {
-    this.addLog("❌ Nicht genug Coins!");
-    return;
-  }
-
-  this.coins -= u.cost;
-  u.bought = true;
-
-  this.addLog("🔧 Upgrade gekauft!");
-
-  this.updateAllUI();
 }
 
 // ==========================================
