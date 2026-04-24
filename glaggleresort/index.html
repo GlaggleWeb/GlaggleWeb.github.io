@@ -916,27 +916,38 @@ class GameManager {
   constructor() {
     this.storage = new StorageManager();
 
-    this.coins = this.storage.data.coins;
+    this.coins = this.storage.getCoins();
     this.day = this.storage.data.day;
-
     this.queue = [];
     this.rooms = this.initRooms();
+
     this.selectedGuest = null;
     this.gameActive = false;
 
-    // 🔧 UPGRADES (FIXED + MORE)
     this.upgrades = {
-      moreCoins: { cost: 50, bought: false },
-      fasterGuests: { cost: 100, bought: false },
-      vipChance: { cost: 150, bought: false },
-      unlockRoom: { cost: 200, bought: false }
+      moreCoins: { cost: 50, bought: false }
     };
 
     this.renderRooms();
     this.updateAllUI();
-    this.renderUpgrades();
   }
 
+  buyUpgrade(id) {
+    const u = this.upgrades[id];
+
+    if (!u || u.bought) return;
+
+    if (this.coins < u.cost) {
+      this.addLog("❌ Nicht genug Coins!");
+      return;
+    }
+
+    this.coins -= u.cost;
+    u.bought = true;
+
+    this.addLog("🔧 Upgrade gekauft!");
+    this.updateAllUI();
+  }
   // =========================
   // ROOMS
   // =========================
@@ -1007,23 +1018,22 @@ class GameManager {
     this.renderQueue();
   }
 
-  checkoutRoom(id) {
-    const room = this.rooms[id];
-    if (!room.guest) return;
+ checkoutRoom(id) {
+  const room = this.rooms[id];
 
-    const pay = room.guest.pay;
+  const pay = room.guest.pay; // zuerst speichern!
 
-    this.coins += pay;
-    this.storage.data.totalEarnings += pay;
+  this.coins += pay;
+  this.storage.data.totalEarnings += pay;
 
-    this.addLog(`💰 +${pay} Coins`);
+  this.addLog(`💰 +${pay} Coins`);
 
-    room.guest = null;
-    room.endTime = null;
+  room.guest = null;
+  room.endTime = null;
 
-    this.updateAllUI();
-    this.renderRooms();
-  }
+  this.updateAllUI();
+  this.renderRooms();
+}
 
   // =========================
   // GUESTS
