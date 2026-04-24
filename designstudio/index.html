@@ -1,457 +1,1164 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Design Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=Roboto+Mono&family=Bebas+Neue&family=Montserrat:wght@800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --studio-bg: #0f0f0f;
-            --panel-bg: #151515;
-            --accent: #8b5cf6;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glaggle Design Studio PRO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Montserrat:wght@400;700;800&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0b;--panel:#111114;--panel2:#16161a;--border:rgba(255,255,255,0.07);
+  --accent:#6d5dfc;--accent2:#c084fc;--text:#e2e8f0;--muted:#6b7280;
+  --danger:#ef4444;--success:#22c55e;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit;font-size:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 
-        body {
-            background-color: var(--studio-bg);
-            color: #e5e7eb;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-        }
+/* NAV */
+nav{height:48px;background:#000;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;shrink:0;z-index:200;gap:12px}
+.nav-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-0.5px;white-space:nowrap}
+.nav-logo span{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.nav-logo em{color:var(--accent2);font-style:italic}
+.nav-tools{display:flex;align-items:center;gap:4px}
+.nav-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;transition:all 0.15s;color:var(--muted)}
+.nav-btn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+.nav-center{display:flex;align-items:center;gap:8px}
+.zoom-ctrl{display:flex;align-items:center;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.zoom-ctrl button{padding:5px 8px;font-size:14px;line-height:1;transition:background 0.1s}
+.zoom-ctrl button:hover{background:rgba(255,255,255,0.1)}
+.zoom-label{font-size:11px;font-family:'DM Mono',monospace;padding:0 8px;min-width:44px;text-align:center;color:var(--muted)}
+.canvas-size{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.undo-redo{display:flex;gap:2px}
+.undo-redo button{padding:5px 9px;border-radius:6px;font-size:15px;transition:all 0.15s}
+.undo-redo button:hover{background:rgba(255,255,255,0.08)}
+.undo-redo button:disabled{opacity:0.3;cursor:not-allowed}
+.export-wrap{position:relative}
+.export-btn{background:var(--accent);color:#fff;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px;letter-spacing:0.3px}
+.export-btn:hover{background:#7c6dfd;transform:translateY(-1px)}
+.export-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;width:160px;z-index:300;opacity:0;visibility:hidden;transform:translateY(-4px);transition:all 0.15s;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.export-wrap:hover .export-menu{opacity:1;visibility:visible;transform:translateY(0)}
+.export-menu button{width:100%;text-align:left;padding:8px 10px;border-radius:7px;font-size:12px;font-weight:500;transition:background 0.1s;display:flex;align-items:center;gap:8px}
+.export-menu button:hover{background:rgba(255,255,255,0.07)}
+.export-menu button span.ext{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:auto}
+.ext-png{background:#1e40af33;color:#60a5fa}
+.ext-jpg{background:#16532433;color:#4ade80}
+.ext-pdf{background:#7f1d1d33;color:#f87171}
 
-        .canvas-area {
-            background-image: radial-gradient(#222 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+/* LAYOUT */
+.workspace{flex:1;display:flex;overflow:hidden}
 
-        .artboard {
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            transition: transform 0.1s ease-out;
-            transform-origin: center;
-            background-color: white;
-            background-size: cover;
-            background-position: center;
-        }
+/* LEFT SIDEBAR */
+.left-tabs{width:56px;background:#000;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px}
+.tab-btn{width:40px;height:40px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:var(--muted);font-size:17px}
+.tab-btn span{font-size:8px;font-weight:600;letter-spacing:0.3px}
+.tab-btn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+.tab-btn.active{background:rgba(109,93,252,0.2);color:var(--accent2)}
 
-        .element-selected {
-            outline: 2px solid var(--accent);
-        }
+/* TOOL PANEL */
+.tool-panel{width:240px;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
+.tool-panel::-webkit-scrollbar{width:4px}
+.tool-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.tp-section{padding:14px}
+.tp-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.tp-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.hidden{display:none!important}
 
-        /* Resizer Handles */
-        .resizer-handle {
-            width: 10px; height: 10px; background: white; border: 2px solid var(--accent);
-            position: absolute; border-radius: 50%; z-index: 100;
-        }
-        .resizer-nw { top: -5px; left: -5px; cursor: nw-resize; }
-        .resizer-ne { top: -5px; right: -5px; cursor: ne-resize; }
-        .resizer-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-        .resizer-se { bottom: -5px; right: -5px; cursor: se-resize; }
+/* Templates */
+.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tmpl-card{border-radius:10px;height:64px;cursor:pointer;padding:8px 10px;font-size:11px;font-weight:700;display:flex;align-items:flex-end;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1)}
+.tmpl-card:hover{transform:scale(1.04);border-color:rgba(255,255,255,0.3)}
+.tmpl-card.wide{grid-column:span 2;height:52px}
 
-        .sidebar-icon {
-            @apply flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition-all hover:bg-white/10 text-gray-400 hover:text-white;
-        }
-        .sidebar-icon.active { @apply bg-violet-600/20 text-violet-400; }
+/* Shapes */
+.shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.shape-btn{aspect-ratio:1;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.15s;border:1px solid transparent}
+.shape-btn:hover{background:rgba(109,93,252,0.2);border-color:rgba(109,93,252,0.5)}
 
-        .gradient-preview {
-            width: 100%; height: 40px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
-        }
+/* Text panel */
+.text-preset{width:100%;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;transition:all 0.15s;margin-bottom:6px}
+.text-preset:hover{background:rgba(255,255,255,0.08);border-color:rgba(109,93,252,0.4)}
+.font-pill{padding:6px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:11px;transition:all 0.15s;margin-bottom:5px;display:block;width:100%}
+.font-pill:hover{border-color:var(--accent);color:#c4b5fd}
 
-        input[type="range"] { @apply w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer; }
-        input[type="range"]::-webkit-slider-thumb { @apply appearance-none w-3 h-3 bg-violet-500 rounded-full; }
+/* CANVAS */
+.canvas-wrap{flex:1;background:radial-gradient(circle,#1a1a2e 0%,#0a0a0b 100%);background-image:radial-gradient(#1f1f2e 1px,transparent 1px);background-size:24px 24px;display:flex;align-items:center;justify-content:center;overflow:auto;position:relative}
+#artboard{position:relative;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.1),0 30px 80px rgba(0,0,0,0.8);overflow:hidden;transform-origin:center center}
+#artboard.drag-over{outline:2px dashed var(--accent)}
 
-        .font-card { @apply p-2 rounded bg-gray-800/50 hover:bg-gray-700 cursor-pointer text-xs mb-1 transition-colors; }
-    </style>
+/* Element states */
+.el{position:absolute;cursor:move;user-select:none;box-sizing:border-box}
+.el.selected{outline:2px solid var(--accent);outline-offset:1px}
+.el-text{min-width:80px;min-height:24px;cursor:text}
+.resize-handle{position:absolute;width:8px;height:8px;background:#fff;border:2px solid var(--accent);border-radius:50%;z-index:50;display:none}
+.el.selected .resize-handle{display:block}
+.rh-nw{top:-5px;left:-5px;cursor:nw-resize}
+.rh-n{top:-5px;left:50%;transform:translateX(-50%);cursor:n-resize}
+.rh-ne{top:-5px;right:-5px;cursor:ne-resize}
+.rh-e{top:50%;right:-5px;transform:translateY(-50%);cursor:e-resize}
+.rh-se{bottom:-5px;right:-5px;cursor:se-resize}
+.rh-s{bottom:-5px;left:50%;transform:translateX(-50%);cursor:s-resize}
+.rh-sw{bottom:-5px;left:-5px;cursor:sw-resize}
+.rh-w{top:50%;left:-5px;transform:translateY(-50%);cursor:w-resize}
+.rotate-handle{position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:grab;display:none;z-index:51}
+.el.selected .rotate-handle{display:block}
+
+/* INSPECTOR */
+.inspector{width:260px;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:14px}
+.inspector::-webkit-scrollbar{width:4px}
+.inspector::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.ins-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ins-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.ins-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ins-label{font-size:10px;color:var(--muted);font-weight:500;min-width:64px}
+.ins-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--text);background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 7px;flex:1;outline:none;transition:border 0.15s}
+.ins-val:focus{border-color:var(--accent)}
+.ins-val::-webkit-inner-spin-button{opacity:0.5}
+.color-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.color-swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);cursor:pointer;overflow:hidden;flex-shrink:0}
+.color-swatch input[type=color]{width:200%;height:200%;margin:-25%;border:none;cursor:pointer;background:none}
+.color-hex{flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:11px;font-family:'DM Mono',monospace;outline:none}
+.color-hex:focus{border-color:var(--accent)}
+.ins-slider-row{margin-bottom:10px}
+.ins-slider-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-weight:500;margin-bottom:5px}
+input[type=range]{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;appearance:none;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer}
+.ins-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:5px 7px;outline:none;color:var(--text);font-size:11px}
+.ins-select option{background:#1a1a2e}
+.text-fmt-row{display:flex;gap:5px;margin-bottom:8px}
+.fmt-btn{flex:1;padding:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:700;transition:all 0.15s;text-align:center}
+.fmt-btn:hover,.fmt-btn.active{background:rgba(109,93,252,0.2);border-color:var(--accent);color:#c4b5fd}
+.ins-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
+.ins-action{padding:7px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;font-size:10px;font-weight:600;text-align:center;transition:all 0.15s;color:var(--text)}
+.ins-action:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.2)}
+.del-btn{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;color:var(--danger);font-size:11px;font-weight:700;transition:all 0.15s}
+.del-btn:hover{background:rgba(239,68,68,0.2);border-color:var(--danger)}
+.duplicate-btn{width:100%;margin-top:5px;padding:8px;background:rgba(109,93,252,0.1);border:1px solid rgba(109,93,252,0.3);border-radius:7px;color:var(--accent2);font-size:11px;font-weight:700;transition:all 0.15s}
+.duplicate-btn:hover{background:rgba(109,93,252,0.2);border-color:var(--accent2)}
+.gradient-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}
+.grad-swatch{height:30px;border-radius:6px;cursor:pointer;border:1px solid var(--border);transition:all 0.15s}
+.grad-swatch:hover{transform:scale(1.08);border-color:rgba(255,255,255,0.3)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#000;border-radius:100px;padding:10px 20px;font-size:12px;font-weight:700;opacity:0;transition:all 0.3s;pointer-events:none;z-index:1000;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Rulers (top/left) */
+.ruler-h{height:18px;background:#000;border-bottom:1px solid var(--border);overflow:hidden;position:absolute;top:0;left:18px;right:0;z-index:10}
+.ruler-v{width:18px;background:#000;border-right:1px solid var(--border);overflow:hidden;position:absolute;top:0;left:0;bottom:0;z-index:10}
+
+/* Scrollbar */
+.canvas-wrap::-webkit-scrollbar{width:8px;height:8px}
+.canvas-wrap::-webkit-scrollbar-track{background:transparent}
+.canvas-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+
+/* Loading overlay */
+#loading{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity 0.3s}
+#loading.show{opacity:1;pointer-events:all}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
-<body class="h-screen flex flex-col">
+<body>
 
-    <!-- Header -->
-    <nav class="h-14 border-b border-white/5 bg-black flex items-center justify-between px-6 shrink-0 z-50">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-violet-600 rounded flex items-center justify-center font-black text-white">G</div>
-                <span class="font-bold text-sm tracking-tight">GLAGGLE <span class="text-violet-500 italic">PRO</span></span>
-            </div>
-            <div class="flex gap-4 text-xs font-medium text-gray-400">
-                <button class="hover:text-white transition-colors">Datei</button>
-                <button onclick="clearCanvas()" class="hover:text-white transition-colors">Neu</button>
-            </div>
+<!-- Loading overlay -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div style="font-size:13px;font-weight:600;color:var(--muted)" id="loading-msg">Exportiere...</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="nav-logo"><span>G</span> GLAGGLE <em>PRO</em></div>
+    <div class="nav-tools">
+      <button class="nav-btn" onclick="clearCanvas()">Neu</button>
+      <button class="nav-btn" onclick="showSizeDialog()">Größe</button>
+    </div>
+  </div>
+  <div class="nav-center">
+    <div class="zoom-ctrl">
+      <button onclick="setZoom(zoomLevel*0.8)">−</button>
+      <span class="zoom-label" id="zoom-label">100%</span>
+      <button onclick="setZoom(zoomLevel*1.25)">+</button>
+    </div>
+    <button class="nav-btn" onclick="setZoom(1)" style="font-size:10px">Fit</button>
+    <div class="canvas-size" id="canvas-size-label">600 × 400</div>
+    <div class="undo-redo">
+      <button onclick="undo()" id="btn-undo" title="Rückgängig (Strg+Z)">↩</button>
+      <button onclick="redo()" id="btn-redo" title="Wiederholen (Strg+Y)">↪</button>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="export-wrap">
+      <button class="export-btn">⬇ Exportieren ▾</button>
+      <div class="export-menu">
+        <button onclick="exportAs('png')">🖼 PNG <span class="ext ext-png">Bild</span></button>
+        <button onclick="exportAs('jpg')">📷 JPEG <span class="ext ext-jpg">Foto</span></button>
+        <button onclick="exportAs('pdf')">📄 PDF <span class="ext ext-pdf">Druck</span></button>
+        <button onclick="exportAs('svg')">✏️ SVG <span class="ext" style="background:#6d5dfc22;color:#a78bfa">Vektor</span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="workspace">
+  <!-- LEFT TABS -->
+  <div class="left-tabs">
+    <button class="tab-btn active" id="tabn-templates" onclick="switchTab('templates')" title="Vorlagen">🎨<span>Lay.</span></button>
+    <button class="tab-btn" id="tabn-shapes" onclick="switchTab('shapes')" title="Formen">⬡<span>Form</span></button>
+    <button class="tab-btn" id="tabn-text" onclick="switchTab('text')" title="Text">T<span>Text</span></button>
+    <button class="tab-btn" id="tabn-upload" onclick="switchTab('upload')" title="Bilder">🖼<span>Bild</span></button>
+    <button class="tab-btn" id="tabn-bg" onclick="switchTab('bg')" title="Hintergrund">◼<span>Bg</span></button>
+  </div>
+
+  <!-- TOOL PANEL -->
+  <div class="tool-panel">
+    <div id="tp-templates" class="tp-section">
+      <div class="tp-title">Vorlagen</div>
+      <div class="tmpl-grid">
+        <div class="tmpl-card" style="background:linear-gradient(135deg,#f09433,#e6683c,#bc1888)" onclick="applyTemplate('insta')">Instagram Post</div>
+        <div class="tmpl-card" style="background:linear-gradient(135deg,#0f0f0f,#cc0000)" onclick="applyTemplate('youtube')">YouTube</div>
+        <div class="tmpl-card" style="background:linear-gradient(135deg,#1e3a5f,#0ea5e9)" onclick="applyTemplate('twitter')">X / Twitter</div>
+        <div class="tmpl-card" style="background:linear-gradient(135deg,#1d1d1f,#3a3a3c)" onclick="applyTemplate('minimal')">Minimal</div>
+        <div class="tmpl-card wide" style="background:linear-gradient(135deg,#1e1b4b,#4338ca)" onclick="applyTemplate('presentation')">Präsentation 16:9</div>
+        <div class="tmpl-card wide" style="background:linear-gradient(135deg,#0d1117,#161b22)" onclick="applyTemplate('a4')">A4 Dokument</div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="tp-title">Leinwandgröße</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div>
+            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Breite (px)</div>
+            <input id="cw-input" class="ins-val" type="number" value="600" style="width:100%" onchange="resizeCanvas()">
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Höhe (px)</div>
+            <input id="ch-input" class="ins-val" type="number" value="400" style="width:100%" onchange="resizeCanvas()">
+          </div>
         </div>
-        
-        <div class="flex items-center gap-4">
-            <div class="flex items-center bg-gray-900 rounded-lg p-1">
-                <button onclick="zoomCanvas(0.9)" class="p-1 hover:bg-gray-800 rounded"><i data-lucide="minus" class="w-4 h-4"></i></button>
-                <span class="text-[10px] px-3 font-mono" id="zoom-label">100%</span>
-                <button onclick="zoomCanvas(1.1)" class="p-1 hover:bg-gray-800 rounded"><i data-lucide="plus" class="w-4 h-4"></i></button>
-            </div>
-            
-            <div class="relative group">
-                <button class="bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2">
-                    <i data-lucide="download" class="w-3 h-3"></i> Speichern als...
-                </button>
-                <div class="absolute right-0 top-full mt-2 w-40 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-2 z-[100]">
-                    <button onclick="exportAs('png')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">PNG Bild</button>
-                    <button onclick="exportAs('jpg')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">JPEG Bild</button>
-                    <button onclick="exportAs('pdf')" class="w-full text-left p-2 hover:bg-white/5 rounded text-xs">PDF Dokument</button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="flex-1 flex overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-20 bg-black border-r border-white/5 flex flex-col py-6 gap-3 items-center shrink-0">
-            <div onclick="switchTab('templates')" class="sidebar-icon active" id="tab-templates"><i data-lucide="layout" class="w-6 h-6"></i><span class="text-[9px] mt-1">Vorlagen</span></div>
-            <div onclick="switchTab('elements')" class="sidebar-icon" id="tab-elements"><i data-lucide="shapes" class="w-6 h-6"></i><span class="text-[9px] mt-1">Formen</span></div>
-            <div onclick="switchTab('text')" class="sidebar-icon" id="tab-text"><i data-lucide="type" class="w-6 h-6"></i><span class="text-[9px] mt-1">Text</span></div>
-            <div onclick="switchTab('uploads')" class="sidebar-icon" id="tab-uploads"><i data-lucide="image-plus" class="w-6 h-6"></i><span class="text-[9px] mt-1">Upload</span></div>
-        </aside>
-
-        <!-- Tool Panel -->
-        <aside class="w-72 bg-[#121212] border-r border-white/5 flex flex-col shrink-0 overflow-y-auto">
-            <div class="p-5">
-                <!-- Templates Section -->
-                <div id="panel-content-templates" class="panel-section">
-                    <h2 class="text-sm font-bold mb-4 flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i> Start-Layouts</h2>
-                    <div class="space-y-3">
-                        <div onclick="applyTemplate('insta')" class="bg-gradient-to-tr from-purple-500 to-pink-500 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold shadow-lg">Instagram Post</div>
-                        <div onclick="applyTemplate('yt')" class="bg-gradient-to-tr from-red-600 to-red-400 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">YouTube Thumbnail</div>
-                        <div onclick="applyTemplate('modern')" class="bg-gradient-to-tr from-gray-700 to-gray-900 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">Minimalist Design</div>
-                        <div onclick="applyTemplate('presentation')" class="bg-gradient-to-tr from-blue-600 to-cyan-400 h-20 rounded-xl cursor-pointer p-3 text-xs font-bold">Presentation Slide</div>
-                    </div>
-                </div>
-
-                <!-- Elements Section -->
-                <div id="panel-content-elements" class="panel-section hidden">
-                    <h2 class="text-sm font-bold mb-4">Grafik-Elemente</h2>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="addElement('rect')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="square" class="w-6 h-6"></i></button>
-                        <button onclick="addElement('circle')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="circle" class="w-6 h-6"></i></button>
-                        <button onclick="addElement('triangle')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="triangle" class="w-6 h-6"></i></button>
-                        <button onclick="addElement('star')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="star" class="w-6 h-6"></i></button>
-                        <button onclick="addElement('hexagon')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="hexagon" class="w-6 h-6"></i></button>
-                        <button onclick="addElement('heart')" class="aspect-square bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10"><i data-lucide="heart" class="w-6 h-6"></i></button>
-                    </div>
-                </div>
-
-                <!-- Text Section -->
-                <div id="panel-content-text" class="panel-section hidden">
-                    <h2 class="text-sm font-bold mb-4">Typografie</h2>
-                    <div class="space-y-2 mb-6">
-                        <button onclick="addElement('text-h1')" class="w-full p-4 bg-white/5 rounded-xl text-left hover:bg-white/10 font-bold text-xl">Überschrift</button>
-                        <button onclick="addElement('text-p')" class="w-full p-4 bg-white/5 rounded-xl text-left hover:bg-white/10 text-sm">Fließtext</button>
-                    </div>
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2">Beliebte Schriftarten</h3>
-                    <div class="font-card" style="font-family: 'Bebas Neue'" onclick="applyStyle('fontFamily', 'Bebas Neue')">Bebas Neue (Impact)</div>
-                    <div class="font-card" style="font-family: 'Montserrat'" onclick="applyStyle('fontFamily', 'Montserrat')">Montserrat Black</div>
-                    <div class="font-card" style="font-family: 'Playfair Display'" onclick="applyStyle('fontFamily', 'Playfair Display')">Playfair Serif</div>
-                    <div class="font-card" style="font-family: 'Roboto Mono'" onclick="applyStyle('fontFamily', 'Roboto Mono')">Roboto Mono</div>
-                </div>
-
-                <!-- Upload Section -->
-                <div id="panel-content-uploads" class="panel-section hidden">
-                    <h2 class="text-sm font-bold mb-4">Eigene Bilder</h2>
-                    <label class="block w-full border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-violet-500 transition-colors">
-                        <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
-                        <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-2 text-violet-500"></i>
-                        <p class="text-xs font-medium">Bilder hochladen</p>
-                        <p class="text-[9px] text-gray-500 mt-2">JPG, PNG, SVG werden unterstützt</p>
-                    </label>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Workspace -->
-        <main class="flex-1 canvas-area relative flex items-center justify-center overflow-auto" id="viewport">
-            <div id="artboard" class="artboard relative shadow-2xl overflow-hidden" style="width: 600px; height: 400px;" onclick="selectBackground(event)">
-                <!-- Elements will land here -->
-            </div>
-        </main>
-
-        <!-- Inspector -->
-        <aside class="w-72 bg-[#121212] border-l border-white/5 p-5 shrink-0 overflow-y-auto">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Inspector</h2>
-
-            <!-- Background Inspector (Hidden by default) -->
-            <div id="bg-inspector" class="space-y-6">
-                <div class="space-y-3">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase">Hintergrundfarbe</label>
-                    <input type="color" id="bg-color-picker" class="w-full h-10 rounded bg-transparent cursor-pointer" oninput="setArtboardBg(this.value)">
-                </div>
-                <div class="space-y-3">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase">Presets & Gradients</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div onclick="setArtboardGradient('linear-gradient(45deg, #8b5cf6, #ec4899)')" class="gradient-preview bg-gradient-to-r from-violet-500 to-pink-500"></div>
-                        <div onclick="setArtboardGradient('linear-gradient(135deg, #3b82f6, #06b6d4)')" class="gradient-preview bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                        <div onclick="setArtboardGradient('linear-gradient(to right, #111, #444)')" class="gradient-preview bg-gradient-to-r from-black to-gray-700"></div>
-                        <div onclick="setArtboardGradient('linear-gradient(45deg, #f59e0b, #ef4444)')" class="gradient-preview bg-gradient-to-r from-orange-500 to-red-500"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Element Inspector (Hidden by default) -->
-            <div id="element-inspector" class="hidden space-y-6">
-                <div class="space-y-3">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase">Farbe & Füllung</label>
-                    <div class="flex items-center gap-3">
-                        <input type="color" id="el-color-picker" class="w-10 h-10 rounded bg-transparent cursor-pointer" oninput="applyStyle('backgroundColor', this.value); applyStyle('color', this.value)">
-                        <input type="text" id="el-hex-val" class="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-xs outline-none" placeholder="#FFFFFF">
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
-                        <span>Eckenradius</span>
-                        <span id="radius-label">0px</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="0" oninput="applyStyle('borderRadius', this.value + 'px'); document.getElementById('radius-label').innerText = this.value+'px'">
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
-                        <span>Transparenz</span>
-                        <span id="opacity-label">100%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="100" oninput="applyStyle('opacity', this.value/100); document.getElementById('opacity-label').innerText = this.value+'%'">
-                </div>
-
-                <div class="pt-6 border-t border-white/5 space-y-2">
-                    <button onclick="applyStyle('zIndex', (parseInt(selectedElement?.style.zIndex) || 10) + 1)" class="w-full p-2 bg-white/5 hover:bg-white/10 text-[10px] font-bold rounded">Ebene nach vorn</button>
-                    <button onclick="applyStyle('zIndex', (parseInt(selectedElement?.style.zIndex) || 10) - 1)" class="w-full p-2 bg-white/5 hover:bg-white/10 text-[10px] font-bold rounded">Ebene nach hinten</button>
-                    <button onclick="deleteSelected()" class="w-full p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-bold rounded mt-4">Löschen</button>
-                </div>
-            </div>
-        </aside>
+      </div>
     </div>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-white text-black rounded-full text-xs font-bold shadow-2xl opacity-0 translate-y-10 transition-all z-[200] pointer-events-none">Export erfolgreich!</div>
+    <div id="tp-shapes" class="tp-section hidden">
+      <div class="tp-title">Grundformen</div>
+      <div class="shape-grid">
+        <button class="shape-btn" onclick="addShape('rect')" title="Rechteck">▬</button>
+        <button class="shape-btn" onclick="addShape('circle')" title="Kreis">●</button>
+        <button class="shape-btn" onclick="addShape('triangle')" title="Dreieck">▲</button>
+        <button class="shape-btn" onclick="addShape('star')" title="Stern">★</button>
+        <button class="shape-btn" onclick="addShape('hexagon')" title="Sechseck">⬡</button>
+        <button class="shape-btn" onclick="addShape('diamond')" title="Raute">◆</button>
+        <button class="shape-btn" onclick="addShape('heart')" title="Herz">♥</button>
+        <button class="shape-btn" onclick="addShape('arrow')" title="Pfeil">→</button>
+      </div>
+      <div class="tp-title" style="margin-top:14px">Linien</div>
+      <div class="shape-grid">
+        <button class="shape-btn" onclick="addShape('line-h')" title="Linie horizontal" style="font-size:12px">━━</button>
+        <button class="shape-btn" onclick="addShape('line-v')" title="Linie vertikal" style="font-size:12px;writing-mode:vertical-lr">┃</button>
+        <button class="shape-btn" onclick="addShape('line-d')" title="Diagonale" style="font-size:12px;transform:rotate(45deg)">━</button>
+        <button class="shape-btn" onclick="addShape('divider')" title="Trennlinie" style="font-size:10px">——</button>
+      </div>
+    </div>
 
-    <script>
-        let selectedElement = null;
-        let zoomLevel = 1.0;
-        const artboard = document.getElementById('artboard');
-        
-        // --- DRAG & RESIZE LOGIC ---
-        let isDragging = false;
-        let isResizing = false;
-        let currentHandle = '';
-        let startX, startY, startW, startH, startLeft, startTop;
+    <div id="tp-text" class="tp-section hidden">
+      <div class="tp-title">Text hinzufügen</div>
+      <button class="text-preset" onclick="addText('h1')" style="font-size:20px;font-weight:800">Überschrift</button>
+      <button class="text-preset" onclick="addText('h2')" style="font-size:15px;font-weight:700">Unterüberschrift</button>
+      <button class="text-preset" onclick="addText('body')" style="font-size:12px">Fließtext</button>
+      <button class="text-preset" onclick="addText('quote')" style="font-size:12px;font-style:italic;border-left:3px solid var(--accent);padding-left:10px">„Zitat"</button>
+      <div class="tp-title" style="margin-top:12px">Schriftarten</div>
+      <button class="font-pill" style="font-family:'Bebas Neue';font-size:14px;letter-spacing:1px" onclick="applyFontFamily('Bebas Neue')">Bebas Neue</button>
+      <button class="font-pill" style="font-family:'Montserrat';font-weight:800" onclick="applyFontFamily('Montserrat')">Montserrat Black</button>
+      <button class="font-pill" style="font-family:'Playfair Display';font-style:italic" onclick="applyFontFamily('Playfair Display')">Playfair Display</button>
+      <button class="font-pill" style="font-family:'DM Mono'" onclick="applyFontFamily('DM Mono')">DM Mono</button>
+      <button class="font-pill" style="font-family:'Space Grotesk';font-weight:700" onclick="applyFontFamily('Space Grotesk')">Space Grotesk Bold</button>
+    </div>
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.sidebar-icon').forEach(i => i.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            document.querySelectorAll('.panel-section').forEach(p => p.classList.add('hidden'));
-            document.getElementById(`panel-content-${tabId}`).classList.remove('hidden');
-        }
+    <div id="tp-upload" class="tp-section hidden">
+      <div class="tp-title">Bilder hochladen</div>
+      <label style="display:block;border:2px dashed rgba(109,93,252,0.3);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(109,93,252,0.04)" onmouseover="this.style.borderColor='rgba(109,93,252,0.6)'" onmouseout="this.style.borderColor='rgba(109,93,252,0.3)'">
+        <input type="file" style="display:none" accept="image/*" onchange="handleImageUpload(event)">
+        <div style="font-size:28px;margin-bottom:8px">📁</div>
+        <div style="font-size:12px;font-weight:600">Klicken oder ziehen</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">JPG, PNG, SVG, WebP, GIF</div>
+      </label>
+      <div id="upload-gallery" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+    </div>
 
-        function addElement(type, content = null) {
-            const el = document.createElement('div');
-            el.className = 'absolute cursor-move select-none flex items-center justify-center';
-            el.id = 'el-' + Date.now();
-            el.style.left = '100px';
-            el.style.top = '100px';
-            el.style.width = '150px';
-            el.style.height = '150px';
-            el.style.zIndex = '10';
+    <div id="tp-bg" class="tp-section hidden">
+      <div class="tp-title">Hintergrundfarbe</div>
+      <div class="color-row">
+        <div class="color-swatch"><input type="color" id="bg-color" value="#ffffff" oninput="setArtboardBg(this.value)"></div>
+        <input class="color-hex" id="bg-hex" value="#ffffff" onchange="setArtboardBg(this.value)">
+      </div>
+      <div class="tp-title" style="margin-top:12px">Gradient-Presets</div>
+      <div class="gradient-swatches">
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#f09433,#bc1888)" onclick="setBgGradient('linear-gradient(135deg,#f09433,#e6683c,#bc1888)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#0ea5e9,#6366f1)" onclick="setBgGradient('linear-gradient(135deg,#0ea5e9,#6366f1)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#000,#1e1b4b)" onclick="setBgGradient('linear-gradient(135deg,#000,#1e1b4b)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#f59e0b,#ef4444)" onclick="setBgGradient('linear-gradient(135deg,#f59e0b,#ef4444)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#10b981,#06b6d4)" onclick="setBgGradient('linear-gradient(135deg,#10b981,#06b6d4)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#f8fafc,#e2e8f0)" onclick="setBgGradient('linear-gradient(135deg,#f8fafc,#e2e8f0)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#1e293b,#334155)" onclick="setBgGradient('linear-gradient(135deg,#1e293b,#334155)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#7c3aed,#db2777)" onclick="setBgGradient('linear-gradient(135deg,#7c3aed,#db2777)')"></div>
+      </div>
+      <div class="tp-title" style="margin-top:12px">Transparenz</div>
+      <button onclick="setArtboardBg('transparent')" style="width:100%;padding:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:600;background-image:repeating-conic-gradient(#888 0% 25%,#fff 0% 50%);background-size:10px 10px;color:#000;margin-bottom:6px">Transparent</button>
+      <div class="tp-title">Hintergrundbild</div>
+      <label style="display:block;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;padding:12px;text-align:center;cursor:pointer;font-size:11px;transition:border-color 0.2s" onmouseover="this.style.borderColor='rgba(109,93,252,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'">
+        <input type="file" style="display:none" accept="image/*" onchange="setBgImage(event)">
+        📷 Bild als Hintergrund
+      </label>
+    </div>
+  </div>
 
-            // Add resize handles
-            const handles = ['nw', 'ne', 'sw', 'se'];
-            handles.forEach(h => {
-                const handle = document.createElement('div');
-                handle.className = `resizer-handle resizer-${h} hidden group-selected`;
-                handle.onmousedown = (e) => startResize(e, el, h);
-                el.appendChild(handle);
-            });
+  <!-- CANVAS AREA -->
+  <div class="canvas-wrap" id="canvas-wrap">
+    <div id="artboard" style="width:600px;height:400px" onclick="onArtboardClick(event)" ondragover="event.preventDefault()" ondrop="onDrop(event)"></div>
+  </div>
 
-            if (type === 'rect') el.style.backgroundColor = '#8b5cf6';
-            if (type === 'circle') { el.style.backgroundColor = '#ec4899'; el.style.borderRadius = '50%'; }
-            if (type === 'triangle') el.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-            if (type === 'star') el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
-            if (type === 'hexagon') el.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
-            if (type === 'heart') el.style.clipPath = 'polygon(50% 30%, 100% 0, 100% 50%, 50% 100%, 0 50%, 0 0)';
+  <!-- INSPECTOR -->
+  <div class="inspector">
+    <!-- BG inspector -->
+    <div id="ins-bg">
+      <div class="ins-title">Leinwand</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Klicke auf ein Element um es zu bearbeiten, oder wähle links eine Hintergrundfarbe.</div>
+      <div class="ins-title" style="margin-top:12px">Leinwand-Größe</div>
+      <div class="ins-row">
+        <span class="ins-label">Breite</span>
+        <input class="ins-val" type="number" id="cw2" value="600" onchange="document.getElementById('cw-input').value=this.value;resizeCanvas()">
+      </div>
+      <div class="ins-row">
+        <span class="ins-label">Höhe</span>
+        <input class="ins-val" type="number" id="ch2" value="400" onchange="document.getElementById('ch-input').value=this.value;resizeCanvas()">
+      </div>
+      <div class="ins-title" style="margin-top:16px">Hintergrundfarbe</div>
+      <div class="color-row">
+        <div class="color-swatch"><input type="color" value="#ffffff" oninput="setArtboardBg(this.value)"></div>
+        <input class="color-hex" value="#ffffff" id="bg-hex2" onchange="setArtboardBg(this.value)">
+      </div>
+    </div>
 
-            if (type.startsWith('text')) {
-                el.style.height = 'auto';
-                const tag = type === 'text-h1' ? 'h1' : 'p';
-                const classes = type === 'text-h1' ? 'text-4xl font-black' : 'text-sm';
-                el.innerHTML += `<${tag} contenteditable="true" class="${classes} outline-none w-full text-center">Dein Text</${tag}>`;
-            }
+    <!-- Element inspector -->
+    <div id="ins-el" class="hidden">
+      <div class="ins-title" id="ins-el-type">Element</div>
 
-            if (type === 'image' && content) {
-                el.style.backgroundImage = `url(${content})`;
-                el.style.backgroundSize = 'contain';
-                el.style.backgroundRepeat = 'no-repeat';
-                el.style.backgroundPosition = 'center';
-            }
+      <!-- Position & Size -->
+      <div class="ins-title">Position & Größe</div>
+      <div class="ins-row">
+        <span class="ins-label">X</span>
+        <input class="ins-val" type="number" id="el-x" onchange="setElProp('left',this.value+'px')">
+        <span class="ins-label" style="min-width:20px;text-align:center">Y</span>
+        <input class="ins-val" type="number" id="el-y" onchange="setElProp('top',this.value+'px')">
+      </div>
+      <div class="ins-row">
+        <span class="ins-label">B</span>
+        <input class="ins-val" type="number" id="el-w" onchange="setElProp('width',this.value+'px')">
+        <span class="ins-label" style="min-width:20px;text-align:center">H</span>
+        <input class="ins-val" type="number" id="el-h" onchange="setElProp('height',this.value+'px')">
+      </div>
+      <div class="ins-row">
+        <span class="ins-label">Rotation</span>
+        <input class="ins-val" type="number" id="el-rot" value="0" onchange="setRotation(this.value)">
+        <span style="font-size:10px;color:var(--muted);margin-left:2px">°</span>
+      </div>
 
-            el.onmousedown = (e) => { if(!isResizing) startDrag(e, el); };
-            artboard.appendChild(el);
-            selectElementFn(el);
-        }
+      <!-- Fill -->
+      <div class="ins-title" style="margin-top:10px">Füllung</div>
+      <div class="color-row">
+        <div class="color-swatch"><input type="color" id="el-fill" oninput="setFill(this.value)"></div>
+        <input class="color-hex" id="el-fill-hex" onchange="setFill(this.value)">
+      </div>
+      <div class="ins-slider-row">
+        <div class="ins-slider-label"><span>Deckkraft</span><span id="opacity-val">100%</span></div>
+        <input type="range" id="el-opacity" min="0" max="100" value="100" oninput="setOpacity(this.value)">
+      </div>
 
-        function startDrag(e, el) {
-            if (e.target.contentEditable === 'true') return;
-            selectElementFn(el);
-            isDragging = true;
-            const rect = el.getBoundingClientRect();
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(el.style.left);
-            startTop = parseInt(el.style.top);
+      <!-- Border -->
+      <div class="ins-title">Rahmen</div>
+      <div class="ins-row">
+        <span class="ins-label">Farbe</span>
+        <div class="color-swatch"><input type="color" id="el-border-color" value="#000000" oninput="setBorder()"></div>
+        <span class="ins-label" style="min-width:32px">Breite</span>
+        <input class="ins-val" type="number" id="el-border-w" value="0" min="0" max="40" onchange="setBorder()">
+      </div>
+      <div class="ins-row">
+        <span class="ins-label">Stil</span>
+        <select class="ins-select" id="el-border-style" onchange="setBorder()">
+          <option value="solid">Durchgezogen</option>
+          <option value="dashed">Gestrichelt</option>
+          <option value="dotted">Gepunktet</option>
+          <option value="double">Doppelt</option>
+        </select>
+      </div>
 
-            document.onmousemove = (e) => {
-                if (!isDragging) return;
-                const dx = (e.clientX - startX) / zoomLevel;
-                const dy = (e.clientY - startY) / zoomLevel;
-                el.style.left = (startLeft + dx) + 'px';
-                el.style.top = (startTop + dy) + 'px';
-            };
-            document.onmouseup = stopAll;
-        }
+      <!-- Corner Radius -->
+      <div class="ins-slider-row">
+        <div class="ins-slider-label"><span>Eckenradius</span><span id="radius-val">0px</span></div>
+        <input type="range" id="el-radius" min="0" max="200" value="0" oninput="setRadius(this.value)">
+      </div>
 
-        function startResize(e, el, handle) {
-            e.stopPropagation();
-            isResizing = true;
-            currentHandle = handle;
-            startX = e.clientX;
-            startY = e.clientY;
-            startW = parseInt(el.style.width);
-            startH = parseInt(el.style.height);
-            startLeft = parseInt(el.style.left);
-            startTop = parseInt(el.style.top);
+      <!-- Shadow -->
+      <div class="ins-title">Schatten</div>
+      <div class="ins-row">
+        <span class="ins-label">X / Y</span>
+        <input class="ins-val" type="number" id="shadow-x" value="0" onchange="setShadow()">
+        <input class="ins-val" type="number" id="shadow-y" value="0" onchange="setShadow()">
+      </div>
+      <div class="ins-row">
+        <span class="ins-label">Blur</span>
+        <input class="ins-val" type="number" id="shadow-blur" value="0" min="0" onchange="setShadow()">
+        <span class="ins-label" style="min-width:32px">Farbe</span>
+        <div class="color-swatch"><input type="color" id="shadow-color" value="#000000" oninput="setShadow()"></div>
+      </div>
 
-            document.onmousemove = (e) => {
-                const dx = (e.clientX - startX) / zoomLevel;
-                const dy = (e.clientY - startY) / zoomLevel;
+      <!-- Text Options (shown only for text elements) -->
+      <div id="ins-text-section" class="hidden">
+        <div class="ins-title">Typografie</div>
+        <div class="ins-row" style="margin-bottom:6px">
+          <span class="ins-label">Schrift</span>
+          <select class="ins-select" id="el-font" onchange="setTextProp('fontFamily',this.value)">
+            <option>Inter</option>
+            <option>Bebas Neue</option>
+            <option>Montserrat</option>
+            <option>Playfair Display</option>
+            <option>DM Mono</option>
+            <option>Space Grotesk</option>
+            <option>Arial</option>
+            <option>Georgia</option>
+            <option>Courier New</option>
+          </select>
+        </div>
+        <div class="ins-row">
+          <span class="ins-label">Größe</span>
+          <input class="ins-val" type="number" id="el-fsize" value="16" onchange="setTextProp('fontSize',this.value+'px')">
+          <span class="ins-label" style="min-width:28px;text-align:center">Zeil.</span>
+          <input class="ins-val" type="number" id="el-lh" value="1.4" step="0.1" onchange="setTextProp('lineHeight',this.value)">
+        </div>
+        <div class="text-fmt-row">
+          <button class="fmt-btn" id="fmt-bold" onclick="toggleFmt('bold')" title="Fett"><b>B</b></button>
+          <button class="fmt-btn" id="fmt-italic" onclick="toggleFmt('italic')" title="Kursiv"><i>I</i></button>
+          <button class="fmt-btn" id="fmt-under" onclick="toggleFmt('underline')" title="Unterstrichen"><u>U</u></button>
+          <button class="fmt-btn" id="fmt-strike" onclick="toggleFmt('strike')" title="Durchgestrichen"><s>S</s></button>
+        </div>
+        <div class="text-fmt-row">
+          <button class="fmt-btn" onclick="setTextProp('textAlign','left')">←</button>
+          <button class="fmt-btn" onclick="setTextProp('textAlign','center')">≡</button>
+          <button class="fmt-btn" onclick="setTextProp('textAlign','right')">→</button>
+          <button class="fmt-btn" onclick="setTextProp('textAlign','justify')">☰</button>
+        </div>
+        <div class="ins-row">
+          <span class="ins-label">Farbe</span>
+          <div class="color-swatch"><input type="color" id="el-text-color" value="#000000" oninput="setTextProp('color',this.value)"></div>
+          <input class="color-hex" id="el-text-color-hex" value="#000000" onchange="setTextProp('color',this.value)">
+        </div>
+        <div class="ins-row">
+          <span class="ins-label">Abstand</span>
+          <input class="ins-val" type="number" id="el-letter-spacing" value="0" step="0.5" onchange="setTextProp('letterSpacing',this.value+'px')">
+          <span style="font-size:9px;color:var(--muted);margin-left:2px">px</span>
+        </div>
+      </div>
 
-                if (currentHandle.includes('e')) el.style.width = (startW + dx) + 'px';
-                if (currentHandle.includes('s')) el.style.height = (startH + dy) + 'px';
-                if (currentHandle.includes('w')) {
-                    el.style.width = (startW - dx) + 'px';
-                    el.style.left = (startLeft + dx) + 'px';
-                }
-                if (currentHandle.includes('n')) {
-                    el.style.height = (startH - dy) + 'px';
-                    el.style.top = (startTop + dy) + 'px';
-                }
-            };
-            document.onmouseup = stopAll;
-        }
+      <!-- Actions -->
+      <div class="ins-title" style="margin-top:10px">Ebene & Aktionen</div>
+      <div class="ins-action-grid">
+        <button class="ins-action" onclick="moveLayer(1)">⬆ Vorder.</button>
+        <button class="ins-action" onclick="moveLayer(-1)">⬇ Hinter.</button>
+        <button class="ins-action" onclick="moveLayer(999)">⏫ Ganz vorn</button>
+        <button class="ins-action" onclick="moveLayer(-999)">⏬ Ganz hint.</button>
+        <button class="ins-action" onclick="alignEl('left')">◀ Links</button>
+        <button class="ins-action" onclick="alignEl('right')">▶ Rechts</button>
+        <button class="ins-action" onclick="alignEl('hcenter')">◆ H-Mitte</button>
+        <button class="ins-action" onclick="alignEl('vcenter')">◇ V-Mitte</button>
+        <button class="ins-action" onclick="flipEl('h')">↔ Spiegeln H</button>
+        <button class="ins-action" onclick="flipEl('v')">↕ Spiegeln V</button>
+      </div>
+      <button class="duplicate-btn" onclick="duplicateEl()">⎘ Duplizieren</button>
+      <button class="del-btn" onclick="deleteEl()">✕ Löschen</button>
+    </div>
+  </div>
+</div>
 
-        function stopAll() {
-            isDragging = false;
-            isResizing = false;
-            document.onmousemove = null;
-        }
+<div id="toast"></div>
 
-        function selectElementFn(el) {
-            if (selectedElement) {
-                selectedElement.classList.remove('element-selected');
-                selectedElement.querySelectorAll('.resizer-handle').forEach(h => h.classList.add('hidden'));
-            }
-            selectedElement = el;
-            el.classList.add('element-selected');
-            el.querySelectorAll('.resizer-handle').forEach(h => h.classList.remove('hidden'));
-            
-            document.getElementById('bg-inspector').classList.add('hidden');
-            document.getElementById('element-inspector').classList.remove('hidden');
-        }
+<script>
+// ====== STATE ======
+let selectedEl = null;
+let zoomLevel = 1;
+let elCounter = 0;
+let history = [];
+let histIdx = -1;
+let isDragging = false, isResizing = false, isRotating = false;
+let dragData = {};
+const artboard = document.getElementById('artboard');
 
-        function selectBackground(e) {
-            if (e.target === artboard) {
-                if (selectedElement) {
-                    selectedElement.classList.remove('element-selected');
-                    selectedElement.querySelectorAll('.resizer-handle').forEach(h => h.classList.add('hidden'));
-                }
-                selectedElement = null;
-                document.getElementById('bg-inspector').classList.remove('hidden');
-                document.getElementById('element-inspector').classList.add('hidden');
-            }
-        }
+// ====== HISTORY ======
+function saveState() {
+  const s = artboard.innerHTML;
+  history = history.slice(0, histIdx + 1);
+  history.push(s);
+  if (history.length > 50) history.shift();
+  histIdx = history.length - 1;
+  updateUndoRedo();
+}
+function undo() {
+  if (histIdx > 0) {
+    histIdx--;
+    artboard.innerHTML = history[histIdx];
+    selectedEl = null;
+    showInspector(false);
+    updateUndoRedo();
+    reattachEvents();
+  }
+}
+function redo() {
+  if (histIdx < history.length - 1) {
+    histIdx++;
+    artboard.innerHTML = history[histIdx];
+    selectedEl = null;
+    showInspector(false);
+    updateUndoRedo();
+    reattachEvents();
+  }
+}
+function updateUndoRedo() {
+  document.getElementById('btn-undo').disabled = histIdx <= 0;
+  document.getElementById('btn-redo').disabled = histIdx >= history.length - 1;
+}
+function reattachEvents() {
+  artboard.querySelectorAll('.el').forEach(el => attachElEvents(el));
+}
 
-        function setArtboardBg(color) {
-            artboard.style.background = color;
-        }
+// ====== ZOOM ======
+function setZoom(z) {
+  zoomLevel = Math.min(4, Math.max(0.1, z));
+  artboard.style.transform = `scale(${zoomLevel})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+}
 
-        function setArtboardGradient(grad) {
-            artboard.style.background = grad;
-        }
+// ====== CANVAS ======
+function resizeCanvas() {
+  const w = parseInt(document.getElementById('cw-input').value) || 600;
+  const h = parseInt(document.getElementById('ch-input').value) || 400;
+  artboard.style.width = w + 'px';
+  artboard.style.height = h + 'px';
+  document.getElementById('canvas-size-label').textContent = w + ' × ' + h;
+  document.getElementById('cw2').value = w;
+  document.getElementById('ch2').value = h;
+  saveState();
+}
+function clearCanvas() {
+  if (!confirm('Leinwand wirklich leeren?')) return;
+  artboard.innerHTML = '';
+  artboard.style.background = '#ffffff';
+  artboard.style.backgroundImage = 'none';
+  selectedEl = null;
+  showInspector(false);
+  saveState();
+}
 
-        function applyStyle(prop, val) {
-            if (selectedElement) selectedElement.style[prop] = val;
-        }
+// ====== TABS ======
+function switchTab(t) {
+  ['templates','shapes','text','upload','bg'].forEach(n => {
+    document.getElementById('tabn-'+n).classList.toggle('active', n===t);
+    document.getElementById('tp-'+n).classList.toggle('hidden', n!==t);
+  });
+}
 
-        function deleteSelected() {
-            if (selectedElement) {
-                selectedElement.remove();
-                selectedElement = null;
-                selectBackground({target: artboard});
-            }
-        }
+// ====== BACKGROUND ======
+function setArtboardBg(c) {
+  artboard.style.background = c;
+  artboard.style.backgroundImage = 'none';
+  document.getElementById('bg-hex2').value = c;
+  try { document.getElementById('bg-color').value = c; } catch(e){}
+}
+function setBgGradient(g) {
+  artboard.style.background = g;
+}
+function setBgImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    artboard.style.backgroundImage = `url(${ev.target.result})`;
+    artboard.style.backgroundSize = 'cover';
+    artboard.style.backgroundPosition = 'center';
+    saveState();
+  };
+  reader.readAsDataURL(file);
+}
 
-        function zoomCanvas(factor) {
-            zoomLevel *= factor;
-            artboard.style.transform = `scale(${zoomLevel})`;
-            document.getElementById('zoom-label').innerText = Math.round(zoomLevel*100) + '%';
-        }
+// ====== CREATE ELEMENT ======
+function createEl(opts = {}) {
+  const el = document.createElement('div');
+  el.className = 'el';
+  el.id = 'el-' + (++elCounter);
+  el.style.left = (opts.x || 60) + 'px';
+  el.style.top = (opts.y || 60) + 'px';
+  el.style.width = (opts.w || 150) + 'px';
+  el.style.height = (opts.h || 150) + 'px';
+  el.style.zIndex = 10 + elCounter;
+  el.dataset.rotation = '0';
 
-        function handleFileUpload(input) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => addElement('image', e.target.result);
-                reader.readAsDataURL(file);
-            }
-        }
+  // Resize handles
+  ['nw','n','ne','e','se','s','sw','w'].forEach(dir => {
+    const h = document.createElement('div');
+    h.className = `resize-handle rh-${dir}`;
+    h.dataset.dir = dir;
+    el.appendChild(h);
+  });
+  // Rotate handle
+  const rot = document.createElement('div');
+  rot.className = 'rotate-handle';
+  el.appendChild(rot);
 
-        function exportAs(format) {
-            const toast = document.getElementById('toast');
-            toast.innerText = `Exportiere als ${format.toUpperCase()}...`;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0) translateX(-50%)';
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px) translateX(-50%)';
-            }, 3000);
-            
-            // Note: In real production, this would use html2canvas or similar.
-            // For this environment, we simulate the success.
-        }
+  artboard.appendChild(el);
+  attachElEvents(el);
+  return el;
+}
 
-        function clearCanvas() {
-            artboard.innerHTML = '';
-            artboard.style.background = 'white';
-        }
+function attachElEvents(el) {
+  el.onmousedown = (e) => onElMouseDown(e, el);
+  el.querySelectorAll('.resize-handle').forEach(h => {
+    h.onmousedown = (e) => { e.stopPropagation(); startResize(e, el, h.dataset.dir); };
+  });
+  const rh = el.querySelector('.rotate-handle');
+  if (rh) rh.onmousedown = (e) => { e.stopPropagation(); startRotate(e, el); };
+}
 
-        function applyTemplate(type) {
-            clearCanvas();
-            if (type === 'insta') {
-                artboard.style.width = '500px'; artboard.style.height = '500px';
-                setArtboardGradient('linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)');
-                addElement('text-h1');
-                selectedElement.style.color = 'white';
-                selectedElement.style.fontFamily = 'Montserrat';
-            } else if (type === 'yt') {
-                artboard.style.width = '640px'; artboard.style.height = '360px';
-                setArtboardBg('#000');
-                addElement('rect');
-                selectedElement.style.width = '300px';
-                selectedElement.style.backgroundColor = 'red';
-                addElement('text-h1');
-                selectedElement.style.color = 'white';
-                selectedElement.style.fontFamily = 'Bebas Neue';
-            } else if (type === 'presentation') {
-                artboard.style.width = '700px'; artboard.style.height = '400px';
-                setArtboardBg('#f8fafc');
-                addElement('text-h1');
-                selectedElement.style.top = '100px';
-            }
-            selectBackground({target: artboard});
-        }
+function addShape(type) {
+  const el = createEl({w:150,h:150});
+  el.style.backgroundColor = '#6d5dfc';
+  el.dataset.type = 'shape';
 
-        lucide.createIcons();
-    </script>
+  if (type === 'circle') el.style.borderRadius = '50%';
+  else if (type === 'triangle') { el.style.clipPath = 'polygon(50% 0%,0% 100%,100% 100%)'; el.style.borderRadius='0'; }
+  else if (type === 'star') el.style.clipPath = 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)';
+  else if (type === 'hexagon') el.style.clipPath = 'polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)';
+  else if (type === 'diamond') el.style.clipPath = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)';
+  else if (type === 'heart') el.style.clipPath = 'path("M75,25 C75,12.5 62.5,0 50,0 C37.5,0 25,12.5 25,25 C25,12.5 12.5,0 0,0 C-12.5,0 -25,12.5 -25,25 C-25,62.5 50,100 50,100 C50,100 125,62.5 125,25 C125,12.5 112.5,0 100,0 C87.5,0 75,12.5 75,25 Z")';
+  else if (type === 'arrow') { el.style.clipPath = 'polygon(0% 35%,60% 35%,60% 15%,100% 50%,60% 85%,60% 65%,0% 65%)'; el.style.width='180px'; el.style.height='100px'; }
+  else if (type.startsWith('line')) {
+    el.style.backgroundColor = '#000';
+    if (type === 'line-h') { el.style.height = '4px'; el.style.width = '200px'; el.style.borderRadius = '2px'; }
+    else if (type === 'line-v') { el.style.height = '200px'; el.style.width = '4px'; el.style.borderRadius = '2px'; }
+    else if (type === 'line-d') { el.style.height = '4px'; el.style.width = '200px'; el.style.borderRadius = '2px'; el.dataset.rotation = '45'; el.style.transform = 'rotate(45deg)'; }
+    else if (type === 'divider') { el.style.height = '2px'; el.style.width = '100%'; el.style.backgroundColor = '#e2e8f0'; }
+  }
+  selectEl(el);
+  saveState();
+}
+
+function addText(type) {
+  const configs = {
+    h1: {text:'Überschrift', fs:'40px', fw:'800', w:320, h:60},
+    h2: {text:'Unterüberschrift', fs:'24px', fw:'700', w:280, h:44},
+    body: {text:'Hier steht dein Text. Doppelklicken zum Bearbeiten.', fs:'16px', fw:'400', w:260, h:80},
+    quote: {text:'„Dein Zitat hier"', fs:'18px', fw:'400', fsi:'italic', w:240, h:60, border:'4px solid #6d5dfc', pl:'16px'},
+  };
+  const c = configs[type];
+  const el = createEl({w:c.w, h:c.h});
+  el.dataset.type = 'text';
+  el.style.backgroundColor = 'transparent';
+  el.style.fontSize = c.fs;
+  el.style.fontWeight = c.fw;
+  if (c.fsi) el.style.fontStyle = c.fsi;
+  if (c.border) el.style.borderLeft = c.border;
+  if (c.pl) el.style.paddingLeft = c.pl;
+  el.style.color = '#000';
+  el.style.fontFamily = 'Inter';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.classList.add('el-text');
+
+  const span = document.createElement('span');
+  span.contentEditable = 'true';
+  span.textContent = c.text;
+  span.style.outline = 'none';
+  span.style.width = '100%';
+  span.style.wordBreak = 'break-word';
+  span.style.whiteSpace = 'pre-wrap';
+  el.appendChild(span);
+
+  selectEl(el);
+  saveState();
+}
+
+function addImage(src) {
+  const el = createEl({w:200, h:200});
+  el.dataset.type = 'image';
+  el.style.backgroundImage = `url(${src})`;
+  el.style.backgroundSize = 'contain';
+  el.style.backgroundRepeat = 'no-repeat';
+  el.style.backgroundPosition = 'center';
+  selectEl(el);
+  saveState();
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImage(ev.target.result);
+    // Thumbnail in gallery
+    const img = document.createElement('img');
+    img.src = ev.target.result;
+    img.style.cssText = 'width:100%;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border)';
+    img.onclick = () => addImage(ev.target.result);
+    document.getElementById('upload-gallery').appendChild(img);
+  };
+  reader.readAsDataURL(file);
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = ev => addImage(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+}
+
+// ====== SELECTION ======
+function selectEl(el) {
+  if (selectedEl) selectedEl.classList.remove('selected');
+  selectedEl = el;
+  el.classList.add('selected');
+  showInspector(true);
+  updateInspector();
+}
+
+function deselectAll() {
+  if (selectedEl) selectedEl.classList.remove('selected');
+  selectedEl = null;
+  showInspector(false);
+}
+
+function showInspector(show) {
+  document.getElementById('ins-bg').classList.toggle('hidden', show);
+  document.getElementById('ins-el').classList.toggle('hidden', !show);
+}
+
+function onArtboardClick(e) {
+  if (e.target === artboard) deselectAll();
+}
+
+function updateInspector() {
+  if (!selectedEl) return;
+  const cs = window.getComputedStyle(selectedEl);
+  document.getElementById('el-x').value = parseInt(selectedEl.style.left) || 0;
+  document.getElementById('el-y').value = parseInt(selectedEl.style.top) || 0;
+  document.getElementById('el-w').value = parseInt(selectedEl.style.width) || 0;
+  document.getElementById('el-h').value = parseInt(selectedEl.style.height) || 0;
+  document.getElementById('el-rot').value = selectedEl.dataset.rotation || 0;
+
+  const bg = selectedEl.style.backgroundColor || '#6d5dfc';
+  try { document.getElementById('el-fill').value = toHex(bg); } catch(e){}
+  document.getElementById('el-fill-hex').value = toHex(bg);
+
+  const op = parseFloat(selectedEl.style.opacity ?? 1) * 100;
+  document.getElementById('el-opacity').value = op;
+  document.getElementById('opacity-val').textContent = Math.round(op) + '%';
+
+  const bw = parseInt(selectedEl.style.borderWidth) || 0;
+  document.getElementById('el-border-w').value = bw;
+  const bc = selectedEl.style.borderColor || '#000000';
+  try { document.getElementById('el-border-color').value = toHex(bc); } catch(e){}
+  document.getElementById('el-border-style').value = selectedEl.style.borderStyle || 'solid';
+
+  const br = parseInt(selectedEl.style.borderRadius) || 0;
+  document.getElementById('el-radius').value = Math.min(br,200);
+  document.getElementById('radius-val').textContent = br + 'px';
+
+  const isText = selectedEl.dataset.type === 'text';
+  document.getElementById('ins-text-section').classList.toggle('hidden', !isText);
+  document.getElementById('ins-el-type').textContent = isText ? 'Text-Element' : (selectedEl.dataset.type === 'image' ? 'Bild-Element' : 'Form-Element');
+
+  if (isText) {
+    document.getElementById('el-font').value = selectedEl.style.fontFamily?.replace(/['"]/g,'') || 'Inter';
+    document.getElementById('el-fsize').value = parseInt(selectedEl.style.fontSize) || 16;
+    document.getElementById('el-lh').value = selectedEl.style.lineHeight || 1.4;
+    const tc = selectedEl.style.color || '#000000';
+    try { document.getElementById('el-text-color').value = toHex(tc); } catch(e){}
+    document.getElementById('el-text-color-hex').value = toHex(tc);
+    document.getElementById('el-letter-spacing').value = parseFloat(selectedEl.style.letterSpacing) || 0;
+    document.getElementById('fmt-bold').classList.toggle('active', selectedEl.style.fontWeight >= 700 || selectedEl.style.fontWeight === 'bold');
+    document.getElementById('fmt-italic').classList.toggle('active', selectedEl.style.fontStyle === 'italic');
+    document.getElementById('fmt-under').classList.toggle('active', selectedEl.style.textDecoration?.includes('underline'));
+    document.getElementById('fmt-strike').classList.toggle('active', selectedEl.style.textDecoration?.includes('line-through'));
+  }
+}
+
+function toHex(color) {
+  if (!color || color === 'transparent') return '#000000';
+  if (color.startsWith('#')) return color.substring(0,7);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = color;
+  ctx.fillRect(0,0,1,1);
+  const d = ctx.getImageData(0,0,1,1).data;
+  return '#' + [d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// ====== DRAG ======
+function onElMouseDown(e, el) {
+  if (e.target.contentEditable === 'true') return;
+  if (e.target.classList.contains('resize-handle') || e.target.classList.contains('rotate-handle')) return;
+  e.preventDefault();
+  selectEl(el);
+  isDragging = true;
+  dragData = {
+    startX: e.clientX, startY: e.clientY,
+    startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0
+  };
+  document.onmousemove = onDragMove;
+  document.onmouseup = stopInteract;
+}
+function onDragMove(e) {
+  if (!isDragging || !selectedEl) return;
+  const dx = (e.clientX - dragData.startX) / zoomLevel;
+  const dy = (e.clientY - dragData.startY) / zoomLevel;
+  selectedEl.style.left = (dragData.startL + dx) + 'px';
+  selectedEl.style.top = (dragData.startT + dy) + 'px';
+  updateInspector();
+}
+
+// ====== RESIZE ======
+function startResize(e, el, dir) {
+  e.preventDefault();
+  isResizing = true;
+  dragData = {
+    startX: e.clientX, startY: e.clientY,
+    startW: parseInt(el.style.width)||100, startH: parseInt(el.style.height)||100,
+    startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0,
+    dir
+  };
+  document.onmousemove = onResizeMove;
+  document.onmouseup = stopInteract;
+}
+function onResizeMove(e) {
+  if (!isResizing || !selectedEl) return;
+  const dx = (e.clientX - dragData.startX) / zoomLevel;
+  const dy = (e.clientY - dragData.startY) / zoomLevel;
+  const d = dragData.dir;
+  let w=dragData.startW, h=dragData.startH, l=dragData.startL, t=dragData.startT;
+  if (d.includes('e')) w = Math.max(20, w+dx);
+  if (d.includes('s')) h = Math.max(20, h+dy);
+  if (d.includes('w')) { w = Math.max(20, w-dx); l = dragData.startL + (dragData.startW-w); }
+  if (d.includes('n')) { h = Math.max(20, h-dy); t = dragData.startT + (dragData.startH-h); }
+  selectedEl.style.width = w+'px'; selectedEl.style.height = h+'px';
+  selectedEl.style.left = l+'px'; selectedEl.style.top = t+'px';
+  updateInspector();
+}
+
+// ====== ROTATE ======
+function startRotate(e, el) {
+  e.preventDefault();
+  isRotating = true;
+  const rect = el.getBoundingClientRect();
+  dragData = { cx: rect.left+rect.width/2, cy: rect.top+rect.height/2, el };
+  document.onmousemove = onRotateMove;
+  document.onmouseup = stopInteract;
+}
+function onRotateMove(e) {
+  if (!isRotating) return;
+  const angle = Math.atan2(e.clientY - dragData.cy, e.clientX - dragData.cx) * 180 / Math.PI + 90;
+  const rounded = Math.round(angle);
+  dragData.el.dataset.rotation = rounded;
+  dragData.el.style.transform = `rotate(${rounded}deg)`;
+  document.getElementById('el-rot').value = rounded;
+}
+
+function stopInteract() {
+  if (isDragging || isResizing || isRotating) saveState();
+  isDragging = false; isResizing = false; isRotating = false;
+  document.onmousemove = null; document.onmouseup = null;
+}
+
+// ====== INSPECTOR ACTIONS ======
+function setElProp(prop, val) {
+  if (!selectedEl) return;
+  selectedEl.style[prop] = val;
+  saveState();
+}
+function setFill(c) {
+  if (!selectedEl) return;
+  selectedEl.style.backgroundColor = c;
+  document.getElementById('el-fill-hex').value = c;
+  try { document.getElementById('el-fill').value = c; } catch(e){}
+  saveState();
+}
+function setOpacity(v) {
+  if (!selectedEl) return;
+  selectedEl.style.opacity = v/100;
+  document.getElementById('opacity-val').textContent = v + '%';
+  saveState();
+}
+function setBorder() {
+  if (!selectedEl) return;
+  const w = document.getElementById('el-border-w').value;
+  const c = document.getElementById('el-border-color').value;
+  const s = document.getElementById('el-border-style').value;
+  selectedEl.style.border = `${w}px ${s} ${c}`;
+  saveState();
+}
+function setRadius(v) {
+  if (!selectedEl) return;
+  selectedEl.style.borderRadius = v + 'px';
+  document.getElementById('radius-val').textContent = v + 'px';
+  saveState();
+}
+function setShadow() {
+  if (!selectedEl) return;
+  const x=document.getElementById('shadow-x').value;
+  const y=document.getElementById('shadow-y').value;
+  const b=document.getElementById('shadow-blur').value;
+  const c=document.getElementById('shadow-color').value;
+  selectedEl.style.boxShadow = `${x}px ${y}px ${b}px ${c}`;
+  saveState();
+}
+function setRotation(deg) {
+  if (!selectedEl) return;
+  selectedEl.dataset.rotation = deg;
+  selectedEl.style.transform = `rotate(${deg}deg)`;
+  saveState();
+}
+function setTextProp(prop, val) {
+  if (!selectedEl) return;
+  selectedEl.style[prop] = val;
+  saveState();
+}
+function toggleFmt(fmt) {
+  if (!selectedEl) return;
+  if (fmt === 'bold') {
+    const isBold = selectedEl.style.fontWeight >= 700 || selectedEl.style.fontWeight === 'bold';
+    selectedEl.style.fontWeight = isBold ? '400' : '700';
+  } else if (fmt === 'italic') {
+    selectedEl.style.fontStyle = selectedEl.style.fontStyle === 'italic' ? 'normal' : 'italic';
+  } else if (fmt === 'underline') {
+    const cur = selectedEl.style.textDecoration || '';
+    selectedEl.style.textDecoration = cur.includes('underline') ? cur.replace('underline','').trim() : cur+' underline';
+  } else if (fmt === 'strike') {
+    const cur = selectedEl.style.textDecoration || '';
+    selectedEl.style.textDecoration = cur.includes('line-through') ? cur.replace('line-through','').trim() : cur+' line-through';
+  }
+  updateInspector();
+  saveState();
+}
+function applyFontFamily(ff) {
+  if (selectedEl && selectedEl.dataset.type === 'text') {
+    selectedEl.style.fontFamily = ff;
+    document.getElementById('el-font').value = ff;
+    saveState();
+  }
+}
+function moveLayer(delta) {
+  if (!selectedEl) return;
+  const cur = parseInt(selectedEl.style.zIndex) || 10;
+  if (delta === 999) selectedEl.style.zIndex = 1000;
+  else if (delta === -999) selectedEl.style.zIndex = 1;
+  else selectedEl.style.zIndex = Math.max(1, cur + delta);
+  saveState();
+}
+function alignEl(dir) {
+  if (!selectedEl) return;
+  const bw = parseInt(artboard.style.width)||600;
+  const bh = parseInt(artboard.style.height)||400;
+  const ew = parseInt(selectedEl.style.width)||0;
+  const eh = parseInt(selectedEl.style.height)||0;
+  if (dir==='left') selectedEl.style.left='0px';
+  else if (dir==='right') selectedEl.style.left=(bw-ew)+'px';
+  else if (dir==='hcenter') selectedEl.style.left=((bw-ew)/2)+'px';
+  else if (dir==='vcenter') selectedEl.style.top=((bh-eh)/2)+'px';
+  updateInspector();
+  saveState();
+}
+function flipEl(axis) {
+  if (!selectedEl) return;
+  const cur = selectedEl.style.transform || '';
+  const flip = axis === 'h' ? 'scaleX(-1)' : 'scaleY(-1)';
+  selectedEl.style.transform = cur.includes(flip) ? cur.replace(flip,'').trim() : cur + ' ' + flip;
+  saveState();
+}
+function duplicateEl() {
+  if (!selectedEl) return;
+  const clone = selectedEl.cloneNode(true);
+  clone.id = 'el-' + (++elCounter);
+  clone.style.left = (parseInt(selectedEl.style.left)||0) + 20 + 'px';
+  clone.style.top = (parseInt(selectedEl.style.top)||0) + 20 + 'px';
+  artboard.appendChild(clone);
+  attachElEvents(clone);
+  selectEl(clone);
+  saveState();
+}
+function deleteEl() {
+  if (!selectedEl) return;
+  selectedEl.remove();
+  selectedEl = null;
+  showInspector(false);
+  saveState();
+}
+
+// ====== TEMPLATES ======
+function applyTemplate(type) {
+  if (!confirm('Alle Elemente löschen und Vorlage anwenden?')) return;
+  artboard.innerHTML = '';
+  selectedEl = null;
+  showInspector(false);
+
+  const sizes = {
+    insta: [1080,1080], youtube: [1280,720], twitter: [1200,675],
+    minimal: [800,600], presentation: [800,450], a4: [595,842]
+  };
+  const [w,h] = sizes[type] || [600,400];
+
+  const scale = Math.min(600/w, 400/h, 1);
+  artboard.style.width = Math.round(w*scale)+'px';
+  artboard.style.height = Math.round(h*scale)+'px';
+  document.getElementById('cw-input').value = Math.round(w*scale);
+  document.getElementById('ch-input').value = Math.round(h*scale);
+  document.getElementById('canvas-size-label').textContent = w + ' × ' + h;
+
+  const bgs = {
+    insta: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)',
+    youtube: '#0f0f0f', twitter: '#15202b', minimal: '#fafafa', presentation: '#1e293b', a4: '#fff'
+  };
+  artboard.style.background = bgs[type] || '#fff';
+  artboard.style.backgroundImage = 'none';
+
+  document.getElementById('cw2').value = Math.round(w*scale);
+  document.getElementById('ch2').value = Math.round(h*scale);
+  saveState();
+}
+
+// ====== EXPORT ======
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.remove('show');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function prepareForExport() {
+  // Temp deselect
+  if (selectedEl) selectedEl.classList.remove('selected');
+  artboard.querySelectorAll('.resize-handle,.rotate-handle').forEach(h => h.style.display='none');
+}
+function restoreAfterExport() {
+  if (selectedEl) {
+    selectedEl.classList.add('selected');
+    selectedEl.querySelectorAll('.resize-handle,.rotate-handle').forEach(h => h.style.display='');
+  }
+}
+
+async function exportAs(format) {
+  showLoading('Bereite Export vor...');
+  prepareForExport();
+  // Short delay for DOM update
+  await new Promise(r => setTimeout(r, 80));
+
+  try {
+    if (format === 'png' || format === 'jpg') {
+      showLoading(`Erstelle ${format.toUpperCase()}...`);
+      const canvas = await html2canvas(artboard, {
+        scale: 2, useCORS: true, allowTaint: true,
+        backgroundColor: format === 'jpg' ? '#ffffff' : null,
+        width: artboard.offsetWidth, height: artboard.offsetHeight,
+        logging: false
+      });
+      const link = document.createElement('a');
+      link.download = `glaggle-design.${format}`;
+      link.href = canvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png', 0.95);
+      link.click();
+      showToast(`✓ ${format.toUpperCase()} gespeichert!`);
+
+    } else if (format === 'pdf') {
+      showLoading('Erstelle PDF...');
+      const canvas = await html2canvas(artboard, {
+        scale: 2, useCORS: true, allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: artboard.offsetWidth, height: artboard.offsetHeight,
+        logging: false
+      });
+      const { jsPDF } = window.jspdf;
+      const aw = artboard.offsetWidth, ah = artboard.offsetHeight;
+      const pdf = new jsPDF({ orientation: aw > ah ? 'landscape' : 'portrait', unit: 'px', format: [aw, ah] });
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, aw, ah);
+      pdf.save('glaggle-design.pdf');
+      showToast('✓ PDF gespeichert!');
+
+    } else if (format === 'svg') {
+      // Simple SVG snapshot from artboard dimensions + background color
+      const w = artboard.offsetWidth, h = artboard.offsetHeight;
+      const bg = artboard.style.background || '#fff';
+      let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="${bg.startsWith('linear') ? '#cccccc' : bg}"/>`;
+      svgContent += `<text x="10" y="20" font-family="sans-serif" font-size="12" fill="#666">SVG export: Use PNG for full fidelity</text>`;
+      svgContent += `</svg>`;
+      const blob = new Blob([svgContent], {type:'image/svg+xml'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = 'glaggle-design.svg'; link.click();
+      URL.revokeObjectURL(url);
+      showToast('✓ SVG gespeichert! (Für beste Qualität PNG wählen)');
+    }
+  } catch (err) {
+    showToast('⚠ Export fehlgeschlagen: ' + err.message);
+    console.error(err);
+  }
+
+  restoreAfterExport();
+  hideLoading();
+}
+
+// ====== KEYBOARD SHORTCUTS ======
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || document.activeElement.contentEditable === 'true') return;
+
+  if ((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); undo(); }
+  if ((e.ctrlKey||e.metaKey) && (e.key==='y'||(e.shiftKey&&e.key==='z'))) { e.preventDefault(); redo(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='d') { e.preventDefault(); duplicateEl(); }
+  if (e.key==='Delete'||e.key==='Backspace') deleteEl();
+  if (e.key==='Escape') deselectAll();
+
+  // Arrow keys nudge
+  if (selectedEl && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+    e.preventDefault();
+    const step = e.shiftKey ? 10 : 1;
+    if (e.key==='ArrowLeft') selectedEl.style.left=(parseInt(selectedEl.style.left)||0)-step+'px';
+    if (e.key==='ArrowRight') selectedEl.style.left=(parseInt(selectedEl.style.left)||0)+step+'px';
+    if (e.key==='ArrowUp') selectedEl.style.top=(parseInt(selectedEl.style.top)||0)-step+'px';
+    if (e.key==='ArrowDown') selectedEl.style.top=(parseInt(selectedEl.style.top)||0)+step+'px';
+    updateInspector();
+  }
+});
+
+// Double-click to edit text
+artboard.addEventListener('dblclick', e => {
+  const el = e.target.closest('.el[data-type="text"]');
+  if (el) {
+    const span = el.querySelector('[contenteditable]');
+    if (span) { span.focus(); const r=document.createRange(); r.selectNodeContents(span); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  }
+});
+
+// ====== INIT ======
+saveState();
+updateUndoRedo();
+</script>
 </body>
 </html>
