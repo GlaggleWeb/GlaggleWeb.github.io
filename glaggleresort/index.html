@@ -29,8 +29,6 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
 }
-
-/* Underwater animated bg */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -39,12 +37,8 @@ body::before {
     radial-gradient(ellipse at 80% 20%, rgba(112,196,247,0.05) 0%, transparent 50%);
   pointer-events: none; z-index: 0;
 }
-
-/* Bubbles animation */
 .bubble { position: fixed; border-radius: 50%; border: 1.5px solid rgba(112,196,247,0.3); pointer-events: none; animation: rise linear infinite; z-index: 0; }
 @keyframes rise { from { transform: translateY(110vh) scale(1); opacity:0.6; } to { transform: translateY(-10vh) scale(1.2); opacity:0; } }
-
-/* Navbar */
 .navbar {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; height: 60px;
@@ -62,14 +56,10 @@ body::before {
 }
 .nav-coins .coin-icon { font-size: 18px; }
 .nav-coins span { color: var(--gold); font-size: 16px; }
-
-/* Layout */
 .game-wrapper {
   max-width: 520px; margin: 0 auto;
   padding: 12px; position: relative; z-index: 1;
 }
-
-/* Top stats bar */
 .stats-bar {
   display: grid; grid-template-columns: 1fr 1fr 1fr;
   gap: 8px; margin-bottom: 12px;
@@ -85,8 +75,6 @@ body::before {
 .stat-card .s-val { font-size: 22px; font-weight: bold; color: var(--accent); line-height: 1.2; }
 .stat-card .s-val.gold { color: var(--gold); }
 .stat-card .s-val.green { color: var(--green); }
-
-/* Hotel Building */
 .hotel-area {
   background: linear-gradient(180deg, #0d3650 0%, #0b2d41 100%);
   border: 3px solid var(--border);
@@ -136,7 +124,6 @@ body::before {
 }
 .room-timer-bar { height: 100%; background: var(--green); transition: width 0.1s linear; border-radius: 2px; }
 .room.vip .room-timer-bar { background: var(--gold); }
-
 .hotel-sign {
   position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
   background: var(--nav-bg); border: 2px solid var(--gold);
@@ -145,8 +132,6 @@ body::before {
   letter-spacing: 1px; white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
-
-/* Guest queue */
 .queue-section {
   margin-bottom: 12px;
 }
@@ -189,8 +174,6 @@ body::before {
   font-size: 8px; font-weight: bold;
   padding: 1px 5px; border-radius: 8px;
 }
-
-/* Upgrades */
 .upgrades-section { margin-bottom: 12px; }
 .upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .upgrade-btn {
@@ -212,8 +195,6 @@ body::before {
 .upgrade-info .u-name { font-size: 12px; font-weight: bold; }
 .upgrade-info .u-cost { font-size: 11px; color: var(--gold); }
 .upgrade-info .u-desc { font-size: 10px; color: var(--text-muted); }
-
-/* Events / Notifications */
 .event-feed {
   background: var(--card-bg2);
   border: 1.5px solid var(--border);
@@ -232,8 +213,6 @@ body::before {
 }
 .event-item:last-child { border-bottom: none; }
 @keyframes fadeIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
-
-/* Checkout popup */
 .popup {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
@@ -263,8 +242,6 @@ body::before {
   transition: transform 0.1s;
 }
 .popup-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent2); }
-
-/* Floating +coin */
 .float-coin {
   position: fixed; pointer-events: none; font-size: 18px; font-weight: bold;
   color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,0.6);
@@ -275,8 +252,6 @@ body::before {
   0% { transform: translateY(0) scale(1); opacity: 1; }
   100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
 }
-
-/* Welcome screen */
 #welcome-screen {
   position: fixed; inset: 0;
   background: var(--bg);
@@ -310,10 +285,8 @@ body::before {
 </head>
 <body>
 
-<!-- Bubbles -->
 <div id="bubbles-container"></div>
 
-<!-- Welcome Screen -->
 <div id="welcome-screen">
   <div class="welcome-fish">🐠</div>
   <div class="welcome-title">Glaggle Resort</div>
@@ -327,7 +300,6 @@ body::before {
   <button class="start-btn" onclick="startGame()">Resort eröffnen 🏖️</button>
 </div>
 
-<!-- Navbar -->
 <div class="navbar">
   <div class="nav-logo">🌊 Glaggle</div>
   <div style="font-size: 13px; color: var(--accent);">RESORT</div>
@@ -337,9 +309,7 @@ body::before {
   </div>
 </div>
 
-<!-- Game -->
 <div class="game-wrapper">
-  <!-- Stats -->
   <div class="stats-bar">
     <div class="stat-card">
       <div class="s-label">Tag</div>
@@ -355,32 +325,27 @@ body::before {
     </div>
   </div>
 
-  <!-- Hotel Building -->
   <div class="hotel-area">
     <div class="hotel-sign" id="hotel-sign">⭐ GLAGGLE RESORT ⭐</div>
     <div class="hotel-grid" id="hotel-grid"></div>
   </div>
 
-  <!-- Guest Queue -->
   <div class="queue-section">
     <div class="section-title">🐟 Warteschlange</div>
     <div class="guest-queue" id="guest-queue"></div>
   </div>
 
-  <!-- Upgrades -->
   <div class="upgrades-section">
     <div class="section-title">🔧 Upgrades</div>
     <div class="upgrade-grid" id="upgrade-grid"></div>
   </div>
 
-  <!-- Event Feed -->
   <div class="section-title">📋 Resort-Log</div>
   <div class="event-feed" id="event-feed">
     <div class="event-item">🌊 Resort wurde noch nicht eröffnet...</div>
   </div>
 </div>
 
-<!-- Checkout Popup -->
 <div class="popup" id="checkout-popup" style="display:none;">
   <div class="popup-box" id="popup-box">
     <div class="popup-emoji" id="popup-emoji">🐠</div>
@@ -392,7 +357,6 @@ body::before {
 </div>
 
 <script>
-// ===== STATE =====
 let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 let day = 1;
 let guestsToday = 0;
@@ -403,7 +367,6 @@ let dayTimer = null;
 let guestSpawnTimer = null;
 let pendingCheckout = null;
 
-// Room states: null = free, {guest, timer, endTime, pay} = occupied
 let rooms = Array(8).fill(null).map((_,i) => ({
   id: i, guest: null, timer: null, endTime: null, pay: 0, locked: i >= 6, vip: false
 }));
@@ -439,7 +402,6 @@ let spawnInterval = 5500;
 let queue = [];
 let maxQueue = 4;
 
-// ===== INIT BUBBLES =====
 function initBubbles() {
   const container = document.getElementById('bubbles-container');
   for (let i = 0; i < 12; i++) {
@@ -451,7 +413,6 @@ function initBubbles() {
   }
 }
 
-// ===== START GAME =====
 function startGame() {
   document.getElementById('welcome-screen').style.display = 'none';
   gameActive = true;
@@ -464,7 +425,6 @@ function startGame() {
   log('🐠 Die ersten Gäste warten bereits in der Schlange!');
 }
 
-// ===== DAY TIMER =====
 function startDayTimer() {
   clearInterval(dayTimer);
   dayTimer = setInterval(() => {
@@ -483,7 +443,6 @@ function startDayTimer() {
   }, 45000);
 }
 
-// ===== SPAWN GUESTS =====
 function spawnGuest() {
   if (!gameActive) return;
   const doSpawn = () => {
@@ -502,7 +461,6 @@ function spawnGuest() {
   guestSpawnTimer = setTimeout(doSpawn, 1200);
 }
 
-// ===== RENDER ROOMS =====
 function renderRooms() {
   const grid = document.getElementById('hotel-grid');
   grid.innerHTML = '';
@@ -525,7 +483,6 @@ function renderRooms() {
   });
 }
 
-// ===== RENDER QUEUE =====
 function renderQueue() {
   const el = document.getElementById('guest-queue');
   el.innerHTML = '';
@@ -546,19 +503,16 @@ function renderQueue() {
   });
 }
 
-// ===== SELECT GUEST =====
 function selectGuest(guest) {
   selectedGuest = guest;
   renderQueue();
   log(`👆 ${guest.name} ausgewählt – wähle jetzt ein Zimmer!`);
 }
 
-// ===== ROOM CLICK =====
 function onRoomClick(roomIndex) {
   const room = rooms[roomIndex];
   if (room.locked) { log('🔒 Dieses Zimmer ist noch gesperrt. Kaufe das Upgrade!'); return; }
   if (room.guest) {
-    // Check if ready for checkout
     if (Date.now() >= room.endTime) {
       checkoutRoom(roomIndex);
     } else {
@@ -569,7 +523,6 @@ function onRoomClick(roomIndex) {
   }
   if (!selectedGuest) { log('👆 Wähle zuerst einen Gast aus der Warteschlange!'); return; }
   
-  // Assign guest to room
   const earn = selectedGuest.pay + incomeBonus + (selectedGuest.vip ? vipBonus : 0);
   const stay = selectedGuest.stayTime * (1 + stayBonus);
   room.guest = selectedGuest;
@@ -583,11 +536,9 @@ function onRoomClick(roomIndex) {
   renderRooms();
   renderQueue();
   
-  // Start countdown
   startRoomTimer(roomIndex, stay);
 }
 
-// ===== ROOM TIMER =====
 function startRoomTimer(roomIndex, duration) {
   const startTime = Date.now();
   const endTime = startTime + duration;
@@ -602,7 +553,6 @@ function startRoomTimer(roomIndex, duration) {
     if (pct <= 0) {
       bar.style.width = '0%';
       bar.style.background = '#FFD700';
-      // Show checkout indicator
       const roomEl = document.querySelector(`[data-id="${roomIndex}"]`);
       if (roomEl) {
         roomEl.style.animation = 'pulse 1s ease-in-out infinite';
@@ -616,7 +566,6 @@ function startRoomTimer(roomIndex, duration) {
   requestAnimationFrame(tick);
 }
 
-// ===== CHECKOUT =====
 function checkoutRoom(roomIndex) {
   const room = rooms[roomIndex];
   if (!room.guest) return;
@@ -636,4 +585,85 @@ function closePopup() {
   if (!pendingCheckout) return;
   const { guest, pay, roomIndex } = pendingCheckout;
   
-  coins
+  coins += pay;
+  guestsToday++;
+  earningsToday += pay;
+  
+  rooms[roomIndex].guest = null;
+  rooms[roomIndex].vip = false;
+  rooms[roomIndex].endTime = null;
+  
+  const popup = document.getElementById('checkout-popup');
+  const rect = popup.getBoundingClientRect();
+  const coin = document.createElement('div');
+  coin.className = 'float-coin';
+  coin.innerText = `+${pay} 🪙`;
+  coin.style.left = rect.left + rect.width/2 + 'px';
+  coin.style.top = rect.top + rect.height/2 + 'px';
+  document.body.appendChild(coin);
+  setTimeout(() => coin.remove(), 1000);
+  
+  updateCoinDisplay();
+  updateStats();
+  renderRooms();
+  document.getElementById('checkout-popup').style.display = 'none';
+  log(`💰 ${pay} 🪙 verdient! (${guest.name} checkt aus)`);
+  pendingCheckout = null;
+}
+
+function renderUpgrades() {
+  const grid = document.getElementById('upgrade-grid');
+  grid.innerHTML = '';
+  UPGRADES.forEach(upgrade => {
+    const btn = document.createElement('button');
+    btn.className = 'upgrade-btn' + (upgrade.bought ? ' bought' : '');
+    btn.disabled = !upgrade.bought && coins < upgrade.cost;
+    btn.innerHTML = `
+      <div class="upgrade-icon">${upgrade.icon}</div>
+      <div class="upgrade-info">
+        <div class="u-name">${upgrade.name}</div>
+        <div class="u-cost">${upgrade.bought ? '✅ Gekauft' : `${upgrade.cost} 🪙`}</div>
+        <div class="u-desc">${upgrade.desc}</div>
+      </div>`;
+    btn.addEventListener('click', () => buyUpgrade(upgrade));
+    grid.appendChild(btn);
+  });
+}
+
+function buyUpgrade(upgrade) {
+  if (upgrade.bought) { log('✅ Du hast dieses Upgrade bereits gekauft!'); return; }
+  if (coins < upgrade.cost) { log('❌ Nicht genug Coins!'); return; }
+  
+  coins -= upgrade.cost;
+  upgrade.bought = true;
+  upgrade.apply();
+  log(`🎉 Upgrade gekauft: ${upgrade.name}!`);
+  updateCoinDisplay();
+  renderUpgrades();
+}
+
+function updateStats() {
+  document.getElementById('guests-today').innerText = guestsToday;
+  document.getElementById('earnings-today').innerText = earningsToday + '🪙';
+}
+
+function updateCoinDisplay() {
+  document.getElementById('coin-display').innerText = coins;
+  localStorage.setItem('glaggleCoins', coins);
+}
+
+function log(msg) {
+  const feed = document.getElementById('event-feed');
+  const item = document.createElement('div');
+  item.className = 'event-item';
+  item.innerText = msg;
+  feed.insertBefore(item, feed.firstChild);
+  if (feed.children.length > 15) feed.removeChild(feed.lastChild);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initBubbles();
+});
+</script>
+</body>
+</html>
