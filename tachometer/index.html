@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPS Tachometer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #fff; }
+  .wrap { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; gap: 1.5rem; }
+  .status { font-size: 13px; color: #5F5E5A; text-align: center; display: flex; align-items: center; gap: 6px; justify-content: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #888780; flex-shrink: 0; }
+  .dot.green { background: #1D9E75; animation: pulse 1.5s infinite; }
+  .dot.orange { background: #EF9F27; }
+  .dot.red { background: #E24B4A; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .speed-display { text-align: center; }
+  .speed-num { font-size: 72px; font-weight: 500; line-height: 1; color: #2C2C2A; transition: color 0.4s; }
+  .speed-unit { font-size: 15px; color: #5F5E5A; margin-top: 6px; letter-spacing: 1px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 340px; }
+  .stat { background: #F1EFE8; border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .stat-label { font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-val { font-size: 18px; font-weight: 500; color: #2C2C2A; margin-top: 2px; }
+  button { font-size: 13px; padding: 8px 20px; cursor: pointer; border: 0.5px solid #B4B2A9; border-radius: 8px; background: transparent; }
+  button:hover { background: #F1EFE8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="status">
+    <div class="dot" id="dot"></div>
+    <span id="statusText">GPS wird angefragt…</span>
+  </div>
+
+  <canvas id="gauge" width="300" height="170"></canvas>
+
+  <div class="speed-display">
+    <div class="speed-num" id="speedNum">--</div>
+    <div class="speed-unit">KM/H</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Max</div>
+      <div class="stat-val" id="maxVal">--</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Ø Schnitt</div>
+      <div class="stat-val" id="avgVal">--</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Genauigkeit</div>
+      <div class="stat-val" id="accVal">--</div>
+    </div>
+  </div>
+
+  <button onclick="resetStats()">Statistik zurücksetzen</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gauge');
+const ctx = canvas.getContext('2d');
+const W = 300, H = 170;
+const cx = W/2, cy = H * 0.92;
+const R = 128;
+const minAngle = Math.PI * 1.1;
+const maxAngle = Math.PI * 1.9;
+const maxSpeed = 240;
+
+let displaySpeed = 0;
+let targetSpeed = 0;
+let maxSpeed_ = 0;
+let readings = [];
+let watchId = null;
+let animFrame;
+
+function speedColor(s) {
+  if (s < 80) return '#1D9E75';
+  if (s < 140) return '#EF9F27';
+  return '#E24B4A';
+}
+
+function speedToAngle(s) {
+  return minAngle + (Math.min(s, maxSpeed) / maxSpeed) * (maxAngle - minAngle);
+}
+
+function drawGauge(speed) {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, minAngle, maxAngle);
+  ctx.strokeStyle = '#D3D1C7';
+  ctx.lineWidth = 18;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  if (speed > 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, minAngle, speedToAngle(speed));
+    ctx.strokeStyle = speedColor(speed);
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  [0,40,80,120,160,200,240].forEach(v => {
+    const a = speedToAngle(v);
+    const r1 = R - 24;
+    const r2 = r1 - 14;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1);
+    ctx.lineTo(cx + Math.cos(a)*r2, cy + Math.sin(a)*r2);
+    ctx.strokeStyle = '#5F5E5A';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    const lr = r2 - 14;
+    ctx.fillStyle = '#5F5E5A';
+    ctx.font = '400 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(v, cx + Math.cos(a)*lr, cy + Math.sin(a)*lr);
+  });
+
+  const na = speedToAngle(speed);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(na);
+  ctx.beginPath();
+  ctx.moveTo(-18, 0);
+  ctx.lineTo(R - 30, 0);
+  ctx.strokeStyle = speed > 0 ? speedColor(speed) : '#888780';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 10, 0, Math.PI*2);
+  ctx.fillStyle = speed > 0 ? speedColor(speed) : '#888780';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI*2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+
+function setStatus(state, text) {
+  document.getElementById('dot').className = 'dot ' + state;
+  document.getElementById('statusText').textContent = text;
+}
+
+function updateUI(speed) {
+  const s = Math.round(speed);
+  document.getElementById('speedNum').textContent = s;
+  document.getElementById('speedNum').style.color = speedColor(s);
+  if (s > maxSpeed_) {
+    maxSpeed_ = s;
+    document.getElementById('maxVal').textContent = maxSpeed_;
+  }
+  readings.push(s);
+  if (readings.length > 200) readings.shift();
+  const avg = Math.round(readings.reduce((a,b)=>a+b,0)/readings.length);
+  document.getElementById('avgVal').textContent = avg;
+}
+
+function animateNeedle() {
+  const diff = targetSpeed - displaySpeed;
+  if (Math.abs(diff) < 0.2) {
+    displaySpeed = targetSpeed;
+    drawGauge(displaySpeed);
+    return;
+  }
+  displaySpeed += diff * 0.15;
+  drawGauge(displaySpeed);
+  animFrame = requestAnimationFrame(animateNeedle);
+}
+
+function onPosition(pos) {
+  const mps = pos.coords.speed || 0;
+  const kmh = mps * 3.6;
+  targetSpeed = kmh;
+  cancelAnimationFrame(animFrame);
+  animateNeedle();
+  updateUI(kmh);
+  const acc = pos.coords.accuracy;
+  document.getElementById('accVal').textContent = acc ? Math.round(acc) + 'm' : '--';
+  setStatus('green', 'GPS aktiv · wird aktualisiert');
+}
+
+function onError(err) {
+  if (err.code === 1) {
+    setStatus('red', 'Zugriff verweigert – bitte GPS erlauben');
+  } else if (err.code === 2) {
+    setStatus('orange', 'GPS-Signal nicht verfügbar');
+  } else {
+    setStatus('orange', 'Zeitüberschreitung – wird wiederholt…');
+    startWatch();
+  }
+}
+
+function startWatch() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  if (!navigator.geolocation) {
+    setStatus('red', 'Geolocation nicht unterstützt');
+    return;
+  }
+  setStatus('orange', 'GPS-Signal wird gesucht…');
+  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 10000
+  });
+}
+
+function resetStats() {
+  maxSpeed_ = 0;
+  readings = [];
+  document.getElementById('maxVal').textContent = '--';
+  document.getElementById('avgVal').textContent = '--';
+}
+
+drawGauge(0);
+startWatch();
+</script>
+</body>
+</html>
