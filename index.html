@@ -1529,35 +1529,35 @@ async function searchGlaggleImages(query, offset = 0) {
     } catch (e) {
         console.error("Fehler beim Bilderladen", e);
     }
+}
+
+
+    
 window.addEventListener('load', function() {
     const preloader = document.getElementById('preloader');
     const gif = document.getElementById('glaggle-gif');
-    const staticLogo = document.getElementById('static-logo');
-    const staticLogoDark = document.getElementById('static-logo-dark'); // Neu dazu
+    const staticLogoLight = document.getElementById('static-logo-light');
+    const staticLogoDark = document.getElementById('static-logo-dark');
 
     setTimeout(() => {
-        // 1. Preloader weg
-        preloader.classList.add('preloader-hidden');
+        if (preloader) preloader.classList.add('preloader-hidden');
         
-        // 2. GIF-Animation erzwingen
-        const currentSrc = gif.src;
-        gif.src = "";
-        gif.src = currentSrc + "?t=" + new Date().getTime();
+        if (gif) {
+            // GIF neu laden für sauberen Start
+            const currentSrc = gif.src.split('?')[0];
+            gif.src = currentSrc + "?t=" + new Date().getTime();
 
-        // 3. Nach Ablauf des GIFs zum richtigen Standbild wechseln
-        setTimeout(() => {
-            gif.style.display = 'none';
+            setTimeout(() => {
+                gif.style.display = 'none';
+                const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            // Dark Mode Abfrage
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (isDarkMode) {
-                staticLogoDark.style.display = 'block';
-            } else {
-                staticLogo.style.display = 'block';
-            }
-        }, 2000); // GIF Dauer
-
+                if (isDarkMode && staticLogoDark) {
+                    staticLogoDark.style.display = 'block';
+                } else if (staticLogoLight) {
+                    staticLogoLight.style.display = 'block';
+                }
+            }, 2000); // Dauer deines GIFs
+        }
     }, 500);
 });
 
