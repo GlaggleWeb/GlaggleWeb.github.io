@@ -515,7 +515,17 @@ body {
   color: #ff80ff;
   text-shadow: 0 0 10px rgba(255,128,255,0.6);
 }
-  
+
+.panel:first-child {
+  display: flex;
+  flex-direction: column;
+  height: 320px; /* feste Höhe */
+}
+
+#guest-queue {
+  flex: 1;
+  overflow-y: auto;
+}
 </style>
 </head>
 <body>
