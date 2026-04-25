@@ -239,6 +239,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
 }
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-thumb { background: var(--wave); border-radius: 4px; }
@@ -294,9 +297,9 @@ body {
   cursor: pointer;
   transition: all 0.18s;
 }
-.upgrade-card:hover:not(.bought):not(.cant-afford) { border-color: var(--wave-light); transform: translateY(-2px); }
+.upgrade-card:hover:not(.bought) { border-color: var(--wave-light); transform: translateY(-2px); }
 .upgrade-card.bought { border-color: var(--emerald); background: rgba(0,100,50,0.25); cursor: default; }
-.upgrade-card.cant-afford { opacity: 0.45; cursor: not-allowed; }
+.upgrade-card.cant-afford { opacity: 0.55; }
 .upgrade-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .upgrade-icon { font-size: 22px; }
 .upgrade-name { font-size: 12px; font-weight: 800; color: var(--wave-light); flex: 1; }
@@ -318,6 +321,8 @@ body {
   flex: 1;
   display: block;
   cursor: crosshair;
+  position: relative;
+  z-index: 1;
 }
 
 /* Room tooltip */
@@ -351,6 +356,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
 }
 .right-panel::-webkit-scrollbar { width: 4px; }
 .right-panel::-webkit-scrollbar-thumb { background: var(--wave); border-radius: 4px; }
@@ -1293,19 +1301,28 @@ function renderUpgrades() {
 
     const div = document.createElement('div');
     div.className = 'upgrade-card' + (bought ? ' bought' : (!canAfford ? ' cant-afford' : ''));
+    // Store upgrade id on the element for event delegation
+    div.setAttribute('data-upg-id', u.id);
     div.innerHTML = `
-      <div class="upgrade-header">
+      <div class="upgrade-header" style="pointer-events:none;">
         <div class="upgrade-icon">${u.icon}</div>
         <div class="upgrade-name">${u.name}</div>
         <div class="upgrade-cost">${bought ? '✅' : u.cost + ' 🪙'}</div>
       </div>
-      <div class="upgrade-desc">${u.desc}</div>
-      ${!prereqMet ? `<div class="upgrade-desc" style="color:#ff6b6b;margin-top:3px;">Benötigt: ${UPGRADES.find(x=>x.id===u.requires)?.name}</div>` : ''}
-      ${bought ? '<div class="upgrade-status">Aktiv!</div>' : ''}
+      <div class="upgrade-desc" style="pointer-events:none;">${u.desc}</div>
+      ${!prereqMet ? `<div class="upgrade-desc" style="color:#ff6b6b;margin-top:3px;pointer-events:none;">Benötigt: ${UPGRADES.find(x=>x.id===u.requires)?.name}</div>` : ''}
+      ${bought ? '<div class="upgrade-status" style="pointer-events:none;">✅ Aktiv!</div>' : ''}
     `;
-    if (!bought) div.onclick = () => buyUpgrade(u.id);
     el.appendChild(div);
   });
+
+  // Single delegated listener – remove old one first
+  el.onclick = (e) => {
+    const card = e.target.closest('[data-upg-id]');
+    if (!card) return;
+    const id = card.getAttribute('data-upg-id');
+    buyUpgrade(id);
+  };
 }
 
 function updateUI() {
