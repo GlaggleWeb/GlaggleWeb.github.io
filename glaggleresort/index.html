@@ -1693,23 +1693,37 @@ function saveGame() {
   localStorage.setItem('glaggle_resort_save', JSON.stringify(save));
   addLog('💾 Spiel gespeichert!');
   closePopup('settings-popup');
+  prestigeCount: state.prestigeCount,
 }
 
 function loadGame() {
   const raw = localStorage.getItem('glaggle_resort_save');
   if (!raw) { addLog('📂 Kein Speicherstand gefunden!'); return; }
+
   try {
     const s = JSON.parse(raw);
     Object.assign(state, s);
-    reapplyUpgrades();
-    state.rooms.forEach((r, i) => { r.locked = i >= state.totalRooms; r.guest = null; r.endTime = null; });
+
+    reapplyUpgrades();   // 👈 wichtig (falls du das schon eingebaut hast)
+    reapplyPrestige();   // 👈 NEU
+
+    state.rooms.forEach((r, i) => {
+      r.locked = i >= state.totalRooms;
+      r.guest = null;
+      r.endTime = null;
+    });
+
     buildRoomMeshes();
     renderQueue();
     renderUpgrades();
     updateUI();
+
     addLog('📂 Spielstand geladen!');
     closePopup('settings-popup');
-  } catch(e) { addLog('❌ Fehler beim Laden!'); }
+
+  } catch(e) {
+    addLog('❌ Fehler beim Laden!');
+  }
 }
 
 function resetGame() {
@@ -1732,6 +1746,16 @@ function resetGame() {
   closePopup('reset-popup');
   spawnGuest();
   addLog('🔄 Spiel zurückgesetzt!');
+}
+
+function reapplyPrestige() {
+  if (!state.prestigeCount) return;
+
+  const bonusMult = state.prestigeCount * 5;
+
+  state.coinMultiplier = bonusMult;
+
+  addLog(`🌈 Prestige Bonus aktiv: ${bonusMult}x`);
 }
 
 // ============================================================
