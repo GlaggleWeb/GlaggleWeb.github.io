@@ -1422,13 +1422,37 @@ function startAutoAssign() {
   setInterval(() => {
     if (!state.autoAssign && !state.autoAll) return;
     if (state.queue.length === 0) return;
+
     const freeRoom = state.rooms.findIndex(r => !r.locked && !r.guest);
     if (freeRoom < 0) return;
-    state.selectedGuest = state.queue[0];
-    assignGuest(freeRoom);
+
+    const guest = state.queue[0]; // 👈 direkt nehmen
+
+    assignGuestAuto(freeRoom, guest); // 👈 neue Funktion
   }, 2000);
 }
 
+function assignGuestAuto(roomId, guest) {
+  const room = state.rooms[roomId];
+
+  const g = { ...guest };
+  g.stayTime = Math.round(g.stayTime * state.stayMultiplier);
+
+  room.guest = g;
+  room.endTime = Date.now() + g.stayTime;
+
+  // 👇 NUR diesen Gast aus Queue entfernen
+  state.queue.shift();
+
+  state.totalGuests++;
+
+  addLog(`🤖 Auto: ${g.emoji} ${g.name} → Zimmer ${roomId + 1}`);
+
+  updateUI();
+  renderQueue();
+  buildRoomMeshes();
+}
+  
 function doPrestige() {
   state.prestigeCount++;
   const bonusMult = state.prestigeCount * 2;
