@@ -509,6 +509,13 @@ body {
 @media (max-width: 600px) {
   .sidebar { display: none; }
 }
+
+#prestige-badge {
+  border-color: #ff80ff;
+  color: #ff80ff;
+  text-shadow: 0 0 10px rgba(255,128,255,0.6);
+}
+  
 </style>
 </head>
 <body>
@@ -546,6 +553,7 @@ body {
     </div>
     <div class="coin-display">🪙 <span id="coin-display">0</span></div>
     <div class="nav-btns">
+      <div class="chip" id="prestige-badge">🌈 Prestige 0</div>
       <button class="nav-btn" onclick="showStats()">📊 Stats</button>
       <button class="nav-btn" onclick="showSettings()">⚙️ Optionen</button>
     </div>
@@ -1414,10 +1422,12 @@ function startAutoAssign() {
 function doPrestige() {
   state.prestigeCount++;
   const bonusMult = state.prestigeCount * 5;
-  // Keep prestige count & coins reset, but add permanent multiplier
+
   const kept = { prestigeCount: state.prestigeCount };
+
   clearTimeout(state.spawnTimer);
 
+  // 👉 RESET zuerst
   Object.assign(state, {
     coins: 0, totalEarnings: 0, totalGuests: 0, totalCheckouts: 0,
     day: 1, level: 1, xp: 0, xpToNext: 100,
@@ -1432,6 +1442,7 @@ function doPrestige() {
     ...kept,
   });
 
+  // 👉 Danach alles neu aufbauen
   initRooms();
   buildRoomMeshes();
   renderQueue();
@@ -1439,10 +1450,30 @@ function doPrestige() {
   updateUI();
   spawnGuest();
 
+  // 👉 Effekte & Feedback zuletzt
   levelUpFlash();
+  showPrestigeBadge();
   addLog(`🌈 PRESTIGE ${state.prestigeCount}! Permanenter ${bonusMult}x Multiplikator!`);
 }
 
+function showPrestigeBadge() {
+  const el = document.createElement('div');
+  el.className = 'popup-overlay show';
+  el.innerHTML = `
+    <div class="popup-box">
+      <div class="popup-emoji">🌈</div>
+      <div class="popup-title">PRESTIGE!</div>
+      <div class="popup-sub">Neues Level erreicht!</div>
+      <div class="popup-amount">${state.prestigeCount}⭐</div>
+      <div style="font-size:14px;color:gold;margin-bottom:12px;">
+        ${state.coinMultiplier}x dauerhaft!
+      </div>
+      <button class="popup-btn success" onclick="this.closest('.popup-overlay').remove()">🔥 Weiter</button>
+    </div>
+  `;
+  document.body.appendChild(el);
+}
+  
 function levelUpFlash() {
   const el = document.createElement('div');
   el.className = 'level-flash';
@@ -1546,6 +1577,7 @@ function updateUI() {
   document.getElementById('stat-avg').textContent = avgPay;
   document.getElementById('stat-queue').textContent = state.queue.length + '/' + state.maxQueue;
   document.getElementById('stat-multi').textContent = (state.coinMultiplier * state.flatBonusMultiplier).toFixed(1) + 'x';
+  document.getElementById('prestige-badge').textContent =`🌈 Prestige ${state.prestigeCount}`;
 }
 
 function addLog(msg) {
