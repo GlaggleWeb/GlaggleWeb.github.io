@@ -1539,28 +1539,33 @@ window.addEventListener('load', function() {
     const staticLogoLight = document.getElementById('static-logo-light');
     const staticLogoDark = document.getElementById('static-logo-dark');
 
-    setTimeout(() => {
-        if (preloader) preloader.classList.add('preloader-hidden');
-        
-        if (gif) {
-            // GIF neu laden für sauberen Start
-            const currentSrc = gif.src.split('?')[0];
-            gif.src = currentSrc + "?t=" + new Date().getTime();
+    // 1. Preloader ausfaden
+    if (preloader) {
+        setTimeout(() => {
+            preloader.classList.add('preloader-hidden');
+        }, 500);
+    }
 
-            setTimeout(() => {
-                gif.style.display = 'none';
-                const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (gif) {
+        // 2. GIF-Reset vorbereiten (ohne Flackern)
+        // Wir hängen den Zeitstempel an, BEVOR wir es anzeigen
+        const cleanSrc = gif.src.split('?')[0];
+        gif.src = cleanSrc + "?t=" + new Date().getTime();
 
-                if (isDarkMode && staticLogoDark) {
-                    staticLogoDark.style.display = 'block';
-                } else if (staticLogoLight) {
-                    staticLogoLight.style.display = 'block';
-                }
-            }, 2000); // Dauer deines GIFs
-        }
-    }, 500);
+        // 3. Nach Ablauf der GIF-Dauer (z.B. 2000ms) umschalten
+        setTimeout(() => {
+            // Erst das statische Logo wählen
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const targetLogo = isDarkMode ? staticLogoDark : staticLogoLight;
+
+            // 4. Nahtloser Übergang
+            if (targetLogo) {
+                targetLogo.style.display = 'block'; // Statisches Logo zeigen
+                gif.style.display = 'none';        // GIF erst DANACH verstecken
+            }
+        }, 2000); // Exakte Dauer deines GIFs in Millisekunden
+    }
 });
-
 async function searchSupabase(query) {
     const resultsDiv = document.getElementById('glaggleResults');
     const navWebBtn = document.getElementById('nav-web');
