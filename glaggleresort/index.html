@@ -674,18 +674,56 @@ const GUESTS = [
 ];
 
 const UPGRADES = [
-  { id: 'moreCoins1',  name: 'Gelddruck I',    icon: '💰', desc: '+50% mehr Coins pro Gast',      cost: 60,   mult: 1.5,  level: 1 },
-  { id: 'moreCoins2',  name: 'Gelddruck II',   icon: '💎', desc: '+100% mehr Coins pro Gast',     cost: 200,  mult: 2.0,  level: 2, requires: 'moreCoins1' },
-  { id: 'moreCoins3',  name: 'Goldregen',      icon: '🌟', desc: '+200% mehr Coins pro Gast',     cost: 600,  mult: 3.0,  level: 3, requires: 'moreCoins2' },
-  { id: 'fastCheck1',  name: 'Speed-Check I',  icon: '⚡', desc: 'Gäste bleiben 25% kürzer',      cost: 80,   timeReduce: 0.75, level: 1 },
-  { id: 'fastCheck2',  name: 'Speed-Check II', icon: '🚀', desc: 'Gäste bleiben 40% kürzer',      cost: 250,  timeReduce: 0.60, level: 2, requires: 'fastCheck1' },
-  { id: 'moreRooms1',  name: '2 Zimmer mehr',  icon: '🏗️', desc: 'Schaltet Zimmer 9+10 frei',    cost: 100,  unlockRooms: 2, level: 1 },
-  { id: 'moreRooms2',  name: '2 Zimmer mehr',  icon: '🏰', desc: 'Schaltet Zimmer 11+12 frei',   cost: 300,  unlockRooms: 2, level: 2, requires: 'moreRooms1' },
-  { id: 'vipLounge',   name: 'VIP-Lounge',     icon: '👑', desc: 'VIP-Gäste kommen 2x so oft',   cost: 180,  vipBoost: true, level: 2 },
-  { id: 'bigQueue',    name: 'Mega-Wartehalle', icon: '📢', desc: 'Max. 8 Gäste in der Queue',    cost: 120,  queueSize: 8, level: 1 },
-  { id: 'autoCheckout',name: 'Auto-Checkout',  icon: '🤖', desc: 'Abgelaufene Gäste auto-auschecken', cost: 400, auto: true, level: 3 },
-  { id: 'tipping',     name: 'Trinkgeld-Kultur',icon: '🍾', desc: 'Zufällige Bonus-Coins beim Checkout', cost: 150, tips: true, level: 2 },
-  { id: 'fastSpawn',   name: 'Warteschlangen-PR',icon:'📣', desc: 'Gäste erscheinen 40% schneller', cost: 90, spawnBoost: true, level: 1 },
+  // ── 💰 EINNAHMEN ──────────────────────────────────────────
+  { id: 'moreCoins1',   cat: '💰 Einnahmen',  name: 'Gelddruck I',        icon: '💰', desc: '+50% Coins pro Gast',              cost: 60,    mult: 1.5 },
+  { id: 'moreCoins2',   cat: '💰 Einnahmen',  name: 'Gelddruck II',       icon: '💎', desc: '+100% Coins pro Gast',             cost: 200,   mult: 2.0,  requires: 'moreCoins1' },
+  { id: 'moreCoins3',   cat: '💰 Einnahmen',  name: 'Goldregen',          icon: '🌟', desc: '+200% Coins pro Gast',             cost: 600,   mult: 3.0,  requires: 'moreCoins2' },
+  { id: 'moreCoins4',   cat: '💰 Einnahmen',  name: 'Schatzkammer',       icon: '🏆', desc: '+400% Coins pro Gast',             cost: 2000,  mult: 5.0,  requires: 'moreCoins3' },
+  { id: 'moreCoins5',   cat: '💰 Einnahmen',  name: 'El Dorado',          icon: '⭐', desc: '+800% Coins pro Gast',             cost: 6000,  mult: 9.0,  requires: 'moreCoins4' },
+  { id: 'tipping',      cat: '💰 Einnahmen',  name: 'Trinkgeld-Kultur',   icon: '🍾', desc: '30% Chance auf 10–40% Bonus',      cost: 150,   tips: true },
+  { id: 'tipping2',     cat: '💰 Einnahmen',  name: 'Luxus-Trinkgeld',    icon: '🥂', desc: 'Trinkgeld-Chance auf 60%, bis 80%',cost: 500,   tips2: true, requires: 'tipping' },
+  { id: 'happyhour',    cat: '💰 Einnahmen',  name: 'Happy Hour',         icon: '🎉', desc: 'Alle 30s: 2x Coins für 5s',        cost: 350,   happyHour: true },
+  { id: 'lottery',      cat: '💰 Einnahmen',  name: 'Resort-Lotterie',    icon: '🎰', desc: '5% Chance: 5x Coins beim Checkout', cost: 800,  lottery: true },
+  { id: 'refund',       cat: '💰 Einnahmen',  name: 'Upgrade-Cashback',   icon: '💸', desc: '20% Rabatt auf alle Upgrades',      cost: 400,  cashback: true },
+
+  // ── ⚡ GESCHWINDIGKEIT ──────────────────────────────────────
+  { id: 'fastCheck1',   cat: '⚡ Speed',       name: 'Speed-Check I',      icon: '⚡', desc: 'Gäste bleiben 25% kürzer',         cost: 80,    timeReduce: 0.75 },
+  { id: 'fastCheck2',   cat: '⚡ Speed',       name: 'Speed-Check II',     icon: '🚀', desc: 'Gäste bleiben 40% kürzer',         cost: 250,   timeReduce: 0.60, requires: 'fastCheck1' },
+  { id: 'fastCheck3',   cat: '⚡ Speed',       name: 'Speed-Check III',    icon: '🛸', desc: 'Gäste bleiben 55% kürzer',         cost: 700,   timeReduce: 0.45, requires: 'fastCheck2' },
+  { id: 'fastCheck4',   cat: '⚡ Speed',       name: 'Turbo-Resort',       icon: '💨', desc: 'Gäste bleiben 70% kürzer',         cost: 2500,  timeReduce: 0.30, requires: 'fastCheck3' },
+  { id: 'fastSpawn',    cat: '⚡ Speed',       name: 'Warteschlangen-PR',  icon: '📣', desc: 'Neue Gäste 40% schneller',         cost: 90,    spawnBoost: true },
+  { id: 'fastSpawn2',   cat: '⚡ Speed',       name: 'Viral-Marketing',    icon: '📱', desc: 'Neue Gäste 60% schneller',         cost: 300,   spawnBoost2: true, requires: 'fastSpawn' },
+  { id: 'fastSpawn3',   cat: '⚡ Speed',       name: 'Ozean-Influencer',   icon: '🌊', desc: 'Neue Gäste 75% schneller',         cost: 900,   spawnBoost3: true, requires: 'fastSpawn2' },
+
+  // ── 🏗️ ZIMMER ──────────────────────────────────────────────
+  { id: 'moreRooms1',   cat: '🏗️ Zimmer',     name: '2 Zimmer mehr',      icon: '🏗️', desc: 'Zimmer 9+10 freischalten',         cost: 100,   unlockRooms: 2 },
+  { id: 'moreRooms2',   cat: '🏗️ Zimmer',     name: '2 Zimmer mehr II',   icon: '🏰', desc: 'Zimmer 11+12 freischalten',        cost: 300,   unlockRooms: 2, requires: 'moreRooms1' },
+  { id: 'bigQueue',     cat: '🏗️ Zimmer',     name: 'Große Wartehalle',   icon: '📢', desc: 'Max. 8 Gäste in der Queue',        cost: 120,   queueSize: 8 },
+  { id: 'bigQueue2',    cat: '🏗️ Zimmer',     name: 'Riesige Wartehalle', icon: '🏟️', desc: 'Max. 12 Gäste in der Queue',       cost: 400,   queueSize: 12, requires: 'bigQueue' },
+  { id: 'bigQueue3',    cat: '🏗️ Zimmer',     name: 'Unendliche Queue',   icon: '♾️', desc: 'Max. 20 Gäste in der Queue',       cost: 1200,  queueSize: 20, requires: 'bigQueue2' },
+
+  // ── 👑 VIP ─────────────────────────────────────────────────
+  { id: 'vipLounge',    cat: '👑 VIP',         name: 'VIP-Lounge',         icon: '👑', desc: 'VIP-Gäste kommen doppelt so oft',  cost: 180,   vipBoost: true },
+  { id: 'vipBonus',     cat: '👑 VIP',         name: 'VIP-Bonus',          icon: '💍', desc: 'VIPs zahlen 50% extra',            cost: 500,   vipPayBoost: true, requires: 'vipLounge' },
+  { id: 'vipSpeed',     cat: '👑 VIP',         name: 'VIP-Express',        icon: '🎩', desc: 'VIPs bleiben 30% kürzer',          cost: 700,   vipFast: true, requires: 'vipBonus' },
+  { id: 'vipOnly',      cat: '👑 VIP',         name: 'Exklusiv-Resort',    icon: '🦩', desc: '50% der Gäste sind VIPs',          cost: 2000,  vipOnly: true, requires: 'vipSpeed' },
+
+  // ── 🤖 AUTOMATION ─────────────────────────────────────────
+  { id: 'autoCheckout', cat: '🤖 Auto',        name: 'Auto-Checkout',      icon: '🤖', desc: 'Abgelaufene Gäste auto-auschecken',cost: 400,   auto: true },
+  { id: 'autoAssign',   cat: '🤖 Auto',        name: 'Auto-Einchecken',    icon: '🦾', desc: 'Gäste checken automatisch ein',    cost: 1000,  autoAssign: true, requires: 'autoCheckout' },
+  { id: 'autoAll',      cat: '🤖 Auto',        name: 'KI-Rezeption',       icon: '🧠', desc: 'Alles vollautomatisch + 20% Speed', cost: 3000, autoAll: true, requires: 'autoAssign' },
+
+  // ── 🌊 SPEZIAL ────────────────────────────────────────────
+  { id: 'coral',        cat: '🌊 Spezial',     name: 'Korallenriff',       icon: '🪸', desc: 'Alle Einnahmen +10% dauerhaft',    cost: 250,   flatBonus: 0.10 },
+  { id: 'pearl',        cat: '🌊 Spezial',     name: 'Perlenfund',         icon: '🦪', desc: 'Alle Einnahmen +20% dauerhaft',    cost: 800,   flatBonus: 0.20, requires: 'coral' },
+  { id: 'treasure',     cat: '🌊 Spezial',     name: 'Versunkenes Schiff', icon: '⚓', desc: 'Alle Einnahmen +40% dauerhaft',    cost: 2500,  flatBonus: 0.40, requires: 'pearl' },
+  { id: 'atlantis',     cat: '🌊 Spezial',     name: 'Atlantis-Portal',    icon: '🌀', desc: 'Alle Einnahmen +100% dauerhaft',   cost: 8000,  flatBonus: 1.00, requires: 'treasure' },
+  { id: 'doubleXP',     cat: '🌊 Spezial',     name: 'Doppel-XP',          icon: '📚', desc: '2x XP für jeden Checkout',         cost: 300,   doubleXP: true },
+  { id: 'tripleXP',     cat: '🌊 Spezial',     name: 'Tripple-XP',         icon: '🎓', desc: '3x XP für jeden Checkout',         cost: 1000,  tripleXP: true, requires: 'doubleXP' },
+  { id: 'streak',       cat: '🌊 Spezial',     name: 'Streak-Bonus',       icon: '🔥', desc: 'Jeder 5. Checkout bringt 3x Coins', cost: 600,  streak: true },
+  { id: 'nightclub',    cat: '🌊 Spezial',     name: 'Unterwasser-Club',   icon: '🪩', desc: 'Gäste zahlen nachts doppelt',       cost: 450,  nightBonus: true },
+  { id: 'insurance',    cat: '🌊 Spezial',     name: 'Resort-Versicherung',icon: '🛡️', desc: 'Nie unter 0 Coins fallen',          cost: 200,  insurance: true },
+  { id: 'prestige',     cat: '🌊 Spezial',     name: '⚡ PRESTIGE',        icon: '🌈', desc: 'Reset + 5x dauerhafter Multiplikator!', cost: 15000, prestige: true },
 ];
 
 // ============================================================
@@ -707,10 +745,29 @@ let state = {
   gameActive: false,
   coinMultiplier: 1.0,
   stayMultiplier: 1.0,
+  flatBonusMultiplier: 1.0,
   maxQueue: 5,
   vipBoost: false,
+  vipPayBoost: false,
+  vipFast: false,
+  vipOnly: false,
   autoCheckout: false,
+  autoAssign: false,
+  autoAll: false,
   tips: false,
+  tips2: false,
+  happyHour: false,
+  happyHourActive: false,
+  lottery: false,
+  cashback: false,
+  cashbackUsed: false,
+  doubleXP: false,
+  tripleXP: false,
+  streak: false,
+  streakCount: 0,
+  nightBonus: false,
+  insurance: false,
+  prestigeCount: 0,
   spawnInterval: 3000,
   totalRooms: 8,
   spawnTimer: null,
@@ -1121,11 +1178,38 @@ function checkoutRoom(id) {
   const room = state.rooms[id];
   if (!room.guest) return;
 
-  let pay = Math.round(room.guest.pay * state.coinMultiplier);
-  if (state.tips && Math.random() < 0.3) {
-    const tip = Math.round(pay * (0.1 + Math.random() * 0.3));
-    pay += tip;
-    addLog(`🍾 Trinkgeld! +${tip} extra!`);
+  let pay = Math.round(room.guest.pay * state.coinMultiplier * state.flatBonusMultiplier);
+
+  // VIP pay boost
+  if (room.guest.vip && state.vipPayBoost) pay = Math.round(pay * 1.5);
+
+  // Happy Hour
+  if (state.happyHourActive) { pay *= 2; }
+
+  // Night bonus (between 20:00–06:00 local time)
+  if (state.nightBonus) {
+    const h = new Date().getHours();
+    if (h >= 20 || h < 6) { pay = Math.round(pay * 2); addLog('🌙 Nacht-Bonus x2!'); }
+  }
+
+  // Streak bonus
+  if (state.streak) {
+    state.streakCount++;
+    if (state.streakCount % 5 === 0) { pay *= 3; addLog(`🔥 Streak x5! Bonus x3 Coins!`); }
+  }
+
+  // Lottery
+  if (state.lottery && Math.random() < 0.05) { pay *= 5; addLog('🎰 JACKPOT! 5x Coins!'); }
+
+  // Tips
+  if (state.tips || state.tips2) {
+    const chance = state.tips2 ? 0.6 : 0.3;
+    const maxBonus = state.tips2 ? 0.8 : 0.4;
+    if (Math.random() < chance) {
+      const tip = Math.round(pay * (0.1 + Math.random() * maxBonus));
+      pay += tip;
+      addLog(`🍾 Trinkgeld! +${tip} extra!`);
+    }
   }
 
   state.pendingCheckout = { room: id, guest: room.guest, pay };
@@ -1151,6 +1235,7 @@ function closeCheckout() {
   state.rooms[room].endTime = null;
 
   state.coins += pay;
+  if (state.insurance && state.coins < 0) state.coins = 0;
   state.totalEarnings += pay;
   state.totalCheckouts++;
   state.avgPayAccum += pay;
@@ -1170,11 +1255,16 @@ function spawnGuest() {
   if (!state.gameActive) return;
 
   if (state.queue.length < state.maxQueue) {
-    const vipChance = state.vipBoost ? 0.2 : 0.08;
-    const pool = Math.random() < vipChance
-      ? GUESTS.filter(g => g.vip)
-      : GUESTS.filter(g => !g.vip);
+    let pool;
+    const vipChance = state.vipOnly ? 0.5 : state.vipBoost ? 0.2 : 0.08;
+    if (Math.random() < vipChance) {
+      pool = GUESTS.filter(g => g.vip);
+    } else {
+      pool = state.vipOnly ? GUESTS : GUESTS.filter(g => !g.vip);
+    }
     const g = { ...pool[Math.floor(Math.random() * pool.length)] };
+    // VIP fast
+    if (g.vip && state.vipFast) g.stayTime = Math.round(g.stayTime * 0.7);
     state.queue.push(g);
     renderQueue();
     updateUI();
@@ -1204,36 +1294,70 @@ function autoCheckoutTick() {
 function buyUpgrade(id) {
   const upg = UPGRADES.find(u => u.id === id);
   if (!upg) return;
-  if (state.boughtUpgrades[id]) return;
+  if (state.boughtUpgrades[id]) { addLog('✅ Bereits gekauft!'); return; }
   if (upg.requires && !state.boughtUpgrades[upg.requires]) {
     addLog(`❌ Benötigt zuerst: ${UPGRADES.find(u=>u.id===upg.requires)?.name}`);
     return;
   }
-  if (state.coins < upg.cost) {
-    addLog(`❌ Zu wenig Coins! Benötigt: ${upg.cost} 🪙`);
-    spawnFloatCoin(-upg.cost, true);
+
+  let cost = upg.cost;
+  if (state.cashback) cost = Math.round(cost * 0.8);
+
+  if (state.coins < cost) {
+    addLog(`❌ Zu wenig Coins! Benötigt: ${cost} 🪙`);
     return;
   }
 
-  state.coins -= upg.cost;
+  state.coins -= cost;
   state.boughtUpgrades[id] = true;
 
-  // Apply effects
-  if (upg.mult)         state.coinMultiplier = Math.max(state.coinMultiplier, upg.mult);
-  if (upg.timeReduce)   state.stayMultiplier  = Math.min(state.stayMultiplier, upg.timeReduce);
+  // ── Einnahmen ──
+  if (upg.mult)           state.coinMultiplier = Math.max(state.coinMultiplier, upg.mult);
+  if (upg.flatBonus)      { state.flatBonusMultiplier += upg.flatBonus; addLog(`🌊 Dauerhaft +${Math.round(upg.flatBonus*100)}% auf alle Einnahmen!`); }
+  if (upg.tips)           state.tips = true;
+  if (upg.tips2)          state.tips2 = true;
+  if (upg.happyHour)      { state.happyHour = true; startHappyHourTimer(); }
+  if (upg.lottery)        state.lottery = true;
+  if (upg.cashback)       { state.cashback = true; addLog('💸 Alle Upgrades jetzt 20% günstiger!'); }
+
+  // ── Speed ──
+  if (upg.timeReduce)     state.stayMultiplier = Math.min(state.stayMultiplier, upg.timeReduce);
+  if (upg.spawnBoost)     { state.spawnInterval = Math.round(state.spawnInterval * 0.6);  clearTimeout(state.spawnTimer); spawnGuest(); }
+  if (upg.spawnBoost2)    { state.spawnInterval = Math.round(state.spawnInterval * 0.65); clearTimeout(state.spawnTimer); spawnGuest(); }
+  if (upg.spawnBoost3)    { state.spawnInterval = Math.round(state.spawnInterval * 0.6);  clearTimeout(state.spawnTimer); spawnGuest(); }
+
+  // ── Zimmer ──
   if (upg.unlockRooms) {
     state.totalRooms = Math.min(state.totalRooms + upg.unlockRooms, 12);
     state.rooms.forEach((r, i) => { r.locked = i >= state.totalRooms; });
     buildRoomMeshes();
     addLog(`🏗️ ${upg.unlockRooms} neue Zimmer freigeschaltet!`);
   }
-  if (upg.vipBoost)     state.vipBoost   = true;
-  if (upg.auto)         state.autoCheckout = true;
-  if (upg.tips)         state.tips       = true;
-  if (upg.spawnBoost)   { state.spawnInterval = Math.round(state.spawnInterval * 0.6); clearTimeout(state.spawnTimer); spawnGuest(); }
-  if (upg.queueSize)    state.maxQueue   = upg.queueSize;
+  if (upg.queueSize)      state.maxQueue = upg.queueSize;
 
-  addLog(`✅ Upgrade "${upg.name}" gekauft!`);
+  // ── VIP ──
+  if (upg.vipBoost)       state.vipBoost = true;
+  if (upg.vipPayBoost)    state.vipPayBoost = true;
+  if (upg.vipFast)        state.vipFast = true;
+  if (upg.vipOnly)        state.vipOnly = true;
+
+  // ── Auto ──
+  if (upg.auto)           state.autoCheckout = true;
+  if (upg.autoAssign)     { state.autoAssign = true; startAutoAssign(); }
+  if (upg.autoAll)        { state.autoAll = true; state.stayMultiplier = Math.min(state.stayMultiplier, 0.8); addLog('🧠 KI-Rezeption aktiv!'); }
+
+  // ── XP ──
+  if (upg.doubleXP)       state.doubleXP = true;
+  if (upg.tripleXP)       state.tripleXP = true;
+
+  // ── Spezial ──
+  if (upg.streak)         state.streak = true;
+  if (upg.nightBonus)     state.nightBonus = true;
+  if (upg.insurance)      state.insurance = true;
+  if (upg.prestige)       doPrestige();
+
+  addLog(`✅ "${upg.name}" gekauft!`);
+  spawnFloatCoin(cost, true);
   updateUI();
   renderUpgrades();
 }
@@ -1242,7 +1366,10 @@ function buyUpgrade(id) {
 // XP / LEVEL
 // ============================================================
 function gainXP(amount) {
-  state.xp += amount;
+  let xpGain = amount;
+  if (state.tripleXP) xpGain *= 3;
+  else if (state.doubleXP) xpGain *= 2;
+  state.xp += xpGain;
   while (state.xp >= state.xpToNext) {
     state.xp -= state.xpToNext;
     state.level++;
@@ -1250,6 +1377,58 @@ function gainXP(amount) {
     addLog(`⭐ Level ${state.level} erreicht!`);
     levelUpFlash();
   }
+}
+
+function startHappyHourTimer() {
+  setInterval(() => {
+    if (!state.happyHour) return;
+    state.happyHourActive = true;
+    addLog('🎉 HAPPY HOUR! 30 Sekunden 2x Coins!');
+    setTimeout(() => { state.happyHourActive = false; addLog('🎉 Happy Hour vorbei.'); }, 5000);
+  }, 30000);
+}
+
+function startAutoAssign() {
+  setInterval(() => {
+    if (!state.autoAssign && !state.autoAll) return;
+    if (state.queue.length === 0) return;
+    const freeRoom = state.rooms.findIndex(r => !r.locked && !r.guest);
+    if (freeRoom < 0) return;
+    state.selectedGuest = state.queue[0];
+    assignGuest(freeRoom);
+  }, 2000);
+}
+
+function doPrestige() {
+  state.prestigeCount++;
+  const bonusMult = state.prestigeCount * 5;
+  // Keep prestige count & coins reset, but add permanent multiplier
+  const kept = { prestigeCount: state.prestigeCount };
+  clearTimeout(state.spawnTimer);
+
+  Object.assign(state, {
+    coins: 0, totalEarnings: 0, totalGuests: 0, totalCheckouts: 0,
+    day: 1, level: 1, xp: 0, xpToNext: 100,
+    rooms: [], queue: [], selectedGuest: null, boughtUpgrades: {},
+    coinMultiplier: bonusMult, stayMultiplier: 1.0, flatBonusMultiplier: 1.0,
+    maxQueue: 5, vipBoost: false, vipPayBoost: false, vipFast: false, vipOnly: false,
+    autoCheckout: false, autoAssign: false, autoAll: false,
+    tips: false, tips2: false, happyHour: false, happyHourActive: false,
+    lottery: false, cashback: false, doubleXP: false, tripleXP: false,
+    streak: false, streakCount: 0, nightBonus: false, insurance: false,
+    spawnInterval: 3000, totalRooms: 8, spawnTimer: null, pendingCheckout: null, avgPayAccum: 0,
+    ...kept,
+  });
+
+  initRooms();
+  buildRoomMeshes();
+  renderQueue();
+  renderUpgrades();
+  updateUI();
+  spawnGuest();
+
+  levelUpFlash();
+  addLog(`🌈 PRESTIGE ${state.prestigeCount}! Permanenter ${bonusMult}x Multiplikator!`);
 }
 
 function levelUpFlash() {
@@ -1294,34 +1473,47 @@ function renderQueue() {
 function renderUpgrades() {
   const el = document.getElementById('upgrade-list');
   el.innerHTML = '';
-  UPGRADES.forEach(u => {
-    const bought = !!state.boughtUpgrades[u.id];
-    const prereqMet = !u.requires || !!state.boughtUpgrades[u.requires];
-    const canAfford = state.coins >= u.cost;
 
-    const div = document.createElement('div');
-    div.className = 'upgrade-card' + (bought ? ' bought' : (!canAfford ? ' cant-afford' : ''));
-    // Store upgrade id on the element for event delegation
-    div.setAttribute('data-upg-id', u.id);
-    div.innerHTML = `
-      <div class="upgrade-header" style="pointer-events:none;">
-        <div class="upgrade-icon">${u.icon}</div>
-        <div class="upgrade-name">${u.name}</div>
-        <div class="upgrade-cost">${bought ? '✅' : u.cost + ' 🪙'}</div>
-      </div>
-      <div class="upgrade-desc" style="pointer-events:none;">${u.desc}</div>
-      ${!prereqMet ? `<div class="upgrade-desc" style="color:#ff6b6b;margin-top:3px;pointer-events:none;">Benötigt: ${UPGRADES.find(x=>x.id===u.requires)?.name}</div>` : ''}
-      ${bought ? '<div class="upgrade-status" style="pointer-events:none;">✅ Aktiv!</div>' : ''}
-    `;
-    el.appendChild(div);
+  // Group by category
+  const cats = {};
+  UPGRADES.forEach(u => {
+    if (!cats[u.cat]) cats[u.cat] = [];
+    cats[u.cat].push(u);
   });
 
-  // Single delegated listener – remove old one first
+  Object.entries(cats).forEach(([cat, upgrades]) => {
+    const catDiv = document.createElement('div');
+    catDiv.style.cssText = 'font-size:11px;font-weight:800;color:rgba(112,196,247,0.7);margin:10px 0 5px;letter-spacing:1px;';
+    catDiv.textContent = cat;
+    el.appendChild(catDiv);
+
+    upgrades.forEach(u => {
+      const bought = !!state.boughtUpgrades[u.id];
+      const prereqMet = !u.requires || !!state.boughtUpgrades[u.requires];
+      const effectiveCost = state.cashback ? Math.round(u.cost * 0.8) : u.cost;
+      const canAfford = state.coins >= effectiveCost;
+
+      const div = document.createElement('div');
+      div.className = 'upgrade-card' + (bought ? ' bought' : (!canAfford ? ' cant-afford' : ''));
+      div.setAttribute('data-upg-id', u.id);
+      div.innerHTML = `
+        <div class="upgrade-header" style="pointer-events:none;">
+          <div class="upgrade-icon">${u.icon}</div>
+          <div class="upgrade-name">${u.name}</div>
+          <div class="upgrade-cost">${bought ? '✅' : effectiveCost + ' 🪙'}</div>
+        </div>
+        <div class="upgrade-desc" style="pointer-events:none;">${u.desc}</div>
+        ${!prereqMet ? `<div style="font-size:10px;color:#ff6b6b;margin-top:3px;pointer-events:none;">🔒 Benötigt: ${UPGRADES.find(x=>x.id===u.requires)?.name}</div>` : ''}
+        ${bought ? '<div style="font-size:10px;color:var(--emerald);margin-top:3px;font-weight:800;pointer-events:none;">✅ Aktiv</div>' : ''}
+      `;
+      el.appendChild(div);
+    });
+  });
+
   el.onclick = (e) => {
     const card = e.target.closest('[data-upg-id]');
     if (!card) return;
-    const id = card.getAttribute('data-upg-id');
-    buyUpgrade(id);
+    buyUpgrade(card.getAttribute('data-upg-id'));
   };
 }
 
@@ -1341,7 +1533,7 @@ function updateUI() {
   document.getElementById('stat-occupied').textContent = occupied + '/' + unlocked;
   document.getElementById('stat-avg').textContent = avgPay;
   document.getElementById('stat-queue').textContent = state.queue.length + '/' + state.maxQueue;
-  document.getElementById('stat-multi').textContent = state.coinMultiplier.toFixed(1) + 'x';
+  document.getElementById('stat-multi').textContent = (state.coinMultiplier * state.flatBonusMultiplier).toFixed(1) + 'x';
 }
 
 function addLog(msg) {
