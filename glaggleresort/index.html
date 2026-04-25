@@ -1635,6 +1635,7 @@ function loadGame() {
   try {
     const s = JSON.parse(raw);
     Object.assign(state, s);
+    reapplyUpgrades();
     state.rooms.forEach((r, i) => { r.locked = i >= state.totalRooms; r.guest = null; r.endTime = null; });
     buildRoomMeshes();
     renderQueue();
@@ -1715,6 +1716,86 @@ function startGame() {
   addLog('👆 Wähle einen Gast und klicke auf ein Zimmer!');
 
   window.addEventListener('resize', resizeRenderer);
+}
+
+function reapplyUpgrades() {
+  // Reset auf Basiswerte
+  state.coinMultiplier = 1.0;
+  state.stayMultiplier = 1.0;
+  state.flatBonusMultiplier = 1.0;
+
+  state.vipBoost = false;
+  state.vipPayBoost = false;
+  state.vipFast = false;
+  state.vipOnly = false;
+
+  state.autoCheckout = false;
+  state.autoAssign = false;
+  state.autoAll = false;
+
+  state.tips = false;
+  state.tips2 = false;
+  state.happyHour = false;
+  state.lottery = false;
+  state.cashback = false;
+
+  state.doubleXP = false;
+  state.tripleXP = false;
+
+  state.streak = false;
+  state.nightBonus = false;
+  state.insurance = false;
+
+  state.spawnInterval = 3000;
+  state.maxQueue = 5;
+  state.totalRooms = 8;
+
+  // Alle gekauften Upgrades neu anwenden
+  UPGRADES.forEach(upg => {
+    if (!state.boughtUpgrades[upg.id]) return;
+
+    if (upg.mult) state.coinMultiplier = Math.max(state.coinMultiplier, upg.mult);
+    if (upg.flatBonus) state.flatBonusMultiplier += upg.flatBonus;
+
+    if (upg.tips) state.tips = true;
+    if (upg.tips2) state.tips2 = true;
+    if (upg.happyHour) state.happyHour = true;
+    if (upg.lottery) state.lottery = true;
+    if (upg.cashback) state.cashback = true;
+
+    if (upg.timeReduce) state.stayMultiplier = Math.min(state.stayMultiplier, upg.timeReduce);
+
+    if (upg.spawnBoost) state.spawnInterval *= 0.6;
+    if (upg.spawnBoost2) state.spawnInterval *= 0.65;
+    if (upg.spawnBoost3) state.spawnInterval *= 0.6;
+
+    if (upg.unlockRooms) state.totalRooms += upg.unlockRooms;
+    if (upg.queueSize) state.maxQueue = upg.queueSize;
+
+    if (upg.vipBoost) state.vipBoost = true;
+    if (upg.vipPayBoost) state.vipPayBoost = true;
+    if (upg.vipFast) state.vipFast = true;
+    if (upg.vipOnly) state.vipOnly = true;
+
+    if (upg.auto) state.autoCheckout = true;
+    if (upg.autoAssign) state.autoAssign = true;
+    if (upg.autoAll) state.autoAll = true;
+
+    if (upg.doubleXP) state.doubleXP = true;
+    if (upg.tripleXP) state.tripleXP = true;
+
+    if (upg.streak) state.streak = true;
+    if (upg.nightBonus) state.nightBonus = true;
+    if (upg.insurance) state.insurance = true;
+  });
+
+  // Rooms neu setzen
+  state.rooms.forEach((r, i) => {
+    r.locked = i >= state.totalRooms;
+  });
+
+  if (state.autoAssign) startAutoAssign();
+  if (state.happyHour) startHappyHourTimer();
 }
 
 // ============================================================
