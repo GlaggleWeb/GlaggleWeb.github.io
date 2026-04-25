@@ -1174,48 +1174,59 @@ function assignGuest(roomId) {
   buildRoomMeshes();
 }
 
-function checkoutRoom(id) {
+function checkoutRoom(id, silent = false) {
   const room = state.rooms[id];
   if (!room.guest) return;
 
   let pay = Math.round(room.guest.pay * state.coinMultiplier * state.flatBonusMultiplier);
 
-  // VIP pay boost
   if (room.guest.vip && state.vipPayBoost) pay = Math.round(pay * 1.5);
 
-  // Happy Hour
-  if (state.happyHourActive) { pay *= 2; }
+  if (state.happyHourActive) pay *= 2;
 
-  // Night bonus (between 20:00–06:00 local time)
   if (state.nightBonus) {
     const h = new Date().getHours();
-    if (h >= 20 || h < 6) { pay = Math.round(pay * 2); addLog('🌙 Nacht-Bonus x2!'); }
+    if (h >= 20 || h < 6) pay = Math.round(pay * 2);
   }
 
-  // Streak bonus
   if (state.streak) {
     state.streakCount++;
-    if (state.streakCount % 5 === 0) { pay *= 3; addLog(`🔥 Streak x5! Bonus x3 Coins!`); }
+    if (state.streakCount % 5 === 0) pay *= 3;
   }
 
-  // Lottery
-  if (state.lottery && Math.random() < 0.05) { pay *= 5; addLog('🎰 JACKPOT! 5x Coins!'); }
+  if (state.lottery && Math.random() < 0.05) pay *= 5;
 
-  // Tips
   if (state.tips || state.tips2) {
     const chance = state.tips2 ? 0.6 : 0.3;
     const maxBonus = state.tips2 ? 0.8 : 0.4;
     if (Math.random() < chance) {
       const tip = Math.round(pay * (0.1 + Math.random() * maxBonus));
       pay += tip;
-      addLog(`🍾 Trinkgeld! +${tip} extra!`);
     }
   }
 
-  state.pendingCheckout = { room: id, guest: room.guest, pay };
-  showCheckoutPopup(room.guest, pay);
-}
+  // 👉 WICHTIG: Unterschied hier
+  if (silent) {
+    // DIREKT auszahlen ohne Popup
+    room.guest = null;
+    room.endTime = null;
 
+    state.coins += pay;
+    state.totalEarnings += pay;
+    state.totalCheckouts++;
+    state.avgPayAccum += pay;
+
+    gainXP(Math.ceil(pay / 5));
+    spawnFloatCoin(pay);
+    updateUI();
+    buildRoomMeshes();
+  } else {
+    // alter Ablauf mit Popup
+    state.pendingCheckout = { room: id, guest: room.guest, pay };
+    showCheckoutPopup(room.guest, pay);
+  }
+}
+  
 function showCheckoutPopup(guest, pay) {
   document.getElementById('pop-emoji').textContent = guest.emoji;
   document.getElementById('pop-title').textContent = `${guest.name} checkt aus!`;
@@ -1278,16 +1289,17 @@ function spawnGuest() {
 // ============================================================
 function autoCheckoutTick() {
   if (!state.gameActive) return;
+
   if (state.autoCheckout && !document.getElementById('checkout-popup').classList.contains('show')) {
     state.rooms.forEach((room, i) => {
       if (room.guest && Date.now() >= room.endTime) {
-        checkoutRoom(i);
+        checkoutRoom(i, true); // 👈 silent = true
       }
     });
   }
+
   setTimeout(autoCheckoutTick, 1000);
 }
-
 // ============================================================
 // UPGRADES
 // ============================================================
