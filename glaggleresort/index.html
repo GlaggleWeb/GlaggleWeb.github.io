@@ -731,7 +731,7 @@ const UPGRADES = [
   { id: 'streak',       cat: '🌊 Spezial',     name: 'Streak-Bonus',       icon: '🔥', desc: 'Jeder 5. Checkout bringt 3x Coins', cost: 600,  streak: true },
   { id: 'nightclub',    cat: '🌊 Spezial',     name: 'Unterwasser-Club',   icon: '🪩', desc: 'Gäste zahlen nachts doppelt',       cost: 450,  nightBonus: true },
   { id: 'insurance',    cat: '🌊 Spezial',     name: 'Resort-Versicherung',icon: '🛡️', desc: 'Nie unter 0 Coins fallen',          cost: 200,  insurance: true },
-  { id: 'prestige',     cat: '🌊 Spezial',     name: '⚡ PRESTIGE',        icon: '🌈', desc: 'Reset + 5x dauerhafter Multiplikator!', cost: 15000, prestige: true },
+  { id: 'prestige',     cat: '🌊 Spezial',     name: '⚡ PRESTIGE',        icon: '🌈', desc: 'Reset + 2x dauerhafter Multiplikator!', cost: 15000, prestige: true },
 ];
 
 // ============================================================
@@ -1421,7 +1421,7 @@ function startAutoAssign() {
 
 function doPrestige() {
   state.prestigeCount++;
-  const bonusMult = state.prestigeCount * 5;
+  const bonusMult = state.prestigeCount * 2;
 
   const kept = { prestigeCount: state.prestigeCount };
 
