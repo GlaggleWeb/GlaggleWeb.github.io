@@ -1689,11 +1689,12 @@ function saveGame() {
     spawnInterval: state.spawnInterval,
     totalRooms: state.totalRooms,
     avgPayAccum: state.avgPayAccum,
+    prestigeCount: state.prestigeCount // ✅ HIER rein
   };
+
   localStorage.setItem('glaggle_resort_save', JSON.stringify(save));
   addLog('💾 Spiel gespeichert!');
   closePopup('settings-popup');
-  prestigeCount: state.prestigeCount,
 }
 
 function loadGame() {
