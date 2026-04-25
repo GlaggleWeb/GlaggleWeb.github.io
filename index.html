@@ -722,11 +722,14 @@ html {
 <main class="main-content">
     
 <div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center;">
-    <img src="glagglelogo.png" id="static-logo" class="large-logo" alt="Glaggle Logo" 
-         style="display: none; width: 100%; height: auto; margin-bottom: 0; vertical-align: middle;">
-    
     <img src="Glaggle Logo Clip kurz.gif" id="glaggle-gif" class="large-logo" alt="Glaggle Animation" 
-         style="display: block; width: 100%; height: auto; margin-bottom: 0; vertical-align: middle;">
+         style="display: block; width: 100%; height: auto;">
+    
+    <img src="glagglelogo.png" id="static-logo-light" class="large-logo" alt="Glaggle Logo" 
+         style="display: none; width: 100%; height: auto;">
+
+    <img src="glagglelogodark.png" id="static-logo-dark" class="large-logo" alt="Glaggle Logo Dark" 
+         style="display: none; width: 100%; height: auto;">
 </div>
     
     <form class="search-bar-container" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
@@ -1526,11 +1529,11 @@ async function searchGlaggleImages(query, offset = 0) {
     } catch (e) {
         console.error("Fehler beim Bilderladen", e);
     }
-}
 window.addEventListener('load', function() {
     const preloader = document.getElementById('preloader');
     const gif = document.getElementById('glaggle-gif');
     const staticLogo = document.getElementById('static-logo');
+    const staticLogoDark = document.getElementById('static-logo-dark'); // Neu dazu
 
     setTimeout(() => {
         // 1. Preloader weg
@@ -1541,11 +1544,19 @@ window.addEventListener('load', function() {
         gif.src = "";
         gif.src = currentSrc + "?t=" + new Date().getTime();
 
-        // 3. Nach X Millisekunden (z.B. 3000ms = 3 Sek) zum Standbild wechseln
+        // 3. Nach Ablauf des GIFs zum richtigen Standbild wechseln
         setTimeout(() => {
             gif.style.display = 'none';
-            staticLogo.style.display = 'block';
-        }, 2000); // <-- Hier Dauer deines GIFs in Millisekunden eintragen!
+
+            // Dark Mode Abfrage
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (isDarkMode) {
+                staticLogoDark.style.display = 'block';
+            } else {
+                staticLogo.style.display = 'block';
+            }
+        }, 2000); // GIF Dauer
 
     }, 500);
 });
