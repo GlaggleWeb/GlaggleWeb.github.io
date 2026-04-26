@@ -387,10 +387,62 @@
     </div>
 </section>
 
-<section style="margin-top: 50px; padding: 0 20px;">
+<style>
+    /* Das sorgt dafür, dass die Sektionen auf dem Handy nicht gequetscht werden */
+    section {
+        width: 100%;
+        max-width: 900px;
+        margin-top: 50px;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+
+    /* Das Game-Grid: Auf dem Laptop 2-3 Spalten, auf dem Handy 1 Spalte */
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        width: 100%;
+        padding: 20px 0; /* Padding oben/unten statt links/rechts */
+    }
+
+    /* Media Query: Wenn das Display schmaler als 600px ist (Handy) */
+    @media (max-width: 600px) {
+        .game-grid {
+            grid-template-columns: 1fr; /* Nur eine Karte pro Zeile */
+        }
+        .hero {
+            margin-top: 100px;
+        }
+        .navbar {
+            padding: 0 20px;
+        }
+    }
+</style>
+
+<section>
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: var(--accent); font-size: 1.8rem; margin-bottom: 10px;">✨ Glaggle 3D Games</h2>
+        <p style="color: var(--desc-color); opacity: 0.8;">Erlebe die nächste Dimension der Glaggle Games mit Tiefe und neuen Mechaniken. Achtung Glaggle Jump 3D gibt keine Coins!</p>
+    </div>
+    <div class="game-grid">
+        <a href="/glaggleresort" class="game-card" style="border: 2px solid var(--accent);">
+            <h2 class="game-title"><span>🐠</span> Glaggle Resort 3D</h2>
+            <p class="game-desc">Baue deinen eigenen Resort! Betreue Gäste und kaufe upgrades! In 3D</p>
+            <div class="play-btn">Resort eröffnen!</div>
+        </a>
+        <a href="/glagglejump3d" class="game-card" style="border: 2px solid var(--accent);">
+            <h2 class="game-title"><span>👾</span> Glaggle Jump 3D</h2>
+            <p class="game-desc">Das Glaggle Jump jetzt in 3D im Unterwasserdesign!</p>
+            <div class="play-btn">Los Jumpen!</div>
+        </a>
+    </div>
+</section>
+
+<section>
     <div style="text-align: center; margin-bottom: 25px;">
         <h2 style="color: #a55eea; font-size: 1.8rem; margin-bottom: 10px;">💎 Glaggle Deluxe Games</h2>
-        <p style="color: var(--desc-color); opacity: 0.8; max-width: 600px; margin: 0 auto;">Die Glaggle Deluxe Games sind Klassiker im neuen Glaggle Look!</p>
+        <p style="color: var(--desc-color); opacity: 0.8;">Die Glaggle Deluxe Games sind Klassiker im neuen Glaggle Look!</p>
     </div>
     <div class="game-grid">
         <a href="/flappyfish" class="game-card">
@@ -416,10 +468,10 @@
     </div>
 </section>
 
-<section style="margin-top: 50px; padding: 0 20px;">
+<section>
     <div style="text-align: center; margin-bottom: 25px;">
         <h2 style="color: #FFD700; font-size: 1.8rem; margin-bottom: 10px;">💰 Glaggle Coins Games</h2>
-        <p style="color: var(--desc-color); opacity: 0.8; max-width: 600px; margin: 0 auto;">Gewinne groß oder verliere alles – hier dreht sich alles um deine Coins!</p>
+        <p style="color: var(--desc-color); opacity: 0.8;">Gewinne groß oder verliere alles – hier dreht sich alles um deine Coins!</p>
     </div>
     <div class="game-grid">
         <a href="/casino" class="game-card" style="border-color: #FFD700;">
@@ -430,10 +482,10 @@
     </div>
 </section>
 
-<section style="margin-top: 50px; padding: 0 20px;">
+<section>
     <div style="text-align: center; margin-bottom: 25px;">
         <h2 style="color: var(--desc-color); font-size: 1.8rem; margin-bottom: 10px;">🕹️ Glaggle Classic Games</h2>
-        <p style="color: var(--desc-color); opacity: 0.8; max-width: 600px; margin: 0 auto;">Die zeitlosen Originalen Klassiker Games im Glaggle Design! Perfekt zum Zeitvertreib!</p>
+        <p style="color: var(--desc-color); opacity: 0.8;">Die zeitlosen Originalen Klassiker Games im Glaggle Design! Perfekt zum Zeitvertreib!</p>
     </div>
     <div class="game-grid">
         <a href="/snake" class="game-card">
