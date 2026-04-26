@@ -183,39 +183,40 @@
     box-sizing: border-box;
 }
 
+/* LEADERBOARD KORREKTUR: Namen linksbündig & mehrzeilig auf dem Handy */
 .leader-row { 
     display: flex; 
-    align-items: center; /* Vertikal zentrieren */
-    padding: 10px 12px; 
+    align-items: flex-start; /* Oben ausrichten, falls der Name zweizeilig wird */
+    padding: 12px 10px; 
     border-bottom: 1px solid var(--card-border); 
 }
 
 .leader-rank { 
     font-weight: bold; 
     color: var(--accent); 
-    width: 45px; /* Fester Platz für #1, #2 etc. */
+    width: 40px; 
     flex-shrink: 0;
+    margin-top: 2px; /* Kleine Korrektur für die Höhe */
 }
 
-/* Das ist die entscheidende Änderung für die Namen */
 .leader-name { 
-    flex-grow: 1; /* Nimmt den restlichen Platz ein und drückt die Coins nach rechts */
+    flex-grow: 1; 
     text-align: left; 
-    padding-left: 10px;
+    padding-left: 5px;
     color: var(--text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Falls ein Name zu lang ist */
+    /* ÄNDERUNG HIER: */
+    white-space: normal; /* Erlaubt Zeilenumbruch */
+    word-break: break-word; /* Bricht extrem lange Wörter zur Not um */
+    line-height: 1.2;
 }
 
 .leader-coins { 
     font-weight: bold; 
     color: #FFD700; 
-    display: flex;
-    align-items: center;
-    gap: 5px;
     flex-shrink: 0;
-    margin-left: 15px;
+    margin-left: 10px;
+    text-align: right;
+    min-width: 60px; /* Damit die Coin-Zahlen immer bündig stehen */
 }
     @keyframes fadeInSlide {
         from { opacity: 0; transform: translateY(10px); }
