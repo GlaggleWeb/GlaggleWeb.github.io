@@ -1390,6 +1390,11 @@ function buyUpgrade(id) {
   spawnFloatCoin(cost, true);
   updateUI();
   renderUpgrades();
+
+  // 🎁 Glaggle Coin Belohnung
+  glaggleCoins += 1;
+  localStorage.setItem('glaggleCoins', glaggleCoins);
+  updateCoinDisplay();
 }
 
 // ============================================================
@@ -1488,6 +1493,7 @@ function doPrestige() {
   levelUpFlash();
   showPrestigeBadge();
   addLog(`🌈 PRESTIGE ${state.prestigeCount}! Permanenter ${bonusMult}x Multiplikator!`);
+  saveGame();
 }
 
 function showPrestigeBadge() {
