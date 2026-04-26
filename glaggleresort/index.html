@@ -814,6 +814,7 @@ let roomMeshes = [];
 let guestSprites = [];
 let animFrameId;
 let hoveredRoom = -1;
+let purchaseCount = 0;
 
 const ROOM_COLORS = {
   free:     0x1a5278,
@@ -1390,16 +1391,22 @@ function buyUpgrade(id) {
   if (upg.insurance)      state.insurance = true;
   if (upg.prestige)       doPrestige();
 
+  // ... (vorheriger Code der Funktion)
+
   addLog(`✅ "${upg.name}" gekauft!`);
   spawnFloatCoin(cost, true);
   updateUI();
   renderUpgrades();
 
   // 🎁 Glaggle Coin Belohnung
-  glaggleCoins += 1;
-  localStorage.setItem('glaggleCoins', glaggleCoins);
-  updateCoinDisplay();
-}
+  // Stelle sicher, dass purchaseCount außerhalb der Funktion mit "let purchaseCount = 0;" erstellt wurde!
+  purchaseCount++;
+  
+  if (purchaseCount % 2 === 0) {
+    glaggleCoins += 1;
+    // Optional: addLog('💰 +1 Glaggle Coin erhalten!');
+  }
+} // <--- Diese Klammer schließt "buyUpgrade" korrekt ab!
 
 // ============================================================
 // XP / LEVEL
@@ -1408,15 +1415,17 @@ function gainXP(amount) {
   let xpGain = amount;
   if (state.tripleXP) xpGain *= 3;
   else if (state.doubleXP) xpGain *= 2;
+  
   state.xp += xpGain;
+  
   while (state.xp >= state.xpToNext) {
     state.xp -= state.xpToNext;
     state.level++;
     state.xpToNext = Math.round(state.xpToNext * 1.5);
     addLog(`⭐ Level ${state.level} erreicht!`);
-    levelUpFlash();
+    if (typeof levelUpFlash === 'function') levelUpFlash();
   }
-}
+} // <--- Diese Klammer schließt "gainXP" korrekt ab!
 
 function startHappyHourTimer() {
   setInterval(() => {
