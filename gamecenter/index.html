@@ -12,332 +12,189 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+<style>
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --nav-bg: #ffffff;
+        --card-bg: #fdfdfd;
+        --card-border: #eeeeee;
+        --link-color: #2E94D1;
+        --desc-color: #555555;
+        --accent: #70C4F7;
+    }
+
+    @media (prefers-color-scheme: dark) {
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --nav-bg: #ffffff;
-            --card-bg: #fdfdfd;
-            --card-border: #eeeeee;
-            --link-color: #2E94D1;
-            --desc-color: #555555;
-            --accent: #70C4F7;
+            --bg-color: #202124;
+            --text-color: #e8eaed;
+            --nav-bg: #303134;
+            --card-bg: #303134;
+            --card-border: #444444;
+            --link-color: #8cc9f5;
+            --desc-color: #bdc1c6;
         }
+    }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #202124;
-                --text-color: #e8eaed;
-                --nav-bg: #303134;
-                --card-bg: #303134;
-                --card-border: #444444;
-                --link-color: #8cc9f5;
-                --desc-color: #bdc1c6;
-            }
-        }
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+        margin: 0; padding: 0;
+        display: flex; flex-direction: column; align-items: center;
+        min-height: 100vh;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
+    /* NAVBAR */
+    .navbar {
+        display: flex; align-items: center; justify-content: space-between;
+        width: 100%; height: 70px; background-color: var(--nav-bg);
+        padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+    }
+    .nav-logo { height: 35px; cursor: pointer; }
 
-        /* NAVBAR */
-        .navbar {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; height: 70px; background-color: var(--nav-bg);
-            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
-        }
-        .nav-logo { height: 35px; cursor: pointer; }
+    /* HERO SECTION */
+    .hero {
+        margin-top: 120px;
+        text-align: center;
+        width: 100%;
+        max-width: 600px;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .large-logo { 
+        width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; 
+    }
 
-        /* HERO SECTION */
-        .hero {
-            margin-top: 120px;
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-        }
-        .large-logo { 
-            width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; 
-        }
+    /* NEWS SECTION */
+    .news-container {
+        width: 100%;
+        max-width: 900px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+    .news-card {
+        background: var(--card-bg);
+        border: 2px solid var(--accent);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(112, 196, 247, 0.1);
+    }
+    .news-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .news-badge { background: #ff4757; color: white; font-size: 0.7rem; padding: 3px 10px; border-radius: 10px; font-weight: bold; }
+    .news-date { font-size: 0.8rem; color: var(--desc-color); }
+    .news-title { margin: 0 0 8px 0; font-size: 1.1rem; color: var(--link-color); }
+    .news-text { margin: 0; font-size: 0.9rem; color: var(--text-color); line-height: 1.4; }
 
-        /* GAME GRID */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    /* SECTIONS */
+    section {
+        width: 100%;
+        max-width: 900px;
+        margin-top: 50px;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
 
-        /* GAME CARD */
-        .game-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 20px;
-            text-align: left;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
+    /* GAME GRID */
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        width: 100%;
+        padding: 20px 0;
+    }
 
-        .game-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 20px rgba(112, 196, 247, 0.15);
-        }
+    /* GAME CARD */
+    .game-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        padding: 20px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
 
-        .game-title {
-            font-size: 1.2rem;
-            color: var(--link-color);
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .game-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+        box-shadow: 0 10px 20px rgba(112, 196, 247, 0.15);
+    }
 
-        .game-desc {
-            color: var(--desc-color);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            flex-grow: 1;
-            margin-bottom: 15px;
-        }
+    .game-title {
+        font-size: 1.2rem;
+        color: var(--link-color);
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .play-btn {
-            background: var(--accent);
-            color: white;
-            padding: 8px;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
+    .game-desc {
+        color: var(--desc-color);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        flex-grow: 1;
+        margin-bottom: 15px;
+        display: block !important; /* Wichtig, damit Beschreibung am Handy bleibt */
+    }
 
-        /* Das schwebende Coin-Fenster */
-.coin-status {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--card-bg);
-    border: 2px solid var(--accent);
-    padding: 10px 20px;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
+    .play-btn {
+        background: var(--accent);
+        color: white;
+        padding: 8px;
+        border-radius: 20px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
 
-.coin-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-}
+    /* COIN & CHAT & LEADERBOARD */
+    .coin-status {
+        position: fixed; bottom: 20px; right: 20px;
+        background: var(--card-bg); border: 2px solid var(--accent);
+        padding: 10px 20px; border-radius: 50px;
+        display: flex; align-items: center; gap: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000;
+    }
+    .coin-icon { width: 24px; height: 24px; }
+    .coin-amount { font-weight: bold; color: var(--text-color); }
 
-.coin-amount {
-    font-weight: bold;
-    color: var(--text-color);
-}
+    .msg-bubble {
+        background: var(--nav-bg); padding: 10px 15px; border-radius: 15px;
+        font-size: 0.9rem; border: 1px solid var(--card-border);
+        align-self: flex-start; max-width: 85%; word-break: break-word;
+        animation: fadeInSlide 0.3s ease-out forwards;
+    }
+    .msg-bubble.own-msg { align-self: flex-end; background: var(--accent); color: white; border: none; }
 
-/* Effekt wenn man in das Textfeld klickt */
-#chat-input {
-    transition: all 0.3s ease; /* Macht den Übergang weich */
-    border: 1px solid var(--card-border);
-}
+    .leaderboard-card {
+        background: var(--card-bg); border: 2px solid var(--accent);
+        border-radius: 18px; padding: 20px; width: 100%; box-sizing: border-box;
+    }
+    .leader-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--card-border); }
+    .leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
+    .leader-coins { font-weight: bold; color: #FFD700; }
 
-#chat-input:focus {
-    outline: none; /* Entfernt den Standard-Browser-Rahmen */
-    border-color: var(--accent); /* Färbt den Rand blau */
-    box-shadow: 0 0 8px rgba(112, 196, 247, 0.4); /* Sanfter Leuchteffekt */
-    background-color: var(--card-bg); /* Leichtes Hervorheben */
-}
+    @keyframes fadeInSlide {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-/* Standard für alle Nachrichten (links) */
-.msg-bubble {
-    background: var(--nav-bg);
-    padding: 10px 15px;
-    border-radius: 15px;
-    font-size: 0.9rem;
-    border: 1px solid var(--card-border);
-    align-self: flex-start;
-    maxWidth: 85%;
-    word-break: break-word;
-}
-
-/* Speziell für deine eigenen Nachrichten (rechts & blau) */
-.msg-bubble.own-msg {
-    align-self: flex-end; /* Nach rechts schieben */
-    background: var(--accent); /* Glaggle-Blau */
-    color: white; /* Weißer Text für bessere Lesbarkeit */
-    border: none;
-}
-
-/* Farbe des Namens in eigenen Nachrichten anpassen */
-.msg-bubble.own-msg b {
-    color: white !important;
-}
-
-/* Animation für Nachrichten */
-@keyframes fadeInSlide {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.msg-bubble {
-    animation: fadeInSlide 0.3s ease-out forwards;
-    /* ... restliche Styles bleiben ... */
-}
-
-/* Leaderboard Styles */
-.leaderboard-card {
-    background: var(--card-bg);
-    border: 2px solid var(--accent);
-    border-radius: 18px;
-    padding: 20px;
-    margin-top: 20px;
-    width: 100%;
-    max-width: 900px;
-    box-sizing: border-box;
-}
-
-.leader-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--card-border);
-}
-
-.leader-row:last-child { border-bottom: none; }
-.leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
-.leader-name { flex-grow: 1; }
-.leader-coins { font-weight: bold; color: #FFD700; }
-
-/* NEWS SECTION STYLES */
-.news-container {
-    width: 100%;
-    max-width: 900px;
-    padding: 0 20px;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-}
-
-.news-card {
-    background: var(--card-bg);
-    border: 2px solid var(--accent);
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(112, 196, 247, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.news-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.news-badge {
-    background: #ff4757;
-    color: white;
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-.news-date {
-    font-size: 0.8rem;
-    color: var(--desc-color);
-}
-
-.news-title {
-    margin: 0 0 8px 0;
-    font-size: 1.1rem;
-    color: var(--link-color);
-}
-
-.news-text {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-color);
-    line-height: 1.4;
-}
-
-/* Kleiner Hover-Effekt für die News */
-.news-card:hover {
-    box-shadow: 0 6px 20px rgba(112, 196, 247, 0.2);
-}
-
-/* GAME GRID - Jetzt flexibel für Handy */
-.game-grid {
-    display: grid;
-    /* Erlaubt dem Browser, so viele Spalten wie möglich zu erstellen, 
-       mindestens aber 140px (für Handy) statt 280px */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-    gap: 15px;
-    width: 100%;
-    max-width: 900px;
-    padding: 15px;
-    box-sizing: border-box;
-}
-
-/* GAME CARD - Schriftgrößen für Handy optimieren */
-.game-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 18px;
-    padding: 15px; /* Etwas weniger Padding auf dem Handy */
-    text-align: left;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-}
-
-.game-title {
-    font-size: 1rem; /* Kleiner für Handy-Bildschirme */
-    color: var(--link-color);
-    margin: 5px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.game-desc {
-    display: none; /* OPTIONAL: Beschreibungen auf dem Handy ausblenden für mehr Platz */
-}
-
-/* Auf großen Bildschirmen Beschreibungen wieder anzeigen */
-@media (min-width: 600px) {
-    .game-desc { display: block; font-size: 0.9rem; }
-    .game-title { font-size: 1.2rem; }
-    .game-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-}
-
-/* NAVBAR - Padding für Handy verringern */
-.navbar {
-    padding: 0 15px;
-}
-    </style>
+    /* RESPONSIVE FIX FÜR HANDY */
+    @media (max-width: 600px) {
+        .navbar { padding: 0 20px; }
+        .hero { margin-top: 100px; }
+        .game-grid { grid-template-columns: 1fr; }
+        .game-card { padding: 15px; }
+        .game-title { font-size: 1.1rem; }
+    }
+</style>
 </head>
 <body>
 
@@ -367,39 +224,6 @@
         </p>
     </div>
 </div>
-
-<style>
-    /* Das sorgt dafür, dass die Sektionen auf dem Handy nicht gequetscht werden */
-    section {
-        width: 100%;
-        max-width: 900px;
-        margin-top: 50px;
-        padding: 0 20px;
-        box-sizing: border-box;
-    }
-
-    /* Das Game-Grid: Auf dem Laptop 2-3 Spalten, auf dem Handy 1 Spalte */
-    .game-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        width: 100%;
-        padding: 20px 0; /* Padding oben/unten statt links/rechts */
-    }
-
-    /* Media Query: Wenn das Display schmaler als 600px ist (Handy) */
-    @media (max-width: 600px) {
-        .game-grid {
-            grid-template-columns: 1fr; /* Nur eine Karte pro Zeile */
-        }
-        .hero {
-            margin-top: 100px;
-        }
-        .navbar {
-            padding: 0 20px;
-        }
-    }
-</style>
 
 <section>
     <div style="text-align: center; margin-bottom: 25px;">
