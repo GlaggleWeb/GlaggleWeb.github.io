@@ -284,6 +284,59 @@
 .news-card:hover {
     box-shadow: 0 6px 20px rgba(112, 196, 247, 0.2);
 }
+
+/* GAME GRID - Jetzt flexibel für Handy */
+.game-grid {
+    display: grid;
+    /* Erlaubt dem Browser, so viele Spalten wie möglich zu erstellen, 
+       mindestens aber 140px (für Handy) statt 280px */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 15px;
+    width: 100%;
+    max-width: 900px;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+/* GAME CARD - Schriftgrößen für Handy optimieren */
+.game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 15px; /* Etwas weniger Padding auf dem Handy */
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.game-title {
+    font-size: 1rem; /* Kleiner für Handy-Bildschirme */
+    color: var(--link-color);
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-desc {
+    display: none; /* OPTIONAL: Beschreibungen auf dem Handy ausblenden für mehr Platz */
+}
+
+/* Auf großen Bildschirmen Beschreibungen wieder anzeigen */
+@media (min-width: 600px) {
+    .game-desc { display: block; font-size: 0.9rem; }
+    .game-title { font-size: 1.2rem; }
+    .game-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+
+/* NAVBAR - Padding für Handy verringern */
+.navbar {
+    padding: 0 15px;
+}
     </style>
 </head>
 <body>
