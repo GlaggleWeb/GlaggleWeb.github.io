@@ -173,14 +173,50 @@
     }
     .msg-bubble.own-msg { align-self: flex-end; background: var(--accent); color: white; border: none; }
 
-    .leaderboard-card {
-        background: var(--card-bg); border: 2px solid var(--accent);
-        border-radius: 18px; padding: 20px; width: 100%; box-sizing: border-box;
-    }
-    .leader-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--card-border); }
-    .leader-rank { font-weight: bold; color: var(--accent); width: 30px; }
-    .leader-coins { font-weight: bold; color: #FFD700; }
+    /* LEADERBOARD KORREKTUR: Namen linksbündig */
+.leaderboard-card {
+    background: var(--card-bg); 
+    border: 2px solid var(--accent);
+    border-radius: 18px; 
+    padding: 20px; 
+    width: 100%; 
+    box-sizing: border-box;
+}
 
+.leader-row { 
+    display: flex; 
+    align-items: center; /* Vertikal zentrieren */
+    padding: 10px 12px; 
+    border-bottom: 1px solid var(--card-border); 
+}
+
+.leader-rank { 
+    font-weight: bold; 
+    color: var(--accent); 
+    width: 45px; /* Fester Platz für #1, #2 etc. */
+    flex-shrink: 0;
+}
+
+/* Das ist die entscheidende Änderung für die Namen */
+.leader-name { 
+    flex-grow: 1; /* Nimmt den restlichen Platz ein und drückt die Coins nach rechts */
+    text-align: left; 
+    padding-left: 10px;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Falls ein Name zu lang ist */
+}
+
+.leader-coins { 
+    font-weight: bold; 
+    color: #FFD700; 
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-left: 15px;
+}
     @keyframes fadeInSlide {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
