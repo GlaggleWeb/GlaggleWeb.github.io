@@ -546,31 +546,34 @@ syncAccountData();
 
 function renderMessage(user, text) {
     const msgDiv = document.createElement('div');
-    msgDiv.classList.add('msg-bubble'); // Standard-Klasse geben
+    msgDiv.classList.add('msg-bubble');
 
-    // Prüfen: Ist das MEINE Nachricht?
-    const isMe = (user === currentUserName || user === "Julian Gysin");
+    // VERBESSERTE PRÜFUNG: 
+    // Wir trimmen die Namen, um Leerzeichen-Fehler zu vermeiden
+    const isMe = (user.trim() === currentUserName.trim() || user === "Julian Gysin");
     
     if (isMe) {
-        msgDiv.classList.add('own-msg'); // Blaue Rechts-Klasse hinzufügen
+        msgDiv.classList.add('own-msg'); 
     }
 
     let userDisplay;
-    if (user === "Heißer Highscore-Held-697") {
+    // Spezialfall für dich als Developer
+    if (user === "Heißer Highscore-Held-697" || user === "Julian Gysin") {
         userDisplay = `<b style="color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
-        if (!isMe) { // Nur Gold-Rahmen, wenn es nicht mein eigenes Blau überschreibt
+        if (!isMe) { 
             msgDiv.style.border = "2px solid #FFD700";
         }
     } else {
-        // Wenn es meine eigene ist, ist das Fettgedruckte weiß (durch CSS), sonst Akzentfarbe
-        userDisplay = `<b style="color: var(--accent);">${user}:</b>`;
+        // KORREKTUR: Wenn es meine Nachricht ist, nutzen wir Weiß für den Namen, 
+        // damit man ihn auf dem blauen Hintergrund sieht.
+        const nameColor = isMe ? "#ffffff" : "var(--accent)";
+        userDisplay = `<b style="color: ${nameColor};">${user}:</b>`;
     }
 
     msgDiv.innerHTML = `${userDisplay} ${text}`;
     chatBox.appendChild(msgDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
-
    async function loadInitialMessages() {
     const { data, error } = await supabaseClient
         .from('messages')
