@@ -633,8 +633,8 @@ const toggleBtn = document.getElementById('toggle-leaderboard');
 async function updateLeaderboard() {
     const selectedGame = gameSelector.value;
     let scoreToSend = 0;
+    let prestigeToSend = parseInt(localStorage.getItem('glaggle_prestige')) || 0; // NEU: Prestige laden
 
-    // 1. Richtigen Score aus dem LocalStorage holen
     if (selectedGame === 'global') {
         scoreToSend = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     } else {
@@ -642,19 +642,19 @@ async function updateLeaderboard() {
         scoreToSend = parseInt(localStorage.getItem(storageKey)) || 0;
     }
 
-    // 2. Score an Supabase senden (Upsert)
-    // Wir senden nur, wenn der Score > 0 ist, um die Liste sauber zu halten
-    if (scoreToSend > 0) {
+    if (scoreToSend > 0 || prestigeToSend > 0) {
         try {
             await supabaseClient
                 .from('leaderboard')
                 .upsert({ 
                     username: currentUserName, 
                     coins: scoreToSend, 
-                    game_name: selectedGame 
+                    game_name: selectedGame,
+                    prestige: prestigeToSend // NEU: Dieses Feld muss in deiner Tabelle existieren
                 }, { onConflict: 'username, game_name' });
         } catch (e) { console.error("Update Fehler:", e); }
     }
+    // ... restlicher Code
 
     // 3. Daten abrufen
     const { data, error } = await supabaseClient
@@ -700,17 +700,22 @@ async function updateLeaderboard() {
             const rankIcons = ['🥇', '🥈', '🥉'];
             const rankDisplay = index < 3 ? rankIcons[index] : `#${rank}`;
             const unit = selectedGame === 'global' ? '' : ' Pkt.';
+// Innerhalb von data.forEach((entry, index) => { ...
 
-            row.innerHTML = `
-                <span class="leader-rank">${rankDisplay}</span>
-                <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
-                    ${isMe ? '⭐ ' : ''}${entry.username}
-                </span>
-                <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
-                    <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;"> 
-                    ${entry.coins.toLocaleString()}${unit}
-                </span>
-            `;
+const prestigeDisplay = entry.prestige > 0 
+    ? `<span style="font-size: 0.7rem; background: linear-gradient(45deg, #ff9a9e, #fad0c4, #a1c4fd); color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 5px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">🌈 P:${entry.prestige}</span>` 
+    : '';
+
+row.innerHTML = `
+    <span class="leader-rank">${rankDisplay}</span>
+    <span class="leader-name" style="${isMe ? 'font-weight: bold;' : ''}">
+        ${isMe ? '⭐ ' : ''}${entry.username} ${prestigeDisplay}
+    </span>
+    <span class="leader-coins" style="display: flex; align-items: center; gap: 5px;">
+        <img src="coin.png" style="width: 16px; height: 16px; object-fit: contain;">  
+        ${entry.coins.toLocaleString()}${unit}
+    </span>
+`;
             list.appendChild(row);
         });
 
