@@ -1418,14 +1418,25 @@ function gainXP(amount) {
   
   state.xp += xpGain;
   
+  // Die Schleife läuft, solange genug XP für das nächste Level vorhanden sind
   while (state.xp >= state.xpToNext) {
     state.xp -= state.xpToNext;
     state.level++;
     state.xpToNext = Math.round(state.xpToNext * 1.5);
-    addLog(`⭐ Level ${state.level} erreicht!`);
+    
+    // --- NEU: Belohnung pro Level-Up ---
+    if (typeof glaggleCoins !== 'undefined') {
+      glaggleCoins += 1;
+      addLog(`⭐ Level ${state.level} erreicht! +1 Glaggle Coin erhalten!`);
+    } else {
+      addLog(`⭐ Level ${state.level} erreicht!`);
+    }
+    // ----------------------------------
+
     if (typeof levelUpFlash === 'function') levelUpFlash();
   }
-} // <--- Diese Klammer schließt "gainXP" korrekt ab!
+  updateUI(); // UI aktualisieren, um XP-Balken und Level zu zeigen
+}
 
 function startHappyHourTimer() {
   setInterval(() => {
