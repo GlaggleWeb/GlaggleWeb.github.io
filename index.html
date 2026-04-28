@@ -661,6 +661,27 @@ html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+#captcha-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Dunkler Hintergrund */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.captcha-box {
+    background: #222;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 </style>
 </head>
 <body>
@@ -681,6 +702,16 @@ html {
         </div>
     </div>
 </nav>
+
+<div id="captcha-overlay">
+    <div class="captcha-box">
+        <h2>Sicherheitscheck</h2>
+        <p>Bitte bestätige, dass du ein Mensch bist, um fortzufahren.</p>
+        
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAADFG5qzoXmw9bBzE" data-callback="onSuccess"></div>
+    </div>
+</div>
 
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
@@ -1779,6 +1810,17 @@ async function registerClick(id) {
     } catch (err) {
         console.error("Tracking Fehler:", err);
     }
+}
+
+function onSuccess(token) {
+    // 1. Pop-up ausblenden
+    document.getElementById('captcha-overlay').style.display = 'none';
+    
+    // 2. Website-Inhalt anzeigen
+    document.getElementById('main-content').style.display = 'block';
+    
+    // Optional: Token an deinen Server senden, falls du eine echte Prüfung willst
+    console.log("Erfolgreich verifiziert!");
 }
 </script>
 
