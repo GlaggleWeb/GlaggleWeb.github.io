@@ -660,12 +660,13 @@ async function updateLeaderboard() {
     // ... restlicher Code
 
     // 3. Daten abrufen
-    const { data, error } = await supabaseClient
-        .from('leaderboard')
-        .select('*')
-        .eq('game_name', selectedGame)
-        .order('coins', { ascending: false })
-        .limit(50);
+   // Suche diesen Teil in deiner updateLeaderboard Funktion:
+const { data, error } = await supabaseClient
+    .from('leaderboard')
+    .select('username, coins, game_name, prestige') // Nenne das Feld hier explizit!
+    .eq('game_name', selectedGame)
+    .order('coins', { ascending: false })
+    .limit(50);
 
     if (data) {
         const list = document.getElementById('leaderboard-list');
