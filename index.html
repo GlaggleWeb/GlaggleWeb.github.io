@@ -705,7 +705,7 @@ html {
 
 <div id="captcha-overlay">
     <div class="captcha-box">
-        <h2>Sicherheitscheck</h2>
+        <h2>Glaggle Safe Security</h2>
         <p>Bitte bestätige, dass du ein Mensch bist, um fortzufahren.</p>
         
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -1812,15 +1812,23 @@ async function registerClick(id) {
     }
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    // Prüfen, ob der Nutzer den Check in dieser Session schon bestanden hat
+    if (sessionStorage.getItem("captchaDone") === "true") {
+        hideCaptcha();
+    }
+});
+
 function onSuccess(token) {
-    // 1. Pop-up ausblenden
+    // Erfolg im SessionStorage speichern
+    sessionStorage.setItem("captchaDone", "true");
+    hideCaptcha();
+}
+
+function hideCaptcha() {
+    // Pop-up weg, Inhalt her
     document.getElementById('captcha-overlay').style.display = 'none';
-    
-    // 2. Website-Inhalt anzeigen
     document.getElementById('main-content').style.display = 'block';
-    
-    // Optional: Token an deinen Server senden, falls du eine echte Prüfung willst
-    console.log("Erfolgreich verifiziert!");
 }
 </script>
 
