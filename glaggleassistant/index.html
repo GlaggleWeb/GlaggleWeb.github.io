@@ -2,75 +2,164 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Glaggle Debugger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Assistant Pro</title>
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
-        #log { border: 1px solid #0f0; padding: 10px; height: 300px; overflow-y: scroll; background: #050505; }
-        .error { color: #ff5555; font-weight: bold; }
-        button { background: #0f0; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        :root { --accent: #00f2ff; }
+        body { background: #050505; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .orb-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        .orb { width: 100px; height: 100px; background: var(--accent); border-radius: 50%; filter: blur(10px); box-shadow: 0 0 40px var(--accent); transition: all 0.3s; }
+        .active .orb { animation: pulse 0.8s infinite alternate; filter: blur(15px); width: 120px; height: 120px; }
+        @keyframes pulse { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+        #status { margin-top: 20px; color: #888; font-family: monospace; text-align: center; max-width: 80%; }
+        button { background: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-top: 20px; transition: 0.2s; }
+        button:hover { transform: scale(1.05); background: var(--accent); }
+        button:disabled { background: #333; color: #666; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <h1>Glaggle Live Debugger</h1>
-    <button id="start-btn">Verbindung testen</button>
-    <p>Status: <span id="status">Bereit</span></p>
-    <div id="log">--- System Log ---<br></div>
+
+    <div class="orb-wrapper" id="orb-container">
+        <div class="orb"></div>
+    </div>
+    <h1 style="letter-spacing: 5px; margin: 10px 0;">GLAGGLE</h1>
+    <button id="start-btn">VERBINDEN</button>
+    <div id="status">Bereit zum Starten...</div>
 
 <script>
-    const logDiv = document.getElementById('log');
-    const statusTxt = document.getElementById('status');
+    /**
+     * GLAGGLE ASSISTANT - 2026 LIVE VERSION
+     */
+    
+    // --- SETUP ---
+    const API_KEY = "AIzaSyB-TLwaR7NocHcvnSCzcBCiF46VSaIEQXY"; 
+    const MODEL = "models/gemini-2.0-flash"; // Stabilste Version für Live
+    const URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.MultimodalLive?key=${API_KEY}`;
+
     const btn = document.getElementById('start-btn');
+    const status = document.getElementById('status');
+    const orbContainer = document.getElementById('orb-container');
 
-    function writeLog(msg, isError = false) {
-        const span = document.createElement('span');
-        if (isError) span.className = 'error';
-        span.innerHTML = `> ${msg}<br>`;
-        logDiv.appendChild(span);
-        logDiv.scrollTop = logDiv.scrollHeight;
-    }
+    let ws;
+    let audioCtx;
+    let stream;
+    let processor;
 
-    btn.onclick = () => {
-        // HIER DEINEN NEUEN KEY EINSETZEN (Sicherheit!)
-        const API_KEY = "AIzaSyB-TLwaR7NocHcvnSCzcBCiF46VSaIEQXY"; 
-        const MODEL = "gemini-2.0-flash-exp"; 
-        const URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.MultimodalLive?key=${API_KEY}`;
+    btn.onclick = async () => {
+        if (API_KEY === "DEIN_NEUER_API_KEY_HIER") {
+            alert("Bitte füge zuerst deinen API-Key in den Code ein!");
+            return;
+        }
 
-        writeLog("Starte Verbindung zu Google...");
-        const ws = new WebSocket(URL);
+        try {
+            status.innerText = "Frage Mikrofon-Zugriff an...";
+            stream = await navigator.mediaDevices.getUserMedia({ audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                channelCount: 1,
+                sampleRate: 16000
+            }});
 
-        ws.onopen = () => {
-            writeLog("WebSocket offen! Sende Setup-Frame...");
-            statusTxt.innerText = "Verbunden";
+            status.innerText = "Verbinde zu Google AI...";
+            btn.disabled = true;
             
-            const setup = {
-                setup: {
-                    model: `models/${MODEL}`,
-                    generation_config: { response_modalities: ["AUDIO"] }
+            ws = new WebSocket(URL);
+
+            ws.onopen = () => {
+                status.innerText = "Setup-Handshake...";
+                // Der erste Frame MUSS das Setup sein
+                const setupFrame = {
+                    setup: {
+                        model: MODEL,
+                        generation_config: { 
+                            response_modalities: ["AUDIO"],
+                            speech_config: { voice_config: { prebuilt_voice_config: { voice_name: "Aoede" } } } 
+                        },
+                        system_instruction: { parts: [{ text: "Du bist Glaggle, ein lustiger KI-Assistent. Antworte kurz, hilfreich und freundlich." }] }
+                    }
+                };
+                ws.send(JSON.stringify(setupFrame));
+                
+                orbContainer.classList.add('active');
+                status.innerText = "GLAGGLE IST LIVE! Sprich jetzt.";
+                startAudioStreaming();
+            };
+
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Audio-Antwort vom Modell verarbeiten
+                if (data.serverContent?.modelTurn?.parts) {
+                    const audioPart = data.serverContent.modelTurn.parts.find(p => p.inlineData);
+                    if (audioPart) {
+                        playRawAudio(audioPart.inlineData.data);
+                    }
+                }
+
+                // Fehler direkt von Google anzeigen
+                if (data.error) {
+                    status.innerHTML = `<span style="color:red">Fehler: ${data.error.message}</span>`;
+                    console.error("Google Error:", data.error);
                 }
             };
-            ws.send(JSON.stringify(setup));
-        };
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            writeLog("Nachricht erhalten: " + JSON.stringify(data));
-            
-            // Falls der Server einen Fehler im JSON schickt
-            if (data.error) {
-                writeLog("GOOGLE FEHLER: " + data.error.message, true);
+            ws.onerror = () => {
+                status.innerHTML = "<span style='color:red'>Handshake fehlgeschlagen.<br>Checke API Key oder Region (VPN?).</span>";
+            };
+
+            ws.onclose = (e) => {
+                status.innerText = `Verbindung getrennt (Code ${e.code})`;
+                orbContainer.classList.remove('active');
+                btn.disabled = false;
+            };
+
+        } catch (err) {
+            status.innerText = "Mikrofon-Fehler: " + err.message;
+            btn.disabled = false;
+        }
+    };
+
+    function startAudioStreaming() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        const source = audioCtx.createMediaStreamSource(stream);
+        processor = audioCtx.createScriptProcessor(4096, 1, 1);
+
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+
+        processor.onaudioprocess = (e) => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const pcmFloat = e.inputBuffer.getChannelData(0);
+                const pcm16 = new Int16Array(pcmFloat.length);
+                for (let i = 0; i < pcmFloat.length; i++) {
+                    pcm16[i] = pcmFloat[i] * 0x7FFF; // Float32 zu PCM16
+                }
+                
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(pcm16.buffer)));
+                ws.send(JSON.stringify({
+                    realtime_input: {
+                        media_chunks: [{ mime_type: "audio/pcm;rate=16000", data: base64 }]
+                    }
+                }));
             }
         };
+    }
 
-        ws.onerror = (e) => {
-            writeLog("KRITISCH: WebSocket-Handshake fehlgeschlagen.", true);
-            writeLog("Checke: 1. API Key gültig? 2. Modellname korrekt? 3. HTTPS genutzt?", true);
-        };
-
-        ws.onclose = (e) => {
-            writeLog(`Verbindung geschlossen (Code: ${e.code}, Grund: ${e.reason || "Unbekannt"})`);
-            statusTxt.innerText = "Getrennt";
-        };
-    };
+    async function playRawAudio(base64) {
+        // PCM Daten abspielen
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        
+        // Wir nutzen hier einen AudioWorklet oder eine einfache Buffer-Queue für flüssigen Sound
+        // Für diesen Code nutzen wir die simple decode-Variante:
+        audioCtx.decodeAudioData(bytes.buffer).then(buffer => {
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }).catch(e => console.error("Audio Decode Error", e));
+    }
 </script>
 </body>
 </html>
