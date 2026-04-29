@@ -2,169 +2,75 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle Assistant - GitHub Edition</title>
+    <title>Glaggle Debugger</title>
     <style>
-        body {
-            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .orb {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            box-shadow: 0 0 50px rgba(0, 210, 255, 0.5);
-            margin-bottom: 30px;
-            transition: all 0.5s ease;
-        }
-        .active {
-            animation: pulse 1s infinite alternate;
-            box-shadow: 0 0 80px rgba(0, 210, 255, 0.8);
-        }
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
-        button {
-            background: #ffffff;
-            color: #0f0f1a;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #status {
-            margin-top: 20px;
-            color: #888;
-            font-size: 14px;
-        }
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        #log { border: 1px solid #0f0; padding: 10px; height: 300px; overflow-y: scroll; background: #050505; }
+        .error { color: #ff5555; font-weight: bold; }
+        button { background: #0f0; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <div class="orb" id="orb"></div>
-    <button id="start-btn">Glaggle aktivieren</button>
-    <div id="status">Warte auf Start...</div>
+    <h1>Glaggle Live Debugger</h1>
+    <button id="start-btn">Verbindung testen</button>
+    <p>Status: <span id="status">Bereit</span></p>
+    <div id="log">--- System Log ---<br></div>
 
 <script>
-    // --- KONFIGURATION ---
-    const API_KEY = "AIzaSyB-TLwaR7NocHcvnSCzcBCiF46VSaIEQXY"; // Dein Key
-    const MODEL_ID = "gemini-2.0-flash-exp"; // Versuche dieses stabile Modell
-    const WS_URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.MultimodalLive?key=${API_KEY}`;
-
+    const logDiv = document.getElementById('log');
+    const statusTxt = document.getElementById('status');
     const btn = document.getElementById('start-btn');
-    const status = document.getElementById('status');
-    const orb = document.getElementById('orb');
 
-    let ws;
-    let audioCtx;
-    let stream;
+    function writeLog(msg, isError = false) {
+        const span = document.createElement('span');
+        if (isError) span.className = 'error';
+        span.innerHTML = `> ${msg}<br>`;
+        logDiv.appendChild(span);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
 
-    btn.onclick = async () => {
-        status.innerText = "Verbinde...";
-        btn.disabled = true;
+    btn.onclick = () => {
+        // HIER DEINEN NEUEN KEY EINSETZEN (Sicherheit!)
+        const API_KEY = "AIzaSyB-TLwaR7NocHcvnSCzcBCiF46VSaIEQXY"; 
+        const MODEL = "gemini-2.0-flash-exp"; 
+        const URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.MultimodalLive?key=${API_KEY}`;
 
-        try {
-            // 1. Audio initialisieren
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        writeLog("Starte Verbindung zu Google...");
+        const ws = new WebSocket(URL);
+
+        ws.onopen = () => {
+            writeLog("WebSocket offen! Sende Setup-Frame...");
+            statusTxt.innerText = "Verbunden";
             
-            // 2. WebSocket starten
-            ws = new WebSocket(WS_URL);
-
-            ws.onopen = () => {
-                status.innerText = "Setup läuft...";
-                
-                // DER ENTSCHEIDENDE SCHRITT: Den Setup-Frame senden
-                const setup = {
-                    setup: {
-                        model: `models/${MODEL_ID}`,
-                        generation_config: { response_modalities: ["AUDIO"] }
-                    }
-                };
-                ws.send(JSON.stringify(setup));
-                
-                orb.classList.add('active');
-                status.innerText = "Glaggle hört zu!";
-                startMicStreaming();
-            };
-
-            ws.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-                
-                // Falls Audio vom Modell kommt
-                if (data.serverContent?.modelTurn?.parts) {
-                    const audioPart = data.serverContent.modelTurn.parts.find(p => p.inlineData);
-                    if (audioPart) {
-                        playRawAudio(audioPart.inlineData.data);
-                    }
+            const setup = {
+                setup: {
+                    model: `models/${MODEL}`,
+                    generation_config: { response_modalities: ["AUDIO"] }
                 }
             };
+            ws.send(JSON.stringify(setup));
+        };
 
-            ws.onerror = (e) => {
-                console.error("WS Fehler:", e);
-                status.innerText = "Server lehnte Verbindung ab (Bad Response).";
-            };
-
-            ws.onclose = () => {
-                status.innerText = "Verbindung beendet.";
-                orb.classList.remove('active');
-            };
-
-        } catch (err) {
-            status.innerText = "Fehler: " + err.message;
-            btn.disabled = false;
-        }
-    };
-
-    function startMicStreaming() {
-        const source = audioCtx.createMediaStreamSource(stream);
-        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-
-        source.connect(processor);
-        processor.connect(audioCtx.destination);
-
-        processor.onaudioprocess = (e) => {
-            if (ws.readyState === WebSocket.OPEN) {
-                const pcmFloat = e.inputBuffer.getChannelData(0);
-                const pcm16 = new Int16Array(pcmFloat.length);
-                for (let i = 0; i < pcmFloat.length; i++) {
-                    pcm16[i] = pcmFloat[i] * 0x7FFF;
-                }
-                
-                const base64 = btoa(String.fromCharCode(...new Uint8Array(pcm16.buffer)));
-                ws.send(JSON.stringify({
-                    realtime_input: {
-                        media_chunks: [{ mime_type: "audio/pcm;rate=16000", data: base64 }]
-                    }
-                }));
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            writeLog("Nachricht erhalten: " + JSON.stringify(data));
+            
+            // Falls der Server einen Fehler im JSON schickt
+            if (data.error) {
+                writeLog("GOOGLE FEHLER: " + data.error.message, true);
             }
         };
-    }
 
-    async function playRawAudio(base64) {
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        
-        const audioBuffer = await audioCtx.decodeAudioData(bytes.buffer).catch(() => null);
-        if (audioBuffer) {
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioCtx.destination);
-            source.start();
-        }
-    }
+        ws.onerror = (e) => {
+            writeLog("KRITISCH: WebSocket-Handshake fehlgeschlagen.", true);
+            writeLog("Checke: 1. API Key gültig? 2. Modellname korrekt? 3. HTTPS genutzt?", true);
+        };
+
+        ws.onclose = (e) => {
+            writeLog(`Verbindung geschlossen (Code: ${e.code}, Grund: ${e.reason || "Unbekannt"})`);
+            statusTxt.innerText = "Getrennt";
+        };
+    };
 </script>
 </body>
 </html>
