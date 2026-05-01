@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glaggle History Zeitmaschine</title>
     <style>
-        /* Design der Seite */
         body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             text-align: center; 
             background: #111; 
             color: white; 
@@ -35,7 +34,6 @@
         .info { font-weight: bold; color: #00ff00; font-size: 1.1rem; }
         .hash-info { font-size: 0.7rem; color: #666; font-family: monospace; margin-top: 5px; }
         
-        /* Das Fenster für die alten Versionen */
         iframe { 
             width: 95%; 
             height: 75vh; 
@@ -50,14 +48,13 @@
     <div class="controls">
         <h1>Glaggle History Explorer</h1>
         <input type="range" id="zeitRegler" min="0" max="104" value="104">
-        <div class="info"><span id="versionsNummer">Lade...</span></div>
+        <div class="info"><span id="versionsNummer">Wähle eine Version...</span></div>
         <div class="hash-info">Commit: <span id="hashAnzeige">-</span></div>
     </div>
 
     <iframe id="glaggleFrame" src="about:blank"></iframe>
 
     <script>
-        // Deine Liste der 105 Hashes
         const commits = [
             "123be55a0cfd161b047896ac992125b7dd24ead8",
             "de3bceeec4709e48c5c59c9be6fa2874fbab32b9",
@@ -167,40 +164,29 @@
             "4b4bc6257f8ec5d36eeae5de7451a6af39ec6cad"
         ];
 
-        // Deine GitHub Infos
         const GITHUB_USER = "GlaggleWeb";
         const GITHUB_REPO = "GlaggleWeb.github.io";
 
-        // HTML Elemente finden
         const regler = document.getElementById('zeitRegler');
         const frame = document.getElementById('glaggleFrame');
         const anzeige = document.getElementById('versionsNummer');
         const hashText = document.getElementById('hashAnzeige');
 
-        // Die Hauptfunktion zum Updaten
         function updateTimeline() {
             const index = regler.value;
             const currentHash = commits[index];
             
-            // Wir nutzen jsDelivr, um die "X-Frame-Options: deny" von GitHub zu umgehen!
-            // Wir nutzen "combine", das erzwingt oft die richtige Darstellung im Browser
-            const proxyUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${currentHash}/index.html`;
-
-// Falls das immer noch Text anzeigt, probiere diesen Link-Typ:
-// const proxyUrl = `https://githack.com/${GITHUB_USER}/${GITHUB_REPO}/${currentHash}/index.html`;
+            // GITHACK LÖSUNG: Wandelt GitHub-Rohdaten in funktionierendes HTML um
+            const proxyUrl = `https://raw.githack.com/${GITHUB_USER}/${GITHUB_REPO}/${currentHash}/index.html`;
             
-            // UI Texte aktualisieren
             anzeige.innerText = "Version #" + (parseInt(index) + 1);
             hashText.innerText = currentHash;
-            
-            // Iframe Quelle ändern
             frame.src = proxyUrl;
         }
 
-        // Event-Listener: Wenn der Regler bewegt wird
         regler.addEventListener('input', updateTimeline);
 
-        // Beim ersten Laden der Seite sofort ausführen
+        // Beim Start direkt die neueste Version laden
         window.addEventListener('load', updateTimeline);
     </script>
 </body>
