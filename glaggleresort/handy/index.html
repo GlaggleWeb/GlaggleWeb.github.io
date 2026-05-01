@@ -82,12 +82,10 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 .popup-btn.danger{background:linear-gradient(135deg,#ff4444,#cc2222)}
 .popup-btn.success{background:linear-gradient(135deg,var(--emerald),#00b859)}
 .popup-btn.secondary{background:rgba(46,148,209,0.15);border:1px solid var(--wave)}
-.popup-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(46,148,209,0.25);font-size:12px}
 .room-tooltip{position:fixed;background:rgba(13,51,80,0.85);border:1px solid var(--wave-light);border-radius:8px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;display:none;min-width:100px}
 .room-tooltip.show{display:block}
 .tooltip-name{font-weight:800;color:var(--wave-light);margin-bottom:2px}
 .tooltip-status{font-size:10px;color:rgba(232,244,253,0.7)}
-.tooltip-time{font-size:10px;color:var(--gold)}
 </style>
 </head>
 <body>
@@ -213,24 +211,52 @@ const GUESTS = [
 ];
 
 const UPGRADES = [
-  {id: 'coins1', cat: '💰', name: 'Coins +50%', icon: '💰', desc: '+50% Coins', cost: 60, mult: 1.5},
-  {id: 'coins2', cat: '💰', name: 'Coins +100%', icon: '💎', desc: '+100% Coins', cost: 200, mult: 2},
-  {id: 'speed1', cat: '⚡', name: 'Speed -25%', icon: '⚡', desc: '-25% Zeit', cost: 80, time: 0.75},
-  {id: 'speed2', cat: '⚡', name: 'Speed -40%', icon: '🚀', desc: '-40% Zeit', cost: 250, time: 0.6},
-  {id: 'spawn', cat: '⚡', name: 'Spawn +40%', icon: '📣', desc: '+40% Spawn', cost: 90, spawnUp: true},
-  {id: 'room1', cat: '🏗️', name: '2 Zimmer', icon: '🏗️', desc: '+2 Zimmer', cost: 100, rooms: 2},
-  {id: 'queue1', cat: '🏗️', name: 'Queue +3', icon: '📢', desc: '+3 Queue', cost: 120, queueUp: 3},
-  {id: 'vip', cat: '👑', name: 'VIP Bonus', icon: '👑', desc: '2x VIP', cost: 180, vipUp: true},
+  {id: 'coins1', cat: '💰', name: '+50% Coins', icon: '💰', desc: '+50%', cost: 60, mult: 1.5},
+  {id: 'coins2', cat: '💰', name: '+100% Coins', icon: '💎', desc: '+100%', cost: 200, mult: 2},
+  {id: 'coins3', cat: '💰', name: '+200% Coins', icon: '🌟', desc: '+200%', cost: 600, mult: 3},
+  {id: 'coins4', cat: '💰', name: '+400% Coins', icon: '🏆', desc: '+400%', cost: 2000, mult: 5},
+  {id: 'coins5', cat: '💰', name: '+800% Coins', icon: '⭐', desc: '+800%', cost: 6000, mult: 9},
+  {id: 'tipping', cat: '💰', name: 'Trinkgeld', icon: '🍾', desc: '+10-40%', cost: 150, tips: true},
+  {id: 'tipping2', cat: '💰', name: 'Luxus-Trinkgeld', icon: '🥂', desc: '+60%', cost: 500, tips2: true},
+  {id: 'happyhour', cat: '💰', name: 'Happy Hour', icon: '🎉', desc: '2x Coins', cost: 350, happyHour: true},
+  {id: 'lottery', cat: '💰', name: 'Lotterie', icon: '🎰', desc: '5% = 5x', cost: 800, lottery: true},
+  {id: 'refund', cat: '💰', name: 'Cashback', icon: '💸', desc: '20% Rabatt', cost: 400, cashback: true},
+  {id: 'speed1', cat: '⚡', name: 'Speed I', icon: '⚡', desc: '-25% Zeit', cost: 80, time: 0.75},
+  {id: 'speed2', cat: '⚡', name: 'Speed II', icon: '🚀', desc: '-40% Zeit', cost: 250, time: 0.6},
+  {id: 'speed3', cat: '⚡', name: 'Speed III', icon: '🛸', desc: '-55% Zeit', cost: 700, time: 0.45},
+  {id: 'speed4', cat: '⚡', name: 'Turbo', icon: '💨', desc: '-70% Zeit', cost: 2500, time: 0.3},
+  {id: 'spawn', cat: '⚡', name: 'Spawn PR', icon: '📣', desc: '+40%', cost: 90, spawnUp: true},
+  {id: 'spawn2', cat: '⚡', name: 'Viral', icon: '📱', desc: '+60%', cost: 300, spawn2: true},
+  {id: 'spawn3', cat: '⚡', name: 'Influencer', icon: '🌊', desc: '+75%', cost: 900, spawn3: true},
+  {id: 'room1', cat: '🏗️', name: '2 Zimmer', icon: '🏗️', desc: '+2', cost: 100, rooms: 2},
+  {id: 'room2', cat: '🏗️', name: '2 Zimmer II', icon: '🏰', desc: '+2', cost: 300, rooms: 2},
+  {id: 'queue1', cat: '🏗️', name: 'Queue +3', icon: '📢', desc: '+3', cost: 120, queueUp: 3},
+  {id: 'queue2', cat: '🏗️', name: 'Queue +5', icon: '🏟️', desc: '+5', cost: 400, queueUp: 5},
+  {id: 'queue3', cat: '🏗️', name: 'Queue +7', icon: '♾️', desc: '+7', cost: 1200, queueUp: 7},
+  {id: 'vip', cat: '👑', name: 'VIP-Lounge', icon: '👑', desc: '2x VIP', cost: 180, vipUp: true},
+  {id: 'vipBonus', cat: '👑', name: 'VIP-Bonus', icon: '💍', desc: '+50%', cost: 500, vipBonus: true},
+  {id: 'vipSpeed', cat: '👑', name: 'VIP-Express', icon: '🎩', desc: '-30%', cost: 700, vipSpeed: true},
+  {id: 'vipOnly', cat: '👑', name: 'Exklusiv', icon: '🦩', desc: '50% VIP', cost: 2000, vipOnly: true},
   {id: 'auto', cat: '🤖', name: 'Auto-Checkout', icon: '🤖', desc: 'Auto', cost: 400, auto: true},
-  {id: 'bonus1', cat: '🌊', name: 'Bonus +10%', icon: '🪸', desc: '+10%', cost: 250, flatBonus: 0.1},
-  {id: 'xp2', cat: '🌊', name: '2x XP', icon: '📚', desc: '2x XP', cost: 300, xpBoost: 2}
+  {id: 'autoAssign', cat: '🤖', name: 'Auto-Assign', icon: '🦾', desc: 'Auto', cost: 1000, autoAssign: true},
+  {id: 'autoAll', cat: '🤖', name: 'KI-Rezeption', icon: '🧠', desc: 'Voll', cost: 3000, autoAll: true},
+  {id: 'bonus1', cat: '🌊', name: 'Korallenriff', icon: '🪸', desc: '+10%', cost: 250, flatBonus: 0.1},
+  {id: 'bonus2', cat: '🌊', name: 'Perlenfund', icon: '🦪', desc: '+20%', cost: 800, flatBonus: 0.2},
+  {id: 'bonus3', cat: '🌊', name: 'Versunkenes', icon: '⚓', desc: '+40%', cost: 2500, flatBonus: 0.4},
+  {id: 'bonus4', cat: '🌊', name: 'Atlantis', icon: '🌀', desc: '+100%', cost: 8000, flatBonus: 1},
+  {id: 'xp2', cat: '🌊', name: '2x XP', icon: '📚', desc: '2x', cost: 300, xpBoost: 2},
+  {id: 'xp3', cat: '🌊', name: '3x XP', icon: '🎓', desc: '3x', cost: 1000, xpBoost: 3},
+  {id: 'streak', cat: '🌊', name: 'Streak', icon: '🔥', desc: 'Jeder 5.', cost: 600, streak: true},
+  {id: 'nightclub', cat: '🌊', name: 'Night-Club', icon: '🪩', desc: '2x Nachts', cost: 450, nightBonus: true},
+  {id: 'insurance', cat: '🌊', name: 'Versicherung', icon: '🛡️', desc: 'Min 0', cost: 200, insurance: true},
+  {id: 'prestige', cat: '🌊', name: 'PRESTIGE', icon: '🌈', desc: 'Reset', cost: 15000, prestige: true}
 ];
 
 let state = {
   coins: 0, earnings: 0, guests: 0, checkouts: 0, day: 1, level: 1, xp: 0, xpNext: 100,
   rooms: [], queue: [], selected: null, bought: {}, active: false,
   coinMult: 1, timeMult: 1, flatBonus: 1, maxQueue: 5, vipChance: 0.2,
-  autoCheckout: false, spawnBoost: 1, xpMult: 1
+  autoCheckout: false, autoAssign: false, autoAll: false, spawnBoost: 1, xpMult: 1, prestigeCount: 0
 };
 
 let renderer, scene, camera, raycaster, mouse, roomMeshes = [], hover = -1;
@@ -302,10 +328,11 @@ function buildRooms() {
   
   const cols = 4;
   const spacing = 2.8;
+  const rows = Math.ceil(state.rooms.length / cols);
   const startX = -(cols - 1) * spacing / 2;
-  const startZ = -(Math.ceil(state.rooms.length / cols) - 1) * spacing / 2;
+  const startZ = -(rows - 1) * spacing / 2;
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < state.rooms.length; i++) {
     const room = state.rooms[i];
     const col = i % cols;
     const row = Math.floor(i / cols);
@@ -365,6 +392,13 @@ function animate() {
       if (room.guest && room.endTime <= Date.now()) checkOut(i, true);
     });
   }
+  if (state.autoAssign && state.queue.length > 0) {
+    const free = state.rooms.findIndex(r => !r.guest && !r.locked);
+    if (free !== -1 && state.selected === null) {
+      state.selected = 0;
+      checkIn(free);
+    }
+  }
   renderer.render(scene, camera);
   updateUI();
 }
@@ -374,7 +408,7 @@ function gameStart() {
   document.getElementById('game-ui').style.display = 'flex';
   state.active = true;
   loadState();
-  state.rooms = Array(12).fill(null).map((_, i) => ({id: i, guest: null, endTime: null, locked: i >= 8}));
+  state.rooms = Array(Math.max(8, state.rooms.length || 8)).fill(null).map((_, i) => ({id: i, guest: null, endTime: null, locked: false}));
   initThree();
   spawnGuests();
 }
@@ -383,9 +417,11 @@ function spawnGuests() {
   if (!state.active) return;
   if (state.queue.length < state.maxQueue && Math.random() < 0.6) {
     const g = GUESTS[Math.floor(Math.random() * GUESTS.length)];
-    state.queue.push({...g, id: Math.random()});
+    const vip = Math.random() < state.vipChance;
+    state.queue.push({...g, id: Math.random(), vip: vip});
   }
-  setTimeout(spawnGuests, state.spawnBoost * 3000);
+  const delay = Math.max(500, 3000 * (0.6 ** state.spawnBoost));
+  setTimeout(spawnGuests, delay);
 }
 
 function selectGuest(i) {
@@ -415,6 +451,9 @@ function checkOut(roomId, auto = false) {
   if (!room.guest) return;
 
   let pay = room.guest.pay * state.coinMult * state.flatBonus;
+  if (Math.random() < 0.3 && state.tips) pay *= (1 + Math.random() * 0.4);
+  if (Math.random() < 0.05 && state.lottery) pay *= 5;
+  
   state.coins += Math.floor(pay);
   state.earnings += Math.floor(pay);
   state.checkouts++;
@@ -428,14 +467,14 @@ function checkOut(roomId, auto = false) {
   }
 
   if (!auto) {
-    showCheckout(room.guest.emoji, room.guest.name, Math.floor(pay));
+    showCheckout(room.guest.emoji, Math.floor(pay));
   }
 
   room.guest = null;
   room.endTime = null;
 }
 
-function showCheckout(emoji, name, pay) {
+function showCheckout(emoji, pay) {
   document.getElementById('pop-emoji').textContent = emoji;
   document.getElementById('pop-amount').textContent = '+' + pay + ' 🪙';
   document.getElementById('checkout-popup').classList.add('show');
@@ -454,13 +493,37 @@ function buyUpgrade(id) {
 
   if (upg.mult) state.coinMult *= upg.mult;
   if (upg.time) state.timeMult = upg.time;
-  if (upg.spawnUp) state.spawnBoost *= 0.6;
-  if (upg.rooms) state.rooms.concat(Array(upg.rooms).fill(null).map((_, i) => ({guest: null, locked: false})));
+  if (upg.spawnUp) state.spawnBoost = 1;
+  if (upg.spawn2) state.spawnBoost = 2;
+  if (upg.spawn3) state.spawnBoost = 3;
+  if (upg.rooms) {
+    state.rooms = [...state.rooms, ...Array(upg.rooms).fill({guest: null, locked: false})];
+    buildRooms();
+  }
   if (upg.queueUp) state.maxQueue += upg.queueUp;
   if (upg.vipUp) state.vipChance *= 2;
+  if (upg.vipBonus) state.coinMult *= 1.5;
+  if (upg.vipSpeed) state.timeMult *= 0.7;
+  if (upg.vipOnly) state.vipChance = 0.5;
   if (upg.auto) state.autoCheckout = true;
+  if (upg.autoAssign) state.autoAssign = true;
+  if (upg.autoAll) { state.autoCheckout = true; state.autoAssign = true; }
   if (upg.flatBonus) state.flatBonus += upg.flatBonus;
   if (upg.xpBoost) state.xpMult = upg.xpBoost;
+  if (upg.tips) state.tips = true;
+  if (upg.tips2) state.tips2 = true;
+  if (upg.happyHour) state.happyHour = true;
+  if (upg.lottery) state.lottery = true;
+  if (upg.cashback) state.cashback = true;
+  if (upg.streak) state.streak = true;
+  if (upg.nightBonus) state.nightBonus = true;
+  if (upg.insurance) state.insurance = true;
+  if (upg.prestige) {
+    state.prestigeCount++;
+    state.flatBonus *= 2;
+    resetGame(true);
+    return;
+  }
 
   saveState();
   updateUI();
@@ -512,16 +575,9 @@ function updateUI() {
   const occupied = state.rooms.filter(r => r.guest).length;
   document.getElementById('stat-level').textContent = state.level;
   document.getElementById('xp-bar').style.width = (state.xp / state.xpNext * 100) + '%';
-  document.getElementById('stat-occupied').textContent = occupied + '/' + 8;
+  document.getElementById('stat-occupied').textContent = occupied + '/' + state.rooms.length;
   document.getElementById('stat-earned').textContent = formatNum(state.earnings);
   document.getElementById('stat-multi').textContent = state.coinMult.toFixed(1) + 'x';
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.querySelectorAll('.tab-btn')[tab].classList.add('active');
 }
 
 function showSettings() {
@@ -542,8 +598,23 @@ function resetPopup() {
   document.getElementById('reset-popup').classList.add('show');
 }
 
-function resetGame() {
-  state = {coins: 0, earnings: 0, guests: 0, checkouts: 0, day: 1, level: 1, xp: 0, xpNext: 100, rooms: [], queue: [], selected: null, bought: {}, active: true, coinMult: 1, timeMult: 1, flatBonus: 1, maxQueue: 5, vipChance: 0.2, autoCheckout: false, spawnBoost: 1, xpMult: 1};
+function resetGame(prestige = false) {
+  if (!prestige) {
+    state.coins = 0;
+    state.earnings = 0;
+    state.guests = 0;
+    state.checkouts = 0;
+    state.day = 1;
+    state.level = 1;
+    state.xp = 0;
+    state.xpNext = 100;
+    state.bought = {};
+    state.coinMult = 1;
+    state.timeMult = 1;
+    state.maxQueue = 5;
+    state.autoCheckout = false;
+    state.autoAssign = false;
+  }
   closePopup('reset-popup');
   saveState();
   updateUI();
