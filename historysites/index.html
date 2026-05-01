@@ -183,7 +183,11 @@
             const currentHash = commits[index];
             
             // Wir nutzen jsDelivr, um die "X-Frame-Options: deny" von GitHub zu umgehen!
+            // Wir nutzen "combine", das erzwingt oft die richtige Darstellung im Browser
             const proxyUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${currentHash}/index.html`;
+
+// Falls das immer noch Text anzeigt, probiere diesen Link-Typ:
+// const proxyUrl = `https://githack.com/${GITHUB_USER}/${GITHUB_REPO}/${currentHash}/index.html`;
             
             // UI Texte aktualisieren
             anzeige.innerText = "Version #" + (parseInt(index) + 1);
