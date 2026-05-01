@@ -2,13 +2,47 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glaggle History Zeitmaschine</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #111; color: white; margin: 0; padding: 20px; }
-        .controls { background: #222; padding: 20px; border-radius: 10px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
-        input[type=range] { width: 80%; cursor: pointer; }
-        iframe { width: 95%; height: 75vh; border: 5px solid #444; border-radius: 10px; background: white; }
-        .info { margin-top: 10px; font-weight: bold; color: #00ff00; }
+        /* Design der Seite */
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            text-align: center; 
+            background: #111; 
+            color: white; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .controls { 
+            background: #222; 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            position: sticky; 
+            top: 10px; 
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+        h1 { margin: 0 0 10px 0; color: #ffcc00; font-size: 1.4rem; }
+        input[type=range] { 
+            width: 85%; 
+            margin: 10px 0;
+            cursor: pointer;
+            accent-color: #ffcc00;
+        }
+        .info { font-weight: bold; color: #00ff00; font-size: 1.1rem; }
+        .hash-info { font-size: 0.7rem; color: #666; font-family: monospace; margin-top: 5px; }
+        
+        /* Das Fenster für die alten Versionen */
+        iframe { 
+            width: 95%; 
+            height: 75vh; 
+            border: 2px solid #444; 
+            border-radius: 8px; 
+            background: white; 
+        }
     </style>
 </head>
 <body>
@@ -16,14 +50,14 @@
     <div class="controls">
         <h1>Glaggle History Explorer</h1>
         <input type="range" id="zeitRegler" min="0" max="104" value="104">
-        <div class="info">Version: <span id="versionsNummer">Aktuell</span></div>
-        <div style="font-size: 0.8em; color: #888;">Hash: <span id="hashAnzeige">-</span></div>
+        <div class="info"><span id="versionsNummer">Lade...</span></div>
+        <div class="hash-info">Commit: <span id="hashAnzeige">-</span></div>
     </div>
 
-    <iframe id="glaggleFrame" src="index.html"></iframe>
+    <iframe id="glaggleFrame" src="about:blank"></iframe>
 
     <script>
-        // Deine kopierte Liste
+        // Deine Liste der 105 Hashes
         const commits = [
             "123be55a0cfd161b047896ac992125b7dd24ead8",
             "de3bceeec4709e48c5c59c9be6fa2874fbab32b9",
@@ -133,30 +167,37 @@
             "4b4bc6257f8ec5d36eeae5de7451a6af39ec6cad"
         ];
 
-        // KONFIGURATION: Ersetze das mit deinen Daten!
+        // Deine GitHub Infos
         const GITHUB_USER = "GlaggleWeb";
         const GITHUB_REPO = "GlaggleWeb.github.io";
 
+        // HTML Elemente finden
         const regler = document.getElementById('zeitRegler');
         const frame = document.getElementById('glaggleFrame');
         const anzeige = document.getElementById('versionsNummer');
         const hashText = document.getElementById('hashAnzeige');
-        const rawUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${hash}/index.html`;
 
-        regler.oninput = function() {
-            const index = this.value;
-            const hash = commits[index];
+        // Die Hauptfunktion zum Updaten
+        function updateTimeline() {
+            const index = regler.value;
+            const currentHash = commits[index];
             
-            // Die URL zur Raw-Datei bei GitHub
-            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${hash}/index.html`;
+            // Wir nutzen jsDelivr, um die "X-Frame-Options: deny" von GitHub zu umgehen!
+            const proxyUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${currentHash}/index.html`;
             
-            // Update UI
-            anzeige.innerText = "Commit #" + (parseInt(index) * 10); // Da jeder 10.
-            hashText.innerText = hash;
+            // UI Texte aktualisieren
+            anzeige.innerText = "Version #" + (parseInt(index) + 1);
+            hashText.innerText = currentHash;
             
-            // Lade die alte Version im Iframe
-            frame.src = rawUrl;
-        };
+            // Iframe Quelle ändern
+            frame.src = proxyUrl;
+        }
+
+        // Event-Listener: Wenn der Regler bewegt wird
+        regler.addEventListener('input', updateTimeline);
+
+        // Beim ersten Laden der Seite sofort ausführen
+        window.addEventListener('load', updateTimeline);
     </script>
 </body>
 </html>
