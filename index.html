@@ -1597,21 +1597,24 @@ window.addEventListener('load', function() {
         }, 2000); // Exakte Dauer deines GIFs in Millisekunden
     }
 });
+// DEINE SUCHE (Der "alte" Look mit Ranking-Logik)
 async function searchSupabase(query) {
     const resultsDiv = document.getElementById('glaggleResults');
-    const navWebBtn = document.getElementById('nav-web');
+    const navWebBtn = document.getElementById('nav-web'); 
     
     if (!resultsDiv || !query) return;
 
+    // 1. Verhindern, dass die Box bei Mehrfachsuche doppelt erscheint
     const oldWebBox = document.getElementById('glaggle-web-search-box');
     if (oldWebBox) oldWebBox.remove();
 
     try {
+        // Suche in Supabase mit Ranking (clicks absteigend)
         const { data, error } = await supabaseClient
             .from('search_index')
             .select('*')
             .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-            .order('clicks', { ascending: false }) // 1. Ranking aktivieren
+            .order('clicks', { ascending: false }) // Die meistgeklickten nach oben
             .limit(10);
 
         if (error) {
@@ -1619,18 +1622,21 @@ async function searchSupabase(query) {
             return;
         }
 
+        // Wenn nichts gefunden wurde
         if (!data || data.length === 0) {
             if (navWebBtn) navWebBtn.style.display = 'none';
             return;
         }
 
+        // Nav-Button einblenden
         if (navWebBtn) navWebBtn.style.display = 'block';
 
+        // 2. Container für WebSearch erstellen (Dein altes Design)
         const webBox = document.createElement('div');
-        webBox.id = 'glaggle-web-search-box';
+        webBox.id = 'glaggle-web-search-box'; 
         webBox.className = 'glaggle-entry fav-project';
         webBox.style.borderLeft = "5px solid #34A853"; 
-        webBox.style.scrollMarginTop = "100px";
+        webBox.style.scrollMarginTop = "100px"; 
         
         webBox.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
@@ -1640,6 +1646,7 @@ async function searchSupabase(query) {
             <div id="supabase-results-list"></div>
         `;
         
+        // 3. Positionierung (Vor den Bildern oder am Ende)
         const imgBox = document.getElementById('glaggle-image-container');
         if (imgBox) {
             imgBox.before(webBox);
@@ -1649,6 +1656,7 @@ async function searchSupabase(query) {
 
         const list = webBox.querySelector('#supabase-results-list');
 
+        // 4. Ergebnisse rendern
         data.forEach(res => {
             const item = document.createElement('div');
             item.className = 'supabase-result-item';
@@ -1661,7 +1669,7 @@ async function searchSupabase(query) {
                 domain = new URL(res.url).hostname.replace('www.', '');
             } catch(e) {}
 
-            // 2. onclick-Handler hinzufügen
+            // Hier bauen wir den Klick-Trigger ein: onclick="registerClick('${res.id}')"
             item.innerHTML = `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
                     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;" onerror="this.style.display='none'">
@@ -1671,7 +1679,7 @@ async function searchSupabase(query) {
                     ${res.title}
                 </a>
                 <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;">
-                    ${res.description || 'Ups! Unser Bot hat die Beschreibung leider nicht gefunden!'}
+                    ${res.description || 'Keine weitere Beschreibung verfügbar.'}
                 </p>
             `;
             list.appendChild(item);
@@ -1681,37 +1689,28 @@ async function searchSupabase(query) {
         console.error("Kritischer Supabase Fehler:", e);
     }
 }
-// NUR DIESER EINE BLOCK FÜR DEN BUTTON:
-window.addEventListener('DOMContentLoaded', () => {
-    // Wir suchen den Button (achte darauf, dass im HTML id="backToTopBtn" steht!)
-    const btn = document.getElementById('backToTopBtn');
 
-    if (btn) {
-        // 1. Klick-Logik
-        btn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+// Diese kleine Funktion muss zusätzlich irgendwo im Code stehen:
+async function registerClick(id) {
+    await supabaseClient.rpc('increment_clicks', { row_id: id });
+}
 
-        // 2. Sichtbarkeits-Logik beim Scrollen
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                // Wir nutzen beides: Klasse für CSS-Animationen und Display für Sicherheit
-                btn.classList.add('show');
-                btn.style.display = "block";
-            } else {
-                btn.classList.remove('show');
-                btn.style.display = "none";
-            }
-        });
-    } else {
-        console.warn("Glaggle Debug: Button mit ID 'backToTopBtn' nicht im HTML gefunden.");
+async function registerClick(id) {
+    try {
+        const rowId = parseInt(id);
+        // Ruft die SQL-Funktion in deinem Supabase-Backend auf
+        const { error } = await supabaseClient.rpc('increment_clicks', { row_id: rowId });
+        
+        if (error) {
+            console.error("RPC Fehler:", error.message);
+        } else {
+            console.log("Klick erfolgreich registriert für ID:", rowId);
+        }
+    } catch (err) {
+        console.error("Tracking fehlgeschlagen:", err);
     }
-});
-
-// 1. Die refreshObserver Funktion (Bleibt so, wie du sie hast)
+}
+    
 function refreshObserver() {
     const targets = [
         'ai-container', 
