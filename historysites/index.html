@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Glaggle History Zeitmaschine</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #111; color: white; margin: 0; padding: 20px; }
+        .controls { background: #222; padding: 20px; border-radius: 10px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
+        input[type=range] { width: 80%; cursor: pointer; }
+        iframe { width: 95%; height: 75vh; border: 5px solid #444; border-radius: 10px; background: white; }
+        .info { margin-top: 10px; font-weight: bold; color: #00ff00; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h1>Glaggle History Explorer</h1>
+        <input type="range" id="zeitRegler" min="0" max="104" value="104">
+        <div class="info">Version: <span id="versionsNummer">Aktuell</span></div>
+        <div style="font-size: 0.8em; color: #888;">Hash: <span id="hashAnzeige">-</span></div>
+    </div>
+
+    <iframe id="glaggleFrame" src="index.html"></iframe>
+
+    <script>
+        // Deine kopierte Liste
+        const commits = [
+            "123be55a0cfd161b047896ac992125b7dd24ead8",
+            "de3bceeec4709e48c5c59c9be6fa2874fbab32b9",
+            "b7fbe634d7c99acc87701a808ba97b76786c3e73",
+            "97373518c86ba40adb77106e5fa648d0bb045fc9",
+            "42d04318470c285e8fe4b6ca83df8daea0ac32b1",
+            "e24c2b610f569318768c9cd5a3f964f2d20982af",
+            "929776eb8940ae0154cf2d7b9cb54e723c0df99b",
+            "58afd3fa9ea051615d54fcbb9757488279b17ffd",
+            "4b8a70a95df4e1c7c77f54518eafeb3eb65287fd",
+            "fc18755dae18396bd9043710a4750b8d08ccf320",
+            "2f9d52792ba8ac7cd664affe0a5a18992f6f064a",
+            "baa0d4810a035613cf133f88da33357a598ad033",
+            "730b6fddf14851f8324430cc8a51e6d0efecb45c",
+            "a27adf6846f7365b5321a7db4724a5e386cff253",
+            "3c715cc9af725422d93d0a3819a4855c5e3f6ccd",
+            "2aad02831916b3054a3164d85acdf42f1e586e3f",
+            "d49b4d594a2cb75780d40001e4f197c085f2b8b2",
+            "c5a6c8ac12ddcfb71de21d1b73af75553a132d6c",
+            "07271fb244b823aa76573015364878bffa654f5f",
+            "cbaf92f1ca4da71c4983e199187c80f3fb09f91c",
+            "cf2400b890db75d01365e3186eef693c82618ef4",
+            "8f2ddf9875da813dd344742ef7f102fb80581f2e",
+            "4da0487de0d71b88a9853b2a21c645ee900a5f79",
+            "90055e6d427b5f3a192d0876cd2e870c4bc51829",
+            "f5677787f3811b1789d5f51a5fa533b5b6ae22ee",
+            "44459d21071f93a0c3541c216696676d60d3ed7b",
+            "8e85593aa83222b16dd907f51b27a9357a83f09c",
+            "17ce69e98694f5f6eb58f113b9062a4e0e57227d",
+            "36df81476c9c427bad60e2665e7069b67ebe7598",
+            "2771bfbe4e91809079e4764110e52d6a7e0fa4dd",
+            "3fd4d8ba5c0789d52638728818bf524270c9a308",
+            "ba241e582c61413fa96b339686ba1534876400c3",
+            "7af9c39dda201180609a1611aeee07d32835dd3e",
+            "b23e73ce7a4114ec43a14571c93905cba5443c71",
+            "4a6fa6379bfc9e5f3d8798517a1beb095a231bda",
+            "0a0a56e481af2cb2f9cf180f99859e008110e22b",
+            "5bc911f9f3b9da1f4a47357d50403086ed257a3c",
+            "4f666d340f2efc6e401e96aae7680acc1dd40f94",
+            "89826b4789067a0e12b88b7f44c41189a5de4b50",
+            "67be11effa7eda4f2b0f3499e4e67c7a8585c820",
+            "69d759794661e983bdc16341b100fa2cc3a3abd3",
+            "63989d8859fe17dc6c825366c377013e0d7fff48",
+            "2be26abd80fff2b2be04772993a94b7ee98d9058",
+            "4054c3319088bdbe647079be6bee0b0e3e2960d3",
+            "5e9f6f994c650e59359128a6274b70d4577d03db",
+            "eaab50c5beb41431195b854fa2c3cdf170f2b5d1",
+            "1edc558c604768caebe36c1135d0b36adfb67c5d",
+            "2b2548bbe9903c21d25602cfc06c844b7e6c9082",
+            "558c64d7c60516936c13166d29145e3bb756b737",
+            "328293f113d494763618e166364d45ae8dd4c734",
+            "7a0479b2863e024e3f17c70796b14986abc991ba",
+            "6572bd688a6f0a0799d3671b232b156f57a66bde",
+            "f48f021b5fc5ff515213e6477fac6073cf6fca5c",
+            "e9109bc4cfaa2c95ef304517a5a9bad5200d3149",
+            "3c0f95d714233ab33b17199c32471d5318242da1",
+            "4b57a04c9d47ff2ad61660a1d419f41c6abea5dc",
+            "8275a770768be2f8aa091f98f90e449901468950",
+            "06dddd5057a027084c9abbfa7ef05b4d87b02f70",
+            "1ae719f9ad5e24d3fabf45523147e1950333f6ae",
+            "71515ec131feff1f3425d62fbf413218512c41e3",
+            "8862780f74a918ed3d36fe85a0f7c84060cf2128",
+            "c48c09dfaf1d6e03c77787030113886f89189f63",
+            "35bc6110c31a64de286e537526e825c17e382bb3",
+            "060d477bad7267c6a3c5dc0b8e3c36d6c1c9cdaa",
+            "bf10be4b2e8cf7ccf2a2f724ae3c62b91128343c",
+            "c8f07ab16cb19bee3d57a69b166688a60e762168",
+            "e3fb335efcec88b45b944f9326fbc822fbc2d311",
+            "6a42b1700060171b84023b4de9ca60a00c249fbe",
+            "4c4a4965db1c1c8b86c1ec952de91f6384663e5c",
+            "9419d38b0158a42482b192c67d0da2f41a40fb80",
+            "157a1e9214aabd61c87b784e2bce88e7f77b47bc",
+            "f22a80753ec8e9b295f7d2ecc1bae39e8fef091b",
+            "1e95b27cd29f454dd6e5268cdfcc5ba98a07b516",
+            "9f9f5d054e63d21037ac83df307faa6e832477b9",
+            "2fdb8588b98fc4a749cf477babc9ee951a7e6570",
+            "a27855919d5234ff7027a52e8a0dd6bb98dee808",
+            "2dae8622e37ab205edfa2f5dee378366fe82c1d5",
+            "13a98100845a7da510fe10f65fb5922389503729",
+            "eef0eed8398a97a76de4ac800e89f1275fbc70da",
+            "465897e9d293252d4c0cd8bd0dc7c75a866901a3",
+            "460a6f5ecf290abd45084b822edaf77e07ab2d73",
+            "fb177e328d57b7290d13adc9daee81d9fff84555",
+            "b6c2c579a6a5feee459f8709c44588275b187953",
+            "b2c29a2dcc4eed8f8c902154ef7b5d281a2b660f",
+            "ec237c8f10e351d741a72fc44123a05d030d2b96",
+            "2375737ee3146a671ebe5e133503a7688b9226c5",
+            "5fb98479071e31bec327943cd04613e8ef0dd304",
+            "a011064ea6b85fdd1c9d71656d1d777e748ef1e9",
+            "2cb7d6dd48f1d0d2c7ceab027bf9d5d21999f52f",
+            "4d823e410d1ace8943502142f146ba1d7d310ba6",
+            "49e84f236b26e319eeec43a862bd34f17e893c9b",
+            "193c68f9caeb9b2898128d9c34d551604da41b23",
+            "e9a22a15c5c393bc71f2f1f3255df66744eee457",
+            "3634c69396fe310bb2e8bb227a06fe0c97f4ebfb",
+            "0fd2fd467ec0c1cfe7d41ddc367799daace34f29",
+            "ae3d182ebf52186b54102ea823c96fd8f062ac6e",
+            "1421a5b02bbb4eac75931d43f9839f3623e8c128",
+            "9c0b9edcc5cd26be429bad3a8d1d4bcd6f153fb0",
+            "3ac02c6550e60d8f7ed2cb1500d26e4bea2b151f",
+            "4362dfdd0f0cdf610b448e108f9a9f6f9c0152c2",
+            "97663e7a15a7d4469228c42aaee8bb368ee82bc8",
+            "0e0a2b07dcd512360850f487b20c736529aabb9e",
+            "1aa3db5c0ac217b101e189f81fab9b37495542d2",
+            "a37145f42d079ace49aa00f13617ad8cb660e6f2",
+            "255838b09e4271827ed3c791974ba7ab31fbff46",
+            "4b4bc6257f8ec5d36eeae5de7451a6af39ec6cad"
+        ];
+
+        // KONFIGURATION: Ersetze das mit deinen Daten!
+        const GITHUB_USER = "GlaggleWeb";
+        const GITHUB_REPO = "GlaggleWeb.github.io";
+
+        const regler = document.getElementById('zeitRegler');
+        const frame = document.getElementById('glaggleFrame');
+        const anzeige = document.getElementById('versionsNummer');
+        const hashText = document.getElementById('hashAnzeige');
+
+        regler.oninput = function() {
+            const index = this.value;
+            const hash = commits[index];
+            
+            // Die URL zur Raw-Datei bei GitHub
+            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${hash}/index.html`;
+            
+            // Update UI
+            anzeige.innerText = "Commit #" + (parseInt(index) * 10); // Da jeder 10.
+            hashText.innerText = hash;
+            
+            // Lade die alte Version im Iframe
+            frame.src = rawUrl;
+        };
+    </script>
+</body>
+</html>
