@@ -124,6 +124,77 @@
         .nav-center { display: none; }
         .navbar { padding: 0 15px; }
     }
+
+    /* ENTWICKLER SEKTION STYLES */
+    .dev-container {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-color);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 25px;
+        transition: transform 0.3s ease;
+    }
+
+    .dev-container:hover {
+        transform: scale(1.01);
+        border-color: var(--link-color);
+    }
+
+    .dev-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .dev-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--nav-bg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        border: 2px solid var(--accent);
+    }
+
+    .dev-main-info h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: var(--text-color);
+    }
+
+    .dev-tag {
+        margin: 0;
+        color: var(--link-color);
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .dev-skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 20px;
+    }
+
+    .skill-badge {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: var(--desc-color);
+    }
+
+    @media (max-width: 600px) {
+        .dev-header {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
     </style>
 </head>
 <body>
@@ -260,6 +331,27 @@
                     <strong>Non-Profit</strong>
                     <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle ist eine Non-Profit Organisation. Die gratis Onlinedienstleistungen anbieten will!</p>
                 </div>
+        </section>
+
+        <section class="info-section">
+            <h2>👤 Vom Entwickler</h2>
+            <div class="dev-container">
+                <div class="dev-header">
+                    <div class="dev-avatar">🚀</div>
+                    <div class="dev-main-info">
+                        <h3>GlaggleWeb</h3>
+                        <p class="dev-tag">Inhaber & Entwickler</p>
+                    </div>
+                </div>
+                <p style="color: var(--desc-color); line-height: 1.6; margin-top: 15px;">
+                    Hi! Ich bin GlaggleWeb! Mein Ziel ist es, moderne Web-Dienste und KI-Tools wie <b>Glame</b> für jeden kostenlos und ohne LogIn zugänglich zu machen. Glaggle ist für mich ein Hobbyprojekt, an dem ich in meiner Freizeit gerne weiterprogrammiere. Ich hoffe dir gefällt Glaggle, wenn Ja empfehle es gerne weiter!
+                </p>
+                <div class="dev-skills">
+                    <span class="skill-badge">Fullstack Dev</span>
+                    <span class="skill-badge">AI Integration</span>
+                    <span class="skill-badge">UI/UX Design</span>
+                </div>
+            </div>
         </section>
 
         <footer>
