@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glaggle Code Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   DESIGN-SYSTEM
+════════════════════════════════════════ */
+:root {
+  --bg:      #111318;
+  --s1:      #181b22;
+  --s2:      #1e2029;
+  --s3:      #252832;
+  --border:  #2c3040;
+  --border2: #3d4260;
+  --text:    #e2e5f0;
+  --muted:   #6b7394;
+  --bright:  #ffffff;
+
+  /* Akzentfarben */
+  --blue:    #4d8eff;
+  --green:   #3dd68c;
+  --orange:  #ff8c42;
+  --yellow:  #f5c842;
+  --red:     #ff4f6b;
+  --purple:  #9b6eff;
+  --cyan:    #2ec4e8;
+  --pink:    #ff5fa0;
+
+  /* Kategoriefarben */
+  --c-io:       #1fada6;
+  --c-var:      #e07b20;
+  --c-math:     #3a9bd5;
+  --c-logik:    #3dab5a;
+  --c-schleife: #c9860a;
+  --c-funk:     #cc4466;
+  --c-liste:    #d45a20;
+  --c-text:     #9b44cc;
+  --c-fehler:   #cc3355;
+  --c-sonstige: #4a6080;
+
+  --radius: 9px;
+  --shadow: 0 8px 32px rgba(0,0,0,.55);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 52px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+.logo .g1 { color: var(--blue); }
+.logo .g2 { color: var(--green); }
+
+.hspace { flex: 1; }
+
+.lang-toggle {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 3px;
+  gap: 2px;
+}
+.lang-btn {
+  padding: 4px 14px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.lang-btn.active { background: var(--blue); color: #fff; }
+
+.hbtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--s2);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.hbtn:hover { border-color: var(--border2); background: var(--s3); }
+.hbtn.run { background: var(--green); border-color: var(--green); color: #000; }
+.hbtn.run:hover { background: #52eaa5; }
+.hbtn.clear { color: var(--red); }
+.hbtn.clear:hover { border-color: var(--red); }
+
+.counter {
+  font-size: .75rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+/* ── HAUPT-LAYOUT ── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ── PALETTE ── */
+.palette {
+  width: 265px;
+  flex-shrink: 0;
+  background: var(--s1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pal-search {
+  padding: 10px 10px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.pal-search input {
+  width: 100%;
+  padding: 7px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  outline: none;
+}
+.pal-search input:focus { border-color: var(--blue); }
+.pal-search input::placeholder { color: var(--muted); }
+
+.pal-cats {
+  padding: 7px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.cat-pill {
+  padding: 3px 9px;
+  border: none;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity .15s, transform .1s;
+  color: #fff;
+  white-space: nowrap;
+}
+.cat-pill:hover, .cat-pill.active { opacity: 1; transform: scale(1.05); }
+
+.pal-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pal-list::-webkit-scrollbar { width: 4px; }
+.pal-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.pal-group-label {
+  font-size: .65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  padding: 8px 4px 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pal-group-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── BLÖCKE (Basis) ── */
+.block {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  transition: transform .1s, filter .1s;
+  flex-wrap: wrap;
+  min-height: 30px;
+  border-bottom: 2px solid rgba(0,0,0,.3);
+  position: relative;
+}
+.block:hover { transform: translateX(3px); filter: brightness(1.12); }
+.block:active { cursor: grabbing; transform: scale(.97); }
+.block .icon { font-size: .9rem; flex-shrink: 0; }
+
+/* Palette-Block Inputs (nur optisch) */
+.block input {
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: .72rem;
+  padding: 1px 5px;
+  pointer-events: none;
+}
+
+/* Kategorie-Hintergründe */
+.b-io       { background: var(--c-io); }
+.b-var      { background: var(--c-var); }
+.b-math     { background: var(--c-math); }
+.b-logik    { background: var(--c-logik); }
+.b-schleife { background: var(--c-schleife); }
+.b-funk     { background: var(--c-funk); }
+.b-liste    { background: var(--c-liste); }
+.b-text     { background: var(--c-text); }
+.b-fehler   { background: var(--c-fehler); }
+.b-sonstige { background: var(--c-sonstige); }
+
+/* ── CANVAS ── */
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--s2);
+  overflow: hidden;
+  position: relative;
+}
+
+.canvas-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--s1);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.canvas-header span {
+  font-size: .75rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.canvas-hint-text {
+  font-size: .75rem;
+  color: var(--muted);
+  flex: 1;
+  font-weight: 500;
+}
+.cb-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  background: var(--s2);
+  color: var(--muted);
+  border-radius: 6px;
+  font-size: .72rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.cb-btn:hover { color: var(--text); border-color: var(--border2); }
+
+.canvas-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 16px;
+  background-image: radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.canvas-body::-webkit-scrollbar { width: 5px; }
+.canvas-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.empty-state {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  color: var(--muted);
+}
+.empty-state .em { font-size: 3rem; margin-bottom: 10px; }
+.empty-state p { font-size: .85rem; font-weight: 600; }
+.empty-state small { font-size: .72rem; opacity: .7; }
+
+#block-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 50vh;
+}
+
+/* ── STACK-BLÖCKE ── */
+.sb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: grab;
+  flex-wrap: wrap;
+  min-height: 36px;
+  border-bottom: 3px solid rgba(0,0,0,.3);
+  position: relative;
+  transition: box-shadow .12s, filter .1s;
+  border-left: 3px solid rgba(255,255,255,.15);
+}
+.sb:hover { box-shadow: 0 0 0 2px rgba(255,255,255,.3); filter: brightness(1.07); }
+.sb:active { cursor: grabbing; }
+.sb.dragging { opacity: .3; }
+
+/* Einrückung */
+.ind1 { margin-left: 18px; }
+.ind2 { margin-left: 36px; }
+.ind3 { margin-left: 54px; }
+
+/* Label-Typ */
+.sb-label { white-space: nowrap; font-size: .75rem; }
+
+/* Inputs im Stack */
+.sb input[type="text"], .sb input[type="number"] {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 5px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: .76rem;
+  padding: 2px 7px;
+  outline: none;
+  min-width: 44px;
+  transition: background .12s, border-color .12s;
+}
+.sb input[type="text"] { width: 88px; }
+.sb input[type="number"] { width: 60px; }
+.sb input:focus { background: rgba(0,0,0,.45); border-color: rgba(255,255,255,.55); }
+
+/* Aktions-Buttons */
+.sb-actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.sb:hover .sb-actions { display: flex; }
+.sba {
+  width: 22px; height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(0,0,0,.3);
+  color: rgba(255,255,255,.55);
+  font-size: .7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s;
+}
+.sba:hover { background: rgba(0,0,0,.6); color: #fff; }
+.sba.del:hover { background: rgba(220,40,60,.6); }
+.sba.dup:hover { background: rgba(77,142,255,.4); }
+
+/* Drop-Zone */
+.dz {
+  height: 4px;
+  border-radius: 3px;
+  background: transparent;
+  transition: height .12s, background .12s;
+  margin: 1px 0;
+}
+.dz.over { height: 18px; background: var(--green); opacity: .5; border-radius: 4px; }
+
+/* ── CODE PANEL ── */
+.code-panel {
+  width: 355px;
+  flex-shrink: 0;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--s1);
+  flex-shrink: 0;
+}
+.code-title {
+  font-size: .8rem;
+  font-weight: 800;
+  color: var(--text);
+  flex: 1;
+}
+.code-lang-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  flex-shrink: 0;
+}
+.lang-js .code-lang-dot { background: var(--yellow); }
+.cb2 {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  font-size: .72rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 4px;
+}
+.cb2:hover { border-color: var(--border2); color: var(--text); }
+
+#code-out {
+  flex: 1;
+  padding: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .74rem;
+  line-height: 1.8;
+  overflow-y: auto;
+  white-space: pre;
+  color: #9aa0c0;
+  tab-size: 4;
+}
+#code-out::-webkit-scrollbar { width: 4px; }
+#code-out::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Syntax Highlighting */
+.hl-kw  { color: #c678dd; font-weight: 700; }
+.hl-fn  { color: #61afef; }
+.hl-str { color: #98c379; }
+.hl-num { color: #d19a66; }
+.hl-cmt { color: #4b5268; font-style: italic; }
+.hl-op  { color: #56b6c2; }
+.hl-cls { color: #e5c07b; }
+
+/* ── AUSGABE ── */
+.out-panel {
+  border-top: 1px solid var(--border);
+  background: #0b0d12;
+  flex-shrink: 0;
+  max-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+.out-bar {
+  display: flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.out-label {
+  font-size: .65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  flex: 1;
+}
+.out-clear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .7rem;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.out-clear:hover { color: var(--text); }
+#out-text {
+  flex: 1;
+  padding: 7px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .73rem;
+  color: var(--green);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── DRAG GHOST ── */
+#ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 7px;
+  padding: 7px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  box-shadow: 0 10px 40px rgba(0,0,0,.7);
+  opacity: .9;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 3px solid rgba(0,0,0,.3);
+  transform: rotate(-2deg) scale(1.04);
+}
+
+/* ── TOOLTIP ── */
+#tip {
+  position: fixed;
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: .73rem;
+  pointer-events: none;
+  z-index: 10000;
+  max-width: 210px;
+  display: none;
+  box-shadow: var(--shadow);
+  line-height: 1.45;
+  color: var(--text);
+}
+#tip b { color: var(--green); display: block; margin-bottom: 2px; font-size: .76rem; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: .8rem;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  z-index: 20000;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Keyboard shortcut badge */
+.kbd {
+  display: inline-block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0px 5px;
+  font-size: .65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<div id="ghost"></div>
+<div id="tip"></div>
+<div id="toast"></div>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo"><span class="g1">Glaggle</span> <span class="g2">Code</span> Maker</div>
+
+  <div class="lang-toggle" id="lang-wrap">
+    <button class="lang-btn active" id="btn-py" onclick="setLang('py')">🐍 Python</button>
+    <button class="lang-btn"        id="btn-js" onclick="setLang('js')">🟡 JavaScript</button>
+  </div>
+
+  <div class="hspace"></div>
+
+  <button class="hbtn" onclick="undo()" id="btn-undo" disabled>↩ Rückgängig</button>
+  <button class="hbtn" onclick="redo()" id="btn-redo" disabled>↪ Wiederholen</button>
+  <button class="hbtn" onclick="speichern()">💾 Speichern</button>
+  <button class="hbtn" onclick="laden()">📂 Laden</button>
+  <button class="hbtn run" onclick="ausfuehren()">▶ Ausführen</button>
+  <button class="hbtn clear" onclick="allesLoeschen()">🗑 Löschen</button>
+  <span class="counter" id="zaehler">0 Blöcke</span>
+</header>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- PALETTE -->
+  <div class="palette">
+    <div class="pal-search">
+      <input type="text" id="suchfeld" placeholder="🔍 Blöcke suchen …" oninput="sucheBloecke(this.value)">
+    </div>
+    <div class="pal-cats" id="kat-buttons"></div>
+    <div class="pal-list" id="pal-liste"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <div class="canvas-header">
+      <span class="canvas-hint-text" id="canvas-info">Blöcke hierher ziehen oder doppelklicken →</span>
+      <button class="cb-btn" onclick="alleNachOben()">⬆ Zum Anfang</button>
+      <button class="cb-btn" onclick="allesLoeschen()">Alles löschen</button>
+    </div>
+    <div class="canvas-body" id="canvas-body">
+      <div class="empty-state" id="leer-hinweis">
+        <div class="em">🧩</div>
+        <p>Noch keine Blöcke</p>
+        <small>Doppelklicke auf einen Block<br>oder ziehe ihn hierher</small>
+      </div>
+      <div id="block-stack"></div>
+    </div>
+  </div>
+
+  <!-- CODE PANEL -->
+  <div class="code-panel" id="code-panel">
+    <div class="code-header" id="code-header">
+      <div class="code-lang-dot"></div>
+      <span class="code-title" id="code-titel">Python Code</span>
+      <button class="cb2" onclick="kopieren()" id="kop-btn">📋 Kopieren</button>
+      <button class="cb2" onclick="herunterladen()">⬇ Download</button>
+    </div>
+    <div id="code-out"><span class="hl-cmt"># Füge Blöcke hinzu …</span></div>
+    <div class="out-panel">
+      <div class="out-bar">
+        <span class="out-label">▶ Ausgabe</span>
+        <button class="out-clear" onclick="ausgabeLeeren()">Leeren</button>
+      </div>
+      <div id="out-text">Bereit.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  BLOCK-DEFINITIONEN
+//  Jeder Block hat:
+//    id, kat, icon, de (Name auf Deutsch), hilfe
+//    params: [{n: Parametername, t: "text"|"num", v: Standardwert, w: Anzeigebreite}]
+//    py(p)  → Python-Code-String
+//    js(p)  → JavaScript-Code-String
+//
+//  LOGIK:
+//    - Öffnende Blöcke (py endet mit ':' / js endet mit '{') → erhöhen Einrückung
+//    - Schließende Blöcke (py beginnt mit SCHLIESS-Marke / js beginnt mit '}') → verringern Einrückung
+//    - Leere Blöcke → kein Einfluss
+// ══════════════════════════════════════════════════════════════════
+
+const BLOECKE = [
+
+  // ─── EIN / AUSGABE ──────────────────────────────────────────
+  { id:'ausgabe',        kat:'io', icon:'🖨', de:'Ausgeben',
+    hilfe:'Gibt einen Text oder Variablenwert auf der Konsole aus.',
+    params:[{n:'wert',t:'text',v:'Hallo Welt',w:120}],
+    py: p => `print(${pq(p.wert)})`,
+    js: p => `console.log(${pq(p.wert)});` },
+
+  { id:'ausgabe_var',    kat:'io', icon:'📝', de:'Ausgeben mit Variable',
+    hilfe:'Gibt einen Text zusammen mit einer Variable aus.',
+    params:[{n:'text',t:'text',v:'Ergebnis:',w:100},{n:'variable',t:'text',v:'x',w:70}],
+    py: p => `print(f"${p.text} {${p.variable}}")`,
+    js: p => `console.log(\`${p.text} \${${p.variable}}\`);` },
+
+  { id:'eingabe',        kat:'io', icon:'⌨️', de:'Eingabe einlesen',
+    hilfe:'Fragt den Benutzer nach einer Eingabe und speichert sie.',
+    params:[{n:'variable',t:'text',v:'eingabe',w:80},{n:'frage',t:'text',v:'Deine Eingabe:',w:120}],
+    py: p => `${p.variable} = input("${p.frage}")`,
+    js: p => `let ${p.variable} = prompt("${p.frage}");` },
+
+  { id:'eingabe_zahl',   kat:'io', icon:'🔢', de:'Zahl einlesen',
+    hilfe:'Liest eine ganze Zahl vom Benutzer ein.',
+    params:[{n:'variable',t:'text',v:'zahl',w:80},{n:'frage',t:'text',v:'Zahl eingeben:',w:110}],
+    py: p => `${p.variable} = int(input("${p.frage}"))`,
+    js: p => `let ${p.variable} = parseInt(prompt("${p.frage}"), 10);` },
+
+  { id:'eingabe_komma',  kat:'io', icon:'🔣', de:'Kommazahl einlesen',
+    hilfe:'Liest eine Kommazahl vom Benutzer ein.',
+    params:[{n:'variable',t:'text',v:'kommazahl',w:90},{n:'frage',t:'text',v:'Kommazahl:',w:100}],
+    py: p => `${p.variable} = float(input("${p.frage}"))`,
+    js: p => `let ${p.variable} = parseFloat(prompt("${p.frage}"));` },
+
+  { id:'leerzeile_out',  kat:'io', icon:'↕️', de:'Leerzeile ausgeben',
+    hilfe:'Gibt eine leere Zeile aus (zur Trennung).',
+    params:[],
+    py: _ => `print()`,
+    js: _ => `console.log();` },
+
+  // ─── VARIABLEN ──────────────────────────────────────────────
+  { id:'var_zahl',       kat:'var', icon:'🔢', de:'Zahl-Variable',
+    hilfe:'Erstellt eine Variable und weist ihr eine Zahl zu.',
+    params:[{n:'name',t:'text',v:'x',w:70},{n:'wert',t:'num',v:'0',w:65}],
+    py: p => `${p.name} = ${p.wert}`,
+    js: p => `let ${p.name} = ${p.wert};` },
+
+  { id:'var_text',       kat:'var', icon:'🔤', de:'Text-Variable',
+    hilfe:'Erstellt eine Variable mit einem Textwert.',
+    params:[{n:'name',t:'text',v:'text',w:70},{n:'wert',t:'text',v:'Hallo',w:100}],
+    py: p => `${p.name} = "${p.wert}"`,
+    js: p => `let ${p.name} = "${p.wert}";` },
+
+  { id:'var_setzen',     kat:'var', icon:'📌', de:'Variable setzen',
+    hilfe:'Setzt den Wert einer vorhandenen Variable.',
+    params:[{n:'name',t:'text',v:'x',w:70},{n:'wert',t:'text',v:'42',w:80}],
+    py: p => `${p.name} = ${p.wert}`,
+    js: p => `${p.name} = ${p.wert};` },
+
+  { id:'var_plus',       kat:'var', icon:'➕', de:'Variable erhöhen',
+    hilfe:'Addiert einen Wert zur Variable.',
+    params:[{n:'name',t:'text',v:'x',w:70},{n:'um',t:'num',v:'1',w:55}],
+    py: p => `${p.name} += ${p.um}`,
+    js: p => `${p.name} += ${p.um};` },
+
+  { id:'var_minus',      kat:'var', icon:'➖', de:'Variable verringern',
+    hilfe:'Subtrahiert einen Wert von der Variable.',
+    params:[{n:'name',t:'text',v:'x',w:70},{n:'um',t:'num',v:'1',w:55}],
+    py: p => `${p.name} -= ${p.um}`,
+    js: p => `${p.name} -= ${p.um};` },
+
+  { id:'var_mal',        kat:'var', icon:'✖️', de:'Variable multiplizieren',
+    hilfe:'Multipliziert die Variable mit einem Wert.',
+    params:[{n:'name',t:'text',v:'x',w:70},{n:'mit',t:'num',v:'2',w:55}],
+    py: p => `${p.name} *= ${p.mit}`,
+    js: p => `${p.name} *= ${p.mit};` },
+
+  { id:'var_pp',         kat:'var', icon:'⬆️', de:'Variable um 1 erhöhen (++)',
+    hilfe:'Erhöht die Variable um genau 1.',
+    params:[{n:'name',t:'text',v:'i',w:70}],
+    py: p => `${p.name} += 1`,
+    js: p => `${p.name}++;` },
+
+  { id:'var_mm',         kat:'var', icon:'⬇️', de:'Variable um 1 verringern (--)',
+    hilfe:'Verringert die Variable um genau 1.',
+    params:[{n:'name',t:'text',v:'i',w:70}],
+    py: p => `${p.name} -= 1`,
+    js: p => `${p.name}--;` },
+
+  { id:'var_tausch',     kat:'var', icon:'🔄', de:'Zwei Variablen tauschen',
+    hilfe:'Tauscht die Werte zweier Variablen.',
+    params:[{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.a}, ${p.b} = ${p.b}, ${p.a}`,
+    js: p => `[${p.a}, ${p.b}] = [${p.b}, ${p.a}];` },
+
+  { id:'konstante',      kat:'var', icon:'🔒', de:'Konstante',
+    hilfe:'Erstellt einen unveränderlichen Wert.',
+    params:[{n:'name',t:'text',v:'MAX_WERT',w:100},{n:'wert',t:'text',v:'100',w:70}],
+    py: p => `${p.name.toUpperCase()} = ${p.wert}  # Konstante`,
+    js: p => `const ${p.name} = ${p.wert};` },
+
+  { id:'var_loeschen',   kat:'var', icon:'🗑️', de:'Variable löschen',
+    hilfe:'Entfernt eine Variable aus dem Speicher.',
+    params:[{n:'name',t:'text',v:'x',w:70}],
+    py: p => `del ${p.name}`,
+    js: p => `${p.name} = undefined;` },
+
+  { id:'woerterbuch',    kat:'var', icon:'📕', de:'Wörterbuch erstellen',
+    hilfe:'Erstellt ein leeres Wörterbuch (Schlüssel → Wert).',
+    params:[{n:'name',t:'text',v:'daten',w:80}],
+    py: p => `${p.name} = {}`,
+    js: p => `let ${p.name} = {};` },
+
+  { id:'wb_eintrag',     kat:'var', icon:'🗝️', de:'Wörterbuch: Eintrag',
+    hilfe:'Setzt einen Eintrag im Wörterbuch.',
+    params:[{n:'wb',t:'text',v:'daten',w:70},{n:'schluessel',t:'text',v:'name',w:80},{n:'wert',t:'text',v:'"Alice"',w:80}],
+    py: p => `${p.wb}["${p.schluessel}"] = ${p.wert}`,
+    js: p => `${p.wb}["${p.schluessel}"] = ${p.wert};` },
+
+  { id:'wb_lesen',       kat:'var', icon:'🔍', de:'Wörterbuch: Wert lesen',
+    hilfe:'Liest einen Wert aus dem Wörterbuch.',
+    params:[{n:'ergebnis',t:'text',v:'wert',w:70},{n:'wb',t:'text',v:'daten',w:70},{n:'schluessel',t:'text',v:'name',w:80}],
+    py: p => `${p.ergebnis} = ${p.wb}["${p.schluessel}"]`,
+    js: p => `let ${p.ergebnis} = ${p.wb}["${p.schluessel}"];` },
+
+  // ─── MATHEMATIK ─────────────────────────────────────────────
+  { id:'addieren',       kat:'math', icon:'➕', de:'Addieren',
+    hilfe:'Ergebnis = a + b',
+    params:[{n:'ergebnis',t:'text',v:'summe',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} + ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} + ${p.b};` },
+
+  { id:'subtrahieren',   kat:'math', icon:'➖', de:'Subtrahieren',
+    hilfe:'Ergebnis = a - b',
+    params:[{n:'ergebnis',t:'text',v:'diff',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} - ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} - ${p.b};` },
+
+  { id:'multiplizieren', kat:'math', icon:'✖️', de:'Multiplizieren',
+    hilfe:'Ergebnis = a × b',
+    params:[{n:'ergebnis',t:'text',v:'produkt',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} * ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} * ${p.b};` },
+
+  { id:'dividieren',     kat:'math', icon:'➗', de:'Dividieren',
+    hilfe:'Ergebnis = a ÷ b',
+    params:[{n:'ergebnis',t:'text',v:'quotient',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} / ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} / ${p.b};` },
+
+  { id:'ganzzahl_div',   kat:'math', icon:'🔢', de:'Ganzzahldivision',
+    hilfe:'Ergebnis = a // b (abgerundet)',
+    params:[{n:'ergebnis',t:'text',v:'q',w:70},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} // ${p.b}`,
+    js: p => `let ${p.ergebnis} = Math.floor(${p.a} / ${p.b});` },
+
+  { id:'modulo',         kat:'math', icon:'%', de:'Modulo (Rest)',
+    hilfe:'Ergebnis = Rest von a ÷ b',
+    params:[{n:'ergebnis',t:'text',v:'rest',w:70},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = ${p.a} % ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} % ${p.b};` },
+
+  { id:'potenz',         kat:'math', icon:'⚡', de:'Potenz (hoch)',
+    hilfe:'Ergebnis = basis ^ exponent',
+    params:[{n:'ergebnis',t:'text',v:'p',w:60},{n:'basis',t:'text',v:'2',w:55},{n:'exp',t:'text',v:'8',w:55}],
+    py: p => `${p.ergebnis} = ${p.basis} ** ${p.exp}`,
+    js: p => `let ${p.ergebnis} = ${p.basis} ** ${p.exp};` },
+
+  { id:'wurzel',         kat:'math', icon:'√', de:'Quadratwurzel',
+    hilfe:'Ergebnis = √ x',
+    params:[{n:'ergebnis',t:'text',v:'w',w:70},{n:'x',t:'text',v:'16',w:60}],
+    py: p => `${p.ergebnis} = math.sqrt(${p.x})`,
+    js: p => `let ${p.ergebnis} = Math.sqrt(${p.x});` },
+
+  { id:'absolutwert',    kat:'math', icon:'±', de:'Absolutwert',
+    hilfe:'Ergebnis = |x| (immer positiv)',
+    params:[{n:'ergebnis',t:'text',v:'a',w:70},{n:'x',t:'text',v:'x',w:60}],
+    py: p => `${p.ergebnis} = abs(${p.x})`,
+    js: p => `let ${p.ergebnis} = Math.abs(${p.x});` },
+
+  { id:'runden',         kat:'math', icon:'🎯', de:'Runden',
+    hilfe:'Rundet x auf n Dezimalstellen.',
+    params:[{n:'ergebnis',t:'text',v:'r',w:60},{n:'x',t:'text',v:'3.14159',w:75},{n:'stellen',t:'num',v:'2',w:50}],
+    py: p => `${p.ergebnis} = round(${p.x}, ${p.stellen})`,
+    js: p => `let ${p.ergebnis} = parseFloat(${p.x}.toFixed(${p.stellen}));` },
+
+  { id:'abrunden',       kat:'math', icon:'⬇', de:'Abrunden',
+    hilfe:'Rundet auf die nächste ganze Zahl ab.',
+    params:[{n:'ergebnis',t:'text',v:'unten',w:70},{n:'x',t:'text',v:'3.9',w:60}],
+    py: p => `${p.ergebnis} = math.floor(${p.x})`,
+    js: p => `let ${p.ergebnis} = Math.floor(${p.x});` },
+
+  { id:'aufrunden',      kat:'math', icon:'⬆', de:'Aufrunden',
+    hilfe:'Rundet auf die nächste ganze Zahl auf.',
+    params:[{n:'ergebnis',t:'text',v:'oben',w:70},{n:'x',t:'text',v:'3.1',w:60}],
+    py: p => `${p.ergebnis} = math.ceil(${p.x})`,
+    js: p => `let ${p.ergebnis} = Math.ceil(${p.x});` },
+
+  { id:'maximum',        kat:'math', icon:'🔝', de:'Maximum von zwei Werten',
+    hilfe:'Gibt den größeren der beiden Werte zurück.',
+    params:[{n:'ergebnis',t:'text',v:'groesser',w:85},{n:'a',t:'text',v:'a',w:55},{n:'b',t:'text',v:'b',w:55}],
+    py: p => `${p.ergebnis} = max(${p.a}, ${p.b})`,
+    js: p => `let ${p.ergebnis} = Math.max(${p.a}, ${p.b});` },
+
+  { id:'minimum',        kat:'math', icon:'🔽', de:'Minimum von zwei Werten',
+    hilfe:'Gibt den kleineren der beiden Werte zurück.',
+    params:[{n:'ergebnis',t:'text',v:'kleiner',w:85},{n:'a',t:'text',v:'a',w:55},{n:'b',t:'text',v:'b',w:55}],
+    py: p => `${p.ergebnis} = min(${p.a}, ${p.b})`,
+    js: p => `let ${p.ergebnis} = Math.min(${p.a}, ${p.b});` },
+
+  { id:'zufallszahl',    kat:'math', icon:'🎲', de:'Zufallszahl',
+    hilfe:'Erzeugt eine zufällige ganze Zahl im Bereich von–bis.',
+    params:[{n:'ergebnis',t:'text',v:'zufall',w:80},{n:'von',t:'num',v:'1',w:50},{n:'bis',t:'num',v:'100',w:55}],
+    py: p => `${p.ergebnis} = random.randint(${p.von}, ${p.bis})`,
+    js: p => `let ${p.ergebnis} = Math.floor(Math.random() * (${p.bis} - ${p.von} + 1)) + ${p.von};` },
+
+  { id:'summe_liste',    kat:'math', icon:'Σ', de:'Summe einer Liste',
+    hilfe:'Addiert alle Zahlen einer Liste.',
+    params:[{n:'ergebnis',t:'text',v:'gesamt',w:80},{n:'liste',t:'text',v:'zahlen',w:80}],
+    py: p => `${p.ergebnis} = sum(${p.liste})`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.reduce((s, x) => s + x, 0);` },
+
+  // ─── LOGIK ──────────────────────────────────────────────────
+  { id:'wenn',           kat:'logik', icon:'❓', de:'Wenn … dann',
+    hilfe:'Führt den Block aus, wenn die Bedingung WAHR ist.',
+    params:[{n:'bedingung',t:'text',v:'x > 0',w:130}],
+    py: p => `if ${p.bedingung}:`,
+    js: p => `if (${p.bedingung}) {` },
+
+  { id:'sonst_wenn',     kat:'logik', icon:'🔀', de:'Sonst wenn …',
+    hilfe:'Wird nach "Wenn" geprüft, wenn die erste Bedingung falsch war.',
+    params:[{n:'bedingung',t:'text',v:'x === 0',w:130}],
+    py: p => `elif ${p.bedingung}:`,
+    js: p => `} else if (${p.bedingung}) {` },
+
+  { id:'sonst',          kat:'logik', icon:'↩️', de:'Sonst',
+    hilfe:'Wird ausgeführt wenn keine Bedingung zutrifft.',
+    params:[],
+    py: _ => `else:`,
+    js: _ => `} else {` },
+
+  { id:'wenn_ende',      kat:'logik', icon:'🔚', de:'Ende Wenn',
+    hilfe:'Schließt den Wenn-Block ab.',
+    params:[],
+    py: _ => `# Ende Wenn`,
+    js: _ => `}` },
+
+  { id:'kurz_wenn',      kat:'logik', icon:'❔', de:'Kurz-Wenn (a ? b : c)',
+    hilfe:'Falls Bedingung: Wert-A, sonst: Wert-B (Ternäroperator)',
+    params:[{n:'ergebnis',t:'text',v:'text',w:70},{n:'bedingung',t:'text',v:'x > 0',w:100},{n:'ja',t:'text',v:'"positiv"',w:80},{n:'nein',t:'text',v:'"negativ"',w:80}],
+    py: p => `${p.ergebnis} = ${p.ja} if ${p.bedingung} else ${p.nein}`,
+    js: p => `let ${p.ergebnis} = ${p.bedingung} ? ${p.ja} : ${p.nein};` },
+
+  { id:'vergleich_gl',   kat:'logik', icon:'＝', de:'Gleich (==)',
+    hilfe:'Speichert das Ergebnis des Vergleichs a == b.',
+    params:[{n:'ergebnis',t:'text',v:'gleich',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = (${p.a} == ${p.b})`,
+    js: p => `let ${p.ergebnis} = (${p.a} === ${p.b});` },
+
+  { id:'vergleich_ng',   kat:'logik', icon:'≠', de:'Ungleich (!=)',
+    hilfe:'Speichert das Ergebnis des Vergleichs a != b.',
+    params:[{n:'ergebnis',t:'text',v:'anders',w:80},{n:'a',t:'text',v:'x',w:60},{n:'b',t:'text',v:'y',w:60}],
+    py: p => `${p.ergebnis} = (${p.a} != ${p.b})`,
+    js: p => `let ${p.ergebnis} = (${p.a} !== ${p.b});` },
+
+  { id:'und_op',         kat:'logik', icon:'&&', de:'Und-Verknüpfung',
+    hilfe:'Beide Bedingungen müssen wahr sein.',
+    params:[{n:'ergebnis',t:'text',v:'beide',w:80},{n:'a',t:'text',v:'x > 0',w:90},{n:'b',t:'text',v:'x < 10',w:90}],
+    py: p => `${p.ergebnis} = (${p.a}) and (${p.b})`,
+    js: p => `let ${p.ergebnis} = (${p.a}) && (${p.b});` },
+
+  { id:'oder_op',        kat:'logik', icon:'||', de:'Oder-Verknüpfung',
+    hilfe:'Mindestens eine Bedingung muss wahr sein.',
+    params:[{n:'ergebnis',t:'text',v:'eines',w:80},{n:'a',t:'text',v:'x < 0',w:90},{n:'b',t:'text',v:'x > 10',w:90}],
+    py: p => `${p.ergebnis} = (${p.a}) or (${p.b})`,
+    js: p => `let ${p.ergebnis} = (${p.a}) || (${p.b});` },
+
+  { id:'nicht_op',       kat:'logik', icon:'!', de:'Nicht (Negation)',
+    hilfe:'Kehrt eine Bedingung um: wahr → falsch.',
+    params:[{n:'ergebnis',t:'text',v:'umgekehrt',w:95},{n:'bedingung',t:'text',v:'gefunden',w:100}],
+    py: p => `${p.ergebnis} = not ${p.bedingung}`,
+    js: p => `let ${p.ergebnis} = !${p.bedingung};` },
+
+  // ─── SCHLEIFEN ──────────────────────────────────────────────
+  { id:'fuer_bereich',   kat:'schleife', icon:'🔁', de:'Zähler-Schleife (von … bis)',
+    hilfe:'Wiederholt den Block für Zahlen im Bereich start bis ende-1.',
+    params:[{n:'variable',t:'text',v:'i',w:55},{n:'start',t:'num',v:'0',w:50},{n:'ende',t:'num',v:'10',w:55}],
+    py: p => `for ${p.variable} in range(${p.start}, ${p.ende}):`,
+    js: p => `for (let ${p.variable} = ${p.start}; ${p.variable} < ${p.ende}; ${p.variable}++) {` },
+
+  { id:'fuer_schritt',   kat:'schleife', icon:'↔️', de:'Zähler-Schleife mit Schritt',
+    hilfe:'Für-Schleife mit eigener Schrittweite.',
+    params:[{n:'variable',t:'text',v:'i',w:55},{n:'start',t:'num',v:'0',w:50},{n:'ende',t:'num',v:'10',w:55},{n:'schritt',t:'num',v:'2',w:55}],
+    py: p => `for ${p.variable} in range(${p.start}, ${p.ende}, ${p.schritt}):`,
+    js: p => `for (let ${p.variable} = ${p.start}; ${p.variable} < ${p.ende}; ${p.variable} += ${p.schritt}) {` },
+
+  { id:'fuer_jedes',     kat:'schleife', icon:'📋', de:'Für jedes Element',
+    hilfe:'Geht jedes Element einer Liste durch.',
+    params:[{n:'element',t:'text',v:'elem',w:70},{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `for ${p.element} in ${p.liste}:`,
+    js: p => `for (const ${p.element} of ${p.liste}) {` },
+
+  { id:'fuer_aufz',      kat:'schleife', icon:'🔢', de:'Für jedes Element mit Zähler',
+    hilfe:'Schleife mit Index i und Element gleichzeitig.',
+    params:[{n:'i',t:'text',v:'i',w:50},{n:'element',t:'text',v:'el',w:60},{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `for ${p.i}, ${p.element} in enumerate(${p.liste}):`,
+    js: p => `${p.liste}.forEach((${p.element}, ${p.i}) => {` },
+
+  { id:'solange',        kat:'schleife', icon:'🔄', de:'Solange … (while)',
+    hilfe:'Wiederholt den Block so lange die Bedingung wahr ist.',
+    params:[{n:'bedingung',t:'text',v:'i < 10',w:130}],
+    py: p => `while ${p.bedingung}:`,
+    js: p => `while (${p.bedingung}) {` },
+
+  { id:'endlos',         kat:'schleife', icon:'♾️', de:'Endlos-Schleife',
+    hilfe:'Läuft für immer — mit "Abbruch" verlassen.',
+    params:[],
+    py: _ => `while True:`,
+    js: _ => `while (true) {` },
+
+  { id:'abbruch',        kat:'schleife', icon:'🛑', de:'Schleife abbrechen',
+    hilfe:'Beendet die aktuelle Schleife sofort.',
+    params:[],
+    py: _ => `break`,
+    js: _ => `break;` },
+
+  { id:'weiter',         kat:'schleife', icon:'⏭️', de:'Zur nächsten Runde',
+    hilfe:'Springt direkt zum nächsten Schleifendurchlauf.',
+    params:[],
+    py: _ => `continue`,
+    js: _ => `continue;` },
+
+  { id:'schleife_ende',  kat:'schleife', icon:'🔚', de:'Ende Schleife',
+    hilfe:'Schließt den Schleifen-Block ab.',
+    params:[],
+    py: _ => `# Ende Schleife`,
+    js: _ => `}` },
+
+  { id:'listenkomp',     kat:'schleife', icon:'⚙️', de:'Liste erzeugen (Comprehension)',
+    hilfe:'Erstellt eine neue Liste nach einer Formel.',
+    params:[{n:'ergebnis',t:'text',v:'quadrate',w:90},{n:'ausdruck',t:'text',v:'x ** 2',w:80},{n:'var',t:'text',v:'x',w:50},{n:'liste',t:'text',v:'range(10)',w:90}],
+    py: p => `${p.ergebnis} = [${p.ausdruck} for ${p.var} in ${p.liste}]`,
+    js: p => `let ${p.ergebnis} = Array.from({length: 10}, (_, ${p.var}) => ${p.ausdruck});` },
+
+  // ─── FUNKTIONEN ─────────────────────────────────────────────
+  { id:'funk_def',       kat:'funk', icon:'⚙️', de:'Funktion definieren',
+    hilfe:'Definiert eine neue, wiederverwendbare Funktion.',
+    params:[{n:'name',t:'text',v:'meineFunktion',w:130},{n:'parameter',t:'text',v:'x, y',w:80}],
+    py: p => `def ${p.name}(${p.parameter}):`,
+    js: p => `function ${p.name}(${p.parameter}) {` },
+
+  { id:'funk_pfeil',     kat:'funk', icon:'➡️', de:'Pfeil-Funktion (kurz)',
+    hilfe:'Kurze Funktion mit einem Ausdruck als Rückgabewert.',
+    params:[{n:'name',t:'text',v:'verdoppeln',w:110},{n:'param',t:'text',v:'x',w:50},{n:'ausdruck',t:'text',v:'x * 2',w:90}],
+    py: p => `${p.name} = lambda ${p.param}: ${p.ausdruck}`,
+    js: p => `const ${p.name} = (${p.param}) => ${p.ausdruck};` },
+
+  { id:'zurueckgeben',   kat:'funk', icon:'↩', de:'Zurückgeben (return)',
+    hilfe:'Gibt einen Wert aus der Funktion zurück.',
+    params:[{n:'wert',t:'text',v:'ergebnis',w:100}],
+    py: p => `return ${p.wert}`,
+    js: p => `return ${p.wert};` },
+
+  { id:'funk_aufrufen',  kat:'funk', icon:'📞', de:'Funktion aufrufen',
+    hilfe:'Ruft eine Funktion auf.',
+    params:[{n:'name',t:'text',v:'meineFunktion',w:130},{n:'argumente',t:'text',v:'x, y',w:80}],
+    py: p => `${p.name}(${p.argumente})`,
+    js: p => `${p.name}(${p.argumente});` },
+
+  { id:'funk_aufr_sp',   kat:'funk', icon:'📥', de:'Funktion aufrufen & speichern',
+    hilfe:'Ruft eine Funktion auf und speichert das Ergebnis.',
+    params:[{n:'ergebnis',t:'text',v:'ergebnis',w:90},{n:'name',t:'text',v:'funk',w:90},{n:'argumente',t:'text',v:'',w:70}],
+    py: p => `${p.ergebnis} = ${p.name}(${p.argumente})`,
+    js: p => `let ${p.ergebnis} = ${p.name}(${p.argumente});` },
+
+  { id:'funk_ende',      kat:'funk', icon:'🔚', de:'Ende Funktion',
+    hilfe:'Schließt den Funktions-Block ab.',
+    params:[],
+    py: _ => `# Ende Funktion`,
+    js: _ => `}` },
+
+  { id:'funk_async',     kat:'funk', icon:'⏳', de:'Async-Funktion (asynchron)',
+    hilfe:'Asynchrone Funktion — kann auf Daten warten.',
+    params:[{n:'name',t:'text',v:'holeDaten',w:120},{n:'parameter',t:'text',v:'url',w:70}],
+    py: p => `async def ${p.name}(${p.parameter}):`,
+    js: p => `async function ${p.name}(${p.parameter}) {` },
+
+  { id:'funk_await',     kat:'funk', icon:'⌛', de:'Warten auf Ergebnis (await)',
+    hilfe:'Wartet auf ein asynchrones Ergebnis.',
+    params:[{n:'ergebnis',t:'text',v:'daten',w:80},{n:'ausdruck',t:'text',v:'fetch(url)',w:110}],
+    py: p => `${p.ergebnis} = await ${p.ausdruck}`,
+    js: p => `let ${p.ergebnis} = await ${p.ausdruck};` },
+
+  // ─── LISTEN ─────────────────────────────────────────────────
+  { id:'liste_neu',      kat:'liste', icon:'📝', de:'Liste erstellen',
+    hilfe:'Erstellt eine Liste mit Werten.',
+    params:[{n:'name',t:'text',v:'liste',w:70},{n:'werte',t:'text',v:'1, 2, 3',w:110}],
+    py: p => `${p.name} = [${p.werte}]`,
+    js: p => `let ${p.name} = [${p.werte}];` },
+
+  { id:'liste_leer',     kat:'liste', icon:'📭', de:'Leere Liste',
+    hilfe:'Erstellt eine leere Liste.',
+    params:[{n:'name',t:'text',v:'liste',w:80}],
+    py: p => `${p.name} = []`,
+    js: p => `let ${p.name} = [];` },
+
+  { id:'liste_add',      kat:'liste', icon:'➕', de:'Element hinzufügen',
+    hilfe:'Fügt ein Element ans Ende der Liste.',
+    params:[{n:'liste',t:'text',v:'liste',w:80},{n:'wert',t:'text',v:'neues_Element',w:110}],
+    py: p => `${p.liste}.append(${p.wert})`,
+    js: p => `${p.liste}.push(${p.wert});` },
+
+  { id:'liste_entf',     kat:'liste', icon:'🗑️', de:'Element entfernen',
+    hilfe:'Entfernt ein bestimmtes Element aus der Liste.',
+    params:[{n:'liste',t:'text',v:'liste',w:80},{n:'wert',t:'text',v:'element',w:90}],
+    py: p => `${p.liste}.remove(${p.wert})`,
+    js: p => `{ const _i = ${p.liste}.indexOf(${p.wert}); if (_i > -1) ${p.liste}.splice(_i, 1); }` },
+
+  { id:'liste_pop',      kat:'liste', icon:'📤', de:'Letztes Element holen',
+    hilfe:'Entfernt das letzte Element und gibt es zurück.',
+    params:[{n:'ergebnis',t:'text',v:'letztes',w:80},{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `${p.ergebnis} = ${p.liste}.pop()`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.pop();` },
+
+  { id:'liste_laenge',   kat:'liste', icon:'📏', de:'Länge der Liste',
+    hilfe:'Gibt die Anzahl der Elemente zurück.',
+    params:[{n:'ergebnis',t:'text',v:'anzahl',w:80},{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `${p.ergebnis} = len(${p.liste})`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.length;` },
+
+  { id:'liste_holen',    kat:'liste', icon:'🎯', de:'Element an Position holen',
+    hilfe:'Gibt das Element an einer bestimmten Stelle zurück.',
+    params:[{n:'ergebnis',t:'text',v:'element',w:80},{n:'liste',t:'text',v:'liste',w:80},{n:'index',t:'num',v:'0',w:50}],
+    py: p => `${p.ergebnis} = ${p.liste}[${p.index}]`,
+    js: p => `let ${p.ergebnis} = ${p.liste}[${p.index}];` },
+
+  { id:'liste_sort',     kat:'liste', icon:'🔃', de:'Liste sortieren',
+    hilfe:'Sortiert die Liste aufsteigend.',
+    params:[{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `${p.liste}.sort()`,
+    js: p => `${p.liste}.sort((a, b) => a - b);` },
+
+  { id:'liste_umk',      kat:'liste', icon:'⟵', de:'Liste umkehren',
+    hilfe:'Kehrt die Reihenfolge der Elemente um.',
+    params:[{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `${p.liste}.reverse()`,
+    js: p => `${p.liste}.reverse();` },
+
+  { id:'liste_enthaelt', kat:'liste', icon:'🔍', de:'Liste enthält Element?',
+    hilfe:'Prüft ob ein bestimmtes Element in der Liste ist.',
+    params:[{n:'ergebnis',t:'text',v:'gefunden',w:90},{n:'wert',t:'text',v:'element',w:90},{n:'liste',t:'text',v:'liste',w:80}],
+    py: p => `${p.ergebnis} = ${p.wert} in ${p.liste}`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.includes(${p.wert});` },
+
+  { id:'liste_verbinden',kat:'liste', icon:'🔗', de:'Liste zu Text verbinden',
+    hilfe:'Verbindet alle Listenelemente zu einem Text.',
+    params:[{n:'ergebnis',t:'text',v:'text',w:80},{n:'liste',t:'text',v:'woerter',w:80},{n:'trenner',t:'text',v:', ',w:50}],
+    py: p => `${p.ergebnis} = "${p.trenner}".join(${p.liste})`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.join("${p.trenner}");` },
+
+  { id:'liste_map',      kat:'liste', icon:'🗺️', de:'Liste umwandeln (map)',
+    hilfe:'Erzeugt eine neue Liste, indem jedes Element verändert wird.',
+    params:[{n:'ergebnis',t:'text',v:'neu',w:70},{n:'liste',t:'text',v:'zahlen',w:80},{n:'formel',t:'text',v:'x * 2',w:90}],
+    py: p => `${p.ergebnis} = [${p.formel} for x in ${p.liste}]`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.map(x => ${p.formel});` },
+
+  { id:'liste_filter',   kat:'liste', icon:'🔽', de:'Liste filtern',
+    hilfe:'Behält nur Elemente, die eine Bedingung erfüllen.',
+    params:[{n:'ergebnis',t:'text',v:'gefiltert',w:90},{n:'liste',t:'text',v:'zahlen',w:80},{n:'bedingung',t:'text',v:'x > 0',w:90}],
+    py: p => `${p.ergebnis} = [x for x in ${p.liste} if ${p.bedingung}]`,
+    js: p => `let ${p.ergebnis} = ${p.liste}.filter(x => ${p.bedingung});` },
+
+  // ─── TEXTE ──────────────────────────────────────────────────
+  { id:'text_laenge',    kat:'text', icon:'📏', de:'Textlänge',
+    hilfe:'Zählt die Zeichen im Text.',
+    params:[{n:'ergebnis',t:'text',v:'laenge',w:80},{n:'text',t:'text',v:'text',w:80}],
+    py: p => `${p.ergebnis} = len(${p.text})`,
+    js: p => `let ${p.ergebnis} = ${p.text}.length;` },
+
+  { id:'text_gross',     kat:'text', icon:'⬆', de:'Großbuchstaben',
+    hilfe:'Wandelt den Text in Großbuchstaben um.',
+    params:[{n:'ergebnis',t:'text',v:'gross',w:80},{n:'text',t:'text',v:'text',w:80}],
+    py: p => `${p.ergebnis} = ${p.text}.upper()`,
+    js: p => `let ${p.ergebnis} = ${p.text}.toUpperCase();` },
+
+  { id:'text_klein',     kat:'text', icon:'⬇', de:'Kleinbuchstaben',
+    hilfe:'Wandelt den Text in Kleinbuchstaben um.',
+    params:[{n:'ergebnis',t:'text',v:'klein',w:80},{n:'text',t:'text',v:'text',w:80}],
+    py: p => `${p.ergebnis} = ${p.text}.lower()`,
+    js: p => `let ${p.ergebnis} = ${p.text}.toLowerCase();` },
+
+  { id:'text_trim',      kat:'text', icon:'✂', de:'Leerzeichen entfernen',
+    hilfe:'Entfernt Leerzeichen am Anfang und Ende.',
+    params:[{n:'ergebnis',t:'text',v:'bereinigt',w:90},{n:'text',t:'text',v:'text',w:80}],
+    py: p => `${p.ergebnis} = ${p.text}.strip()`,
+    js: p => `let ${p.ergebnis} = ${p.text}.trim();` },
+
+  { id:'text_ersetzen',  kat:'text', icon:'🔄', de:'Text ersetzen',
+    hilfe:'Ersetzt alle Vorkommen eines Textes.',
+    params:[{n:'ergebnis',t:'text',v:'neu',w:70},{n:'text',t:'text',v:'text',w:80},{n:'alt',t:'text',v:'a',w:50},{n:'neu',t:'text',v:'b',w:50}],
+    py: p => `${p.ergebnis} = ${p.text}.replace("${p.alt}", "${p.neu}")`,
+    js: p => `let ${p.ergebnis} = ${p.text}.replaceAll("${p.alt}", "${p.neu}");` },
+
+  { id:'text_teilen',    kat:'text', icon:'✂️', de:'Text aufteilen',
+    hilfe:'Teilt einen Text an einem Trennzeichen → Liste.',
+    params:[{n:'ergebnis',t:'text',v:'teile',w:80},{n:'text',t:'text',v:'text',w:80},{n:'trenner',t:'text',v:' ',w:40}],
+    py: p => `${p.ergebnis} = ${p.text}.split("${p.trenner}")`,
+    js: p => `let ${p.ergebnis} = ${p.text}.split("${p.trenner}");` },
+
+  { id:'text_verbinden', kat:'text', icon:'🔗', de:'Texte verbinden',
+    hilfe:'Klebt zwei Texte zusammen.',
+    params:[{n:'ergebnis',t:'text',v:'gesamt',w:80},{n:'a',t:'text',v:'text1',w:80},{n:'b',t:'text',v:'text2',w:80}],
+    py: p => `${p.ergebnis} = ${p.a} + ${p.b}`,
+    js: p => `let ${p.ergebnis} = ${p.a} + ${p.b};` },
+
+  { id:'text_enthaelt',  kat:'text', icon:'🔍', de:'Text enthält …?',
+    hilfe:'Prüft ob ein Text in einem anderen vorkommt.',
+    params:[{n:'ergebnis',t:'text',v:'gefunden',w:90},{n:'suche',t:'text',v:'ello',w:70},{n:'text',t:'text',v:'text',w:70}],
+    py: p => `${p.ergebnis} = "${p.suche}" in ${p.text}`,
+    js: p => `let ${p.ergebnis} = ${p.text}.includes("${p.suche}");` },
+
+  { id:'text_format',    kat:'text', icon:'🎨', de:'Text mit Variable (f-String)',
+    hilfe:'Baut einen Text aus festen Teilen und einer Variable.',
+    params:[{n:'ergebnis',t:'text',v:'nachricht',w:90},{n:'vorlage',t:'text',v:'Hallo {name}!',w:130}],
+    py: p => `${p.ergebnis} = f"${p.vorlage}"`,
+    js: p => `let ${p.ergebnis} = \`${p.vorlage.replace(/\{(\w+)\}/g,'${$1}')}\`;` },
+
+  { id:'text_zahl',      kat:'text', icon:'🔢', de:'Text zu Zahl',
+    hilfe:'Wandelt einen Text-Wert in eine Zahl um.',
+    params:[{n:'ergebnis',t:'text',v:'n',w:60},{n:'text',t:'text',v:'text',w:80}],
+    py: p => `${p.ergebnis} = int(${p.text})`,
+    js: p => `let ${p.ergebnis} = Number(${p.text});` },
+
+  { id:'text_zahl2str',  kat:'text', icon:'🔤', de:'Zahl zu Text',
+    hilfe:'Wandelt eine Zahl in einen Text um.',
+    params:[{n:'ergebnis',t:'text',v:'s',w:60},{n:'zahl',t:'text',v:'zahl',w:80}],
+    py: p => `${p.ergebnis} = str(${p.zahl})`,
+    js: p => `let ${p.ergebnis} = String(${p.zahl});` },
+
+  // ─── FEHLERBEHANDLUNG ───────────────────────────────────────
+  { id:'versuchen',      kat:'fehler', icon:'🛡️', de:'Versuchen (try)',
+    hilfe:'Startet einen Block, der Fehler abfangen kann.',
+    params:[],
+    py: _ => `try:`,
+    js: _ => `try {` },
+
+  { id:'fehler_abf',     kat:'fehler', icon:'⚠️', de:'Fehler abfangen (except/catch)',
+    hilfe:'Wird ausgeführt wenn im try-Block ein Fehler aufgetreten ist.',
+    params:[{n:'fehlertyp',t:'text',v:'Exception',w:100},{n:'variable',t:'text',v:'e',w:50}],
+    py: p => `except ${p.fehlertyp} as ${p.variable}:`,
+    js: p => `} catch (${p.variable}) {` },
+
+  { id:'abschliessend',  kat:'fehler', icon:'🏁', de:'Abschließend (finally)',
+    hilfe:'Wird immer ausgeführt — egal ob Fehler oder nicht.',
+    params:[],
+    py: _ => `finally:`,
+    js: _ => `} finally {` },
+
+  { id:'fehler_ausloesen',kat:'fehler',icon:'🚨', de:'Fehler auslösen',
+    hilfe:'Wirft einen Fehler mit einer Nachricht.',
+    params:[{n:'typ',t:'text',v:'ValueError',w:100},{n:'nachricht',t:'text',v:'Ungültiger Wert',w:130}],
+    py: p => `raise ${p.typ}("${p.nachricht}")`,
+    js: p => `throw new Error("${p.nachricht}");` },
+
+  { id:'pruefen',        kat:'fehler', icon:'✅', de:'Behauptung prüfen (assert)',
+    hilfe:'Wirft einen Fehler wenn die Bedingung falsch ist.',
+    params:[{n:'bedingung',t:'text',v:'x > 0',w:110},{n:'nachricht',t:'text',v:'x muss positiv sein',w:140}],
+    py: p => `assert ${p.bedingung}, "${p.nachricht}"`,
+    js: p => `if (!(${p.bedingung})) throw new Error("${p.nachricht}");` },
+
+  { id:'fehler_ende',    kat:'fehler', icon:'🔚', de:'Ende Fehlerbehandlung',
+    hilfe:'Schließt den try/except Block ab.',
+    params:[],
+    py: _ => `# Ende Fehlerbehandlung`,
+    js: _ => `}` },
+
+  // ─── SONSTIGES ──────────────────────────────────────────────
+  { id:'kommentar',      kat:'sonstige', icon:'💬', de:'Kommentar',
+    hilfe:'Erklärender Text, der nicht ausgeführt wird.',
+    params:[{n:'text',t:'text',v:'Hier ist mein Code',w:180}],
+    py: p => `# ${p.text}`,
+    js: p => `// ${p.text}` },
+
+  { id:'leerzeile',      kat:'sonstige', icon:'↕️', de:'Leerzeile (Trenner)',
+    hilfe:'Fügt eine Leerzeile ein.',
+    params:[],
+    py: _ => ``,
+    js: _ => `` },
+
+  { id:'import_modul',   kat:'sonstige', icon:'📦', de:'Modul importieren',
+    hilfe:'Importiert ein Modul (Python) oder Paket (JavaScript).',
+    params:[{n:'modul',t:'text',v:'math',w:90}],
+    py: p => `import ${p.modul}`,
+    js: p => `// Hinweis: Pakete im Browser per <script> einbinden\nconst ${p.modul} = require('${p.modul}');` },
+
+  { id:'typ_pruefen',    kat:'sonstige', icon:'🔎', de:'Typ prüfen',
+    hilfe:'Gibt den Typ einer Variable zurück.',
+    params:[{n:'ergebnis',t:'text',v:'t',w:60},{n:'variable',t:'text',v:'x',w:70}],
+    py: p => `${p.ergebnis} = type(${p.variable}).__name__`,
+    js: p => `let ${p.ergebnis} = typeof ${p.variable};` },
+
+  { id:'warten',         kat:'sonstige', icon:'💤', de:'Warten (sleep)',
+    hilfe:'Pausiert die Ausführung für einige Sekunden.',
+    params:[{n:'sekunden',t:'num',v:'1',w:55}],
+    py: p => `time.sleep(${p.sekunden})`,
+    js: p => `await new Promise(r => setTimeout(r, ${p.sekunden * 1000}));` },
+
+  { id:'fehler_meld',    kat:'sonstige', icon:'❌', de:'Fehler ausgeben',
+    hilfe:'Gibt eine Fehlermeldung aus.',
+    params:[{n:'nachricht',t:'text',v:'Ein Fehler ist aufgetreten',w:180}],
+    py: p => `print(f"FEHLER: ${p.nachricht}")`,
+    js: p => `console.error("FEHLER: ${p.nachricht}");` },
+
+  { id:'debug',          kat:'sonstige', icon:'🐛', de:'Debug-Ausgabe',
+    hilfe:'Gibt eine Variable zur Fehlersuche aus.',
+    params:[{n:'label',t:'text',v:'debug',w:80},{n:'variable',t:'text',v:'x',w:70}],
+    py: p => `print(f"[DEBUG] ${p.label} =", ${p.variable})`,
+    js: p => `console.log("[DEBUG] ${p.label} =", ${p.variable});` },
+
+  { id:'platzhalter',    kat:'sonstige', icon:'⏩', de:'Platzhalter (pass)',
+    hilfe:'Platzhalter für noch nicht geschriebenen Code.',
+    params:[],
+    py: _ => `pass`,
+    js: _ => `// TODO` },
+];
+
+// ══════════════════════════════════════════════════════════════════
+//  HILFSFUNKTIONEN
+// ══════════════════════════════════════════════════════════════════
+
+// Gibt Anführungszeichen wenn es kein Bezeichner/Zahl ist
+function pq(v) {
+  if (/^[a-zA-Z_$][a-zA-Z0-9_$.[\]]*$/.test(v)) return v;
+  if (/^-?\d+(\.\d+)?$/.test(v)) return v;
+  return `"${v}"`;
+}
+
+// HTML-Escape für Attribute
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  STATUS
+// ══════════════════════════════════════════════════════════════════
+let lang       = 'py';
+let stapel     = [];        // [{id, p: {paramName: wert}}]
+let undoStapel = [];
+let redoStapel = [];
+let aktivKat   = 'alle';
+let ziehen     = null;      // {typ:'palette'|'stapel', id, idx}
+
+// ══════════════════════════════════════════════════════════════════
+//  KATEGORIEN
+// ══════════════════════════════════════════════════════════════════
+const KATEGORIEN = {
+  alle:      { label:'🌟 Alle',          farbe:'#445566' },
+  io:        { label:'🖨 Ein/Ausgabe',   farbe:'var(--c-io)' },
+  var:       { label:'📌 Variablen',     farbe:'var(--c-var)' },
+  math:      { label:'➕ Mathematik',    farbe:'var(--c-math)' },
+  logik:     { label:'❓ Logik',          farbe:'var(--c-logik)' },
+  schleife:  { label:'🔁 Schleifen',     farbe:'var(--c-schleife)' },
+  funk:      { label:'⚙️ Funktionen',    farbe:'var(--c-funk)' },
+  liste:     { label:'📝 Listen',        farbe:'var(--c-liste)' },
+  text:      { label:'🔤 Texte',         farbe:'var(--c-text)' },
+  fehler:    { label:'🛡 Fehler',        farbe:'var(--c-fehler)' },
+  sonstige:  { label:'🔧 Sonstiges',     farbe:'var(--c-sonstige)' },
+};
+
+function initKategorien() {
+  const wrap = document.getElementById('kat-buttons');
+  Object.entries(KATEGORIEN).forEach(([k, m]) => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill' + (k === 'alle' ? ' active' : '');
+    btn.textContent = m.label;
+    btn.style.background = m.farbe;
+    btn.onclick = () => {
+      document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      aktivKat = k;
+      renderPalette(k, document.getElementById('suchfeld').value);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PALETTE
+// ══════════════════════════════════════════════════════════════════
+function renderPalette(kat, suche) {
+  const liste = document.getElementById('pal-liste');
+  liste.innerHTML = '';
+  const q = suche.toLowerCase();
+  const gefiltert = BLOECKE.filter(b =>
+    (kat === 'alle' || b.kat === kat) &&
+    (b.de.toLowerCase().includes(q) || b.kat.includes(q))
+  );
+
+  if (gefiltert.length === 0) {
+    liste.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:.8rem;">Keine Blöcke gefunden</div>';
+    return;
+  }
+
+  // Nach Kategorie gruppieren
+  const gruppen = {};
+  gefiltert.forEach(b => { (gruppen[b.kat] = gruppen[b.kat] || []).push(b); });
+
+  Object.entries(gruppen).forEach(([k, blist]) => {
+    if (kat === 'alle') {
+      const lbl = document.createElement('div');
+      lbl.className = 'pal-group-label';
+      lbl.textContent = (KATEGORIEN[k] || { label: k }).label;
+      liste.appendChild(lbl);
+    }
+    blist.forEach(b => liste.appendChild(palBlock(b)));
+  });
+}
+
+function palBlock(def) {
+  const el = document.createElement('div');
+  el.className = `block b-${def.kat}`;
+  el.draggable = true;
+  el.dataset.id = def.id;
+
+  let html = `<span class="icon">${def.icon}</span><span>${def.de}</span>`;
+  def.params.forEach(p => {
+    html += `<input type="${p.t === 'num' ? 'number' : 'text'}" value="${esc(p.v)}" style="width:${p.w || 70}px;pointer-events:none" tabindex="-1">`;
+  });
+  el.innerHTML = html;
+
+  // Tooltip
+  el.addEventListener('mouseenter', e => showTip(def.de, def.hilfe, e));
+  el.addEventListener('mousemove',  e => moveTip(e));
+  el.addEventListener('mouseleave', hideTip);
+
+  // Drag
+  el.addEventListener('dragstart', e => {
+    ziehen = { typ: 'palette', id: def.id };
+    ghostShow(def);
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+  el.addEventListener('dragend', ghostHide);
+
+  // Doppelklick = am Ende hinzufügen
+  el.addEventListener('dblclick', () => {
+    undoSpeichern();
+    const p = {}; def.params.forEach(pr => p[pr.n] = pr.v);
+    stapel.push({ id: def.id, p });
+    renderStapel(); kodeAktualisieren();
+    toast(`${def.icon} ${def.de} hinzugefügt`);
+  });
+
+  return el;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  DRAG GHOST
+// ══════════════════════════════════════════════════════════════════
+document.addEventListener('dragover', e => {
+  const g = document.getElementById('ghost');
+  g.style.left = (e.clientX + 14) + 'px';
+  g.style.top  = (e.clientY + 8) + 'px';
+});
+
+function ghostShow(def) {
+  const g = document.getElementById('ghost');
+  g.className = `block b-${def.kat}`;
+  g.style.display = 'flex';
+  g.innerHTML = `<span>${def.icon}</span> ${def.de}`;
+}
+function ghostHide() {
+  document.getElementById('ghost').style.display = 'none';
+  hideTip();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CANVAS DROP
+// ══════════════════════════════════════════════════════════════════
+const canvasBody = document.getElementById('canvas-body');
+canvasBody.addEventListener('dragover', e => e.preventDefault());
+canvasBody.addEventListener('drop', e => {
+  e.preventDefault();
+  if (!ziehen) return;
+  if (ziehen.typ === 'palette') {
+    const def = BLOECKE.find(b => b.id === ziehen.id);
+    if (!def) return;
+    undoSpeichern();
+    const p = {}; def.params.forEach(pr => p[pr.n] = pr.v);
+    stapel.push({ id: def.id, p });
+    renderStapel(); kodeAktualisieren();
+  }
+  ziehen = null; ghostHide();
+});
+
+// ══════════════════════════════════════════════════════════════════
+//  STAPEL RENDERN
+// ══════════════════════════════════════════════════════════════════
+function renderStapel() {
+  const stack = document.getElementById('block-stack');
+  const hint  = document.getElementById('leer-hinweis');
+  stack.innerHTML = '';
+  hint.style.display = stapel.length === 0 ? '' : 'none';
+
+  document.getElementById('zaehler').textContent =
+    stapel.length + ' Block' + (stapel.length === 1 ? '' : 'e');
+  document.getElementById('canvas-info').textContent =
+    stapel.length === 0
+      ? 'Blöcke hierher ziehen oder doppelklicken →'
+      : `${stapel.length} Block${stapel.length === 1 ? '' : 'e'} — Drag zum Sortieren`;
+
+  undoRedoBtnStatus();
+
+  // Drop-Zone oben
+  stack.appendChild(dropzone(0));
+
+  stapel.forEach((item, idx) => {
+    const def = BLOECKE.find(b => b.id === item.id);
+    if (!def) return;
+    stack.appendChild(stapelBlock(def, item, idx));
+    stack.appendChild(dropzone(idx + 1));
+  });
+}
+
+function stapelBlock(def, item, idx) {
+  const el = document.createElement('div');
+  el.className = `sb b-${def.kat}`;
+  el.draggable = true;
+  el.dataset.idx = idx;
+
+  // Einrückung berechnen
+  const lvl = Math.min(einrueckung(idx), 3);
+  if (lvl > 0) el.classList.add(`ind${lvl}`);
+
+  let html = `<span style="flex-shrink:0;font-size:.9rem">${def.icon}</span>`;
+  html += `<span class="sb-label">${def.de}</span>`;
+  def.params.forEach(pr => {
+    const val = item.p[pr.n] !== undefined ? item.p[pr.n] : pr.v;
+    html += `<input type="${pr.t === 'num' ? 'number' : 'text'}" data-key="${pr.n}" value="${esc(String(val))}" style="width:${pr.w || 70}px">`;
+  });
+  html += `<span class="sb-actions">
+    <button class="sba" data-mv="-1" title="Nach oben">↑</button>
+    <button class="sba" data-mv="1"  title="Nach unten">↓</button>
+    <button class="sba dup" title="Duplizieren">⧉</button>
+    <button class="sba del" title="Löschen">✕</button>
+  </span>`;
+  el.innerHTML = html;
+
+  // Inputs
+  el.querySelectorAll('input[data-key]').forEach(inp => {
+    inp.addEventListener('input', () => { item.p[inp.dataset.key] = inp.value; kodeAktualisieren(); });
+    inp.addEventListener('mousedown', e => e.stopPropagation());
+    inp.addEventListener('keydown', e => e.stopPropagation());
+    inp.addEventListener('focus', e => e.stopPropagation());
+  });
+
+  // Buttons
+  el.querySelector('[data-mv="-1"]').addEventListener('click', e => { e.stopPropagation(); blockBewegen(idx, -1); });
+  el.querySelector('[data-mv="1"]').addEventListener('click',  e => { e.stopPropagation(); blockBewegen(idx, +1); });
+  el.querySelector('.dup').addEventListener('click', e => { e.stopPropagation(); blockDuplik(idx); });
+  el.querySelector('.del').addEventListener('click', e => { e.stopPropagation(); blockLoeschen(idx); });
+
+  // Drag (Sortieren)
+  el.addEventListener('dragstart', e => {
+    ziehen = { typ: 'stapel', idx };
+    el.classList.add('dragging');
+    ghostShow(def);
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
+  });
+  el.addEventListener('dragend', () => { el.classList.remove('dragging'); ghostHide(); ziehen = null; });
+
+  return el;
+}
+
+function dropzone(insertAt) {
+  const dz = document.createElement('div');
+  dz.className = 'dz';
+  dz.dataset.at = insertAt;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    dz.classList.remove('over');
+    const at = parseInt(dz.dataset.at);
+    if (!ziehen) return;
+    undoSpeichern();
+    if (ziehen.typ === 'palette') {
+      const def = BLOECKE.find(b => b.id === ziehen.id);
+      if (!def) return;
+      const p = {}; def.params.forEach(pr => p[pr.n] = pr.v);
+      stapel.splice(at, 0, { id: def.id, p });
+    } else if (ziehen.typ === 'stapel') {
+      const src = ziehen.idx;
+      const [moved] = stapel.splice(src, 1);
+      stapel.splice(src < at ? at - 1 : at, 0, moved);
+    }
+    ziehen = null; ghostHide();
+    renderStapel(); kodeAktualisieren();
+  });
+  return dz;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  EINRÜCKUNG — rein logisch, zählt öffnende/schließende Blöcke
+// ══════════════════════════════════════════════════════════════════
+function blockCode(item) {
+  const def = BLOECKE.find(b => b.id === item.id);
+  if (!def) return '';
+  try { return lang === 'py' ? def.py(item.p) : def.js(item.p); }
+  catch(e) { return ''; }
+}
+
+function istOeffner(code) {
+  const t = code.trimEnd();
+  return lang === 'py' ? t.endsWith(':') : (t.endsWith('{') && !t.endsWith('{}'));
+}
+
+function istSchliesser(code) {
+  const t = code.trimStart();
+  return lang === 'py'
+    ? (t.startsWith('elif ') || t.startsWith('else:') || t.startsWith('except') ||
+       t.startsWith('finally') || t.startsWith('# Ende'))
+    : (t.startsWith('}'));
+}
+
+function einrueckung(idx) {
+  let level = 0;
+  for (let i = 0; i < idx; i++) {
+    const c = blockCode(stapel[i]);
+    if (istSchliesser(c)) level = Math.max(0, level - 1);
+    // schauen ob *dieses* schon ein Schließer ist → Einrückung reduzieren BEVOR der aktuelle Block steht
+    if (istOeffner(c)) level++;
+  }
+  // Schließer am aktuellen Block → eine Stufe zurück
+  if (idx < stapel.length) {
+    const c = blockCode(stapel[idx]);
+    if (istSchliesser(c)) level = Math.max(0, level - 1);
+  }
+  return level;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CODE GENERIEREN
+// ══════════════════════════════════════════════════════════════════
+function kodeAktualisieren() {
+  const out = document.getElementById('code-out');
+  if (stapel.length === 0) {
+    out.innerHTML = `<span class="hl-cmt">${lang === 'py' ? '# Füge Blöcke hinzu …' : '// Füge Blöcke hinzu …'}</span>`;
+    return;
+  }
+
+  const IND = '    ';
+  let indent = 0;
+  const zeilen = [];
+
+  stapel.forEach(item => {
+    const def = BLOECKE.find(b => b.id === item.id);
+    if (!def) return;
+    let roh;
+    try { roh = lang === 'py' ? def.py(item.p) : def.js(item.p); }
+    catch(e) { roh = '# Fehler im Block'; }
+
+    // Schließer ERST einrücken, DANN indent verringern
+    if (istSchliesser(roh)) indent = Math.max(0, indent - 1);
+
+    roh.split('\n').forEach(zeile => {
+      zeilen.push({ text: zeile, ind: indent });
+    });
+
+    if (istOeffner(roh)) indent++;
+  });
+
+  out.innerHTML = zeilen.map(z => {
+    const voll = IND.repeat(z.ind) + z.text;
+    return hlZeile(voll);
+  }).join('\n');
+}
+
+function hlZeile(zeile) {
+  const e = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const es = e(zeile);
+  if (zeile.trim().startsWith('#') || zeile.trim().startsWith('//'))
+    return `<span class="hl-cmt">${es}</span>`;
+
+  if (lang === 'py') {
+    return es
+      .replace(/\b(def|class|if|elif|else|for|while|in|return|import|from|as|try|except|finally|raise|pass|break|continue|yield|lambda|global|with|assert|del|not|and|or|True|False|None|async|await|self)\b/g, '<span class="hl-kw">$1</span>')
+      .replace(/\b(print|input|len|range|int|float|str|bool|list|dict|set|type|isinstance|abs|round|max|min|sum|sorted|reversed|enumerate|map|filter|zip|open|super|random|math|time|datetime)\b/g, '<span class="hl-fn">$1</span>')
+      .replace(/"([^"]*)"/g, '<span class="hl-str">"$1"</span>')
+      .replace(/'([^']*)'/g, "<span class='hl-str'>'$1'</span>")
+      .replace(/\b(\d+\.?\d*)\b/g, '<span class="hl-num">$1</span>');
+  } else {
+    return es
+      .replace(/\b(const|let|var|function|class|if|else|for|while|do|return|import|export|from|try|catch|finally|throw|break|continue|yield|async|await|new|delete|typeof|instanceof|extends|super|of|in|true|false|null|undefined)\b/g, '<span class="hl-kw">$1</span>')
+      .replace(/\b(console|Math|Array|Object|String|Number|Boolean|Date|JSON|Promise|parseInt|parseFloat|setTimeout|setInterval|alert|prompt|document|window|fetch|require)\b/g, '<span class="hl-cls">$1</span>')
+      .replace(/"([^"]*)"/g, '<span class="hl-str">"$1"</span>')
+      .replace(/`([^`]*)`/g, '<span class="hl-str">`$1`</span>')
+      .replace(/'([^']*)'/g, "<span class='hl-str'>'$1'</span>")
+      .replace(/\b(\d+\.?\d*)\b/g, '<span class="hl-num">$1</span>');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  BLOCK-AKTIONEN
+// ══════════════════════════════════════════════════════════════════
+function blockLoeschen(idx) {
+  undoSpeichern();
+  stapel.splice(idx, 1);
+  renderStapel(); kodeAktualisieren();
+}
+function blockDuplik(idx) {
+  undoSpeichern();
+  stapel.splice(idx + 1, 0, JSON.parse(JSON.stringify(stapel[idx])));
+  renderStapel(); kodeAktualisieren();
+  toast('Block dupliziert');
+}
+function blockBewegen(idx, dir) {
+  const ziel = idx + dir;
+  if (ziel < 0 || ziel >= stapel.length) return;
+  undoSpeichern();
+  [stapel[idx], stapel[ziel]] = [stapel[ziel], stapel[idx]];
+  renderStapel(); kodeAktualisieren();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  UNDO / REDO
+// ══════════════════════════════════════════════════════════════════
+function undoSpeichern() {
+  undoStapel.push(JSON.stringify(stapel));
+  if (undoStapel.length > 60) undoStapel.shift();
+  redoStapel = [];
+  undoRedoBtnStatus();
+}
+function undo() {
+  if (!undoStapel.length) return;
+  redoStapel.push(JSON.stringify(stapel));
+  stapel = JSON.parse(undoStapel.pop());
+  renderStapel(); kodeAktualisieren();
+}
+function redo() {
+  if (!redoStapel.length) return;
+  undoStapel.push(JSON.stringify(stapel));
+  stapel = JSON.parse(redoStapel.pop());
+  renderStapel(); kodeAktualisieren();
+}
+function undoRedoBtnStatus() {
+  document.getElementById('btn-undo').disabled = undoStapel.length === 0;
+  document.getElementById('btn-redo').disabled = redoStapel.length === 0;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SPRACHE
+// ══════════════════════════════════════════════════════════════════
+function setLang(l) {
+  lang = l;
+  document.getElementById('btn-py').classList.toggle('active', l === 'py');
+  document.getElementById('btn-js').classList.toggle('active', l === 'js');
+  document.getElementById('code-titel').textContent = l === 'py' ? 'Python Code' : 'JavaScript Code';
+  const dot = document.querySelector('.code-lang-dot');
+  dot.style.background = l === 'py' ? 'var(--blue)' : 'var(--yellow)';
+  kodeAktualisieren();
+}
+
+function sucheBloecke(v) { renderPalette(aktivKat, v); }
+
+// ══════════════════════════════════════════════════════════════════
+//  AUSFÜHREN (JavaScript)
+//  Python läuft nicht im Browser — wir zeigen eine Erklärung
+// ══════════════════════════════════════════════════════════════════
+function ausfuehren() {
+  const outEl  = document.getElementById('out-text');
+  const code   = document.getElementById('code-out').innerText;
+
+  if (lang === 'py') {
+    outEl.style.color = 'var(--muted)';
+    outEl.textContent =
+      '🐍 Python läuft nicht direkt im Browser.\n' +
+      'Kopiere den Code oben und führe ihn in\n' +
+      'deinem Python-Programm aus!';
+    return;
+  }
+
+  // JavaScript ausführen
+  const logs = [];
+  const _cl  = console.log;
+  const _cw  = console.warn;
+  const _ce  = console.error;
+  const _al  = window.alert;
+  console.log   = (...a) => logs.push(a.map(x => { try { return JSON.stringify(x) ?? String(x); } catch { return String(x); } }).join(' '));
+  console.warn  = (...a) => logs.push('⚠️  ' + a.join(' '));
+  console.error = (...a) => logs.push('❌  ' + a.join(' '));
+  window.alert  = m  => logs.push('💬  ' + m);
+
+  try {
+    // Wrap in async IIFE damit await-Blöcke (ohne Fehler) zumindest kompilieren
+    const wrapped = `(async () => {\n${code}\n})().catch(e => console.error(e.message));`;
+    eval(wrapped);
+    // Kurz warten damit async-Ergebnisse ankommen
+    setTimeout(() => {
+      outEl.style.color = 'var(--green)';
+      outEl.textContent = logs.length > 0 ? logs.join('\n') : '✓ Code ausgeführt — keine Ausgabe';
+    }, 120);
+  } catch (e) {
+    outEl.style.color = 'var(--red)';
+    outEl.textContent = '❌  Fehler: ' + e.message;
+  } finally {
+    console.log   = _cl;
+    console.warn  = _cw;
+    console.error = _ce;
+    window.alert  = _al;
+  }
+}
+
+function ausgabeLeeren() {
+  const o = document.getElementById('out-text');
+  o.style.color = 'var(--green)';
+  o.textContent = 'Bereit.';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  KOPIEREN / DOWNLOAD
+// ══════════════════════════════════════════════════════════════════
+function kopieren() {
+  const text = document.getElementById('code-out').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const b = document.getElementById('kop-btn');
+    b.textContent = '✓ Kopiert!';
+    setTimeout(() => b.textContent = '📋 Kopieren', 2000);
+  });
+}
+function herunterladen() {
+  const text = document.getElementById('code-out').innerText;
+  const ext  = lang === 'py' ? 'py' : 'js';
+  const a    = document.createElement('a');
+  a.href     = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  a.download = 'mein_code.' + ext;
+  a.click();
+  toast('Code als .' + ext + ' gespeichert');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SPEICHERN / LADEN (via Clipboard)
+// ══════════════════════════════════════════════════════════════════
+function speichern() {
+  const data = JSON.stringify({ lang, stapel }, null, 2);
+  navigator.clipboard.writeText(data).then(() => {
+    toast('✅ Projekt in Zwischenablage gespeichert — mit Strg+V einfügen zum Laden');
+  }).catch(() => {
+    prompt('Kopiere diesen Text zum Speichern:', data);
+  });
+}
+function laden() {
+  const eingabe = prompt('Füge hier deinen gespeicherten Projekttext ein:');
+  if (!eingabe) return;
+  try {
+    const data = JSON.parse(eingabe);
+    if (data.stapel && data.lang) {
+      undoSpeichern();
+      stapel = data.stapel;
+      setLang(data.lang);
+      renderStapel(); kodeAktualisieren();
+      toast('✅ Projekt geladen!');
+    } else {
+      toast('❌ Ungültiges Format');
+    }
+  } catch (e) {
+    toast('❌ Fehler beim Laden');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SONSTIGES
+// ══════════════════════════════════════════════════════════════════
+function allesLoeschen() {
+  if (!stapel.length) return;
+  if (confirm('Alle Blöcke wirklich löschen?')) {
+    undoSpeichern();
+    stapel = [];
+    renderStapel(); kodeAktualisieren();
+  }
+}
+function alleNachOben() {
+  document.getElementById('canvas-body').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Tooltip ──
+function showTip(titel, text, e) {
+  const t = document.getElementById('tip');
+  t.innerHTML = `<b>${titel}</b>${text}`;
+  t.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  const t = document.getElementById('tip');
+  t.style.left = Math.min(e.clientX + 14, window.innerWidth - 225) + 'px';
+  t.style.top  = Math.min(e.clientY + 12, window.innerHeight - 90) + 'px';
+}
+function hideTip() { document.getElementById('tip').style.display = 'none'; }
+
+// ── Toast ──
+let _tt;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Tastenkürzel ──
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+    if (e.key === 's') { e.preventDefault(); speichern(); }
+    if (e.key === 'c' && e.shiftKey) { e.preventDefault(); kopieren(); }
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════════════════
+initKategorien();
+renderPalette('alle', '');
+renderStapel();
+kodeAktualisieren();
+</script>
+</body>
+</html>
