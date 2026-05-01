@@ -141,6 +141,7 @@
         const frame = document.getElementById('glaggleFrame');
         const anzeige = document.getElementById('versionsNummer');
         const hashText = document.getElementById('hashAnzeige');
+        const rawUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${hash}/index.html`;
 
         regler.oninput = function() {
             const index = this.value;
