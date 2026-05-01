@@ -83,17 +83,14 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 .popup-btn.danger{background:linear-gradient(135deg,#ff4444,#cc2222)}
 .popup-btn.success{background:linear-gradient(135deg,var(--emerald),#00b859)}
 .popup-btn.secondary{background:rgba(46,148,209,0.15);border:1px solid var(--wave)}
-.popup-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(46,148,209,0.25);font-size:12px}
-.float-coin{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;color:var(--gold);text-shadow:0 2px 6px rgba(0,0,0,0.6);z-index:800;animation:floatUp 1.3s ease-out forwards}
-@keyframes floatUp{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-80px) scale(1.3);opacity:0}}
-.level-flash{position:fixed;inset:0;background:radial-gradient(circle,rgba(255,215,0,0.25) 0%,transparent 70%);pointer-events:none;z-index:700;animation:flashOut 1s ease-out forwards}
-@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
 .room-tooltip{position:fixed;background:rgba(13,51,80,0.85);border:1px solid var(--wave-light);border-radius:8px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;display:none;min-width:100px}
 .room-tooltip.show{display:block}
 .tooltip-name{font-weight:800;color:var(--wave-light);margin-bottom:2px}
 .tooltip-status{font-size:10px;color:rgba(232,244,253,0.7)}
 .tooltip-time{font-size:10px;color:var(--gold)}
 #prestige-badge{border-color:#ff80ff!important;color:#ff80ff!important}
+.level-flash{position:fixed;inset:0;background:radial-gradient(circle,rgba(255,215,0,0.25) 0%,transparent 70%);pointer-events:none;z-index:700;animation:flashOut 1s ease-out forwards}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
@@ -101,7 +98,7 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 <div class="welcome-screen" id="welcome-screen">
   <div class="welcome-fish">🐠</div>
   <div class="welcome-logo">🌊 Glaggle Resort 3D</div>
-  <div class="welcome-sub">Baue das größte Unterwasser-Resort! Checke Gäste ein, sammle Coins & kaufe Upgrades! 💰</div>
+  <div class="welcome-sub">Baue das größte Unterwasser-Resort!</div>
   <div class="instructions-box">
     <h3>🎮 WIE SPIELT MAN?</h3>
     <ul>
@@ -208,21 +205,21 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const GUESTS = [
-  {name:'Nemo',emoji:'🐠',pay:5,stayTime:10000,vip:false,color:0xFF6B35},
-  {name:'Dori',emoji:'🐟',pay:6,stayTime:9000,vip:false,color:0x4FC3F7},
-  {name:'Krake',emoji:'🐙',pay:8,stayTime:12000,vip:false,color:0xBA68C8},
-  {name:'Sharky',emoji:'🦈',pay:12,stayTime:11000,vip:false,color:0x90A4AE},
-  {name:'Seepferd',emoji:'🐴',pay:9,stayTime:8000,vip:false,color:0xFFD54F},
-  {name:'Robbe',emoji:'🦭',pay:10,stayTime:13000,vip:false,color:0xA5D6A7},
-  {name:'Schildkröte',emoji:'🐢',pay:11,stayTime:15000,vip:false,color:0x66BB6A},
-  {name:'Krebs',emoji:'🦀',pay:14,stayTime:10000,vip:false,color:0xEF5350},
-  {name:'Muschel',emoji:'🐚',pay:16,stayTime:12000,vip:false,color:0xF48FB1},
-  {name:'Tintenfisch',emoji:'🦑',pay:18,stayTime:14000,vip:false,color:0xCE93D8},
-  {name:'Wal-König',emoji:'🐳',pay:30,stayTime:18000,vip:true,color:0x29B6F6},
-  {name:'Goldbarren',emoji:'🐡',pay:25,stayTime:16000,vip:true,color:0xFFD700},
-  {name:'Tigerhai',emoji:'🐬',pay:20,stayTime:13000,vip:true,color:0x26C6DA},
-  {name:'Riesenkrabbe',emoji:'🦞',pay:22,stayTime:11000,vip:false,color:0xFF7043},
-  {name:'Leuchtqualle',emoji:'🪼',pay:28,stayTime:20000,vip:true,color:0x80DEEA}
+  {name:'Nemo',emoji:'🐠',pay:5,stayTime:10000,vip:false},
+  {name:'Dori',emoji:'🐟',pay:6,stayTime:9000,vip:false},
+  {name:'Krake',emoji:'🐙',pay:8,stayTime:12000,vip:false},
+  {name:'Sharky',emoji:'🦈',pay:12,stayTime:11000,vip:false},
+  {name:'Seepferd',emoji:'🐴',pay:9,stayTime:8000,vip:false},
+  {name:'Robbe',emoji:'🦭',pay:10,stayTime:13000,vip:false},
+  {name:'Schildkröte',emoji:'🐢',pay:11,stayTime:15000,vip:false},
+  {name:'Krebs',emoji:'🦀',pay:14,stayTime:10000,vip:false},
+  {name:'Muschel',emoji:'🐚',pay:16,stayTime:12000,vip:false},
+  {name:'Tintenfisch',emoji:'🦑',pay:18,stayTime:14000,vip:false},
+  {name:'Wal-König',emoji:'🐳',pay:30,stayTime:18000,vip:true},
+  {name:'Goldbarren',emoji:'🐡',pay:25,stayTime:16000,vip:true},
+  {name:'Tigerhai',emoji:'🐬',pay:20,stayTime:13000,vip:true},
+  {name:'Riesenkrabbe',emoji:'🦞',pay:22,stayTime:11000,vip:false},
+  {name:'Leuchtqualle',emoji:'🪼',pay:28,stayTime:20000,vip:true}
 ];
 
 const UPGRADES = [
@@ -243,14 +240,14 @@ const UPGRADES = [
   {id:'fastSpawn',cat:'⚡',name:'PR',icon:'📣',desc:'+40%',cost:90,spawnBoost:true},
   {id:'fastSpawn2',cat:'⚡',name:'Viral',icon:'📱',desc:'+60%',cost:300,spawnBoost2:true,req:'fastSpawn'},
   {id:'fastSpawn3',cat:'⚡',name:'Influencer',icon:'🌊',desc:'+75%',cost:900,spawnBoost3:true,req:'fastSpawn2'},
-  {id:'moreRooms1',cat:'🏗���',name:'2 Zimmer',icon:'🏗️',desc:'Z9+10',cost:100,unlockRooms:2},
+  {id:'moreRooms1',cat:'🏗️',name:'2 Zimmer',icon:'🏗️',desc:'Z9+10',cost:100,unlockRooms:2},
   {id:'moreRooms2',cat:'🏗️',name:'2 Zimmer II',icon:'🏰',desc:'Z11+12',cost:300,unlockRooms:2,req:'moreRooms1'},
   {id:'bigQueue',cat:'🏗️',name:'Große Queue',icon:'📢',desc:'Max 8',cost:120,queueSize:8},
   {id:'bigQueue2',cat:'🏗️',name:'Riesige Queue',icon:'🏟️',desc:'Max 12',cost:400,queueSize:12,req:'bigQueue'},
   {id:'bigQueue3',cat:'🏗️',name:'Unendliche Q',icon:'♾️',desc:'Max 20',cost:1200,queueSize:20,req:'bigQueue2'},
   {id:'vipLounge',cat:'👑',name:'VIP-Lounge',icon:'👑',desc:'2x VIP',cost:180,vipBoost:true},
   {id:'vipBonus',cat:'👑',name:'VIP-Bonus',icon:'💍',desc:'+50%',cost:500,vipPayBoost:true,req:'vipLounge'},
-  {id:'vipSpeed',cat:'👑',name:'VIP-Express',icon:'🎩',desc:'-30%',cost:700,vipFast:true,req:'vipBonus'},
+  {id:'vipSpeed',cat:'👑',name:'VIP-Express',icon:'����',desc:'-30%',cost:700,vipFast:true,req:'vipBonus'},
   {id:'vipOnly',cat:'👑',name:'Exklusiv',icon:'🦩',desc:'50% VIP',cost:2000,vipOnly:true,req:'vipSpeed'},
   {id:'autoCheckout',cat:'🤖',name:'Auto-Checkout',icon:'🤖',desc:'Auto',cost:400,auto:true},
   {id:'autoAssign',cat:'🤖',name:'Auto-Assign',icon:'🦾',desc:'Auto',cost:1000,autoAssign:true,req:'autoCheckout'},
@@ -267,59 +264,420 @@ const UPGRADES = [
   {id:'prestige',cat:'🌊',name:'PRESTIGE',icon:'🌈',desc:'Reset +2x',cost:15000,prestige:true}
 ];
 
-let state={coins:0,earnings:0,guests:0,checkouts:0,day:1,level:1,xp:0,xpNext:100,rooms:[],queue:[],selected:null,bought:{},active:false,coinMult:1,timeMult:1,flatBonus:1,maxQueue:5,vipBoost:false,vipPayBoost:false,vipFast:false,vipOnly:false,autoCheckout:false,autoAssign:false,autoAll:false,tips:false,tips2:false,happyHour:false,lottery:false,cashback:false,cashbackUsed:false,doubleXP:false,tripleXP:false,streak:false,streakCount:0,nightBonus:false,insurance:false,prestigeCount:0,spawnInterval:3000,totalRooms:8,spawnBoost:1,spawnBoost2:false,spawnBoost3:false};
+let state = {
+  coins: 0, earnings: 0, guests: 0, checkouts: 0, day: 1, level: 1, xp: 0, xpNext: 100,
+  rooms: [], queue: [], selected: null, bought: {}, active: false,
+  coinMult: 1, timeMult: 1, flatBonus: 1, maxQueue: 5,
+  vipBoost: false, vipPayBoost: false, vipFast: false, vipOnly: false,
+  autoCheckout: false, autoAssign: false, autoAll: false,
+  tips: false, tips2: false, happyHour: false, lottery: false, cashback: false, cashbackUsed: false,
+  doubleXP: false, tripleXP: false, streak: false, streakCount: 0,
+  nightBonus: false, insurance: false, prestigeCount: 0,
+  spawnInterval: 3000, totalRooms: 8, spawnBoost: 1, spawnBoost2: false, spawnBoost3: false
+};
 
-let renderer,scene,camera,raycaster,mouse,roomMeshes=[],hover=-1;
+let renderer, scene, camera, raycaster, mouse, roomMeshes = [], hover = -1;
 
-function initThree(){const canvas=document.getElementById('three-canvas');renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));renderer.shadowMap.enabled=true;resizeRenderer();scene=new THREE.Scene();scene.background=new THREE.Color(0x071d2e);scene.fog=new THREE.Fog(0x071d2e,20,50);camera=new THREE.PerspectiveCamera(50,canvas.clientWidth/canvas.clientHeight,0.1,200);camera.position.set(0,12,18);camera.lookAt(0,0,0);raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();const ambient=new THREE.AmbientLight(0x4488aa,0.4);scene.add(ambient);const sunLight=new THREE.DirectionalLight(0x70C4F7,1);sunLight.position.set(8,14,8);sunLight.castShadow=true;sunLight.shadow.mapSize.width=512;scene.add(sunLight);const pointLight=new THREE.PointLight(0xffd700,0.6,20);pointLight.position.set(0,5,0);scene.add(pointLight);const floorGeo=new THREE.PlaneGeometry(40,40);const floorMat=new THREE.MeshLambertMaterial({color:0x0d2b40});const floor=new THREE.Mesh(floorGeo,floorMat);floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);const baseGeo=new THREE.BoxGeometry(13,0.4,9);const baseMat=new THREE.MeshLambertMaterial({color:0x1a4060});const base=new THREE.Mesh(baseGeo,baseMat);base.receiveShadow=true;scene.add(base);const buildGeo=new THREE.BoxGeometry(13,3,2);const buildMat=new THREE.MeshLambertMaterial({color:0x0f3a54});const build=new THREE.Mesh(buildGeo,buildMat);build.position.set(0,1.2,-3);build.castShadow=true;scene.add(build);for(let i=0;i<20;i++){const geo=new THREE.SphereGeometry(0.03+Math.random()*0.06,4,4);const mat=new THREE.MeshBasicMaterial({color:0x70C4F7,transparent:true,opacity:0.2});const m=new THREE.Mesh(geo,mat);m.position.set((Math.random()-0.5)*30,Math.random()*10,(Math.random()-0.5)*20);scene.add(m)}buildRooms();canvas.addEventListener('touchstart',onTouch);canvas.addEventListener('touchmove',onTouch);canvas.addEventListener('click',onClick);window.addEventListener('resize',resizeRenderer);animate()}
+function initThree() {
+  const canvas = document.getElementById('three-canvas');
+  renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.shadowMap.enabled = true;
+  resizeRenderer();
 
-function buildRooms(){roomMeshes.forEach(m=>scene.remove(m));roomMeshes=[];const cols=4;const spacing=2.8;const rows=Math.ceil(state.totalRooms/cols);const startX=-(cols-1)*spacing/2;const startZ=-(rows-1)*spacing/2;for(let i=0;i<12;i++){const room=state.rooms[i];const col=i%cols;const row=Math.floor(i/cols);const x=startX+col*spacing;const z=startZ+row*spacing;const geo=new THREE.BoxGeometry(2,1.4,2);let color=0x1a5278;if(room.locked)color=0x0d1b26;else if(room.guest)color=room.guest.vip?0x7f6000:0x1b5e20;const mat=new THREE.MeshLambertMaterial({color,transparent:room.locked,opacity:room.locked?0.3:1});const mesh=new THREE.Mesh(geo,mat);mesh.position.set(x,0.7,z);mesh.castShadow=true;mesh.userData.id=i;scene.add(mesh);roomMeshes.push(mesh)}}
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x071d2e);
+  scene.fog = new THREE.Fog(0x071d2e, 20, 50);
 
-function onTouch(e){if(e.touches.length===0)return;const touch=e.touches[0];const rect=e.target.getBoundingClientRect();mouse.x=(touch.clientX-rect.left)/rect.width*2-1;mouse.y=-(touch.clientY-rect.top)/rect.height*2+1;updateHover()}
+  camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 200);
+  camera.position.set(0, 12, 18);
+  camera.lookAt(0, 0, 0);
 
-function onClick(){if(hover===-1||state.rooms[hover].locked||!state.selected)return;checkIn(hover)}
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
 
-function updateHover(){raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects(roomMeshes);if(hits.length>0)hover=hits[0].object.userData.id;else hover=-1}
+  const ambient = new THREE.AmbientLight(0x4488aa, 0.4);
+  scene.add(ambient);
 
-function resizeRenderer(){const canvas=document.getElementById('three-canvas');const w=canvas.clientWidth;const h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+  const sunLight = new THREE.DirectionalLight(0x70C4F7, 1);
+  sunLight.position.set(8, 14, 8);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 512;
+  scene.add(sunLight);
 
-function animate(){requestAnimationFrame(animate);if(state.autoCheckout){state.rooms.forEach((room,i)=>{if(room.guest&&room.endTime<=Date.now())checkOut(i,true)})}if(state.autoAssign&&state.queue.length>0){const free=state.rooms.findIndex(r=>!r.guest&&!r.locked);if(free!==-1&&state.selected===null){state.selected=0;checkIn(free)}}renderer.render(scene,camera);updateUI()}
+  const pointLight = new THREE.PointLight(0xffd700, 0.6, 20);
+  pointLight.position.set(0, 5, 0);
+  scene.add(pointLight);
 
-function gameStart(){document.getElementById('welcome-screen').classList.add('hidden');document.getElementById('game-ui').style.display='flex';state.active=true;loadState();state.rooms=Array(12).fill(null).map((,i)=>({id:i,guest:null,endTime:null,locked:i>=state.totalRooms}));initThree();spawnGuests()}
+  const floorGeo = new THREE.PlaneGeometry(40, 40);
+  const floorMat = new THREE.MeshLambertMaterial({color: 0x0d2b40});
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
 
-function spawnGuests(){if(!state.active)return;if(state.queue.length<state.maxQueue&&Math.random()<0.6){const guestTemplate=GUESTS[Math.floor(Math.random()*GUESTS.length)];const isVip=state.vipOnly?true:(state.vipBoost&&Math.random()<0.5)||(guestTemplate.vip&&Math.random()<0.7);state.queue.push({...guestTemplate,vip:isVip,pay:Math.floor(guestTemplate.pay*(isVip&&state.vipPayBoost?1.5:1))})}let delay=state.spawnInterval;if(state.spawnBoost3)delay*=0.25;else if(state.spawnBoost2)delay*=0.4;else if(state.spawnBoost)delay*=0.6;setTimeout(spawnGuests,delay)}
+  const baseGeo = new THREE.BoxGeometry(13, 0.4, 9);
+  const baseMat = new THREE.MeshLambertMaterial({color: 0x1a4060});
+  const base = new THREE.Mesh(baseGeo, baseMat);
+  base.receiveShadow = true;
+  scene.add(base);
 
-function selectGuest(idx){state.selected=state.selected===idx?null:idx;updateUI()}
+  const buildGeo = new THREE.BoxGeometry(13, 3, 2);
+  const buildMat = new THREE.MeshLambertMaterial({color: 0x0f3a54});
+  const build = new THREE.Mesh(buildGeo, buildMat);
+  build.position.set(0, 1.2, -3);
+  build.castShadow = true;
+  scene.add(build);
 
-function checkIn(roomIdx){const room=state.rooms[roomIdx];if(room.guest||room.locked||!state.selected)return;const guest=state.queue[state.selected];state.queue.splice(state.selected,1);state.selected=null;let stayTime=guest.stayTime;if(state.vipFast&&guest.vip)stayTime*=0.7;if(state.timeMult)stayTime*=state.timeMult;room.guest=guest;room.endTime=Date.now()+stayTime;updateUI()}
+  buildRooms();
 
-function checkOut(roomIdx,auto=false){const room=state.rooms[roomIdx];if(!room.guest)return;let pay=room.guest.pay*state.coinMult*state.flatBonus;if(state.tips2&&Math.random()<0.6)pay=Math.floor(pay*(1+Math.random()*0.8));else if(state.tips&&Math.random()<0.3)pay=Math.floor(pay*(1+Math.random()*0.4));if(state.lottery&&Math.random()<0.05)pay*=5;if(state.streak){state.streakCount++;if(state.streakCount%5===0)pay*=3}if(state.nightBonus&&new Date().getHours()>=20)pay*=2;state.coins+=pay;state.earnings+=pay;state.checkouts++;state.guests++;let xpGain=10;if(state.tripleXP)xpGain*=3;else if(state.doubleXP)xpGain*=2;state.xp+=xpGain;while(state.xp>=state.xpNext){state.xp-=state.xpNext;state.level++;state.xpNext=Math.floor(state.xpNext*1.2);showLevelUp()}if(!auto){showCheckout(room.guest.emoji,room.guest.name,Math.floor(pay))}room.guest=null;room.endTime=null}
+  canvas.addEventListener('touchstart', onTouch);
+  canvas.addEventListener('touchmove', onTouch);
+  canvas.addEventListener('click', onClick);
+  window.addEventListener('resize', resizeRenderer);
 
-function showCheckout(emoji,name,pay){document.getElementById('pop-emoji').textContent=emoji;document.getElementById('pop-title').textContent=name+' - Check-out!';document.getElementById('pop-amount').textContent='+'+pay+' 🪙';document.getElementById('checkout-popup').classList.add('show')}
+  animate();
+}
 
-function closeCheckout(){closePopup('checkout-popup')}
+function buildRooms() {
+  roomMeshes.forEach(m => scene.remove(m));
+  roomMeshes = [];
+  
+  const cols = 4;
+  const spacing = 2.8;
+  const rows = Math.ceil(state.totalRooms / cols);
+  const startX = -(cols - 1) * spacing / 2;
+  const startZ = -(rows - 1) * spacing / 2;
 
-function showLevelUp(){const flash=document.createElement('div');flash.className='level-flash';document.body.appendChild(flash);setTimeout(()=>flash.remove(),1000)}
+  for (let i = 0; i < 12; i++) {
+    const room = state.rooms[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = startX + col * spacing;
+    const z = startZ + row * spacing;
 
-function buyUpgrade(id){const upg=UPGRADES.find(u=>u.id===id);if(!upg||state.coins<upg.cost||state.bought[id])return;if(upg.req&&!state.bought[upg.req])return;let cost=upg.cost;if(state.cashback&&!state.cashbackUsed){cost=Math.floor(cost*0.8);state.cashbackUsed=true}state.coins-=cost;state.bought[id]=true;if(upg.mult)state.coinMult*=upg.mult;if(upg.timeReduce)state.timeMult=upg.timeReduce;if(upg.flatBonus)state.flatBonus+=upg.flatBonus;if(upg.queueSize)state.maxQueue=upg.queueSize;if(upg.unlockRooms){state.totalRooms+=upg.unlockRooms;buildRooms()}if(upg.vipBoost)state.vipBoost=true;if(upg.vipPayBoost)state.vipPayBoost=true;if(upg.vipFast)state.vipFast=true;if(upg.vipOnly)state.vipOnly=true;if(upg.auto)state.autoCheckout=true;if(upg.autoAssign)state.autoAssign=true;if(upg.autoAll){state.autoCheckout=true;state.autoAssign=true}if(upg.tips)state.tips=true;if(upg.tips2)state.tips2=true;if(upg.happyHour)state.happyHour=true;if(upg.lottery)state.lottery=true;if(upg.cashback)state.cashback=true;if(upg.doubleXP)state.doubleXP=true;if(upg.tripleXP)state.tripleXP=true;if(upg.streak)state.streak=true;if(upg.nightBonus)state.nightBonus=true;if(upg.insurance)state.insurance=true;if(upg.spawnBoost)state.spawnBoost=true;if(upg.spawnBoost2)state.spawnBoost2=true;if(upg.spawnBoost3)state.spawnBoost3=true;if(upg.prestige){state.prestigeCount++;state.flatBonus*=2;resetGame(true);return}saveState();updateUI()}
+    const geo = new THREE.BoxGeometry(2, 1.4, 2);
+    let color = 0x1a5278;
+    if (room.locked) color = 0x0d1b26;
+    else if (room.guest) color = room.guest.vip ? 0x7f6000 : 0x1b5e20;
 
-function switchTab(tab){document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');document.querySelectorAll('.tab-btn')[tab].classList.add('active')}
+    const mat = new THREE.MeshLambertMaterial({color, transparent: room.locked, opacity: room.locked ? 0.3 : 1});
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, 0.7, z);
+    mesh.castShadow = true;
+    mesh.userData.id = i;
 
-function updateUI(){document.getElementById('nav-day').textContent=state.day;document.getElementById('nav-guests').textContent=state.queue.length;document.getElementById('nav-earnings').textContent=formatNum(state.earnings);document.getElementById('coin-display').textContent=formatNum(state.coins);if(state.prestigeCount>0){document.getElementById('prestige-badge').style.display='flex';document.getElementById('prestige-num').textContent=state.prestigeCount}const queueEl=document.getElementById('guest-queue');queueEl.innerHTML='';state.queue.forEach((guest,idx)=>{const card=document.createElement('div');card.className='guest-card'+(idx===state.selected?' selected':'')+(guest.vip?' vip':'');card.onclick=()=>selectGuest(idx);card.innerHTML=`<div class="guest-emoji">${guest.emoji}</div><div class="guest-info"><div class="guest-name">${guest.name}</div><div class="guest-details"><span class="guest-pay">💰 ${guest.pay}</span>${guest.vip?'<span class="vip-tag">VIP</span>':''}</div></div>`;queueEl.appendChild(card)});document.getElementById('queue-count').textContent=state.queue.length;const upgradeEl=document.getElementById('upgrade-list');upgradeEl.innerHTML='';const groupedUpgrades={};UPGRADES.forEach(u=>{if(!groupedUpgrades[u.cat])groupedUpgrades[u.cat]=[];groupedUpgrades[u.cat].push(u)});Object.values(groupedUpgrades).forEach(group=>{group.forEach(upgrade=>{const card=document.createElement('div');const isBought=state.bought[upgrade.id];const canAfford=state.coins>=upgrade.cost&&(!upgrade.req||state.bought[upgrade.req]);card.className='upgrade-card'+(isBought?' bought':(canAfford?''':' cant-afford'));card.onclick=()=>!isBought&&buyUpgrade(upgrade.id);card.innerHTML=`<div class="upgrade-header"><span class="upgrade-icon">${upgrade.icon}</span><span class="upgrade-name">${upgrade.name}</span><span class="upgrade-cost">${isBought?'✅':upgrade.cost}</span></div><div class="upgrade-desc">${upgrade.desc}</div>${isBought?'<div class="upgrade-status">✓ Gekauft</div>':''}`;upgradeEl.appendChild(card)})});const occupiedRooms=state.rooms.filter(r=>r.guest).length;const avgPay=state.checkouts>0?Math.floor(state.earnings/state.checkouts):0;document.getElementById('stat-level').textContent=state.level;document.getElementById('xp-bar').style.width=(state.xp/state.xpNext*100)+'%';document.getElementById('stat-occupied').textContent=occupiedRooms+'/'+state.totalRooms;document.getElementById('stat-avg').textContent=avgPay;document.getElementById('stat-multi').textContent=state.coinMult.toFixed(1)+'x';document.getElementById('stat-prestige').textContent=state.prestigeCount}
+    scene.add(mesh);
+    roomMeshes.push(mesh);
+  }
+}
 
-function showSettings(){document.getElementById('settings-popup').classList.add('show')}
+function onTouch(e) {
+  if (e.touches.length === 0) return;
+  const touch = e.touches[0];
+  const rect = e.target.getBoundingClientRect();
+  mouse.x = (touch.clientX - rect.left) / rect.width * 2 - 1;
+  mouse.y = -(touch.clientY - rect.top) / rect.height * 2 + 1;
+  updateHover();
+}
 
-function saveState(){localStorage.setItem('glaggleState',JSON.stringify(state))}
+function onClick() {
+  if (hover === -1 || state.rooms[hover].locked || !state.selected) return;
+  checkIn(hover);
+}
 
-function loadState(){const saved=localStorage.getItem('glaggleState');if(saved){const loaded=JSON.parse(saved);Object.assign(state,loaded)}}
+function updateHover() {
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(roomMeshes);
+  if (hits.length > 0) hover = hits[0].object.userData.id;
+  else hover = -1;
+}
 
-function resetPopup(){closePopup('settings-popup');document.getElementById('reset-popup').classList.add('show')}
+function resizeRenderer() {
+  const canvas = document.getElementById('three-canvas');
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
 
-function resetGame(prestige=false){if(!prestige){state.coins=0;state.earnings=0;state.guests=0;state.checkouts=0;state.day=1;state.level=1;state.xp=0;state.xpNext=100;state.bought={};state.coinMult=1;state.timeMult=1;state.maxQueue=5;state.autoCheckout=false;state.autoAssign=false;state.autoAll=false;state.totalRooms=8;state.spawnBoost=1;state.spawnBoost2=false;state.spawnBoost3=false}closePopup('reset-popup');saveState();updateUI()}
+function animate() {
+  requestAnimationFrame(animate);
+  if (state.autoCheckout) {
+    state.rooms.forEach((room, i) => {
+      if (room.guest && room.endTime <= Date.now()) checkOut(i, true);
+    });
+  }
+  if (state.autoAssign && state.queue.length > 0) {
+    const free = state.rooms.findIndex(r => !r.guest && !r.locked);
+    if (free !== -1 && state.selected === null) {
+      state.selected = 0;
+      checkIn(free);
+    }
+  }
+  renderer.render(scene, camera);
+  updateUI();
+}
 
-function closePopup(id){document.getElementById(id).classList.remove('show')}
+function gameStart() {
+  document.getElementById('welcome-screen').classList.add('hidden');
+  document.getElementById('game-ui').style.display = 'flex';
+  state.active = true;
+  loadState();
+  state.rooms = Array(12).fill(null).map((_, i) => ({id: i, guest: null, endTime: null, locked: i >= state.totalRooms}));
+  initThree();
+  spawnGuests();
+}
 
-function formatNum(n){if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
+function spawnGuests() {
+  if (!state.active) return;
+  if (state.queue.length < state.maxQueue && Math.random() < 0.6) {
+    const guestTemplate = GUESTS[Math.floor(Math.random() * GUESTS.length)];
+    const isVip = state.vipOnly ? true : (state.vipBoost && Math.random() < 0.5) || (guestTemplate.vip && Math.random() < 0.7);
+    state.queue.push({...guestTemplate, vip: isVip, pay: Math.floor(guestTemplate.pay * (isVip && state.vipPayBoost ? 1.5 : 1))});
+  }
+  let delay = state.spawnInterval;
+  if (state.spawnBoost3) delay *= 0.25;
+  else if (state.spawnBoost2) delay *= 0.4;
+  else if (state.spawnBoost) delay *= 0.6;
+  setTimeout(spawnGuests, delay);
+}
+
+function selectGuest(idx) {
+  state.selected = state.selected === idx ? null : idx;
+  updateUI();
+}
+
+function checkIn(roomIdx) {
+  const room = state.rooms[roomIdx];
+  if (room.guest || room.locked || !state.selected) return;
+  const guest = state.queue[state.selected];
+  state.queue.splice(state.selected, 1);
+  state.selected = null;
+  let stayTime = guest.stayTime;
+  if (state.vipFast && guest.vip) stayTime *= 0.7;
+  if (state.timeMult) stayTime *= state.timeMult;
+  room.guest = guest;
+  room.endTime = Date.now() + stayTime;
+  updateUI();
+}
+
+function checkOut(roomIdx, auto = false) {
+  const room = state.rooms[roomIdx];
+  if (!room.guest) return;
+  let pay = room.guest.pay * state.coinMult * state.flatBonus;
+  if (state.tips2 && Math.random() < 0.6) pay = Math.floor(pay * (1 + Math.random() * 0.8));
+  else if (state.tips && Math.random() < 0.3) pay = Math.floor(pay * (1 + Math.random() * 0.4));
+  if (state.lottery && Math.random() < 0.05) pay *= 5;
+  if (state.streak) {
+    state.streakCount++;
+    if (state.streakCount % 5 === 0) pay *= 3;
+  }
+  if (state.nightBonus && new Date().getHours() >= 20) pay *= 2;
+  state.coins += pay;
+  state.earnings += pay;
+  state.checkouts++;
+  state.guests++;
+  let xpGain = 10;
+  if (state.tripleXP) xpGain *= 3;
+  else if (state.doubleXP) xpGain *= 2;
+  state.xp += xpGain;
+  while (state.xp >= state.xpNext) {
+    state.xp -= state.xpNext;
+    state.level++;
+    state.xpNext = Math.floor(state.xpNext * 1.2);
+    showLevelUp();
+  }
+  if (!auto) {
+    showCheckout(room.guest.emoji, room.guest.name, Math.floor(pay));
+  }
+  room.guest = null;
+  room.endTime = null;
+}
+
+function showCheckout(emoji, name, pay) {
+  document.getElementById('pop-emoji').textContent = emoji;
+  document.getElementById('pop-title').textContent = name + ' - Check-out!';
+  document.getElementById('pop-amount').textContent = '+' + pay + ' 🪙';
+  document.getElementById('checkout-popup').classList.add('show');
+}
+
+function closeCheckout() {
+  closePopup('checkout-popup');
+}
+
+function showLevelUp() {
+  const flash = document.createElement('div');
+  flash.className = 'level-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 1000);
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.coins < upg.cost || state.bought[id]) return;
+  if (upg.req && !state.bought[upg.req]) return;
+  let cost = upg.cost;
+  if (state.cashback && !state.cashbackUsed) {
+    cost = Math.floor(cost * 0.8);
+    state.cashbackUsed = true;
+  }
+  state.coins -= cost;
+  state.bought[id] = true;
+  if (upg.mult) state.coinMult *= upg.mult;
+  if (upg.timeReduce) state.timeMult = upg.timeReduce;
+  if (upg.flatBonus) state.flatBonus += upg.flatBonus;
+  if (upg.queueSize) state.maxQueue = upg.queueSize;
+  if (upg.unlockRooms) {
+    state.totalRooms += upg.unlockRooms;
+    buildRooms();
+  }
+  if (upg.vipBoost) state.vipBoost = true;
+  if (upg.vipPayBoost) state.vipPayBoost = true;
+  if (upg.vipFast) state.vipFast = true;
+  if (upg.vipOnly) state.vipOnly = true;
+  if (upg.auto) state.autoCheckout = true;
+  if (upg.autoAssign) state.autoAssign = true;
+  if (upg.autoAll) {
+    state.autoCheckout = true;
+    state.autoAssign = true;
+  }
+  if (upg.tips) state.tips = true;
+  if (upg.tips2) state.tips2 = true;
+  if (upg.happyHour) state.happyHour = true;
+  if (upg.lottery) state.lottery = true;
+  if (upg.cashback) state.cashback = true;
+  if (upg.doubleXP) state.doubleXP = true;
+  if (upg.tripleXP) state.tripleXP = true;
+  if (upg.streak) state.streak = true;
+  if (upg.nightBonus) state.nightBonus = true;
+  if (upg.insurance) state.insurance = true;
+  if (upg.spawnBoost) state.spawnBoost = true;
+  if (upg.spawnBoost2) state.spawnBoost2 = true;
+  if (upg.spawnBoost3) state.spawnBoost3 = true;
+  if (upg.prestige) {
+    state.prestigeCount++;
+    state.flatBonus *= 2;
+    resetGame(true);
+    return;
+  }
+  saveState();
+  updateUI();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[tab].classList.add('active');
+}
+
+function updateUI() {
+  document.getElementById('nav-day').textContent = state.day;
+  document.getElementById('nav-guests').textContent = state.queue.length;
+  document.getElementById('nav-earnings').textContent = formatNum(state.earnings);
+  document.getElementById('coin-display').textContent = formatNum(state.coins);
+  if (state.prestigeCount > 0) {
+    document.getElementById('prestige-badge').style.display = 'flex';
+    document.getElementById('prestige-num').textContent = state.prestigeCount;
+  }
+  const queueEl = document.getElementById('guest-queue');
+  queueEl.innerHTML = '';
+  state.queue.forEach((guest, idx) => {
+    const card = document.createElement('div');
+    card.className = 'guest-card' + (idx === state.selected ? ' selected' : '') + (guest.vip ? ' vip' : '');
+    card.onclick = () => selectGuest(idx);
+    card.innerHTML = `<div class="guest-emoji">${guest.emoji}</div><div class="guest-info"><div class="guest-name">${guest.name}</div><div class="guest-details"><span class="guest-pay">💰 ${guest.pay}</span>${guest.vip ? '<span class="vip-tag">VIP</span>' : ''}</div></div>`;
+    queueEl.appendChild(card);
+  });
+  document.getElementById('queue-count').textContent = state.queue.length;
+  const upgradeEl = document.getElementById('upgrade-list');
+  upgradeEl.innerHTML = '';
+  const groupedUpgrades = {};
+  UPGRADES.forEach(u => {
+    if (!groupedUpgrades[u.cat]) groupedUpgrades[u.cat] = [];
+    groupedUpgrades[u.cat].push(u);
+  });
+  Object.values(groupedUpgrades).forEach(group => {
+    group.forEach(upgrade => {
+      const card = document.createElement('div');
+      const isBought = state.bought[upgrade.id];
+      const canAfford = state.coins >= upgrade.cost && (!upgrade.req || state.bought[upgrade.req]);
+      card.className = 'upgrade-card' + (isBought ? ' bought' : (canAfford ? '' : ' cant-afford'));
+      card.onclick = () => !isBought && buyUpgrade(upgrade.id);
+      card.innerHTML = `<div class="upgrade-header"><span class="upgrade-icon">${upgrade.icon}</span><span class="upgrade-name">${upgrade.name}</span><span class="upgrade-cost">${isBought ? '✅' : upgrade.cost}</span></div><div class="upgrade-desc">${upgrade.desc}</div>${isBought ? '<div class="upgrade-status">✓ Gekauft</div>' : ''}`;
+      upgradeEl.appendChild(card);
+    });
+  });
+  const occupiedRooms = state.rooms.filter(r => r.guest).length;
+  const avgPay = state.checkouts > 0 ? Math.floor(state.earnings / state.checkouts) : 0;
+  document.getElementById('stat-level').textContent = state.level;
+  document.getElementById('xp-bar').style.width = (state.xp / state.xpNext * 100) + '%';
+  document.getElementById('stat-occupied').textContent = occupiedRooms + '/' + state.totalRooms;
+  document.getElementById('stat-avg').textContent = avgPay;
+  document.getElementById('stat-multi').textContent = state.coinMult.toFixed(1) + 'x';
+  document.getElementById('stat-prestige').textContent = state.prestigeCount;
+}
+
+function showSettings() {
+  document.getElementById('settings-popup').classList.add('show');
+}
+
+function saveState() {
+  localStorage.setItem('glaggleState', JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('glaggleState');
+  if (saved) {
+    const loaded = JSON.parse(saved);
+    Object.assign(state, loaded);
+  }
+}
+
+function resetPopup() {
+  closePopup('settings-popup');
+  document.getElementById('reset-popup').classList.add('show');
+}
+
+function resetGame(prestige = false) {
+  if (!prestige) {
+    state.coins = 0;
+    state.earnings = 0;
+    state.guests = 0;
+    state.checkouts = 0;
+    state.day = 1;
+    state.level = 1;
+    state.xp = 0;
+    state.xpNext = 100;
+    state.bought = {};
+    state.coinMult = 1;
+    state.timeMult = 1;
+    state.maxQueue = 5;
+    state.autoCheckout = false;
+    state.autoAssign = false;
+    state.autoAll = false;
+    state.totalRooms = 8;
+    state.spawnBoost = 1;
+    state.spawnBoost2 = false;
+    state.spawnBoost3 = false;
+  }
+  closePopup('reset-popup');
+  saveState();
+  updateUI();
+}
+
+function closePopup(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function formatNum(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toString();
+}
 </script>
 
 </body>
