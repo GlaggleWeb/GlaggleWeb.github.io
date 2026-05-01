@@ -9,7 +9,6 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--ocean-deep:#071d2e;--wave:#2E94D1;--wave-light:#70C4F7;--gold:#ffd700;--emerald:#00e676}
 body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;overflow:hidden;height:100vh;width:100vw}
-
 .welcome-screen{position:fixed;inset:0;z-index:900;background:linear-gradient(160deg,#071d2e 0%,#0d3350 50%,#071d2e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 .welcome-screen.hidden{display:none!important}
 .welcome-logo{font-family:'Fredoka One',cursive;font-size:clamp(32px,10vw,58px);color:var(--wave-light);text-shadow:0 0 40px rgba(112,196,247,0.6);margin:10px 0;animation:bob 3s infinite}
@@ -25,96 +24,70 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 .instructions-box li:nth-child(4)::before{content:'4️⃣'}
 .start-btn{background:linear-gradient(135deg,#2E94D1,#1a6fa6);color:white;border:none;padding:14px 40px;border-radius:50px;font-family:'Fredoka One',cursive;font-size:clamp(16px,4vw,20px);cursor:pointer;box-shadow:0 6px 30px rgba(46,148,209,0.5);transition:all 0.25s;min-height:48px}
 .start-btn:active{transform:scale(0.97)}
-
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 @keyframes swim{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-10px) rotate(-3deg)}75%{transform:translateY(8px) rotate(3deg)}}
-
 #game-ui{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column}
-
 .navbar{height:56px;background:linear-gradient(90deg,rgba(7,29,46,0.98) 0%,rgba(13,51,80,0.98) 100%);border-bottom:2px solid var(--wave);display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.5);z-index:50;gap:8px}
 .nav-logo{font-family:'Fredoka One',cursive;font-size:clamp(14px,4vw,18px);color:var(--wave-light);letter-spacing:1px;white-space:nowrap;flex-shrink:0}
-.nav-chips{display:flex;gap:6px;flex-shrink:0;overflow-x:auto}
+.nav-chips{display:flex;gap:6px;flex-shrink:0}
 .chip{background:rgba(7,29,46,0.7);border:1px solid var(--wave);border-radius:16px;padding:4px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
 .coin-display{background:linear-gradient(135deg,var(--gold),#e6a800);color:#1a1200;border-radius:24px;padding:6px 14px;font-family:'Fredoka One',cursive;font-size:14px;font-weight:800;box-shadow:0 2px 10px rgba(255,215,0,0.3);display:flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
 .nav-btns{display:flex;gap:6px;flex-shrink:0}
 .nav-btn{background:rgba(112,196,247,0.15);border:1px solid var(--wave);color:var(--wave-light);padding:6px 10px;border-radius:14px;cursor:pointer;font-size:11px;font-weight:700;min-height:32px;white-space:nowrap;flex-shrink:0}
-
 .game-body{flex:1;display:flex;overflow:hidden;position:relative}
 #three-canvas{width:100%;height:100%;display:block;position:absolute;top:0;left:0}
-
 .tab-container{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(180deg,rgba(7,29,46,0.95),rgba(13,51,80,0.95));border-top:2px solid var(--wave);display:flex;gap:2px;padding:4px;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.5)}
 .tab-btn{flex:1;background:rgba(13,51,80,0.5);border:1px solid rgba(46,148,209,0.3);border-radius:8px;color:rgba(232,244,253,0.6);font-family:'Fredoka One',cursive;font-size:12px;cursor:pointer;transition:all 0.2s;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;text-align:center;line-height:1.2}
 .tab-btn.active{background:linear-gradient(135deg,rgba(46,148,209,0.8),rgba(26,111,166,0.8));border-color:var(--wave-light);color:var(--wave-light);box-shadow:0 0 15px rgba(46,148,209,0.5)}
-
 .tab-content{display:none;position:absolute;bottom:64px;left:0;right:0;top:56px;background:linear-gradient(180deg,rgba(7,29,46,0.96),rgba(13,51,80,0.96));overflow-y:auto;padding:12px;z-index:50;-webkit-overflow-scrolling:touch}
 .tab-content.active{display:flex;flex-direction:column}
-
 .panel{background:rgba(7,29,46,0.6);border:1px solid var(--wave);border-radius:10px;padding:10px;margin-bottom:10px}
 .panel-title{font-family:'Fredoka One',cursive;font-size:13px;color:var(--wave-light);letter-spacing:1px;margin-bottom:8px}
-
 .guest-card{background:rgba(13,51,80,0.7);border:1.5px solid var(--wave);border-radius:8px;padding:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;min-height:44px}
 .guest-card.selected{border-color:var(--gold);background:rgba(61,46,0,0.5);box-shadow:0 0 12px rgba(255,215,0,0.3)}
 .guest-card.vip{border-color:var(--gold);border-style:dashed}
 .guest-emoji{font-size:24px;flex-shrink:0}
 .guest-info{flex:1;min-width:0}
-.guest-name{font-size:11px;font-weight:800;color:var(--wave-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guest-name{font-size:11px;font-weight:800;color:var(--wave-light)}
 .guest-details{font-size:10px;color:rgba(232,244,253,0.6);display:flex;gap:6px;margin-top:2px}
 .guest-pay{color:var(--gold);font-weight:700}
-.vip-tag{background:var(--gold);color:#000;font-size:8px;font-weight:800;padding:2px 5px;border-radius:4px;flex-shrink:0}
-
+.vip-tag{background:var(--gold);color:#000;font-size:8px;font-weight:800;padding:2px 5px;border-radius:4px}
 .upgrade-card{background:rgba(13,51,80,0.7);border:1px solid var(--wave);border-radius:8px;padding:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;min-height:44px;display:flex;flex-direction:column;justify-content:center}
 .upgrade-card.bought{border-color:var(--emerald);background:rgba(0,100,50,0.25);cursor:default}
 .upgrade-card.cant-afford{opacity:0.5;cursor:not-allowed}
 .upgrade-header{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .upgrade-icon{font-size:18px;flex-shrink:0}
-.upgrade-name{font-size:11px;font-weight:800;color:var(--wave-light);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.upgrade-cost{font-size:11px;color:var(--gold);font-weight:700;flex-shrink:0}
+.upgrade-name{font-size:11px;font-weight:800;color:var(--wave-light);flex:1}
+.upgrade-cost{font-size:11px;color:var(--gold);font-weight:700}
 .upgrade-desc{font-size:10px;color:rgba(232,244,253,0.6);line-height:1.3;margin-bottom:3px}
 .upgrade-status{font-size:9px;color:var(--emerald);font-weight:700}
-
 .stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(46,148,209,0.2)}
 .stat-label{color:rgba(232,244,253,0.65)}
 .stat-val{font-weight:800;color:var(--wave-light)}
-.stat-val.gold{color:var(--gold)}
-.stat-val.green{color:var(--emerald)}
 .stat-val.big{font-size:18px;font-family:'Fredoka One',cursive}
 .xp-bar-wrap{background:rgba(0,0,0,0.3);border-radius:8px;height:6px;overflow:hidden;margin:6px 0}
 .xp-bar{height:100%;background:linear-gradient(90deg,var(--wave),var(--wave-light));border-radius:8px;transition:width 0.4s ease}
 .event-feed{max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.event-item{font-size:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(232,244,253,0.8);line-height:1.3}
-
+.event-item{font-size:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:rgba(232,244,253,0.8)}
 .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:900;backdrop-filter:blur(4px);padding:20px}
 .popup-overlay.show{display:flex}
-.popup-box{background:linear-gradient(135deg,#0d3350,#071d2e);border:2px solid var(--wave);border-radius:16px;padding:24px 20px;text-align:center;max-width:90%;max-height:80vh;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.popup-box{background:linear-gradient(135deg,#0d3350,#071d2e);border:2px solid var(--wave);border-radius:16px;padding:24px 20px;text-align:center;max-width:90%;max-height:80vh;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow-y:auto}
 @keyframes popIn{from{transform:scale(0.6);opacity:0}to{transform:scale(1);opacity:1}}
-.popup-emoji{font-size:48px;animation:popEmoji 0.5s ease;margin-bottom:8px}
-@keyframes popEmoji{0%,100%{transform:scale(1)}50%{transform:scale(1.3) rotate(10deg)}}
+.popup-emoji{font-size:48px;margin-bottom:8px}
 .popup-title{font-family:'Fredoka One',cursive;font-size:clamp(18px,5vw,24px);color:var(--wave-light);margin-bottom:6px}
 .popup-sub{font-size:12px;color:rgba(232,244,253,0.7);margin-bottom:12px}
-.popup-amount{font-family:'Fredoka One',cursive;font-size:32px;color:var(--gold);margin-bottom:14px;text-shadow:0 0 20px rgba(255,215,0,0.5)}
-.popup-btn{background:linear-gradient(135deg,var(--wave),#1a6fa6);color:white;border:none;padding:12px;border-radius:24px;font-family:'Fredoka One',cursive;font-size:14px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(46,148,209,0.4);width:100%;margin-bottom:8px;min-height:44px;font-weight:700}
+.popup-amount{font-family:'Fredoka One',cursive;font-size:32px;color:var(--gold);margin-bottom:14px}
+.popup-btn{background:linear-gradient(135deg,var(--wave),#1a6fa6);color:white;border:none;padding:12px;border-radius:24px;font-family:'Fredoka One',cursive;font-size:14px;cursor:pointer;transition:all 0.2s;width:100%;margin-bottom:8px;min-height:44px;font-weight:700}
 .popup-btn:active{transform:scale(0.97)}
 .popup-btn.danger{background:linear-gradient(135deg,#ff4444,#cc2222)}
 .popup-btn.success{background:linear-gradient(135deg,var(--emerald),#00b859)}
 .popup-btn.secondary{background:rgba(46,148,209,0.15);border:1px solid var(--wave)}
 .popup-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(46,148,209,0.25);font-size:12px}
-
-.float-coin{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;color:var(--gold);text-shadow:0 2px 6px rgba(0,0,0,0.6);z-index:800;animation:floatUp 1.3s ease-out forwards}
-@keyframes floatUp{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-80px) scale(1.3);opacity:0}}
-
-.level-flash{position:fixed;inset:0;background:radial-gradient(circle,rgba(255,215,0,0.25) 0%,transparent 70%);pointer-events:none;z-index:700;animation:flashOut 1s ease-out forwards}
-@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
-
-.room-tooltip{position:fixed;background:rgba(13,51,80,0.85);border:1px solid var(--wave-light);border-radius:8px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;display:none;backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,0.5);min-width:100px}
+.room-tooltip{position:fixed;background:rgba(13,51,80,0.85);border:1px solid var(--wave-light);border-radius:8px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;display:none;min-width:100px}
 .room-tooltip.show{display:block}
 .tooltip-name{font-weight:800;color:var(--wave-light);margin-bottom:2px}
 .tooltip-status{font-size:10px;color:rgba(232,244,253,0.7)}
 .tooltip-time{font-size:10px;color:var(--gold)}
-
-.tab-content::-webkit-scrollbar,.event-feed::-webkit-scrollbar{width:4px}
-.tab-content::-webkit-scrollbar-thumb,.event-feed::-webkit-scrollbar-thumb{background:var(--wave);border-radius:2px}
-
-@media(max-width:480px){.navbar{height:52px}.tab-container{height:56px}.tab-content{bottom:60px}.chip{padding:3px 8px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -122,17 +95,17 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 <div class="welcome-screen" id="welcome-screen">
   <div class="welcome-fish">🐠</div>
   <div class="welcome-logo">🌊 Glaggle</div>
-  <div class="welcome-sub">Baue das größte Unterwasser-Resort!</div>
+  <div class="welcome-sub">Baue dein Unterwasser-Resort!</div>
   <div class="instructions-box">
     <h3>🎮 SO GEHT'S</h3>
     <ul>
       <li>Wähle Gäste aus Queue</li>
-      <li>Tippe auf freie Zimmer</li>
+      <li>Tippe auf Zimmer</li>
       <li>Warte auf Checkout</li>
-      <li>Verdiene Coins & Upgrades</li>
+      <li>Verdiene Coins!</li>
     </ul>
   </div>
-  <button class="start-btn" onclick="startGame()">🚀 Starten!</button>
+  <button class="start-btn" onclick="gameStart()">🚀 Starten!</button>
 </div>
 
 <div id="game-ui" style="display:none;">
@@ -154,28 +127,21 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
     <div class="room-tooltip" id="room-tooltip">
       <div class="tooltip-name" id="tooltip-name">–</div>
       <div class="tooltip-status" id="tooltip-status">–</div>
-      <div class="tooltip-time" id="tooltip-time"></div>
     </div>
 
     <div class="tab-container">
       <button class="tab-btn active" onclick="switchTab(0)">🐟<br>Queue</button>
       <button class="tab-btn" onclick="switchTab(1)">🔧<br>Upgrades</button>
       <button class="tab-btn" onclick="switchTab(2)">📊<br>Stats</button>
-      <button class="tab-btn" onclick="switchTab(3)">📋<br>Events</button>
+      <button class="tab-btn" onclick="switchTab(3)">📋<br>Log</button>
     </div>
 
     <div class="tab-content active" id="tab-0">
-      <div class="panel">
-        <div class="panel-title">🐟 Queue (<span id="queue-count">0</span>)</div>
-        <div id="guest-queue"></div>
-      </div>
+      <div class="panel"><div class="panel-title">🐟 Queue (<span id="queue-count">0</span>)</div><div id="guest-queue"></div></div>
     </div>
 
     <div class="tab-content" id="tab-1">
-      <div class="panel" style="flex:1;overflow-y:auto;">
-        <div class="panel-title">🔧 Upgrades</div>
-        <div id="upgrade-list"></div>
-      </div>
+      <div class="panel" style="flex:1;overflow-y:auto;"><div class="panel-title">🔧 Upgrades</div><div id="upgrade-list"></div></div>
     </div>
 
     <div class="tab-content" id="tab-2">
@@ -184,18 +150,13 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
         <div class="stat-row"><span class="stat-label">Level</span><span class="stat-val big" id="stat-level">1</span></div>
         <div class="xp-bar-wrap"><div class="xp-bar" id="xp-bar" style="width:0%"></div></div>
         <div class="stat-row"><span class="stat-label">Belegt</span><span class="stat-val" id="stat-occupied">0/8</span></div>
-        <div class="stat-row"><span class="stat-label">Ø Pay</span><span class="stat-val gold" id="stat-avg">0</span></div>
-        <div class="stat-row"><span class="stat-label">Queue</span><span class="stat-val green" id="stat-queue">0</span></div>
+        <div class="stat-row"><span class="stat-label">Verdient</span><span class="stat-val" id="stat-earned">0</span></div>
         <div class="stat-row"><span class="stat-label">Mult</span><span class="stat-val" id="stat-multi">1x</span></div>
-        <div class="stat-row"><span class="stat-label">Prestige</span><span class="stat-val" id="stat-prestige">0</span></div>
       </div>
     </div>
 
     <div class="tab-content" id="tab-3">
-      <div class="panel" style="flex:1;">
-        <div class="panel-title">📋 Events</div>
-        <div class="event-feed" id="event-feed"></div>
-      </div>
+      <div class="panel" style="flex:1;"><div class="panel-title">📋 Log</div><div class="event-feed" id="event-feed"></div></div>
     </div>
   </div>
 </div>
@@ -203,9 +164,8 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 <div class="popup-overlay" id="checkout-popup">
   <div class="popup-box">
     <div class="popup-emoji" id="pop-emoji">🐠</div>
-    <div class="popup-title" id="pop-title">Check-out!</div>
-    <div class="popup-sub" id="pop-sub">Danke!</div>
-    <div class="popup-amount" id="pop-amount">+50 🪙</div>
+    <div class="popup-title">Check-out!</div>
+    <div class="popup-amount" id="pop-amount">+50</div>
     <button class="popup-btn success" onclick="closeCheckout()">✅ OK</button>
   </div>
 </div>
@@ -215,9 +175,9 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
     <div class="popup-emoji">⚙️</div>
     <div class="popup-title">Optionen</div>
     <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
-      <button class="popup-btn" onclick="saveGame()">💾 Speichern</button>
-      <button class="popup-btn success" onclick="loadGame()">📂 Laden</button>
-      <button class="popup-btn danger" onclick="confirmReset()">🔄 Reset</button>
+      <button class="popup-btn" onclick="saveState()">💾 Speichern</button>
+      <button class="popup-btn success" onclick="loadState()">📂 Laden</button>
+      <button class="popup-btn danger" onclick="resetPopup()">🔄 Reset</button>
       <button class="popup-btn secondary" onclick="closePopup('settings-popup')">❌ Close</button>
     </div>
   </div>
@@ -226,8 +186,7 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 <div class="popup-overlay" id="reset-popup">
   <div class="popup-box">
     <div class="popup-emoji">⚠️</div>
-    <div class="popup-title">Wirklich?</div>
-    <div class="popup-sub">Alles weg!</div>
+    <div class="popup-title">Wirklich reset?</div>
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button class="popup-btn danger" onclick="resetGame()" style="flex:1;">Ja!</button>
       <button class="popup-btn secondary" onclick="closePopup('reset-popup')" style="flex:1;">Nein</button>
@@ -237,63 +196,369 @@ body{background:var(--ocean-deep);color:#e8f4fd;font-family:'Nunito',sans-serif;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const GUESTS=[{name:'Nemo',emoji:'🐠',pay:5,stayTime:10000,vip:false},{name:'Dori',emoji:'🐟',pay:6,stayTime:9000,vip:false},{name:'Krake',emoji:'🐙',pay:8,stayTime:12000,vip:false},{name:'Sharky',emoji:'🦈',pay:12,stayTime:11000,vip:false},{name:'Seepferd',emoji:'🐴',pay:9,stayTime:8000,vip:false},{name:'Robbe',emoji:'🦭',pay:10,stayTime:13000,vip:false},{name:'Schildkröte',emoji:'🐢',pay:11,stayTime:15000,vip:false},{name:'Krebs',emoji:'🦀',pay:14,stayTime:10000,vip:false},{name:'Muschel',emoji:'🐚',pay:16,stayTime:12000,vip:false},{name:'Tintenfisch',emoji:'🦑',pay:18,stayTime:14000,vip:false},{name:'Wal-König',emoji:'🐳',pay:30,stayTime:18000,vip:true},{name:'Goldbarren',emoji:'🐡',pay:25,stayTime:16000,vip:true},{name:'Tigerhai',emoji:'🐬',pay:20,stayTime:13000,vip:true},{name:'Riesenkrabbe',emoji:'🦞',pay:22,stayTime:11000,vip:false},{name:'Leuchtqualle',emoji:'🪼',pay:28,stayTime:20000,vip:true}];
+const GUESTS = [
+  {name: 'Nemo', emoji: '🐠', pay: 5, stayTime: 10000, vip: false},
+  {name: 'Dori', emoji: '🐟', pay: 6, stayTime: 9000, vip: false},
+  {name: 'Krake', emoji: '🐙', pay: 8, stayTime: 12000, vip: false},
+  {name: 'Sharky', emoji: '🦈', pay: 12, stayTime: 11000, vip: false},
+  {name: 'Seepferd', emoji: '🐴', pay: 9, stayTime: 8000, vip: false},
+  {name: 'Robbe', emoji: '🦭', pay: 10, stayTime: 13000, vip: false},
+  {name: 'Schildkröte', emoji: '🐢', pay: 11, stayTime: 15000, vip: false},
+  {name: 'Krebs', emoji: '🦀', pay: 14, stayTime: 10000, vip: false},
+  {name: 'Muschel', emoji: '🐚', pay: 16, stayTime: 12000, vip: false},
+  {name: 'Tintenfisch', emoji: '🦑', pay: 18, stayTime: 14000, vip: false},
+  {name: 'Wal-König', emoji: '🐳', pay: 30, stayTime: 18000, vip: true},
+  {name: 'Goldbarren', emoji: '🐡', pay: 25, stayTime: 16000, vip: true},
+  {name: 'Tigerhai', emoji: '🐬', pay: 20, stayTime: 13000, vip: true}
+];
 
-const UPGRADES=[{id:'moreCoins1',cat:'💰',name:'Gelddruck I',icon:'💰',desc:'+50% Coins',cost:60,mult:1.5},{id:'moreCoins2',cat:'💰',name:'Gelddruck II',icon:'💎',desc:'+100% Coins',cost:200,mult:2,requires:'moreCoins1'},{id:'moreCoins3',cat:'💰',name:'Goldregen',icon:'🌟',desc:'+200% Coins',cost:600,mult:3,requires:'moreCoins2'},{id:'fastCheck1',cat:'⚡',name:'Speed I',icon:'⚡',desc:'-25% Zeit',cost:80,timeReduce:0.75},{id:'fastCheck2',cat:'⚡',name:'Speed II',icon:'🚀',desc:'-40% Zeit',cost:250,timeReduce:0.6,requires:'fastCheck1'},{id:'fastSpawn',cat:'⚡',name:'PR',icon:'📣',desc:'+40% Spawn',cost:90,spawnBoost:true},{id:'moreRooms1',cat:'🏗️',name:'2 Zimmer',icon:'🏗️',desc:'Z9+10',cost:100,unlockRooms:2},{id:'bigQueue',cat:'🏗️',name:'Große Queue',icon:'📢',desc:'Max 8',cost:120,queueSize:8},{id:'vipLounge',cat:'👑',name:'VIP-Lounge',icon:'👑',desc:'2x VIP',cost:180,vipBoost:true},{id:'autoCheckout',cat:'🤖',name:'Auto-Checkout',icon:'🤖',desc:'Auto',cost:400,auto:true},{id:'coral',cat:'🌊',name:'Korallenriff',icon:'🪸',desc:'+10%',cost:250,flatBonus:0.1},{id:'doubleXP',cat:'🌊',name:'2x XP',icon:'📚',desc:'2x XP',cost:300,doubleXP:true},{id:'prestige',cat:'🌊',name:'PRESTIGE',icon:'🌈',desc:'Reset +2x',cost:2000,prestige:true}];
+const UPGRADES = [
+  {id: 'coins1', cat: '💰', name: 'Coins +50%', icon: '💰', desc: '+50% Coins', cost: 60, mult: 1.5},
+  {id: 'coins2', cat: '💰', name: 'Coins +100%', icon: '💎', desc: '+100% Coins', cost: 200, mult: 2},
+  {id: 'speed1', cat: '⚡', name: 'Speed -25%', icon: '⚡', desc: '-25% Zeit', cost: 80, time: 0.75},
+  {id: 'speed2', cat: '⚡', name: 'Speed -40%', icon: '🚀', desc: '-40% Zeit', cost: 250, time: 0.6},
+  {id: 'spawn', cat: '⚡', name: 'Spawn +40%', icon: '📣', desc: '+40% Spawn', cost: 90, spawnUp: true},
+  {id: 'room1', cat: '🏗️', name: '2 Zimmer', icon: '🏗️', desc: '+2 Zimmer', cost: 100, rooms: 2},
+  {id: 'queue1', cat: '🏗️', name: 'Queue +3', icon: '📢', desc: '+3 Queue', cost: 120, queueUp: 3},
+  {id: 'vip', cat: '👑', name: 'VIP Bonus', icon: '👑', desc: '2x VIP', cost: 180, vipUp: true},
+  {id: 'auto', cat: '🤖', name: 'Auto-Checkout', icon: '🤖', desc: 'Auto', cost: 400, auto: true},
+  {id: 'bonus1', cat: '🌊', name: 'Bonus +10%', icon: '🪸', desc: '+10%', cost: 250, flatBonus: 0.1},
+  {id: 'xp2', cat: '🌊', name: '2x XP', icon: '📚', desc: '2x XP', cost: 300, xpBoost: 2}
+];
 
-let state={coins:0,totalEarnings:0,totalGuests:0,totalCheckouts:0,day:1,level:1,xp:0,xpToNext:100,rooms:[],queue:[],selectedGuest:null,boughtUpgrades:{},gameActive:false,coinMultiplier:1,stayMultiplier:1,flatBonusMultiplier:1,maxQueue:5,vipBoost:false,vipPayBoost:false,vipFast:false,vipOnly:false,autoCheckout:false,autoAssign:false,tips:false,lottery:false,cashback:false,doubleXP:false,tripleXP:false,streak:false,streakCount:0,nightBonus:false,insurance:false,prestigeCount:0,spawnInterval:3000,totalRooms:8,spawnTimer:null,pendingCheckout:null};
+let state = {
+  coins: 0, earnings: 0, guests: 0, checkouts: 0, day: 1, level: 1, xp: 0, xpNext: 100,
+  rooms: [], queue: [], selected: null, bought: {}, active: false,
+  coinMult: 1, timeMult: 1, flatBonus: 1, maxQueue: 5, vipChance: 0.2,
+  autoCheckout: false, spawnBoost: 1, xpMult: 1
+};
 
-function initRooms(){state.rooms=Array(12).fill(null).map((,i)=>({id:i,guest:null,endTime:null,locked:i>=state.totalRooms}))}
+let renderer, scene, camera, raycaster, mouse, roomMeshes = [], hover = -1;
 
-let renderer,scene,camera,raycaster,mouse,roomMeshes=[],hoveredRoom=-1;
-const ROOM_COLORS={free:0x1a5278,occupied:0x1b5e20,vip:0x7f6000,locked:0x0d1b26,hover:0x2196F3,checkout:0xff6b6b};
+function initThree() {
+  const canvas = document.getElementById('three-canvas');
+  renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.shadowMap.enabled = true;
+  resizeRenderer();
 
-function initThree(){const canvas=document.getElementById('three-canvas');renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));renderer.shadowMap.enabled=true;resizeRenderer();scene=new THREE.Scene();scene.background=new THREE.Color(0x071d2e);scene.fog=new THREE.Fog(0x071d2e,20,50);camera=new THREE.PerspectiveCamera(50,canvas.clientWidth/canvas.clientHeight,0.1,200);camera.position.set(0,12,18);camera.lookAt(0,0,0);raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();const ambient=new THREE.AmbientLight(0x4488aa,0.4);scene.add(ambient);const sunLight=new THREE.DirectionalLight(0x70C4F7,1);sunLight.position.set(8,14,8);sunLight.castShadow=true;sunLight.shadow.mapSize.width=512;scene.add(sunLight);const pointLight=new THREE.PointLight(0xffd700,0.6,20);pointLight.position.set(0,5,0);scene.add(pointLight);const floorGeo=new THREE.PlaneGeometry(40,40,10,10);const floorMat=new THREE.MeshLambertMaterial({color:0x0d2b40});const floor=new THREE.Mesh(floorGeo,floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=-0.5;floor.receiveShadow=true;scene.add(floor);const baseGeo=new THREE.BoxGeometry(13,0.4,9);const baseMat=new THREE.MeshLambertMaterial({color:0x1a4060});const base=new THREE.Mesh(baseGeo,baseMat);base.position.y=-0.3;base.receiveShadow=true;scene.add(base);const buildingGeo=new THREE.BoxGeometry(13,3,2);const buildingMat=new THREE.MeshLambertMaterial({color:0x0f3a54});const building=new THREE.Mesh(buildingGeo,buildingMat);building.position.set(0,1.2,-3);building.castShadow=true;scene.add(building);buildRoomMeshes();canvas.addEventListener('touchstart',onTouchStart,false);canvas.addEventListener('touchmove',onTouchMove,false);canvas.addEventListener('click',onCanvasClick);window.addEventListener('resize',resizeRenderer);requestAnimationFrame(animLoop)}
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x071d2e);
+  scene.fog = new THREE.Fog(0x071d2e, 20, 50);
 
-function buildRoomMeshes(){roomMeshes.forEach(m=>scene.remove(m));roomMeshes=[];const cols=4;const rows=Math.ceil(state.totalRooms/cols);const spacingX=2.8;const spacingZ=2.8;const startX=-(cols-1)*spacingX/2;const startZ=-(rows-1)*spacingZ/2;for(let i=0;i<12;i++){const room=state.rooms[i];const col=i%cols;const row=Math.floor(i/cols);const x=startX+col*spacingX;const z=startZ+row*spacingZ;const geo=new THREE.BoxGeometry(2,1.4,2);const color=getRoomColor(room);const mat=new THREE.MeshLambertMaterial({color,transparent:room.locked,opacity:room.locked?0.3:1});const mesh=new THREE.Mesh(geo,mat);mesh.position.set(x,0.7,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.roomId=i;scene.add(mesh);roomMeshes.push(mesh)}}
+  camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 200);
+  camera.position.set(0, 12, 18);
+  camera.lookAt(0, 0, 0);
 
-function getRoomColor(room){if(room.locked)return ROOM_COLORS.locked;if(room.guest)return room.guest.vip?ROOM_COLORS.vip:ROOM_COLORS.occupied;return ROOM_COLORS.free}
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
 
-function onTouchStart(event){if(event.touches.length>0){const touch=event.touches[0];const rect=event.target.getBoundingClientRect();mouse.x=(touch.clientX-rect.left)/rect.width*2-1;mouse.y=-(touch.clientY-rect.top)/rect.height*2+1;updateHoverRoom()}}
-function onTouchMove(event){onTouchStart(event)}
-function updateHoverRoom(){raycaster.setFromCamera(mouse,camera);const intersects=raycaster.intersectObjects(roomMeshes);if(hoveredRoom!==-1){const oldRoom=state.rooms[hoveredRoom];roomMeshes[hoveredRoom].material.color.setHex(getRoomColor(oldRoom))}hoveredRoom=-1;if(intersects.length>0){const mesh=intersects[0].object;const roomId=mesh.userData.roomId;hoveredRoom=roomId;mesh.material.color.setHex(ROOM_COLORS.hover)}}
-function onCanvasClick(){if(hoveredRoom===-1||state.rooms[hoveredRoom].locked)return;checkInGuest(hoveredRoom)}
+  const light1 = new THREE.AmbientLight(0x4488aa, 0.4);
+  scene.add(light1);
 
-function resizeRenderer(){const canvas=document.getElementById('three-canvas');const width=canvas.clientWidth;const height=canvas.clientHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
+  const light2 = new THREE.DirectionalLight(0x70C4F7, 1);
+  light2.position.set(8, 14, 8);
+  light2.castShadow = true;
+  light2.shadow.mapSize.width = 512;
+  scene.add(light2);
 
-function animLoop(){requestAnimationFrame(animLoop);updateGameLogic();renderer.render(scene,camera)}
+  const light3 = new THREE.PointLight(0xffd700, 0.6, 20);
+  light3.position.set(0, 5, 0);
+  scene.add(light3);
 
-function updateGameLogic(){if(state.autoCheckout){state.rooms.forEach((room,idx)=>{if(room.guest&&room.endTime<=Date.now()&&room.id!==state.pendingCheckout)checkOutGuest(idx,true)})}if(state.autoAssign&&state.queue.length>0){const freeRoom=state.rooms.findIndex(r=>!r.guest&&!r.locked);if(freeRoom!==-1&&state.selectedGuest===null){state.selectedGuest=state.queue[0];checkInGuest(freeRoom)}}roomMeshes.forEach((mesh,idx)=>{if(idx!==hoveredRoom){const room=state.rooms[idx];mesh.material.color.setHex(getRoomColor(room))}});updateUI()}
+  const floorGeo = new THREE.PlaneGeometry(40, 40);
+  const floorMat = new THREE.MeshLambertMaterial({color: 0x0d2b40});
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
 
-function startGame(){document.getElementById('welcome-screen').classList.add('hidden');document.getElementById('game-ui').style.display='flex';state.gameActive=true;loadGame();initRooms();initThree();spawnGuests()}
+  const baseGeo = new THREE.BoxGeometry(13, 0.4, 9);
+  const baseMat = new THREE.MeshLambertMaterial({color: 0x1a4060});
+  const base = new THREE.Mesh(baseGeo, baseMat);
+  base.receiveShadow = true;
+  scene.add(base);
 
-function spawnGuests(){if(!state.gameActive)return;if(state.queue.length<state.maxQueue&&Math.random()<0.6){const guestTemplate=GUESTS[Math.floor(Math.random()*GUESTS.length)];const isVip=state.vipOnly?true:(state.vipBoost&&Math.random()<0.5)||(guestTemplate.vip&&Math.random()<0.7);state.queue.push({...guestTemplate,vip:isVip,pay:Math.floor(guestTemplate.pay*(isVip&&state.vipPayBoost?1.5:1))})}let spawnDelay=state.spawnInterval;if(state.spawnBoost3)spawnDelay*=0.25;else if(state.spawnBoost2)spawnDelay*=0.4;else if(state.spawnBoost)spawnDelay*=0.6;state.spawnTimer=setTimeout(spawnGuests,spawnDelay)}
+  const buildGeo = new THREE.BoxGeometry(13, 3, 2);
+  const buildMat = new THREE.MeshLambertMaterial({color: 0x0f3a54});
+  const build = new THREE.Mesh(buildGeo, buildMat);
+  build.position.set(0, 1.2, -3);
+  build.castShadow = true;
+  scene.add(build);
 
-function selectGuest(idx){state.selectedGuest=idx===state.selectedGuest?null:idx;updateUI()}
+  buildRooms();
 
-function checkInGuest(roomIdx){const room=state.rooms[roomIdx];if(room.guest||room.locked||!state.selectedGuest)return;const guestIdx=typeof state.selectedGuest==='number'?state.selectedGuest:state.queue.indexOf(state.selectedGuest);const guest=state.queue[guestIdx];if(!guest)return;state.queue.splice(guestIdx,1);state.selectedGuest=null;let stayTime=guest.stayTime;if(state.vipFast&&guest.vip)stayTime*=0.7;if(state.stayMultiplier)stayTime*=state.stayMultiplier;room.guest=guest;room.endTime=Date.now()+stayTime;updateUI()}
+  canvas.addEventListener('touchstart', onTouch);
+  canvas.addEventListener('touchmove', onTouch);
+  canvas.addEventListener('click', onClick);
+  window.addEventListener('resize', resizeRenderer);
 
-function checkOutGuest(roomIdx,auto=false){const room=state.rooms[roomIdx];if(!room.guest)return;let pay=room.guest.pay;pay=Math.floor(pay*state.coinMultiplier*state.flatBonusMultiplier);if(state.tips&&Math.random()<0.3)pay=Math.floor(pay*(1+Math.random()*0.4));if(state.lottery&&Math.random()<0.05)pay*=5;if(state.streak){state.streakCount++;if(state.streakCount%5===0)pay*=3}if(state.nightBonus&&new Date().getHours()>=20)pay*=2;state.coins+=pay;state.totalEarnings+=pay;state.totalCheckouts++;state.totalGuests++;let xpGain=10;if(state.tripleXP)xpGain*=3;else if(state.doubleXP)xpGain*=2;state.xp+=xpGain;while(state.xp>=state.xpToNext){state.xp-=state.xpToNext;state.level++;state.xpToNext=Math.floor(state.xpToNext*1.2);showLevelUp()}if(!auto){state.pendingCheckout=roomIdx;showCheckoutPopup(room.guest.emoji,room.guest.name,pay)}room.guest=null;room.endTime=null}
+  animate();
+}
 
-function closeCheckout(){if(state.pendingCheckout!==null)state.rooms[state.pendingCheckout].guest=null;state.pendingCheckout=null;closePopup('checkout-popup');updateUI()}
+function buildRooms() {
+  roomMeshes.forEach(m => scene.remove(m));
+  roomMeshes = [];
+  
+  const cols = 4;
+  const spacing = 2.8;
+  const startX = -(cols - 1) * spacing / 2;
+  const startZ = -(Math.ceil(state.rooms.length / cols) - 1) * spacing / 2;
 
-function showCheckoutPopup(emoji,name,pay){document.getElementById('pop-emoji').textContent=emoji;document.getElementById('pop-title').textContent=name+' - Checkout!';document.getElementById('pop-amount').textContent='+'+pay+' 🪙';document.getElementById('checkout-popup').classList.add('show')}
+  for (let i = 0; i < 12; i++) {
+    const room = state.rooms[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = startX + col * spacing;
+    const z = startZ + row * spacing;
 
-function showLevelUp(){const flash=document.createElement('div');flash.className='level-flash';document.body.appendChild(flash);setTimeout(()=>flash.remove(),1000)}
+    const geo = new THREE.BoxGeometry(2, 1.4, 2);
+    let color = 0x1a5278;
+    if (room.locked) color = 0x0d1b26;
+    else if (room.guest) color = room.guest.vip ? 0x7f6000 : 0x1b5e20;
 
-function buyUpgrade(id){const upgrade=UPGRADES.find(u=>u.id===id);if(!upgrade||state.coins<upgrade.cost||state.boughtUpgrades[id])return;if(upgrade.requires&&!state.boughtUpgrades[upgrade.requires])return;let cost=upgrade.cost;if(state.cashback){cost=Math.floor(cost*0.8)}state.coins-=cost;state.boughtUpgrades[id]=true;if(upgrade.mult)state.coinMultiplier*=upgrade.mult;if(upgrade.timeReduce)state.stayMultiplier=upgrade.timeReduce;if(upgrade.flatBonus)state.flatBonusMultiplier+=upgrade.flatBonus;if(upgrade.queueSize)state.maxQueue=upgrade.queueSize;if(upgrade.unlockRooms){state.totalRooms+=upgrade.unlockRooms;buildRoomMeshes()}if(upgrade.vipBoost)state.vipBoost=true;if(upgrade.vipPayBoost)state.vipPayBoost=true;if(upgrade.vipFast)state.vipFast=true;if(upgrade.auto)state.autoCheckout=true;if(upgrade.autoAssign)state.autoAssign=true;if(upgrade.tips)state.tips=true;if(upgrade.lottery)state.lottery=true;if(upgrade.cashback)state.cashback=true;if(upgrade.doubleXP)state.doubleXP=true;if(upgrade.doubleXP)state.doubleXP=true;if(upgrade.streak)state.streak=true;if(upgrade.nightBonus)state.nightBonus=true;if(upgrade.spawnBoost)state.spawnBoost=true;if(upgrade.prestige){state.prestigeCount++;state.flatBonusMultiplier*=2;resetGame(true);return}saveGame();updateUI()}
+    const mat = new THREE.MeshLambertMaterial({color, transparent: room.locked, opacity: room.locked ? 0.3 : 1});
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, 0.7, z);
+    mesh.castShadow = true;
+    mesh.userData.id = i;
 
-function switchTab(tab){document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');document.querySelectorAll('.tab-btn')[tab].classList.add('active')}
+    scene.add(mesh);
+    roomMeshes.push(mesh);
+  }
+}
 
-function updateUI(){document.getElementById('nav-day').textContent=state.day;document.getElementById('nav-guests').textContent=state.queue.length;document.getElementById('nav-earnings').textContent=formatNum(state.totalEarnings);document.getElementById('coin-display').textContent=formatNum(state.coins);const queueEl=document.getElementById('guest-queue');queueEl.innerHTML='';state.queue.forEach((guest,idx)=>{const card=document.createElement('div');card.className='guest-card'+(idx===state.selectedGuest?' selected':'')+(guest.vip?' vip':'');card.onclick=()=>selectGuest(idx);card.innerHTML=`<div class="guest-emoji">${guest.emoji}</div><div class="guest-info"><div class="guest-name">${guest.name}</div><div class="guest-details"><span class="guest-pay">💰 ${guest.pay}</span>${guest.vip?'<span class="vip-tag">VIP</span>':''}</div></div>`;queueEl.appendChild(card)});document.getElementById('queue-count').textContent=state.queue.length;const upgradeEl=document.getElementById('upgrade-list');upgradeEl.innerHTML='';const groupedUpgrades={};UPGRADES.forEach(u=>{if(!groupedUpgrades[u.cat])groupedUpgrades[u.cat]=[];groupedUpgrades[u.cat].push(u)});Object.values(groupedUpgrades).forEach(group=>{group.forEach(upgrade=>{const card=document.createElement('div');const isBought=state.boughtUpgrades[upgrade.id];const canAfford=state.coins>=upgrade.cost&&(!upgrade.requires||state.boughtUpgrades[upgrade.requires]);card.className='upgrade-card'+(isBought?' bought':(canAfford?''':' cant-afford'));card.onclick=()=>!isBought&&buyUpgrade(upgrade.id);card.innerHTML=`<div class="upgrade-header"><span class="upgrade-icon">${upgrade.icon}</span><span class="upgrade-name">${upgrade.name}</span><span class="upgrade-cost">${isBought?'✅':upgrade.cost}</span></div><div class="upgrade-desc">${upgrade.desc}</div>${isBought?'<div class="upgrade-status">✓ Gekauft</div>':''}`;upgradeEl.appendChild(card)})});const occupiedRooms=state.rooms.filter(r=>r.guest).length;document.getElementById('stat-level').textContent=state.level;document.getElementById('xp-bar').style.width=(state.xp/state.xpToNext*100)+'%';document.getElementById('stat-occupied').textContent=occupiedRooms+'/'+state.totalRooms;document.getElementById('stat-avg').textContent=Math.floor(state.totalCheckouts>0?state.totalEarnings/state.totalCheckouts:0);document.getElementById('stat-queue').textContent=state.queue.length;document.getElementById('stat-multi').textContent=state.coinMultiplier.toFixed(1)+'x';document.getElementById('stat-prestige').textContent=state.prestigeCount}
+function onTouch(e) {
+  if (e.touches.length === 0) return;
+  const touch = e.touches[0];
+  const rect = e.target.getBoundingClientRect();
+  mouse.x = (touch.clientX - rect.left) / rect.width * 2 - 1;
+  mouse.y = -(touch.clientY - rect.top) / rect.height * 2 + 1;
+  updateHover();
+}
 
-function showSettings(){document.getElementById('settings-popup').classList.add('show')}
-function saveGame(){localStorage.setItem('glaggleState',JSON.stringify(state))}
-function loadGame(){const saved=localStorage.getItem('glaggleState');if(saved){const loaded=JSON.parse(saved);Object.assign(state,loaded)}}
-function confirmReset(){closePopup('settings-popup');document.getElementById('reset-popup').classList.add('show')}
-function resetGame(prestige=false){if(!prestige)state={coins:0,totalEarnings:0,totalGuests:0,totalCheckouts:0,day:1,level:1,xp:0,xpToNext:100,rooms:[],queue:[],selectedGuest:null,boughtUpgrades:{},gameActive:true,coinMultiplier:1,stayMultiplier:1,flatBonusMultiplier:state.flatBonusMultiplier,maxQueue:5,vipBoost:false,vipPayBoost:false,vipFast:false,vipOnly:false,autoCheckout:false,autoAssign:false,tips:false,lottery:false,cashback:false,doubleXP:false,tripleXP:false,streak:false,streakCount:0,nightBonus:false,insurance:false,prestigeCount:state.prestigeCount,spawnInterval:3000,totalRooms:8,spawnTimer:null,pendingCheckout:null};closePopup('reset-popup');initRooms();saveGame();updateUI()}
-function closePopup(id){document.getElementById(id).classList.remove('show')}
-function formatNum(n){if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
+function onClick() {
+  if (hover === -1 || state.rooms[hover].locked || !state.selected) return;
+  checkIn(hover);
+}
+
+function updateHover() {
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(roomMeshes);
+  if (hits.length > 0) hover = hits[0].object.userData.id;
+  else hover = -1;
+}
+
+function resizeRenderer() {
+  const canvas = document.getElementById('three-canvas');
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (state.autoCheckout) {
+    state.rooms.forEach((room, i) => {
+      if (room.guest && room.endTime <= Date.now()) checkOut(i, true);
+    });
+  }
+  renderer.render(scene, camera);
+  updateUI();
+}
+
+function gameStart() {
+  document.getElementById('welcome-screen').classList.add('hidden');
+  document.getElementById('game-ui').style.display = 'flex';
+  state.active = true;
+  loadState();
+  state.rooms = Array(12).fill(null).map((_, i) => ({id: i, guest: null, endTime: null, locked: i >= 8}));
+  initThree();
+  spawnGuests();
+}
+
+function spawnGuests() {
+  if (!state.active) return;
+  if (state.queue.length < state.maxQueue && Math.random() < 0.6) {
+    const g = GUESTS[Math.floor(Math.random() * GUESTS.length)];
+    state.queue.push({...g, id: Math.random()});
+  }
+  setTimeout(spawnGuests, state.spawnBoost * 3000);
+}
+
+function selectGuest(i) {
+  state.selected = state.selected === i ? null : i;
+  updateUI();
+}
+
+function checkIn(roomId) {
+  const room = state.rooms[roomId];
+  if (room.guest || room.locked || state.selected === null) return;
+  
+  const guest = state.queue[state.selected];
+  state.queue.splice(state.selected, 1);
+  state.selected = null;
+
+  let stay = guest.stayTime;
+  if (state.timeMult) stay *= state.timeMult;
+
+  room.guest = guest;
+  room.endTime = Date.now() + stay;
+
+  updateUI();
+}
+
+function checkOut(roomId, auto = false) {
+  const room = state.rooms[roomId];
+  if (!room.guest) return;
+
+  let pay = room.guest.pay * state.coinMult * state.flatBonus;
+  state.coins += Math.floor(pay);
+  state.earnings += Math.floor(pay);
+  state.checkouts++;
+  state.guests++;
+
+  state.xp += state.xpMult * 10;
+  while (state.xp >= state.xpNext) {
+    state.xp -= state.xpNext;
+    state.level++;
+    state.xpNext = Math.floor(state.xpNext * 1.2);
+  }
+
+  if (!auto) {
+    showCheckout(room.guest.emoji, room.guest.name, Math.floor(pay));
+  }
+
+  room.guest = null;
+  room.endTime = null;
+}
+
+function showCheckout(emoji, name, pay) {
+  document.getElementById('pop-emoji').textContent = emoji;
+  document.getElementById('pop-amount').textContent = '+' + pay + ' 🪙';
+  document.getElementById('checkout-popup').classList.add('show');
+}
+
+function closeCheckout() {
+  closePopup('checkout-popup');
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.coins < upg.cost || state.bought[id]) return;
+
+  state.coins -= upg.cost;
+  state.bought[id] = true;
+
+  if (upg.mult) state.coinMult *= upg.mult;
+  if (upg.time) state.timeMult = upg.time;
+  if (upg.spawnUp) state.spawnBoost *= 0.6;
+  if (upg.rooms) state.rooms.concat(Array(upg.rooms).fill(null).map((_, i) => ({guest: null, locked: false})));
+  if (upg.queueUp) state.maxQueue += upg.queueUp;
+  if (upg.vipUp) state.vipChance *= 2;
+  if (upg.auto) state.autoCheckout = true;
+  if (upg.flatBonus) state.flatBonus += upg.flatBonus;
+  if (upg.xpBoost) state.xpMult = upg.xpBoost;
+
+  saveState();
+  updateUI();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[tab].classList.add('active');
+}
+
+function updateUI() {
+  document.getElementById('nav-day').textContent = state.day;
+  document.getElementById('nav-guests').textContent = state.queue.length;
+  document.getElementById('nav-earnings').textContent = formatNum(state.earnings);
+  document.getElementById('coin-display').textContent = formatNum(state.coins);
+
+  const queue = document.getElementById('guest-queue');
+  queue.innerHTML = '';
+  state.queue.forEach((g, i) => {
+    const card = document.createElement('div');
+    card.className = 'guest-card' + (i === state.selected ? ' selected' : '') + (g.vip ? ' vip' : '');
+    card.onclick = () => selectGuest(i);
+    card.innerHTML = `<div class="guest-emoji">${g.emoji}</div><div class="guest-info"><div class="guest-name">${g.name}</div><div class="guest-details"><span class="guest-pay">💰 ${g.pay}</span>${g.vip ? '<span class="vip-tag">VIP</span>' : ''}</div></div>`;
+    queue.appendChild(card);
+  });
+  document.getElementById('queue-count').textContent = state.queue.length;
+
+  const upgrades = document.getElementById('upgrade-list');
+  upgrades.innerHTML = '';
+  const grouped = {};
+  UPGRADES.forEach(u => {
+    if (!grouped[u.cat]) grouped[u.cat] = [];
+    grouped[u.cat].push(u);
+  });
+  Object.values(grouped).forEach(group => {
+    group.forEach(u => {
+      const card = document.createElement('div');
+      const isBought = state.bought[u.id];
+      const canBuy = state.coins >= u.cost;
+      card.className = 'upgrade-card' + (isBought ? ' bought' : (canBuy ? '' : ' cant-afford'));
+      card.onclick = () => !isBought && buyUpgrade(u.id);
+      card.innerHTML = `<div class="upgrade-header"><span class="upgrade-icon">${u.icon}</span><span class="upgrade-name">${u.name}</span><span class="upgrade-cost">${isBought ? '✅' : u.cost}</span></div><div class="upgrade-desc">${u.desc}</div>`;
+      upgrades.appendChild(card);
+    });
+  });
+
+  const occupied = state.rooms.filter(r => r.guest).length;
+  document.getElementById('stat-level').textContent = state.level;
+  document.getElementById('xp-bar').style.width = (state.xp / state.xpNext * 100) + '%';
+  document.getElementById('stat-occupied').textContent = occupied + '/' + 8;
+  document.getElementById('stat-earned').textContent = formatNum(state.earnings);
+  document.getElementById('stat-multi').textContent = state.coinMult.toFixed(1) + 'x';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[tab].classList.add('active');
+}
+
+function showSettings() {
+  document.getElementById('settings-popup').classList.add('show');
+}
+
+function saveState() {
+  localStorage.setItem('glaggleState', JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('glaggleState');
+  if (saved) Object.assign(state, JSON.parse(saved));
+}
+
+function resetPopup() {
+  closePopup('settings-popup');
+  document.getElementById('reset-popup').classList.add('show');
+}
+
+function resetGame() {
+  state = {coins: 0, earnings: 0, guests: 0, checkouts: 0, day: 1, level: 1, xp: 0, xpNext: 100, rooms: [], queue: [], selected: null, bought: {}, active: true, coinMult: 1, timeMult: 1, flatBonus: 1, maxQueue: 5, vipChance: 0.2, autoCheckout: false, spawnBoost: 1, xpMult: 1};
+  closePopup('reset-popup');
+  saveState();
+  updateUI();
+}
+
+function closePopup(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function formatNum(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toString();
+}
 </script>
 
 </body>
