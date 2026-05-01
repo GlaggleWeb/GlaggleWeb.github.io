@@ -295,27 +295,11 @@
             hashLabel.innerText = "ID: " + commits[index].substring(0, 10);
         }
 
-        document.getElementById('loadBtn').onclick = async () => {
-    const index = regler.value;
-    const currentHash = commits[index];
-    const url = `https://raw.githubusercontent.com/GlaggleWeb/GlaggleWeb.github.io/${currentHash}/index.html`;
+        document.getElementById('loadBtn').onclick = () => {
+            const currentHash = commits[regler.value];
+            frame.src = `https://raw.githack.com/GlaggleWeb/GlaggleWeb.github.io/${currentHash}/index.html`;
+        };
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Fehler beim Laden");
-        const html = await response.text();
-
-        // Wir schreiben das HTML direkt in den Iframe
-        const frame = document.getElementById('glaggleFrame');
-        const doc = frame.contentDocument || frame.contentWindow.document;
-        doc.open();
-        doc.write(html);
-        doc.close();
-    } catch (e) {
-        console.error(e);
-        alert("Konnte Version nicht laden. GitHub blockiert evtl. zu viele Anfragen.");
-    }
-};
         regler.oninput = updateUI;
         updateUI(); // Initialer Aufruf
     </script>
