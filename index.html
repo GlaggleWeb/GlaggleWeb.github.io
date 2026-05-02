@@ -1566,8 +1566,6 @@ async function searchGlaggleImages(query, offset = 0) {
 
 
     
-// Ersetze deinen window.addEventListener('load', ...) Block:
-
 window.addEventListener('load', function() {
     const preloader = document.getElementById('preloader');
     const gif = document.getElementById('glaggle-gif');
@@ -1578,32 +1576,51 @@ window.addEventListener('load', function() {
         setTimeout(() => preloader.classList.add('preloader-hidden'), 500);
     }
 
-    // Verbindungscheck
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    const slowTypes = ['slow-2g', '2g', '3g'];
-    const isSlow = connection && (
-        slowTypes.includes(connection.effectiveType) || 
-        connection.saveData === true
-    );
-
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const targetLogo = isDarkMode ? staticLogoDark : staticLogoLight;
 
-    if (isSlow) {
-        // Langsam → direkt statisches Logo
+    function showStaticLogo() {
         if (gif) gif.style.display = 'none';
         if (targetLogo) targetLogo.style.display = 'block';
-    } else {
-        // Schnell → GIF abspielen, dann umschalten
+    }
+
+    function showGif() {
         if (gif) {
             const cleanSrc = gif.src.split('?')[0];
             gif.src = cleanSrc + "?t=" + new Date().getTime();
+            gif.style.display = 'block';
         }
-        setTimeout(() => {
-            if (targetLogo) targetLogo.style.display = 'block';
-            if (gif) gif.style.display = 'none';
-        }, 2000);
+        setTimeout(() => showStaticLogo(), 2000);
     }
+
+    // Kleines Testbild laden und Zeit messen
+    const testImg = new Image();
+    const startTime = Date.now();
+    // Wir nutzen dein eigenes Favicon als Testbild (ist bereits gecacht oder klein)
+    testImg.src = "favicon.ico?speed=" + startTime;
+
+    testImg.onload = function() {
+        const duration = Date.now() - startTime;
+        // Wenn das Bild länger als 300ms braucht → langsam
+        if (duration > 300) {
+            showStaticLogo();
+        } else {
+            showGif();
+        }
+    };
+
+    testImg.onerror = function() {
+        // Bei Fehler sicherheitshalber kein GIF
+        showStaticLogo();
+    };
+
+    // Fallback: Nach 800ms wenn noch kein Ergebnis → kein GIF
+    setTimeout(() => {
+        if (gif && gif.style.display !== 'none') return;
+        if (targetLogo && targetLogo.style.display === 'none') {
+            showStaticLogo();
+        }
+    }, 800);
 });
 // DEINE SUCHE (Der "alte" Look mit Ranking-Logik)
 async function searchSupabase(query) {
