@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Sky Jump - Hardcore</title>
+    <style>
+        :root {
+            --bg-color: #1a0b2e;
+            --text-color: #ffffff;
+            --nav-bg: #2a1b41;
+            --card-bg: #2a1b41;
+            --card-border: #9d4edd;
+            --accent: #ff9e00;
+            --danger: #FF6B6B;
+            --coin-gold: #FFD700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 65px; 
+            background-color: var(--nav-bg);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed; 
+            top: 0; 
+            z-index: 1000;
+        }
+
+        .main-content { margin-top: 85px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
+
+        #game-container {
+            position: relative; 
+            width: 100%; 
+            height: 500px; 
+            background: linear-gradient(to top, #2a1b41, #1a0b2e);
+            border: 4px solid var(--card-border);
+            border-radius: 20px; 
+            overflow: hidden; 
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .score-val { font-size: 14px; opacity: 0.9; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0px #cc7a00; margin-bottom: 10px;
+            width: 200px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #cc7a00; }
+
+        #coin-display {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--nav-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .coin-img { width: 24px; height: 24px; object-fit: contain; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); border-color: #FFD700; }
+            100% { transform: scale(1); }
+        }
+        .pulse { animation: pulse 0.5s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Sky Jump</div>
+        <div style="font-size: 24px;">☁️</div>
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Höhe <b id="score">0m</b></div>
+            <div class="score-val">Rekord <b id="highscore">0m</b></div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="menu-overlay" class="overlay">
+                <h1 id="msg">🚀 Glaggle Sky Jump</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
+                    <b>HARDCORE MODUS AKTIV!</b><br>
+                    Plattformen bewegen sich und die Gravitation ist stärker.
+                </p>
+                
+                <button class="btn" onclick="startGame(event)">Starten</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-display">
+        <img src="coin.png" class="coin-img" alt="Coin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>'">
+        <span id="coin-count">0</span>
+    </div>
+
+    <button id="music-toggle" onclick="toggleMusic(event)" style="position: fixed; bottom: 20px; left: 20px; background: var(--nav-bg); border: 2px solid var(--accent); color: white; padding: 10px; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+    🔊
+    </button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu-overlay');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const coinEl = document.getElementById('coin-count');
+        const container = document.getElementById('game-container');
+
+        let gameRunning = false;
+        let score = 0;
+        let maxScore = 0;
+        // Geänderter Highscore-Key
+        const HS_KEY = 'glaggleskyjump_highscore';
+        let highscore = localStorage.getItem(HS_KEY) || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+        highscoreEl.innerText = highscore + "m";
+        coinEl.innerText = coins;
+
+        // Musik Setup
+        const bgMusic = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'); 
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+        let musicActive = true;
+
+        function toggleMusic(e) {
+            if(e) e.stopPropagation();
+            const btn = document.getElementById('music-toggle');
+            if (!bgMusic.paused) {
+                bgMusic.pause();
+                btn.innerText = "🔈";
+                musicActive = false;
+            } else {
+                bgMusic.play().catch(err => console.log("Audio blockiert"));
+                btn.innerText = "🔊";
+                musicActive = true;
+            }
+        }
+
+        const player = {
+            x: 0, y: 0, width: 38, height: 38,
+            vy: 0, jumpStrength: -12, gravity: 0.5 
+        };
+
+        let platforms = [];
+        const platformWidth = 55; 
+        const platformHeight = 12;
+
+        function resize() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function initPlatforms() {
+            platforms = [];
+            platforms.push({x: canvas.width / 2 - platformWidth / 2, y: canvas.height - 50, speed: 0});
+            for(let i = 1; i < 7; i++) {
+                addPlatform(canvas.height - (i * 95)); 
+            }
+        }
+
+        function addPlatform(y) {
+            let speed = 0;
+            if (score > 50) {
+                speed = (Math.random() * 1.5) + (score / 300);
+            }
+
+            platforms.push({
+                x: Math.random() * (canvas.width - platformWidth),
+                y: y,
+                speed: speed,
+                dir: Math.random() > 0.5 ? 1 : -1
+            });
+        }
+
+        function updatePlayerPos(clientX) {
+            const rect = canvas.getBoundingClientRect();
+            let targetX = clientX - rect.left - (player.width / 2);
+            player.x += (targetX - player.x) * 0.25;
+            
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        }
+
+        container.addEventListener('mousemove', (e) => { if(gameRunning) updatePlayerPos(e.clientX); });
+        container.addEventListener('touchmove', (e) => { 
+            if(gameRunning) {
+                e.preventDefault(); 
+                updatePlayerPos(e.touches[0].clientX); 
+            }
+        }, {passive: false});
+
+        function startGame(e) {
+            if(e) e.stopPropagation();
+            
+            if (musicActive) {
+                bgMusic.play().catch(() => {
+                    console.log("Audio braucht Nutzerinteraktion...");
+                });
+            }
+
+            score = 0;
+            maxScore = 0;
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - 150;
+            player.vy = player.jumpStrength;
+            
+            initPlatforms();
+            gameRunning = true;
+            menu.style.display = "none";
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop() {
+            if(!gameRunning) return;
+
+            player.vy += player.gravity;
+            player.y += player.vy;
+
+            if (player.y < canvas.height / 2.5) {
+                let diff = canvas.height / 2.5 - player.y;
+                player.y = canvas.height / 2.5;
+                maxScore += diff;
+                score = Math.floor(maxScore / 10);
+                scoreEl.innerText = score + "m";
+
+                platforms.forEach(p => {
+                    p.y += diff;
+                    if (p.y > canvas.height) {
+                        platforms.splice(platforms.indexOf(p), 1);
+                        addPlatform(-15);
+                    }
+                });
+
+                let lastJumpCoin = parseInt(localStorage.getItem('last_jump_coin')) || 0;
+                if (score >= lastJumpCoin + 100) {
+                    coins++;
+                    localStorage.setItem('glaggleCoins', coins);
+                    localStorage.setItem('last_jump_coin', score);
+                    coinEl.innerText = coins;
+                    document.getElementById('coin-display').classList.add('pulse');
+                    setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 500);
+                }
+            }
+
+            platforms.forEach(p => {
+                if (p.speed !== 0) {
+                    p.x += p.speed * p.dir;
+                    if (p.x <= 0 || p.x + platformWidth >= canvas.width) {
+                        p.dir *= -1;
+                    }
+                }
+            });
+
+            if (player.vy > 0) {
+                platforms.forEach(p => {
+                    if (player.x + player.width > p.x && 
+                        player.x < p.x + platformWidth &&
+                        player.y + player.height > p.y &&
+                        player.y + player.height < p.y + platformHeight + player.vy) {
+                        player.vy = player.jumpStrength;
+                        player.y = p.y - player.height;
+                    }
+                });
+            }
+
+            if (player.y > canvas.height + 100) {
+                gameOver();
+                return;
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "rgba(255,255,255,0.1)";
+            for(let i=0; i<8; i++) {
+                ctx.beginPath();
+                ctx.arc((i*150)%canvas.width, (i*100 - score/2)%canvas.height, 1, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            platforms.forEach(p => {
+                ctx.fillStyle = "#9d4edd";
+                ctx.beginPath();
+                if(ctx.roundRect) ctx.roundRect(p.x, p.y, platformWidth, platformHeight, 4);
+                else ctx.fillRect(p.x, p.y, platformWidth, platformHeight);
+                ctx.fill();
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+
+            ctx.save();
+            ctx.translate(player.x + player.width/2, player.y + player.height/2);
+            let stretch = player.vy * 0.02;
+            ctx.scale(1 - Math.abs(stretch), 1 + stretch);
+
+            ctx.fillStyle = "#FFD700";
+            ctx.beginPath();
+            ctx.arc(0, 0, player.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(-7, -4, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(7, -4, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, 3, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            localStorage.setItem('last_jump_coin', 0);
+            
+            let currentHigh = parseInt(localStorage.getItem(HS_KEY)) || 0;
+            
+            if (score > currentHigh) {
+                localStorage.setItem(HS_KEY, score);
+                highscoreEl.innerText = score + "m";
+                document.getElementById('msg').innerHTML = "🏆 NEUER REKORD!<br><span style='color:var(--accent)'>" + score + "m</span>";
+            } else {
+                document.getElementById('msg').innerHTML = "💀 ABGESTÜRZT!<br>Höhe: " + score + "m";
+            }
+            menu.style.display = "flex";
+        }
+    </script>
+</body>
+</html>
