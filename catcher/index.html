@@ -328,8 +328,8 @@
                         createParticles(item.x, item.y, '#FFD700');
                         items.splice(i, 1);
                         
-                        // Coin System (alle 10 Punkte 1 Coin)
-                        if (score > 0 && score % 10 === 0) {
+                        // Coin System (alle 15 Punkte 1 Coin)
+                        if (score > 0 && score % 15 === 0) {
                             coins++;
                             localStorage.setItem('glaggleCoins', coins);
                             coinEl.innerText = coins;
