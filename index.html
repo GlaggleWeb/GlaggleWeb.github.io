@@ -1566,37 +1566,43 @@ async function searchGlaggleImages(query, offset = 0) {
 
 
     
+// Ersetze deinen window.addEventListener('load', ...) Block:
+
 window.addEventListener('load', function() {
     const preloader = document.getElementById('preloader');
     const gif = document.getElementById('glaggle-gif');
     const staticLogoLight = document.getElementById('static-logo-light');
     const staticLogoDark = document.getElementById('static-logo-dark');
 
-    // 1. Preloader ausfaden
     if (preloader) {
-        setTimeout(() => {
-            preloader.classList.add('preloader-hidden');
-        }, 500);
+        setTimeout(() => preloader.classList.add('preloader-hidden'), 500);
     }
 
-    if (gif) {
-        // 2. GIF-Reset vorbereiten (ohne Flackern)
-        // Wir hängen den Zeitstempel an, BEVOR wir es anzeigen
-        const cleanSrc = gif.src.split('?')[0];
-        gif.src = cleanSrc + "?t=" + new Date().getTime();
+    // Verbindungscheck
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const slowTypes = ['slow-2g', '2g', '3g'];
+    const isSlow = connection && (
+        slowTypes.includes(connection.effectiveType) || 
+        connection.saveData === true
+    );
 
-        // 3. Nach Ablauf der GIF-Dauer (z.B. 2000ms) umschalten
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const targetLogo = isDarkMode ? staticLogoDark : staticLogoLight;
+
+    if (isSlow) {
+        // Langsam → direkt statisches Logo
+        if (gif) gif.style.display = 'none';
+        if (targetLogo) targetLogo.style.display = 'block';
+    } else {
+        // Schnell → GIF abspielen, dann umschalten
+        if (gif) {
+            const cleanSrc = gif.src.split('?')[0];
+            gif.src = cleanSrc + "?t=" + new Date().getTime();
+        }
         setTimeout(() => {
-            // Erst das statische Logo wählen
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const targetLogo = isDarkMode ? staticLogoDark : staticLogoLight;
-
-            // 4. Nahtloser Übergang
-            if (targetLogo) {
-                targetLogo.style.display = 'block'; // Statisches Logo zeigen
-                gif.style.display = 'none';        // GIF erst DANACH verstecken
-            }
-        }, 2000); // Exakte Dauer deines GIFs in Millisekunden
+            if (targetLogo) targetLogo.style.display = 'block';
+            if (gif) gif.style.display = 'none';
+        }, 2000);
     }
 });
 // DEINE SUCHE (Der "alte" Look mit Ranking-Logik)
