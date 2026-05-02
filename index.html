@@ -702,17 +702,6 @@ html {
     </div>
 </nav>
 
-<!-- Ersetze deinen captcha-overlay div so: -->
-<div id="captcha-overlay" style="display:none;">
-    <div class="captcha-box">
-        <h2>Glaggle Safe Security</h2>
-        <p>Bitte bestätige, dass du ein Mensch bist, um fortzufahren.</p>
-        
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAADFG5qzoXmw9bBzE" data-callback="onSuccess"></div>
-    </div>
-</div>
-
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
     
@@ -1834,30 +1823,6 @@ async function registerClick(id) {
     } catch (err) {
         console.error("Tracking Fehler:", err);
     }
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    if (localStorage.getItem("captchaDone") === "true") {
-        hideCaptcha(); // overlay bleibt display:none
-    } else {
-        // Nur dann einblenden wenn wirklich nötig
-        document.getElementById('captcha-overlay').style.display = 'flex';
-    }
-});
-
-function onSuccess(token) {
-    // Den Erfolg dauerhaft im Browser speichern
-    localStorage.setItem("captchaDone", "true");
-    hideCaptcha();
-}
-
-function hideCaptcha() {
-    // Das Overlay entfernen und den eigentlichen Inhalt einblenden
-    const overlay = document.getElementById('captcha-overlay');
-    const content = document.getElementById('main-content');
-    
-    if (overlay) overlay.style.display = 'none';
-    if (content) content.style.display = 'block';
 }
 </script>
 
