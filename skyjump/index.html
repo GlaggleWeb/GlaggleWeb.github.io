@@ -105,6 +105,24 @@
             100% { transform: scale(1); }
         }
         .pulse { animation: pulse 0.5s ease-in-out; }
+
+        .btn-secondary {
+    background: transparent !important;
+    border: 2px solid var(--accent) !important;
+    box-shadow: none !important;
+    margin-top: 5px;
+    color: var(--accent) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Zentriert den Text vertikal */
+}
+
+.btn-secondary:active {
+    background: rgba(255, 158, 0, 0.1) !important;
+    transform: scale(0.98);
+}
+        
     </style>
 </head>
 <body>
@@ -124,14 +142,18 @@
             <canvas id="gameCanvas"></canvas>
             
             <div id="menu-overlay" class="overlay">
-                <h1 id="msg">🚀 Glaggle Sky Jump</h1>
-                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
-                    <b>HARDCORE MODUS AKTIV!</b><br>
-                    Plattformen bewegen sich und die Gravitation ist stärker.
-                </p>
-                
-                <button class="btn" onclick="startGame(event)">Starten</button>
-            </div>
+    <h1 id="msg">🚀 Glaggle Sky Jump</h1>
+    <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
+        <b>HARDCORE MODUS AKTIV!</b><br>
+        Plattformen bewegen sich und die Gravitation ist stärker.
+    </p>
+    
+    <button class="btn" onclick="startGame(event)">Starten</button>
+
+    <a href="https://glaggle.ch/gamecenter" class="btn btn-secondary">
+        Game Center 🏠
+    </a>
+</div>
         </div>
     </div>
 
