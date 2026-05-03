@@ -240,30 +240,34 @@
         }, {passive: false});
 
         function startGame(e) {
-            if(e) e.stopPropagation();
-            
-            const btn = document.getElementById('music-toggle');
-            if (btn.innerText === "🔊") {
-                bgMusic.play().catch(() => {});
-                musicEnabled = true;
-            }
+    if(e) e.stopPropagation();
+    
+    // --- MUSIK-START LOGIK ---
+    // Da der User gerade geklickt hat, erlaubt der Browser nun Audio.
+    bgMusic.play().then(() => {
+        musicEnabled = true;
+        document.getElementById('music-toggle').innerText = "🔊";
+    }).catch(err => {
+        console.log("Audio konnte noch nicht starten:", err);
+    });
 
-            score = 0;
-            gameSpeed = 4;
-            spawnRate = 60;
-            player.width = player.baseWidth;
-            items = [];
-            particles = [];
-            scoreEl.innerText = "0";
-            gameRunning = true;
-            menu.style.display = "none";
-            frameCount = 0;
-            
-            // Spieler zentrieren
-            player.x = canvas.width / 2 - player.width / 2;
-            
-            requestAnimationFrame(gameLoop);
-        }
+    // --- DEINE BESTEHENDE GAME-LOGIK ---
+    score = 0;
+    gameSpeed = 4;
+    spawnRate = 60;
+    player.width = player.baseWidth;
+    items = [];
+    particles = [];
+    scoreEl.innerText = "0";
+    gameRunning = true;
+    menu.style.display = "none";
+    frameCount = 0;
+    
+    // Spieler zentrieren
+    player.x = canvas.width / 2 - player.width / 2;
+    
+    requestAnimationFrame(gameLoop);
+}
 
         function spawnItem() {
             const radius = 15;
