@@ -230,18 +230,17 @@ window.addEventListener('keyup', (e) => { if(e.code === "Space") handleInput(fal
 function startGame(e) {
     if(e) e.stopPropagation();
     
-    // KORREKTUR: Musik nur starten, wenn sie beim letzten Mal AN war 
-    // oder wenn es das allererste Mal ist (Initialisierung)
-    const btn = document.getElementById('music-toggle');
-    if (btn.innerText === "🔊") {
-        bgMusic.play().catch(() => {});
+    // MUSIK-FIX: 
+    // Wir erzwingen das Abspielen beim Klick auf den Start-Button.
+    // Das erfüllt die Browser-Anforderung für Nutzer-Interaktion.
+    bgMusic.play().then(() => {
         musicEnabled = true;
-    } else if (frameCount === 0 && btn.innerText === "🔈" && !musicEnabled) {
-        // Optional: Wenn du willst, dass es beim allerersten Klick 
-        // IMMER angeht, nimm die nächste Zeile rein:
-        // toggleMusic(); 
-    }
+        document.getElementById('music-toggle').innerText = "🔊";
+    }).catch(err => {
+        console.log("Audio-Autoplay wurde blockiert:", err);
+    });
 
+    // Game-Reset Logik
     score = 0;
     gameSpeed = 3;
     obstacles = [];
