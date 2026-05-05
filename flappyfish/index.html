@@ -206,7 +206,8 @@ window.addEventListener('keyup', (e) => { if(e.code === "Space") handleInput(fal
 
 // --- MUSIK SETUP ---
 // Ein stabiler Ersatz-Link, falls deine Datei lokal fehlt
-const musicURL = 'https://assets.mixkit.co/music/preview/mixkit-mysterious-prowl-detective-cinematic-94.mp3';
+// Diese URL ist für Tests freigegeben und wird nicht blockiert
+const musicURL = 'https://storage.googleapis.com/media-session/elephants-dream/the-wires.mp3';
 const bgMusic = new Audio(musicURL); 
 bgMusic.loop = true;
 bgMusic.volume = 0.3; 
