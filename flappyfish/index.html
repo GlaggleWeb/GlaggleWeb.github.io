@@ -169,29 +169,6 @@ let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 highscoreEl.innerText = highscore + "m";
 coinEl.innerText = coins;
 
-// --- MUSIK SETUP ---
-// Ein atmosphärischerer Unterwasser-Track
-const bgMusic = new Audio('https://pixabay.com/music/download/underwater-ambient-chiptune-141680.mp3?download'); 
-bgMusic.loop = true;
-bgMusic.volume = 0.3; 
-
-let musicEnabled = false; // Standardmäßig aus, bis zum ersten Start
-
-function toggleMusic(e) {
-    if(e) e.stopPropagation();
-    const btn = document.getElementById('music-toggle');
-    
-    if (!bgMusic.paused) {
-        bgMusic.pause();
-        btn.innerText = "🔈";
-        musicEnabled = false;
-    } else {
-        bgMusic.play().catch(err => console.log("Klick nötig"));
-        btn.innerText = "🔊";
-        musicEnabled = true;
-    }
-}
-
 const fish = {
     x: 80, y: 200, radius: 18, vy: 0,
     gravity: 0.25, lift: -0.6, isLifting: false
@@ -227,20 +204,43 @@ container.addEventListener('touchend', () => handleInput(false), {passive: false
 window.addEventListener('keydown', (e) => { if(e.code === "Space") handleInput(true); });
 window.addEventListener('keyup', (e) => { if(e.code === "Space") handleInput(false); });
 
+// --- MUSIK SETUP ---
+// Ein stabiler Ersatz-Link, falls deine Datei lokal fehlt
+const musicURL = 'https://assets.mixkit.co/music/preview/mixkit-mysterious-prowl-detective-cinematic-94.mp3';
+const bgMusic = new Audio(musicURL); 
+bgMusic.loop = true;
+bgMusic.volume = 0.3; 
+
+let musicEnabled = false;
+
+function toggleMusic(e) {
+    if(e) e.stopPropagation();
+    const btn = document.getElementById('music-toggle');
+    
+    if (!bgMusic.paused) {
+        bgMusic.pause();
+        btn.innerText = "🔈";
+        musicEnabled = false;
+    } else {
+        bgMusic.play().catch(err => console.log("Abspielen fehlgeschlagen"));
+        btn.innerText = "🔊";
+        musicEnabled = true;
+    }
+}
+
 function startGame(e) {
     if(e) e.stopPropagation();
     
-    // MUSIK-FIX: 
-    // Wir erzwingen das Abspielen beim Klick auf den Start-Button.
-    // Das erfüllt die Browser-Anforderung für Nutzer-Interaktion.
+    // MUSIK DIREKT STARTEN
+    // Wir laden die Musik kurz vor dem Abspielen sicherheitshalber neu
     bgMusic.play().then(() => {
         musicEnabled = true;
         document.getElementById('music-toggle').innerText = "🔊";
     }).catch(err => {
-        console.log("Audio-Autoplay wurde blockiert:", err);
+        // Falls der Link oben auch mal nicht geht, loggen wir es
+        console.log("Audio-Start fehlgeschlagen. Grund:", err.message);
     });
 
-    // Game-Reset Logik
     score = 0;
     gameSpeed = 3;
     obstacles = [];
