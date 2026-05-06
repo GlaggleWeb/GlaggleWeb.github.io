@@ -1,1 +1,72 @@
-Diese seite wurde eingestellt!
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Glaggle Registration</title>
+    <!-- Appwrite SDK einbinden -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #e91e63; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; background: #2ecc71; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>GlaggleID erstellen</h1>
+    <input type="email" id="email" placeholder="E-Mail">
+    <input type="password" id="pass" placeholder="Passwort (mind. 8 Zeichen)">
+    <button onclick="signup()">Konto & ID erstellen</button>
+
+    <div id="result">
+        <span>Konto erstellt! Deine ID lautet:</span>
+        <h2 id="idDisplay">000000</h2>
+    </div>
+</div>
+
+<script>
+// --- APPWRITE SETUP ---
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829'); // <--- DEINE ID
+
+const account = new Appwrite.Account(client);
+const databases = new Appwrite.Databases(client);
+
+async function signup() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('pass').value;
+
+    try {
+        // 1. Account im sicheren Auth-Bereich erstellen
+        const user = await account.create('unique()', email, password);
+        
+        // 2. 6-stellige Glaggle ID würfeln
+        const glaggleId = Math.floor(100000 + Math.random() * 900000);
+
+        // 3. Glaggle ID und E-Mail in der Tabelle speichern
+        await databases.createDocument(
+            '69fb65330007c1a1af0a',   // <--- DEINE ID
+            'accounts', // <--- DEINE ID
+            'unique()', 
+            {
+                glaggleId: glaggleId,
+                userEmail: email
+            }
+        );
+
+        // Erfolg anzeigen
+        document.getElementById('idDisplay').innerText = glaggleId;
+        document.getElementById('result').style.display = 'block';
+
+    } catch (error) {
+        alert("Fehler: " + error.message);
+    }
+}
+</script>
+
+</body>
+</html>
