@@ -2,36 +2,118 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glaggle Registration</title>
-    <!-- Appwrite SDK einbinden -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #e91e63; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; background: #2ecc71; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #0f0f0f; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        .box { 
+            background: #1a1a1a; 
+            padding: 40px; 
+            border-radius: 24px; 
+            border: 1px solid #333; 
+            width: 380px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 { color: #e91e63; margin-bottom: 25px; font-weight: 800; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 12px 0; 
+            border-radius: 12px; 
+            border: 1px solid #444; 
+            background: #252525; 
+            color: white; 
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+        input:focus { border-color: #e91e63; outline: none; }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #e91e63; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px;
+            margin-top: 15px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        button:hover { background: #c2185b; transform: translateY(-2px); }
+        
+        /* Ergebnis-Box */
+        #result { 
+            margin-top: 30px; 
+            padding: 20px; 
+            border-radius: 16px; 
+            display: none; 
+            background: #1e2a1e; 
+            border: 1px solid #2ecc71;
+            animation: fadeIn 0.5s;
+        }
+        .warning {
+            color: #ff9800;
+            font-size: 0.9em;
+            margin-top: 15px;
+            display: block;
+            font-weight: bold;
+        }
+        .id-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #252525;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            cursor: pointer;
+            border: 1px dashed #2ecc71;
+        }
+        #idDisplay { margin: 0 15px 0 0; color: #2ecc71; font-size: 24px; }
+        .copy-hint { font-size: 0.7em; color: #888; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h1>GlaggleID erstellen</h1>
+    <h1>GlaggleID</h1>
+    <p style="color: #888;">Erstelle dein Konto und erhalte deine ID.</p>
+    
     <input type="email" id="email" placeholder="E-Mail">
-    <input type="password" id="pass" placeholder="Passwort (mind. 8 Zeichen)">
-    <button onclick="signup()">Konto & ID erstellen</button>
+    <input type="password" id="pass" placeholder="Passwort (min. 8 Zeichen)">
+    <button onclick="signup()">Konto & ID generieren</button>
 
     <div id="result">
-        <span>Konto erstellt! Deine ID lautet:</span>
-        <h2 id="idDisplay">000000</h2>
+        <span style="color: #2ecc71;">✓ Konto erfolgreich erstellt!</span>
+        
+        <div class="id-container" onclick="copyId()" title="Klicken zum Kopieren">
+            <h2 id="idDisplay">000000</h2>
+            <span class="copy-hint">KLICKEN ZUM KOPIEREN</span>
+        </div>
+
+        <span class="warning">⚠️ WICHTIG: Speichere diese ID gut ab! Du benötigst sie zwingend, um dich später wieder anzumelden.</span>
     </div>
 </div>
 
 <script>
-// --- APPWRITE SETUP ---
+// --- DEINE APPWRITE DATEN HIER EINTRAGEN ---
 const client = new Appwrite.Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject('69fb638a002b7d03d829'); // <--- DEINE ID
+    .setProject('69fb638a002b7d03d829'); 
 
 const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
@@ -40,20 +122,25 @@ async function signup() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('pass').value;
 
+    if(!email || password.length < 8) {
+        alert("Bitte gib eine gültige E-Mail und ein Passwort mit mind. 8 Zeichen ein.");
+        return;
+    }
+
     try {
-        // 1. Account im sicheren Auth-Bereich erstellen
-        const user = await account.create('unique()', email, password);
+        // 1. User im Auth-System erstellen
+        await account.create('unique()', email, password);
         
-        // 2. 6-stellige Glaggle ID würfeln
+        // 2. Zufällige 6-stellige Glaggle ID
         const glaggleId = Math.floor(100000 + Math.random() * 900000);
 
-        // 3. Glaggle ID und E-Mail in der Tabelle speichern
+        // 3. In Tabelle speichern (Achte auf 'glaggleld' wegen deines Screenshots!)
         await databases.createDocument(
-            '69fb65330007c1a1af0a',   // <--- DEINE ID
-            'accounts', // <--- DEINE ID
+            '69fb65330007c1a1af0a', 
+            'accounts', 
             'unique()', 
             {
-                glaggleId: glaggleId,
+                glaggleld: glaggleId, 
                 userEmail: email
             }
         );
@@ -65,6 +152,13 @@ async function signup() {
     } catch (error) {
         alert("Fehler: " + error.message);
     }
+}
+
+// Kopier-Funktion
+function copyId() {
+    const idText = document.getElementById('idDisplay').innerText;
+    navigator.clipboard.writeText(idText);
+    alert("Glaggle ID " + idText + " wurde kopiert!");
 }
 </script>
 
