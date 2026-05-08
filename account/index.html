@@ -141,9 +141,14 @@
 
     <div class="loading-spinner" id="spinner"></div>
 
-    <div id="result">
-        <span>🎉 Erfolgreich erstellt! Deine GlaggleID:</span>
-        <h2 id="idDisplay" style="margin: 10px 0; font-size: 2rem;">000000</h2>
+<div id="result">
+    <span>🎉 Erfolgreich! Deine GlaggleID:</span>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0;">
+        <h2 id="idDisplay" style="margin: 0; font-size: 2.2rem;">000000</h2>
+        <button onclick="copyToClipboard()" id="copyBtn" style="width: auto; margin: 0; padding: 8px 12px; background: var(--accent-dark); font-size: 0.8rem;">
+            Kopieren
+        </button>
+    </div>
         <p style="margin-bottom: 0; color: inherit; font-size: 0.8rem;">Achtung die GlaggleID kannst du brauchen um dich mit deinem Glaggle Account anzumelden, anstatt Benutzername und Passwort einzugeben!</p>
     </div>
 </div>
@@ -241,6 +246,25 @@ async function finishRegistration() {
 
 function showLoading(state) {
     document.getElementById('spinner').style.display = state ? 'block' : 'none';
+}
+
+function copyToClipboard() {
+    const idText = document.getElementById('idDisplay').innerText;
+    const btn = document.getElementById('copyBtn');
+
+    navigator.clipboard.writeText(idText).then(() => {
+        // Visuelles Feedback geben
+        const originalText = btn.innerText;
+        btn.innerText = "Kopiert!";
+        btn.style.background = "#2e7d32"; // Kurz grün einfärben
+
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "var(--accent-dark)";
+        }, 2000);
+    }).catch(err => {
+        console.error('Fehler beim Kopieren: ', err);
+    });
 }
 </script>
 
