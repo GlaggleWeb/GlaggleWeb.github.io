@@ -122,8 +122,8 @@
         <input type="text" id="identifier" placeholder="ID, Name oder E-Mail">
         <button onclick="checkUser()">Weiter</button>
         <p style="margin-top: 20px; font-size: 0.8rem;">
-            Noch kein Konto? <a href="index.html" style="color: var(--link-color); text-decoration: none; font-weight: bold;">Registrieren</a>
-        </p>
+    Noch kein Konto? <a href="../account/index.html" style="color: var(--link-color); text-decoration: none; font-weight: bold;">Registrieren</a>
+</p>
     </div>
 
     <div id="step2" style="display: none;">
@@ -155,10 +155,10 @@ let resolvedEmail = "";
 window.onload = async () => {
     try {
         await account.get();
-        // Wenn eingeloggt, leite zum Dashboard weiter
-        window.location.href = "dashboard.html"; 
+        // Geändert: Gehe zur Hauptseite, wenn man schon eingeloggt ist
+        window.location.href = "../index.html"; 
     } catch (e) {
-        // Nicht eingeloggt, bleibe auf Login-Seite
+        // Nicht eingeloggt, bleibe hier
     }
 };
 
