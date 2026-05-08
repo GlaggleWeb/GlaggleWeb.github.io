@@ -208,14 +208,19 @@ async function login() {
 
     showLoading(true);
     try {
-        // Erstellt die Session (bleibt dank Appwrite-SDK automatisch gespeichert)
+        // 1. Sicherheit: Alte Sessions löschen
+        try { await account.deleteSession('current'); } catch(e) {}
+
+        // 2. Login-Versuch
+        console.log("Logge ein mit:", resolvedEmail); // Check in der Konsole!
         await account.createEmailPasswordSession(resolvedEmail, password);
         
-        // Erfolg: Weiterleitung
-        // Statt zu dashbord.html zu springen, gehen wir zur Hauptseite zurück
+        // 3. Erfolg
         window.location.href = "../index.html";
     } catch (error) {
-        alert("Login fehlgeschlagen: Passwort falsch oder Konto-Problem.");
+        console.error("Appwrite Login Fehler:", error);
+        alert("Login fehlgeschlagen: " + error.message); 
+        // Hier steht jetzt genau drin, WARUM es nicht geht (z.B. "Invalid credentials")
     } finally {
         showLoading(false);
     }
