@@ -120,23 +120,26 @@ async function sendPasswordReset() {
 // 3. E-Mail ändern (Erfordert Verifizierung)
 async function updateEmail() {
     const newEmail = document.getElementById('new-email').value;
-    if(!newEmail.includes('@')) return alert("Ungültige E-Mail");
+    if(!newEmail.includes('@')) return alert("Bitte eine gültige E-Mail eingeben.");
 
     try {
-        // Appwrite verlangt das aktuelle Passwort zur E-Mail Änderung!
         const pass = prompt("Bitte gib dein aktuelles Passwort zur Bestätigung ein:");
         if(!pass) return;
 
+        // 1. E-Mail Änderung bei Appwrite beantragen
+        // Dies sendet automatisch eine Verifizierungs-Mail an die NEUE Adresse
         await account.updateEmail(newEmail, pass);
-        
-        // Update in der Datenbank
-        await databases.updateDocument(DB_ID, COLL_ID, userDocId, {
-            userEmail: newEmail
-        });
-        
-        alert("E-Mail wurde geändert! Bitte logge dich ggf. neu ein.");
-        location.reload();
-    } catch (e) { alert("Fehler: " + e.message); }
+
+        // 2. Den User informieren
+        alert("Bestätigungs-Link gesendet! Bitte klicke auf den Link in deiner NEUEN E-Mail, um die Änderung abzuschließen.");
+
+        // 3. Optional: Logout, da die Session meistens durch die E-Mail Änderung ungültig wird
+        await account.deleteSession('current');
+        window.location.href = "../../login/index.html";
+
+    } catch (e) {
+        alert("Fehler: " + e.message);
+    }
 }
 </script>
 </body>
