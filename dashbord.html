@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --accent: #70C4F7;
+            --card-bg: #fdfdfd;
+            --card-border: #eeeeee;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124;
+                --text-color: #e8eaed;
+                --card-bg: #303134;
+                --card-border: #444444;
+            }
+        }
+        body { 
+            font-family: 'Arial Rounded MT Bold', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 600px; width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .user-info { margin: 20px 0; padding: 15px; background: rgba(112, 196, 247, 0.1); border-radius: 15px; }
+        button { 
+            padding: 10px 20px; background: #ff4d4d; color: white; 
+            border: none; border-radius: 20px; cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="glagglelogo.png" alt="Logo" style="width: 120px;">
+    <h1>Willkommen im Glaggle-Space!</h1>
+    
+    <div id="content" style="display: none;">
+        <div class="user-info">
+            <p>Eingeloggt als: <strong id="userName">...</strong></p>
+            <p>E-Mail: <span id="userEmail">...</span></p>
+        </div>
+        <p>Hier kommen deine exklusiven Inhalte hin.</p>
+        <button onclick="logout()">Abmelden</button>
+    </div>
+
+    <div id="loading">Lädt Profil...</div>
+</div>
+
+<script>
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829'); 
+
+const account = new Appwrite.Account(client);
+
+// Schutz-Funktion: Prüfen ob User eingeloggt ist
+async function checkUser() {
+    try {
+        const user = await account.get();
+        // User ist da! Infos anzeigen
+        document.getElementById('userName').innerText = user.name || "Glaggle-Mitglied";
+        document.getElementById('userEmail').innerText = user.email;
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+    } catch (error) {
+        // Nicht eingeloggt -> Zurück zum Login
+        console.log("Nicht autorisiert, leite weiter...");
+        window.location.href = "login.html"; 
+    }
+}
+
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        window.location.href = "login.html";
+    } catch (error) {
+        alert("Fehler beim Abmelden");
+    }
+}
+
+checkUser();
+</script>
+
+</body>
+</html>
