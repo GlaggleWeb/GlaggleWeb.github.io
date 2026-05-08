@@ -816,11 +816,6 @@ const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const client = new Appwrite.Client()
-        .setEndpoint('https://cloud.appwrite.io/v1')
-        .setProject('69fb638a002b7d03d829');
-
-    const account = new Appwrite.Account(client);
     
 function getGKey() { return p1 + p2 + p3; }
 
