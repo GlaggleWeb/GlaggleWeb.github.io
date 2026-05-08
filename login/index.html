@@ -212,7 +212,8 @@ async function login() {
         await account.createEmailPasswordSession(resolvedEmail, password);
         
         // Erfolg: Weiterleitung
-        window.location.href = "dashboard.html"; 
+        // Statt zu dashbord.html zu springen, gehen wir zur Hauptseite zurück
+        window.location.href = "../index.html";
     } catch (error) {
         alert("Login fehlgeschlagen: Passwort falsch oder Konto-Problem.");
     } finally {
