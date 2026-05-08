@@ -214,13 +214,17 @@ async function finishRegistration() {
         // 1. Passwort setzen
         await account.updatePassword(password);
 
-        // 2. User-Daten abrufen
+        // 2. WICHTIG: Den Namen im Account-System setzen
+        // Das sorgt dafür, dass account.get() später den Namen zurückgibt!
+        await account.updateName(uName);
+
+        // 3. User-Daten abrufen
         const user = await account.get();
 
-        // 3. Glaggle ID generieren
+        // 4. Glaggle ID generieren
         const glaggleId = Math.floor(100000 + Math.random() * 900000);
 
-        // 4. Dokument in Datenbank speichern (Inklusive userName)
+        // 5. Dokument in Datenbank speichern
         await databases.createDocument(
             DB_ID,
             COLL_ID,
@@ -229,13 +233,19 @@ async function finishRegistration() {
                 glaggleId: glaggleId,
                 userEmail: user.email,
                 userName: uName,
-                gamecenterName: gameName || "" // Speichert leeren String falls leer
+                gamecenterName: gameName || "" 
             }
         );
 
+        // UI Update
         document.getElementById('step2').style.display = 'none';
         document.getElementById('idDisplay').innerText = glaggleId;
         document.getElementById('result').style.display = 'block';
+
+        // Optional: Nach 5 Sekunden automatisch zur Hauptseite
+        setTimeout(() => {
+            window.location.href = "../index.html";
+        }, 5000);
 
     } catch (error) {
         alert("Fehler beim Abschluss: " + error.message);
@@ -243,7 +253,6 @@ async function finishRegistration() {
         showLoading(false);
     }
 }
-
 function showLoading(state) {
     document.getElementById('spinner').style.display = state ? 'block' : 'none';
 }
