@@ -173,11 +173,18 @@ window.onload = async () => {
     if (userId && secret) {
         showLoading(true);
         try {
+            // Verifiziert den Link
             await account.updateMagicURLSession(userId, secret);
+            
+            // WICHTIG: Entferne die Parameter aus der URL, damit beim 
+            // Neuladen nicht wieder versucht wird, den Link zu nutzen!
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
         } catch (error) {
-            alert("Der Link ist ungültig oder abgelaufen.");
+            console.error("Fehler beim Verifizieren:", error);
+            alert("Der Link ist ungültig oder wurde bereits benutzt.");
         } finally {
             showLoading(false);
         }
