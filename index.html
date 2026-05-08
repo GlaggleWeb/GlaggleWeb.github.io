@@ -706,6 +706,16 @@ html {
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
     
     <div class="sidebar-content">
+    <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+        <div id="user-logged-in" style="display: none;">
+            <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
+            <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+            <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 0.7rem; width: 100%;">Abmelden</button>
+        </div>
+        <div id="user-logged-out">
+            <a href="login/index.html" class="sidebar-link" style="background: var(--accent); color: white; text-align: center; border-radius: 10px; font-weight: bold;">Anmelden / Registrieren</a>
+        </div>
+    </div>
         <details class="sidebar-category">
             <summary>KI Tools</summary>
             <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
@@ -1825,6 +1835,39 @@ async function registerClick(id) {
         console.error("Tracking Fehler:", err);
     }
 }
+
+// Appwrite Konfiguration
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
+
+const account = new Appwrite.Account(client);
+
+async function checkLogin() {
+    try {
+        const user = await account.get();
+        // Erfolg: User ist eingeloggt
+        document.getElementById('user-logged-in').style.display = 'block';
+        document.getElementById('user-logged-out').style.display = 'none';
+        document.getElementById('user-name-display').innerText = user.name;
+    } catch (error) {
+        // Fehler: Nicht eingeloggt
+        document.getElementById('user-logged-in').style.display = 'none';
+        document.getElementById('user-logged-out').style.display = 'block';
+    }
+}
+
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        location.reload(); // Seite neu laden, um Status zu aktualisieren
+    } catch (error) {
+        alert("Fehler beim Abmelden");
+    }
+}
+
+// Beim Start ausführen
+checkLogin();
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
