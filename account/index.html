@@ -165,26 +165,39 @@ const databases = new Appwrite.Databases(client);
 const DB_ID = '69fb65330007c1a1af0a';
 const COLL_ID = 'accounts';
 
+let isVerifying = false; // Verhindert doppelten Aufruf
+
 window.onload = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
     const secret = urlParams.get('secret');
 
-    if (userId && secret) {
+    // Nur ausführen, wenn Parameter da sind UND wir nicht gerade schon prüfen
+    if (userId && secret && !isVerifying) {
+        isVerifying = true; 
         showLoading(true);
+        
         try {
-            // Verifiziert den Link
+            // Token verifizieren
             await account.updateMagicURLSession(userId, secret);
             
-            // WICHTIG: Entferne die Parameter aus der URL, damit beim 
-            // Neuladen nicht wieder versucht wird, den Link zu nutzen!
+            // WICHTIG: URL sofort säubern, damit bei einem Refresh kein Fehler kommt
             window.history.replaceState({}, document.title, window.location.pathname);
             
+            // Ansicht wechseln
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
+            console.log("Verifizierung erfolgreich!");
         } catch (error) {
-            console.error("Fehler beim Verifizieren:", error);
-            alert("Der Link ist ungültig oder wurde bereits benutzt.");
+            console.error("Appwrite Fehler:", error);
+            // Wenn der Fehler 401 ist, prüfen wir, ob wir vielleicht SCHON eingeloggt sind
+            try {
+                await account.get();
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+            } catch (e) {
+                alert("Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.");
+            }
         } finally {
             showLoading(false);
         }
