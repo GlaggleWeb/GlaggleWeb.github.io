@@ -1860,28 +1860,34 @@ async function registerClick(id) {
 async function checkLogin() {
     try {
         const user = await account.get();
-        
+        console.log("Login erfolgreich erkannt:", user.name);
+
         const loggedInDiv = document.getElementById('user-logged-in');
         const loggedOutDiv = document.getElementById('user-logged-out');
         const nameDisplay = document.getElementById('user-name-display');
 
-        // NUR ausführen, wenn die Elemente wirklich existieren
+        // WICHTIG: Nur stylen, wenn die Divs wirklich existieren!
         if (loggedInDiv && loggedOutDiv) {
-            loggedInDiv.style.display = 'block';
-            loggedOutDiv.style.display = 'none';
+            loggedInDiv.style.setProperty('display', 'block', 'important');
+            loggedOutDiv.style.setProperty('display', 'none', 'important');
             if (nameDisplay) nameDisplay.innerText = user.name;
         }
     } catch (error) {
-        // Falls nicht eingeloggt, trotzdem prüfen ob Divs da sind
+        console.log("Nicht eingeloggt oder Fehler:", error.message);
         const loggedInDiv = document.getElementById('user-logged-in');
         const loggedOutDiv = document.getElementById('user-logged-out');
 
         if (loggedInDiv && loggedOutDiv) {
-            loggedInDiv.style.display = 'none';
-            loggedOutDiv.style.display = 'block';
+            loggedInDiv.style.setProperty('display', 'none', 'important');
+            loggedOutDiv.style.setProperty('display', 'block', 'important');
         }
     }
 }
+
+// Ruf die Funktion erst auf, wenn das HTML GANZ fertig geladen ist
+window.addEventListener('load', () => {
+    setTimeout(checkLogin, 500); // 500ms Puffer, damit die Sidebar sicher da ist
+});
 
 async function logout() {
     try {
