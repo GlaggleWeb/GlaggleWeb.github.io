@@ -1861,18 +1861,18 @@ async function checkLogin() {
     try {
         const user = await account.get();
         
-        // Elemente abrufen
         const loggedInDiv = document.getElementById('user-logged-in');
         const loggedOutDiv = document.getElementById('user-logged-out');
         const nameDisplay = document.getElementById('user-name-display');
 
-        // Nur ausführen, wenn die Elemente im HTML gefunden wurden
+        // NUR ausführen, wenn die Elemente wirklich existieren
         if (loggedInDiv && loggedOutDiv) {
             loggedInDiv.style.display = 'block';
             loggedOutDiv.style.display = 'none';
             if (nameDisplay) nameDisplay.innerText = user.name;
         }
     } catch (error) {
+        // Falls nicht eingeloggt, trotzdem prüfen ob Divs da sind
         const loggedInDiv = document.getElementById('user-logged-in');
         const loggedOutDiv = document.getElementById('user-logged-out');
 
@@ -1880,7 +1880,6 @@ async function checkLogin() {
             loggedInDiv.style.display = 'none';
             loggedOutDiv.style.display = 'block';
         }
-        console.log("Nicht eingeloggt");
     }
 }
 
