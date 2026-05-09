@@ -486,6 +486,12 @@ const getG = () => _p1 + _p2 + _p3;
 
 const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
+// Temporär zum Debuggen - ganz oben im Script einfügen
+const testResult = await supabaseClient
+    .from('leaderboard')
+    .select('*')
+    .limit(1);
+console.log("Leaderboard Test:", JSON.stringify(testResult));
 // Appwrite
 const appwriteClient = new Appwrite.Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
@@ -1034,7 +1040,7 @@ toggleBtn.onclick = () => {
 updateLeaderboard();
 
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
-setInterval(updateLeaderboard, 1000);
+setInterval(updateLeaderboard, 30000);
 </script>
 </body>
 </html>
