@@ -154,11 +154,13 @@ let resolvedEmail = "";
 // 1. Prüfen, ob User beim Aufruf der Seite bereits eingeloggt ist
 window.onload = async () => {
     try {
-        await account.get();
-        // Wenn eingeloggt, sofort zur Hauptseite zurück
-        window.location.href = "../"; 
+        // Wir prüfen NICHT mehr, ob man eingeloggt ist.
+        // Stattdessen löschen wir beim Aufruf der Login-Seite sicherheitshalber 
+        // eine eventuell korrupte alte Session.
+        await account.deleteSession('current');
+        console.log("Alte Session-Reste bereinigt.");
     } catch (e) {
-        // Nicht eingeloggt, bleibe auf Login-Seite
+        // Keine Session da? Perfekt, dann können wir uns normal einloggen.
     }
 };
 
