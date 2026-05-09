@@ -1860,14 +1860,27 @@ async function registerClick(id) {
 async function checkLogin() {
     try {
         const user = await account.get();
-        // Erfolg: User ist eingeloggt
-        document.getElementById('user-logged-in').style.display = 'block';
-        document.getElementById('user-logged-out').style.display = 'none';
-        document.getElementById('user-name-display').innerText = user.name;
+        
+        // Elemente abrufen
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+        const nameDisplay = document.getElementById('user-name-display');
+
+        // Nur ausführen, wenn die Elemente im HTML gefunden wurden
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.display = 'block';
+            loggedOutDiv.style.display = 'none';
+            if (nameDisplay) nameDisplay.innerText = user.name;
+        }
     } catch (error) {
-        // Fehler: Nicht eingeloggt
-        document.getElementById('user-logged-in').style.display = 'none';
-        document.getElementById('user-logged-out').style.display = 'block';
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.display = 'none';
+            loggedOutDiv.style.display = 'block';
+        }
+        console.log("Nicht eingeloggt");
     }
 }
 
