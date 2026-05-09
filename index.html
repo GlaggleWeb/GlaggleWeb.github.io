@@ -707,28 +707,32 @@ html {
     
     <div class="sidebar-content">
     <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
-        <div id="user-logged-in" style="display: none;">
-    <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
-    <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
     
-    <!-- Account Übersicht Button mit fixem Kontrast -->
-    <a href="account/overview/index.html" class="sidebar-link" 
-       style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        Account Übersicht
-    </a>
+    <div id="user-logged-in" style="display: none;">
+        <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
+        <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+        
+        <a href="account/overview/index.html" class="sidebar-link" 
+           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            Account Übersicht
+        </a>
 
-    <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
-        Abmelden
-    </button>
-</div>
-       <!-- Beispiel für den Registrieren-Button -->
-<a href="account/index.html" class="sidebar-link" 
-   style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
-   Registrieren
-</a>
-    <a href="login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">Schon ein Konto? Einloggen</a>
-</div>
+        <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
+            Abmelden
+        </button>
     </div>
+
+    <div id="user-logged-out">
+        <a href="account/index.html" class="sidebar-link" 
+           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
+           Registrieren
+        </a>
+        <a href="login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">
+           Schon ein Konto? Einloggen
+        </a>
+    </div>
+
+</div>
         <details class="sidebar-category">
             <summary>KI Tools</summary>
             <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
