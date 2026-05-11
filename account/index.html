@@ -130,6 +130,12 @@
         <button id="btnStep1" onclick="sendMagicLink()">Link anfordern</button>
     </div>
 
+    <div id="stepConfirm" style="display: none;">
+    <h1>Fast da!</h1>
+    <p>Klicke unten um deine E-Mail zu bestätigen.</p>
+    <button onclick="confirmMagicLink()">E-Mail bestätigen ✓</button>
+</div>
+    
     <div id="step2" style="display: none;">
         <h1>Fast geschafft!</h1>
         <p>Vervollständige dein Profil, um deine Glaggle Account zu erstellen.</p>
@@ -167,43 +173,24 @@ const COLL_ID = 'accounts';
 
 let isVerifying = false; // Verhindert doppelten Aufruf
 
+// Statt sofort in window.onload zu verifizieren:
 window.onload = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
     const secret = urlParams.get('secret');
 
-    // Nur ausführen, wenn Parameter da sind UND wir nicht gerade schon prüfen
-    if (userId && secret && !isVerifying) {
-        isVerifying = true; 
-        showLoading(true);
+    if (userId && secret) {
+        // Parameter in Session speichern, NICHT sofort verifizieren
+        sessionStorage.setItem('magicUserId', userId);
+        sessionStorage.setItem('magicSecret', secret);
+        window.history.replaceState({}, document.title, window.location.pathname);
         
-        try {
-            // Token verifizieren
-            await account.updateMagicURLSession(userId, secret);
-            
-            // WICHTIG: URL sofort säubern, damit bei einem Refresh kein Fehler kommt
-            window.history.replaceState({}, document.title, window.location.pathname);
-            
-            // Ansicht wechseln
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-            console.log("Verifizierung erfolgreich!");
-        } catch (error) {
-            console.error("Appwrite Fehler:", error);
-            // Wenn der Fehler 401 ist, prüfen wir, ob wir vielleicht SCHON eingeloggt sind
-            try {
-                await account.get();
-                document.getElementById('step1').style.display = 'none';
-                document.getElementById('step2').style.display = 'block';
-            } catch (e) {
-                alert("Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.");
-            }
-        } finally {
-            showLoading(false);
-        }
+        // Stattdessen einen Button anzeigen
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('stepConfirm').style.display = 'block';
     }
 };
-
+    
 async function sendMagicLink() {
     const email = document.getElementById('email').value;
     if (!email.includes('@')) return alert("Bitte eine gültige E-Mail eingeben.");
@@ -294,6 +281,23 @@ function copyToClipboard() {
     }).catch(err => {
         console.error('Fehler beim Kopieren: ', err);
     });
+}
+
+async function confirmMagicLink() {
+    const userId = sessionStorage.getItem('magicUserId');
+    const secret = sessionStorage.getItem('magicSecret');
+    showLoading(true);
+    try {
+        await account.updateMagicURLSession(userId, secret);
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    } catch (error) {
+        alert("Link abgelaufen. Bitte neu anfordern.");
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+    } finally {
+        showLoading(false);
+    }
 }
 </script>
 
