@@ -197,12 +197,9 @@ async function sendMagicLink() {
 
     showLoading(true);
     try {
-        // Konsistente userId aus der E-Mail generieren
+        // Konsistente userId aus E-Mail ableiten
         const userId = email.replace(/[^a-zA-Z0-9]/g, '').substring(0, 36);
-        
-        // UserId speichern für später
-        sessionStorage.setItem('magicUserId', userId);
-        
+
         await account.createMagicURLToken(userId, email, window.location.href);
         alert("E-Mail versendet! Bitte schaue in deinem Postfach nach.");
         document.getElementById('btnStep1').disabled = true;
@@ -213,6 +210,7 @@ async function sendMagicLink() {
         showLoading(false);
     }
 }
+    
 async function finishRegistration() {
     const uName = document.getElementById('userName').value;
     const gameName = document.getElementById('gamecenterName').value;
