@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Account - Übersicht</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e0e0e0;
+            --link-color: #2E94D1;
+            --desc-color: #65676b;
+            --accent: #70C4F7;
+            --accent-dark: #2E94D1;
+            --danger: #ff4d4f;
+            --success: #52c41a;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #18191a;
+                --text-color: #e4e6eb;
+                --nav-bg: #242526;
+                --card-bg: #242526;
+                --card-border: #3e4042;
+                --link-color: #8cc9f5;
+                --desc-color: #b0b3b8;
+            }
+        }
+
+        body { 
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', Roboto, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo { width: 140px; margin-bottom: 10px; }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 24px; 
+            border: 1px solid var(--card-border); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 { font-size: 1.6rem; margin: 0; color: var(--text-color); }
+        h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; color: var(--link-color); display: flex; align-items: center; gap: 8px; }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-label { font-size: 0.85rem; color: var(--desc-color); }
+        .info-value { font-weight: bold; font-size: 1rem; color: var(--accent-dark); }
+
+        label { 
+            display: block; 
+            font-size: 0.85rem; 
+            margin-bottom: 5px; 
+            margin-left: 5px;
+            color: var(--desc-color);
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px 15px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--card-border); 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            box-sizing: border-box; 
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 0.95rem; 
+            transition: all 0.2s ease;
+        }
+
+        button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .btn-secondary { background: transparent; color: var(--accent-dark); border: 2px solid var(--accent); }
+        .btn-secondary:hover { background: var(--accent); color: white; }
+
+        .btn-danger { background: transparent; color: var(--danger); border: 2px solid var(--danger); margin-top: 10px; }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        .info-text { font-size: 0.8rem; color: var(--desc-color); line-height: 1.4; margin-top: -5px; margin-bottom: 15px; }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.5s;
+        }
+
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--card-border);
+            border-top: 4px solid var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <img src="../glagglelogo.png" alt="Glaggle Logo" class="logo" onerror="this.style.display='none'">
+        <h1>Account Übersicht</h1>
+    </div>
+
+    <!-- Profil Card -->
+    <div class="card">
+        <h2>👤 Profil</h2>
+        <div class="info-row">
+            <span class="info-label">Deine GlaggleID</span>
+            <span class="info-value" id="display-id">------</span>
+        </div>
+        
+        <label for="edit-username">Benutzername</label>
+        <input type="text" id="edit-username" placeholder="Lade...">
+        
+        <label for="edit-gamecenter">Gamecenter Name (optional)</label>
+        <input type="text" id="edit-gamecenter" placeholder="Nicht festgelegt">
+        
+        <button onclick="updateProfile()">Änderungen speichern</button>
+    </div>
+
+    <!-- Sicherheit & E-Mail -->
+    <div class="card">
+        <h2>🔒 Sicherheit & E-Mail</h2>
+        
+        <div class="info-row">
+            <span class="info-label">E-Mail</span>
+            <span class="info-value" id="display-email">Lade...</span>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="sendPasswordReset()">Passwort ändern</button>
+            <p class="info-text">Wir senden dir einen Link zum Zurücksetzen an deine Adresse.</p>
+            
+            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 10px 0; width: 100%;">
+            
+            <label>Neue E-Mail Adresse</label>
+            <input type="email" id="new-email" placeholder="beispiel@mail.de">
+            <button class="btn-secondary" onclick="updateEmail()">E-Mail Adresse aktualisieren</button>
+            <p class="info-text">Du musst die neue Adresse bestätigen, bevor sie aktiv wird.</p>
+        </div>
+    </div>
+
+    <button class="btn-danger" onclick="window.location.href='../../index.html'">Zurück zur Suche</button>
+</div>
+
+<script>
+// --- APPWRITE SETUP ---
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
+
+const account = new Appwrite.Account(client);
+const databases = new Appwrite.Databases(client);
+
+const DB_ID = '69fb65330007c1a1af0a';
+const COLL_ID = 'accounts';
+let userDocId = "";
+
+window.onload = async () => {
+    try {
+        const user = await account.get();
+        document.getElementById('display-email').innerText = user.email;
+        document.getElementById('edit-username').value = user.name || "";
+
+        // Suche Dokument mit Query (Bugfix: Query.equal statt Array-String)
+        const response = await databases.listDocuments(DB_ID, COLL_ID, [
+            Appwrite.Query.equal('userEmail', user.email)
+        ]);
+
+        if (response.documents.length > 0) {
+            const doc = response.documents[0];
+            userDocId = doc.$id;
+            document.getElementById('display-id').innerText = doc.glaggleId;
+            document.getElementById('edit-gamecenter').value = doc.gamecenterName || "";
+        } else {
+            console.warn("Kein Datenbank-Eintrag für diesen User gefunden.");
+        }
+    } catch (e) {
+        console.error(e);
+        window.location.href = "../login/index.html";
+    } finally {
+        document.getElementById('loading-overlay').style.opacity = '0';
+        setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+    }
+};
+
+async function updateProfile() {
+    const newName = document.getElementById('edit-username').value;
+    const newGameName = document.getElementById('edit-gamecenter').value;
+    
+    if(newName.length < 3) return alert("Der Name ist zu kurz!");
+
+    try {
+        // 1. Appwrite Account Name
+        await account.updateName(newName);
+        
+        // 2. Datenbank Update
+        if (userDocId) {
+            await databases.updateDocument(DB_ID, COLL_ID, userDocId, {
+                userName: newName,
+                gamecenterName: newGameName
+            });
+            alert("Profil erfolgreich aktualisiert! 🎉");
+        } else {
+            alert("Fehler: Datenbank-Profil nicht gefunden.");
+        }
+    } catch (e) { 
+        alert("Fehler: " + e.message); 
+    }
+}
+
+async function sendPasswordReset() {
+    try {
+        const user = await account.get();
+        // Redirect URL anpassen an dein Projekt-Verzeichnis
+        const recoveryUrl = window.location.origin + "/account/overview/reset-password.html";
+        await account.createRecovery(user.email, recoveryUrl);
+        alert("Check dein Postfach! Wir haben dir einen Link geschickt.");
+    } catch (e) { 
+        alert("Fehler: " + e.message); 
+    }
+}
+
+async function updateEmail() {
+    const newEmail = document.getElementById('new-email').value;
+    if(!newEmail.includes('@')) return alert("Bitte gib eine gültige E-Mail ein.");
+
+    const pass = prompt("Bitte gib dein Passwort zur Sicherheit ein:");
+    if(!pass) return;
+
+    try {
+        // Dieser Call sendet die Bestätigungsmail an die NEUE Adresse
+        await account.updateEmail(newEmail, pass);
+        alert("Bestätigungs-Link an " + newEmail + " gesendet! Bitte klicke auf den Link in der Mail.");
+        
+        // Logout aus Sicherheitsgründen
+        await account.deleteSession('current');
+        window.location.href = "../../login/index.html";
+    } catch (e) {
+        alert("Fehler: " + e.message);
+    }
+}
+</script>
+
+</body>
+</html>
