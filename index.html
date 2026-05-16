@@ -1904,6 +1904,26 @@ async function logout() {
 
 // Beim Start ausführen
 checkLogin();
+
+const backToTopBtn = document.getElementById("backToTop");
+
+// 1. Überwachen, wie weit gescrollt wurde
+window.addEventListener("scroll", () => {
+  // Zeigt den Button an, wenn mehr als 300px nach unten gescrollt wurde
+  if (window.scrollY > 300) {
+    backToTopBtn.classList.add("show");
+  } else {
+    backToTopBtn.classList.remove("show");
+  }
+});
+
+// 2. Klick-Event: Smooth nach oben scrollen
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" // Sorgt für das weiche Scrollen
+  });
+});
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
