@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle – Code Einlösen</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --nav-bg: #ffffff;
+            --card-bg: #fdfdfd; --card-border: #eeeeee; --link-color: #2E94D1;
+            --desc-color: #555555; --accent: #70C4F7; --success: #4CAF50; --danger: #ff4757;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #202124; --text-color: #e8eaed; --nav-bg: #303134;
+                --card-bg: #303134; --card-border: #444444; --link-color: #8cc9f5; --desc-color: #bdc1c6;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .navbar { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 70px; background-color: var(--nav-bg); padding: 0 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: fixed; top: 0; z-index: 1000; }
+        .nav-logo { height: 35px; cursor: pointer; }
+        .main { margin-top: 120px; width: 100%; max-width: 480px; padding: 0 20px 60px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+        .hero { text-align: center; }
+        .hero-icon { font-size: 4rem; display: block; margin-bottom: 12px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .hero h1 { font-size: 1.9rem; color: var(--link-color); margin-bottom: 8px; }
+        .hero p { color: var(--desc-color); font-size: 0.95rem; line-height: 1.5; }
+        .card { background: var(--card-bg); border: 2px solid var(--accent); border-radius: 22px; padding: 30px 25px; width: 100%; box-shadow: 0 8px 30px rgba(112,196,247,0.12); }
+        .reward-badge { display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border-radius: 50px; padding: 10px 22px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
+        .reward-badge img { width: 26px; height: 26px; }
+        .reward-badge span { font-size: 1.1rem; font-weight: bold; color: #333; }
+        label { display: block; font-size: 0.85rem; color: var(--desc-color); margin-bottom: 8px; }
+        .code-input { width: 100%; padding: 14px 18px; border-radius: 14px; border: 2px solid var(--card-border); background: var(--bg-color); color: var(--text-color); font-family: 'Courier New', monospace; font-size: 1rem; letter-spacing: 2px; outline: none; transition: border-color 0.2s; margin-bottom: 18px; }
+        .code-input:focus { border-color: var(--accent); }
+        .code-input::placeholder { letter-spacing: 1px; opacity: 0.4; }
+        .redeem-btn { width: 100%; padding: 14px; border-radius: 50px; border: none; background: var(--accent); color: white; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s; box-shadow: 0 4px 15px rgba(112,196,247,0.35); }
+        .redeem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(112,196,247,0.45); }
+        .redeem-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-msg { margin-top: 16px; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; text-align: center; display: none; line-height: 1.4; }
+        .status-msg.success { display: block; background: rgba(76,175,80,0.12); border: 2px solid var(--success); color: var(--success); }
+        .status-msg.error   { display: block; background: rgba(255,71,87,0.1);  border: 2px solid var(--danger);  color: var(--danger); }
+        .status-msg.loading { display: block; background: rgba(112,196,247,0.1); border: 2px solid var(--accent); color: var(--link-color); }
+        @keyframes coinPop { 0% { transform: scale(0) translateY(0); opacity: 1; } 70% { transform: scale(1.2) translateY(-30px); opacity: 1; } 100% { transform: scale(1) translateY(-60px); opacity: 0; } }
+        .coin-particle { position: fixed; font-size: 2rem; pointer-events: none; animation: coinPop 1s ease-out forwards; z-index: 9999; }
+        .coin-status { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; }
+        .coin-icon { width: 24px; height: 24px; }
+        .coin-amount { font-weight: bold; color: var(--text-color); }
+        .back-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 600px) { .navbar { padding: 0 20px; } .main { margin-top: 100px; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/"><img src="glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
+    <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Code Einlösen</span>
+</nav>
+
+<div class="main">
+    <a href="/gamecenter" class="back-link">← Zurück zum Gamecenter</a>
+
+    <div class="hero">
+        <span class="hero-icon">🎁</span>
+        <h1>Glaggle Code</h1>
+        <p>Gib deinen Glaggle Code ein und erhalte<br><strong>20 Glaggle Coins</strong> direkt gutgeschrieben!</p>
+    </div>
+
+    <div class="card">
+        <div class="reward-badge">
+            <img src="coin.png" alt="Coin">
+            <span>+20 Glaggle Coins</span>
+        </div>
+        <label for="code-input">Dein Code</label>
+        <input type="text" id="code-input" class="code-input"
+            placeholder="XXXX-XXXX-XXXX" maxlength="40"
+            autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button class="redeem-btn" id="redeem-btn" onclick="redeemCode()">
+            🎉 Code Einlösen
+        </button>
+        <div class="status-msg" id="status-msg"></div>
+    </div>
+</div>
+
+<div class="coin-status">
+    <img src="coin.png" alt="Coin" class="coin-icon">
+    <span class="coin-amount" id="coin-count">0</span>
+</div>
+
+<script>
+    // ── SUPABASE ───────────────────────────────────────────────────
+    const S_URL = "https://khainlzhocznvhysnabu.supabase.co";
+    const S_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22";
+    const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
+
+    // ── GÜLTIGE CODES ALS SHA-256 HASHES ──────────────────────────
+    // Der echte Code steht hier NICHT – nur sein Hash.
+    // Neuen Hash erzeugen: https://emn178.github.io/online-tools/sha256.html
+    // Eingabe immer GROSSGESCHRIEBEN hashen!
+    //
+    // Aktuell gültige Codes (du weißt welcher das ist, User nicht):
+    const VALID_CODE_HASHES = {
+        // hash(deines Codes) : Coins-Belohnung
+        // Beispiel – ersetze diesen Hash durch deinen eigenen:
+        "55ae0de42e57ce8f81c203e8ce1da04da65592b0f3f241d82c557860eb2540e0": 20,
+        // Weitere Codes einfach als Hash ergänzen:
+        // "anderer-hash-hier": 20,
+    };
+    // WICHTIG: Ersetze den Hash oben!
+    // Gehe auf https://emn178.github.io/online-tools/sha256.html
+    // Gib deinen Code GROSSGESCHRIEBEN ein → kopiere den Hash hierher.
+
+    // ── USER & COINS ───────────────────────────────────────────────
+    let currentUserName = localStorage.getItem('glaggleUserName') || 'Gast';
+    let glaggleID       = localStorage.getItem('glaggleID');
+    let glaggleCoins    = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+    function updateCoinDisplay() {
+        const el = document.getElementById('coin-count');
+        if (el) el.innerText = glaggleCoins.toLocaleString();
+    }
+
+    async function syncAccountData() {
+        if (glaggleID) {
+            try {
+                const { data } = await supabaseClient
+                    .from('glaggle_accounts')
+                    .select('total_coins, game_center_name')
+                    .eq('glaggle_id', glaggleID)
+                    .single();
+                if (data) {
+                    glaggleCoins    = data.total_coins;
+                    currentUserName = data.game_center_name;
+                    localStorage.setItem('glaggleCoins', glaggleCoins);
+                    localStorage.setItem('glaggleUserName', currentUserName);
+                }
+            } catch (e) {}
+        }
+        updateCoinDisplay();
+    }
+
+    syncAccountData();
+
+    // ── SHA-256 HASH FUNKTION (Web Crypto API, kein externes Script) ──
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray  = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ── PARTIKEL ───────────────────────────────────────────────────
+    function spawnCoinParticles() {
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+                const p = document.createElement('div');
+                p.className  = 'coin-particle';
+                p.innerText  = '🪙';
+                p.style.left   = (20 + Math.random() * 60) + 'vw';
+                p.style.bottom = '80px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1100);
+            }, i * 80);
+        }
+    }
+
+    // ── CODE EINLÖSEN ──────────────────────────────────────────────
+    async function redeemCode() {
+        const code = document.getElementById('code-input').value.trim().toUpperCase();
+        const btn  = document.getElementById('redeem-btn');
+
+        if (!code) { showStatus('error', '⚠️ Bitte gib einen Code ein.'); return; }
+
+        btn.disabled = true;
+        showStatus('loading', '⏳ Code wird geprüft...');
+
+        // Code hashen und mit Liste vergleichen – Klartext nie preisgegeben
+        const hash = await sha256(code);
+
+        if (!(hash in VALID_CODE_HASHES)) {
+            showStatus('error', '❌ Ungültiger Code. Bitte überprüfe die Eingabe.');
+            btn.disabled = false;
+            return;
+        }
+
+        // Schon auf diesem Gerät eingelöst? (gespeichert wird der Hash, nicht der Code)
+        const localKey = 'redeemed_' + hash;
+        if (localStorage.getItem(localKey)) {
+            showStatus('error', '🚫 Du hast diesen Code auf diesem Gerät bereits eingelöst!');
+            btn.disabled = false;
+            return;
+        }
+
+        // Coins gutschreiben
+        const reward = VALID_CODE_HASHES[hash];
+        glaggleCoins += reward;
+        localStorage.setItem('glaggleCoins', glaggleCoins);
+        localStorage.setItem(localKey, '1');
+
+        // Cloud-Sync
+        if (glaggleID) {
+            try {
+                await supabaseClient
+                    .from('glaggle_accounts')
+                    .update({ total_coins: glaggleCoins })
+                    .eq('glaggle_id', glaggleID);
+            } catch (e) {}
+        }
+
+        // Leaderboard
+        try {
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({
+                    username:  currentUserName,
+                    coins:     glaggleCoins,
+                    game_name: 'global'
+                }, { onConflict: 'username, game_name' });
+        } catch (e) {}
+
+        updateCoinDisplay();
+        spawnCoinParticles();
+        showStatus('success', `🎉 Code eingelöst! +${reward} Glaggle Coins wurden dir gutgeschrieben!`);
+        document.getElementById('code-input').value = '';
+        btn.disabled = false;
+    }
+
+    function showStatus(type, msg) {
+        const el = document.getElementById('status-msg');
+        el.className = 'status-msg ' + type;
+        el.innerText  = msg;
+    }
+
+    document.getElementById('code-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') redeemCode();
+    });
+
+    document.getElementById('code-input').addEventListener('input', e => {
+        const pos = e.target.selectionStart;
+        e.target.value = e.target.value.toUpperCase();
+        e.target.setSelectionRange(pos, pos);
+    });
+</script>
+</body>
+</html>
