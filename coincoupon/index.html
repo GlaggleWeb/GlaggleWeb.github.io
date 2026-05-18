@@ -42,8 +42,11 @@
         .status-msg.success { display: block; background: rgba(76,175,80,0.12); border: 2px solid var(--success); color: var(--success); }
         .status-msg.error   { display: block; background: rgba(255,71,87,0.1);  border: 2px solid var(--danger);  color: var(--danger); }
         .status-msg.loading { display: block; background: rgba(112,196,247,0.1); border: 2px solid var(--accent); color: var(--link-color); }
-        @keyframes coinPop { 0% { transform: scale(0) translateY(0); opacity: 1; } 70% { transform: scale(1.2) translateY(-30px); opacity: 1; } 100% { transform: scale(1) translateY(-60px); opacity: 0; } }
-        .coin-particle { position: fixed; font-size: 2rem; pointer-events: none; animation: coinPop 1s ease-out forwards; z-index: 9999; }
+        @keyframes confettiFall {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+        }
         .coin-status { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1000; }
         .coin-icon { width: 24px; height: 24px; }
         .coin-amount { font-weight: bold; color: var(--text-color); }
@@ -55,7 +58,7 @@
 <body>
 
 <nav class="navbar">
-    <a href="/"><img src="../glagglelogooriginal.png" alt="Glaggle Logo" class="nav-logo"></a>
+    <a href="/"><img src="glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
     <span style="font-size: 14px; font-weight: bold; color: var(--accent);">Code Einlösen</span>
 </nav>
 
@@ -151,19 +154,43 @@
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // ── PARTIKEL ───────────────────────────────────────────────────
-    function spawnCoinParticles() {
-        for (let i = 0; i < 12; i++) {
+    // ── KONFETTI ──────────────────────────────────────────────────
+    function spawnConfetti() {
+        const emojis = ['🪙','🎉','✨','🌟','💛','🎊','⭐'];
+        for (let i = 0; i < 40; i++) {
             setTimeout(() => {
                 const p = document.createElement('div');
-                p.className  = 'coin-particle';
-                p.innerText  = '🪙';
-                p.style.left   = (20 + Math.random() * 60) + 'vw';
-                p.style.bottom = '80px';
+                p.style.cssText = `
+                    position: fixed;
+                    font-size: ${1.2 + Math.random() * 1.4}rem;
+                    left: ${Math.random() * 100}vw;
+                    top: -40px;
+                    pointer-events: none;
+                    z-index: 9999;
+                    animation: confettiFall ${1.5 + Math.random() * 1.5}s ease-in forwards;
+                    transform: rotate(${Math.random() * 360}deg);
+                `;
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
                 document.body.appendChild(p);
-                setTimeout(() => p.remove(), 1100);
-            }, i * 80);
+                setTimeout(() => p.remove(), 3000);
+            }, i * 60);
         }
+    }
+
+    // ── COIN COUNTER ANIMATION ─────────────────────────────────────
+    function animateCoinCount(from, to) {
+        const el = document.getElementById('coin-count');
+        const duration = 1200;
+        const start = performance.now();
+        function step(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+            const current = Math.round(from + (to - from) * ease);
+            el.innerText = current.toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+            else el.innerText = to.toLocaleString();
+        }
+        requestAnimationFrame(step);
     }
 
     // ── CODE EINLÖSEN ──────────────────────────────────────────────
@@ -185,21 +212,56 @@
             return;
         }
 
-        // Schon auf diesem Gerät eingelöst? (gespeichert wird der Hash, nicht der Code)
         const localKey = 'redeemed_' + hash;
+
+        // Server-Check: Zeile in leaderboard mit game_name = hash suchen
+        // Existiert sie → dieser User hat den Code bereits eingelöst
+        try {
+            const { data: existing } = await supabaseClient
+                .from('leaderboard')
+                .select('username')
+                .eq('username', currentUserName)
+                .eq('game_name', 'redeemed_' + hash)
+                .single();
+
+            if (existing) {
+                showStatus('error', '🚫 Du hast diesen Code bereits eingelöst!');
+                localStorage.setItem(localKey, '1');
+                btn.disabled = false;
+                return;
+            }
+        } catch (e) { /* kein Eintrag = noch nicht eingelöst, weitermachen */ }
+
+        // Lokaler Schnell-Check (Komfort, nicht Sicherheit)
         if (localStorage.getItem(localKey)) {
             showStatus('error', '🚫 Du hast diesen Code auf diesem Gerät bereits eingelöst!');
             btn.disabled = false;
             return;
         }
 
-        // Coins gutschreiben
         const reward = VALID_CODE_HASHES[hash];
+
+        // Zuerst aktuellen Stand von Supabase holen (damit kein alter localStorage-Wert genutzt wird)
+        if (glaggleID) {
+            try {
+                const { data } = await supabaseClient
+                    .from('glaggle_accounts')
+                    .select('total_coins')
+                    .eq('glaggle_id', glaggleID)
+                    .single();
+                if (data) {
+                    glaggleCoins = data.total_coins;
+                    localStorage.setItem('glaggleCoins', glaggleCoins);
+                }
+            } catch (e) {}
+        }
+
+        // Reward draufrechnen
         glaggleCoins += reward;
         localStorage.setItem('glaggleCoins', glaggleCoins);
         localStorage.setItem(localKey, '1');
 
-        // Cloud-Sync
+        // Zurück in Supabase schreiben
         if (glaggleID) {
             try {
                 await supabaseClient
@@ -209,7 +271,7 @@
             } catch (e) {}
         }
 
-        // Leaderboard
+        // Globalen Coin-Eintrag updaten
         try {
             await supabaseClient
                 .from('leaderboard')
@@ -220,9 +282,22 @@
                 }, { onConflict: 'username, game_name' });
         } catch (e) {}
 
-        updateCoinDisplay();
-        spawnCoinParticles();
-        showStatus('success', `🎉 Code eingelöst! +${reward} Glaggle Coins wurden dir gutgeschrieben!`);
+        // Einlösung als eigene Zeile speichern (game_name = 'redeemed_' + hash)
+        // So kann ohne extra Spalte/Tabelle serverseitig geprüft werden
+        try {
+            await supabaseClient
+                .from('leaderboard')
+                .upsert({
+                    username:  currentUserName,
+                    coins:     0,
+                    game_name: 'redeemed_' + hash
+                }, { onConflict: 'username, game_name' });
+        } catch (e) {}
+
+        const prevCoins = glaggleCoins - reward;
+        animateCoinCount(prevCoins, glaggleCoins);
+        spawnConfetti();
+        showStatus('success', `🎉 +${reward} Coins gutgeschrieben! Du hast jetzt ${glaggleCoins.toLocaleString()} Coins!`);
         document.getElementById('code-input').value = '';
         btn.disabled = false;
     }
