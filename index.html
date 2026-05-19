@@ -1960,27 +1960,19 @@ backToTopBtn.addEventListener("click", () => {
   });
 });
 
-async function setDailyBackground() {
-    try {
-        // Wir fragen die Bing API nach dem Bild des Tages (mkt=de-DE für Deutschland)
-        const response = await fetch('https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=de-DE');
-        const data = await response.json();
-        
-        // Die URL zusammensetzen
-        const imageUrl = 'https://www.bing.com' + data.images[0].url;
-        
-        // Hintergrund auf das Body-Element anwenden
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
-        
-    } catch (error) {
-        console.error("Konnte das Hintergrundbild nicht laden:", error);
-        // Fallback-Farbe, falls das Bild nicht lädt
-        document.body.style.backgroundColor = "#0f172a"; 
-    }
+function setDailyBackground() {
+    // Dieser Link leitet direkt auf das aktuelle Bing-Bild weiter
+    const imageUrl = "https://bing.img.run/rand.php";
+    
+    // Setze das Bild als Hintergrund
+    document.body.style.backgroundImage = `url('${imageUrl}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
 }
 
-// Beim Laden der Seite ausführen
+// Beim Laden ausführen
 setDailyBackground();
+
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
