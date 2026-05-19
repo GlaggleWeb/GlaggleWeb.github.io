@@ -2006,7 +2006,27 @@ backToTopBtn.addEventListener("click", () => {
   });
 });
 
+const backgroundImages = [
+        "https://pixabay.com/images/download/chiemseherin-meadow-8071932_1920.jpg",
+        "https://pixabay.com/images/download/nunziog666-banff-10279796_1920.jpg",
+        "https://pixabay.com/images/download/christels-bee-10275647_1920.jpg"
+    ];
 
+    let currentIndex = 0;
+
+    function changeBackground() {
+        // Setze das nächste Bild
+        document.body.style.backgroundImage = `url('${backgroundImages[currentIndex]}')`;
+        
+        // Zähler erhöhen oder zurücksetzen
+        currentIndex = (currentIndex + 1) % backgroundImages.length;
+    }
+
+    // Beim Laden das erste Bild setzen
+    changeBackground();
+
+    // Alle 10 Sekunden (10000 ms) wechseln
+    setInterval(changeBackground, 10000);
 
 </script>
 
