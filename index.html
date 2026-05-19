@@ -919,18 +919,6 @@ const client = new Appwrite.Client()
     const account = new Appwrite.Account(client);
 
 
-function setDailyBackground() {
-    // Dieser Link leitet direkt auf das aktuelle Bing-Bild weiter
-    const imageUrl = "https://bing.img.run/rand.php";
-    
-    // Setze das Bild als Hintergrund
-    document.body.style.backgroundImage = `url('${imageUrl}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-}
-
-// Beim Laden ausführen
-setDailyBackground();
     
 function getGKey() { return p1 + p2 + p3; }
 
