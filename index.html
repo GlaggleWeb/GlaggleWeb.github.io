@@ -712,6 +712,20 @@ html {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
+
+.ai-container {
+    /* 1. Das hier erzwingt, dass er aus dem Fluss des Bodys "ausbricht" */
+    position: relative; 
+    z-index: 10; 
+    
+    /* 2. Damit er wieder wie früher aussieht (fest definierte Breite) */
+    max-width: 800px; 
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* Falls er vorher "normal" in der Mitte stand: */
+    display: block; 
+}
 </style>
 </head>
 <body>
