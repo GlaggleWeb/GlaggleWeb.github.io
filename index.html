@@ -727,35 +727,41 @@ html {
     display: block; 
 }
 
-/* AI Container radikal vom Listen-Design befreien */
+/* Der AI-Container als "Widget" statt "Listen-Eintrag" */
 .ai-container {
-    all: unset !important; /* Setzt alles auf Standard zurück */
+    /* 1. Layout: Raus aus dem "Verlauf"-Fluss */
     display: block !important;
-    
-    /* Layout: Zentriert und feststehend */
     width: 90% !important;
     max-width: 800px !important;
-    margin: 40px auto !important; /* Abstand nach oben/unten */
-    padding: 30px !important;
+    margin: 40px auto 60px auto !important; /* Viel Platz nach unten zum Verlauf */
+    padding: 35px !important;
     
-    /* Design: Eigener Look, kein Listen-Look */
-    background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(15px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 24px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    /* 2. Der "Glas"-Look (behalten) */
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 30px !important;
     
-    /* Animationen ausstellen */
-    transition: none !important;
+    /* 3. Optische Trennung vom "Verlauf" */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3) !important;
+    
+    /* 4. "Verlauf"-Verhalten komplett löschen */
     transform: none !important;
+    transition: none !important;
+    cursor: default !important;
 }
 
-/* Hover-Effekte der Liste komplett blockieren */
+/* Verhindere den Hover-Effekt (damit es starr wirkt) */
 .ai-container:hover {
     transform: none !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Falls der Container noch andere Klassen hat, die stören: */
+.ai-container.glaggle-entry {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 </style>
 </head>
