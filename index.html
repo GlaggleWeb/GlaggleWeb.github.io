@@ -121,6 +121,16 @@
     position: relative;
 }
 
+body {
+    /* Die Dauer des Fades (1 Sekunde) */
+    transition: opacity 2s ease-in-out; 
+    opacity: 2; /* Standardwert */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
+
 /* Das Overlay, das über dem Bild liegt */
 body::before {
     content: "";
@@ -2019,7 +2029,8 @@ const backgroundImages = [
     
     ];
 
-    let currentIndex = 0;
+    // Zufälliger Start-Index
+    let currentIndex = Math.floor(Math.random() * backgroundImages.length);
 
     function changeBackground() {
         // Setze das nächste Bild
