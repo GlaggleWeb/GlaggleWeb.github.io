@@ -110,6 +110,24 @@
         min-height: 100vh; transition: background-color 0.3s;
     }
 
+    #background-layer {
+    position: fixed; /* Fixiert den Hintergrund fest im Viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Legt den Hintergrund hinter alles andere */
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1s ease-in-out; /* Hier kommt der sanfte Wechsel rein */
+    opacity: 1;
+}
+
+body {
+    margin: 0;
+    overflow-x: hidden; /* Verhindert horizontales Scrollen */
+}
+
     body {
     /* Hintergrund-Eigenschaften */
     background-size: cover;
