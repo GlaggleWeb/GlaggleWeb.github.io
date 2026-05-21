@@ -1,0 +1,16 @@
+name: Appwrite Keep-Alive
+on:
+  schedule:
+    # Führt den Job alle 5 Tage um Mitternacht aus
+    - cron: "0 0 */5 * *"
+  workflow_dispatch: # Erlaubt dir, den Test manuell zu starten
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Heartbeat
+        run: |
+          curl -X GET "${{ secrets.APPWRITE_ENDPOINT }}/databases" \
+          -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+          -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}"
