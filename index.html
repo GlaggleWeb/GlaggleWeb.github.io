@@ -770,6 +770,10 @@ html {
 </style>
 </head>
 <body>
+
+<div id="background-layer"></div>
+
+<div id="page-wrapper">
     
 <div id="preloader">
     <img src="glagglelogooriginal.png" alt="Glaggle Loading..." class="loader-logo">
@@ -850,8 +854,6 @@ html {
 
     </div>
 </div>
-</div>
-</div> 
 
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
@@ -2032,19 +2034,30 @@ const backgroundImages = [
     // Zufälliger Start-Index
     let currentIndex = Math.floor(Math.random() * backgroundImages.length);
 
-    function changeBackground() {
-        // Setze das nächste Bild
-        document.body.style.backgroundImage = `url('${backgroundImages[currentIndex]}')`;
+  // Variable oben definieren
+const bgLayer = document.getElementById('background-layer');
+
+function changeBackground() {
+    // 1. Nur den Hintergrund-Layer ausblenden
+    bgLayer.style.opacity = 0;
+
+    setTimeout(() => {
+        // 2. Bild im Hintergrund-Layer ändern
+        bgLayer.style.backgroundImage = `url('${backgroundImages[currentIndex]}')`;
         
-        // Zähler erhöhen oder zurücksetzen
+        // 3. Nur den Hintergrund-Layer wieder einblenden
+        bgLayer.style.opacity = 1;
+
+        // Index für das nächste Mal hochzählen
         currentIndex = (currentIndex + 1) % backgroundImages.length;
-    }
+    }, 1000); 
+}
 
-    // Beim Laden das erste Bild setzen
-    changeBackground();
+// Initialer Start (direkt auf den Layer, nicht auf den body!)
+bgLayer.style.backgroundImage = `url('${backgroundImages[currentIndex]}')`;
 
-    // Alle 10 Sekunden (10000 ms) wechseln
-    setInterval(changeBackground, 15000);
+// Wechsel-Intervall
+setInterval(changeBackground, 15000);
 
 </script>
 
@@ -2053,5 +2066,5 @@ const backgroundImages = [
     <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
 </div>
     
-</body>
+</div></body>
 </html>
