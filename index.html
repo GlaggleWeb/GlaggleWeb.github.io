@@ -171,11 +171,26 @@ body::before {
 }
     /* NAVIGATION */
     .navbar {
-        display: flex; align-items: center; justify-content: space-between;
-        width: 100%; height: 80px; background-color: var(--nav-bg);
-        padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        position: fixed; top: 0; left: 0; z-index: 1000; box-sizing: border-box;
-    }
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%; 
+    height: 80px; 
+    
+    /* HIER: Festes, massives Schwarz (oder deine Wunschfarbe) */
+    background-color: #1a1a1a !important; 
+    
+    /* HIER: Den Glas-Effekt deaktivieren */
+    backdrop-filter: none !important;
+    
+    padding: 0 20px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten etwas dunkler für Kontrast */
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: 1000; 
+    box-sizing: border-box;
+}
 
     .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
     .nav-center { justify-content: center; }
