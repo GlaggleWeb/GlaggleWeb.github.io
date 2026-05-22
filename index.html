@@ -775,6 +775,24 @@ html {
     max-width: 100%;
     height: auto;
 }
+
+/* 1. Den Container anpassen */
+.results-container {
+    width: 100%;
+    padding: 0 15px; /* Erzeugt einen kleinen Abstand links und rechts zum Display-Rand */
+    box-sizing: border-box; /* WICHTIG: Padding wird von der Breite abgezogen */
+    overflow-x: hidden; /* Verhindert das Rausscrollen */
+}
+
+/* 2. Die einzelnen Karten (Ergebnisse) reparieren */
+.glaggle-entry {
+    width: 100%; /* Nimmt genau die Breite des verfügbaren Platzes ein */
+    margin: 0 auto 20px auto; /* Zentriert die Karte und gibt Abstand nach unten */
+    box-sizing: border-box; /* Verhindert, dass Padding/Border die Karte breiter machen */
+    max-width: 100%; /* Überschreitet niemals die Bildschirmbreite */
+    word-wrap: break-word; /* Bricht lange Wörter um */
+    overflow-wrap: break-word;
+}
 </style>
 </head>
 <body>
