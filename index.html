@@ -191,6 +191,20 @@ body::before {
     z-index: 1000; 
     box-sizing: border-box;
 }
+/* Hamburger Icon Linien schwarz erzwingen */
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #000000 !important; /* Schwarz */
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+/* Falls der Container selbst noch eine Farbe hat */
+.hamburger {
+    color: #000000 !important;
+}
 
     .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
     .nav-center { justify-content: center; }
