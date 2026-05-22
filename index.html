@@ -202,7 +202,14 @@ body::before {
         margin-bottom: 40px; /* Abstand zum Suchbalken */
     }
 
-    .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
+   .search-section { 
+    width: 100%; 
+    max-width: 600px; 
+    margin: 0 auto 30px auto;
+    padding-left: 15px; /* Verhindert, dass das Suchfeld am Rand klebt */
+    padding-right: 15px;
+    box-sizing: border-box;
+}
 
     .search-bar-container {
         display: flex; align-items: center; background: var(--input-bg);
@@ -621,44 +628,56 @@ body::before {
 ;
 }
 
-.nav-scroll-wrapper {
-    display: flex;
-    gap: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 10px;
-    overflow-x: auto; /* Scrollbar für schmale Bildschirme */
-    scrollbar-width: none; /* Versteckt Scrollbar in Firefox */
-}
-
-.nav-scroll-wrapper::-webkit-scrollbar {
-    display: none; /* Versteckt Scrollbar in Chrome/Safari */
-}
 .glaggle-nav {
-    display: none; /* Wird per JS eingeblendet */
+    display: none; /* Dein JS steuert das weiterhin */
     position: sticky;
     top: 10px;
     z-index: 1000;
-    background: #1a1a1a; /* Dein Schwarz */
-    padding: 8px 15px;
+    background: #1a1a1a;
+    padding: 8px 10px;
     margin: 10px auto;
-    width: fit-content;
-    max-width: 90%;
-    /* HIER SIND DIE RUNDEN ECKEN */
+    
+    /* WICHTIG: Statt fit-content nutzen wir eine sichere Breite */
+    width: calc(100% - 20px); 
+    max-width: 800px;
+    
+    /* Sorgt dafür, dass Padding nicht zur Breite addiert wird */
+    box-sizing: border-box; 
+    
     border-radius: 50px; 
     border: 1px solid #333;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    
+    /* Verhindert Überlauf, falls doch mal was zu breit ist */
+    overflow: hidden; 
+}
+
+.nav-scroll-wrapper {
+    display: flex;
+    gap: 10px; /* Etwas weniger Abstand, damit mehr Platz ist */
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    overflow-x: auto; 
+    scrollbar-width: none;
+    box-sizing: border-box;
+}
+
+/* Versteckt Scrollbar in Chrome/Safari */
+.nav-scroll-wrapper::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-item {
     color: #999;
     text-decoration: none;
-    padding: 8px 18px;
+    padding: 8px 16px; /* Etwas kompakter */
     border-radius: 25px;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s ease;
-    white-space: nowrap;
+    white-space: nowrap; /* Hält den Text in einer Zeile */
+    flex-shrink: 0; /* WICHTIG: Verhindert, dass Buttons schrumpfen */
 }
 
 /* Der aktive Status mit dem weißen „Pillen-Look“ */
