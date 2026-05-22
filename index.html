@@ -76,48 +76,53 @@
 </script>
 
     <style>
+/* Globale Einstellungen */
 * {
-    box-sizing: border-box; /* WICHTIG: Padding wird von der Breite abgezogen, nicht addiert */
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* Der EINZIGE Body-Block */
 body {
-    overflow-x: hidden; /* Verhindert, dass man nach rechts scrollen kann */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    min-height: 100vh;
     width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Verhindert horizontales Scrollen */
+    
+    /* Hintergrund-Logik */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
+    /* Animationen */
+    transition: background-color 0.3s, opacity 2s ease-in-out, background-image 1s ease-in-out;
+    opacity: 1; /* War vorher 2, das war falsch! */
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
 }
-    :root {
-        --bg-color: #ffffff;
-        --text-color: #333333;
-        --nav-bg: #ffffff;
-        --card-bg: #fdfdfd;
-        --card-border: #eeeeee;
-        --link-color: #2E94D1;
-        --desc-color: #555555;
-        --input-bg: #ffffff;
-    }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --bg-color: #202124;
-            --text-color: #e8eaed;
-            --nav-bg: #303134;
-            --card-bg: #303134;
-            --card-border: #444444;
-            --link-color: #8cc9f5;
-            --desc-color: #bdc1c6;
-            --input-bg: #3c4043;
-        }
-    }
-
-    body {
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
-        margin: 0; padding: 0;
-        display: flex; flex-direction: column; align-items: center; 
-        min-height: 100vh; transition: background-color 0.3s;
-    }
+/* Overlay bleibt separat, da es ein Pseudoelement ist */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Dunkles Overlay */
+    z-index: -1;
+    pointer-events: none;
+}
 
     #background-layer {
     position: fixed; /* Fixiert den Hintergrund fest im Viewport */
@@ -132,49 +137,7 @@ body {
     opacity: 1;
 }
 
-body {
-    margin: 0;
-    overflow-x: hidden; /* Verhindert horizontales Scrollen */
-}
 
-    body {
-    /* Hintergrund-Eigenschaften */
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed; /* Der Hintergrund scrollt nicht mit */
-    background-repeat: no-repeat;
-    
-    /* WICHTIG: Das Overlay für die Lesbarkeit */
-    position: relative;
-}
-
-body {
-    /* Die Dauer des Fades (1 Sekunde) */
-    transition: opacity 2s ease-in-out; 
-    opacity: 2; /* Standardwert */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 100vh;
-}
-
-/* Das Overlay, das über dem Bild liegt */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Dunkles Overlay, damit der Text weiß bleibt und lesbar ist */
-    background: rgba(0, 0, 0, 0.4); 
-    z-index: -1; /* Hinter allem */
-    pointer-events: none; /* Klicks gehen durch */
-}
-
-body {
-    transition: background-image 1s ease-in-out;
-}
         
 #preloader {
     position: fixed;
