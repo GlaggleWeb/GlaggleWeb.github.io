@@ -76,7 +76,16 @@
 </script>
 
     <style>
-        
+* {
+    box-sizing: border-box; /* WICHTIG: Padding wird von der Breite abgezogen, nicht addiert */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow-x: hidden; /* Verhindert, dass man nach rechts scrollen kann */
+    width: 100%;
+}
     :root {
         --bg-color: #ffffff;
         --text-color: #333333;
