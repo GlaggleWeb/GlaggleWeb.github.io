@@ -818,6 +818,26 @@ pre, code, .ai-text-content {
     white-space: pre-wrap !important;
     word-break: break-all !important;
 }
+
+/* Sidebar erzwingt massiven, undurchsichtigen Hintergrund */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    
+    /* HIER LIEGT DIE LÖSUNG */
+    background-color: #1a1a1a !important; /* DUNKELGRAU - Fest und massiv */
+    backdrop-filter: none !important;     /* Deaktiviert den Glas-Effekt */
+    opacity: 1 !important;                /* Stellt sicher, dass es nicht durchscheinend ist */
+    
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5); /* Schatten wieder kräftiger */
+}
         
 </style>
 </head>
