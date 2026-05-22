@@ -794,6 +794,24 @@ html {
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     background: rgba(255, 255, 255, 0.08) !important;
 }
+
+#glaggleResults {
+    width: 100%;             /* Nutzt die volle Breite */
+    max-width: 600px;        /* Oder deine Standard-Breite */
+    margin: 0 auto;          /* Zentriert den Bereich */
+    padding: 15px;           /* Abstand zum Rand */
+    box-sizing: border-box;  /* WICHTIG: Padding nicht auf die Breite addieren */
+    
+    /* DIESE BEIDEN ZEILEN LÖSEN DAS PROBLEM */
+    overflow-wrap: break-word; /* Bricht lange Wörter/Links um */
+    word-wrap: break-word;     /* Fallback für ältere Browser */
+}
+
+/* Falls du Bilder in den Ergebnissen hast, müssen die auch begrenzt werden */
+#glaggleResults img {
+    max-width: 100%;
+    height: auto;
+}
 </style>
 </head>
 <body>
