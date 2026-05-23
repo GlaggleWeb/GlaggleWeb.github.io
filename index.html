@@ -935,6 +935,25 @@ pre, code, .ai-text-content {
     padding-top: 60px;
     box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
 }
+
+/* Das Suchfeld bändigen */
+.search-bar-container {
+    /* WICHTIG: Padding wird von der Breite abgezogen, nicht dazugerechnet */
+    box-sizing: border-box !important; 
+    
+    /* Breite flexibel halten, aber nie über 90% des Bildschirms */
+    width: 90% !important; 
+    
+    /* Maximale Breite, damit es auf Desktops nicht riesig wird */
+    max-width: 600px !important; 
+    
+    /* Zentrierung erzwingen */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    
+    /* Sicherheit: Alles, was übersteht, abschneiden (nur für den Notfall) */
+    overflow: hidden !important;
+}
 </style>
 </head>
 <body>
