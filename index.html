@@ -233,14 +233,36 @@ body::before {
 
     .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
 
-    .search-bar-container {
-        display: flex; align-items: center; background: var(--input-bg);
-        border: 1px solid #dfe1e5; border-radius: 30px; padding: 5px 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        margin-bottom: 60px; /* DEUTLICHER ABSTAND ZU DEN ERGEBNISSEN */
-        transition: all 0.5s ease-in-out;
-    }
+   /* Suchfeld deutlich machen */
+.search-bar-container {
+    display: flex; 
+    align-items: center; 
+    
+    /* HIER: Hintergrund undurchsichtiger machen */
+    background: rgba(255, 255, 255, 0.9) !important; 
+    backdrop-filter: blur(10px); /* Sorgt für einen modernen Glaseffekt */
+    
+    /* HIER: Rand und Schatten für besseren Kontrast */
+    border: 2px solid #ffffff !important; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; 
+    
+    border-radius: 30px; 
+    padding: 5px 20px;
+    margin-bottom: 60px; 
+    transition: all 0.3s ease;
+}
 
+/* Texte im Suchfeld lesbar machen */
+#glaggleQuery {
+    color: #000000 !important; /* Schrift im Suchfeld schwarz */
+    font-weight: 500;
+}
+
+/* Placeholder-Text ebenfalls dunkler machen */
+#glaggleQuery::placeholder {
+    color: #555555 !important;
+    opacity: 1;
+}
     /* -------------------------------------------- */
 
     .search-bar-container:focus-within { box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); border-color: #70C4F7; }
