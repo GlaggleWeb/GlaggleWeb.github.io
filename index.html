@@ -886,7 +886,7 @@ pre, code, .ai-text-content {
     word-break: break-all !important;
 }
 
-/* Sidebar erzwingt massiven, undurchsichtigen Hintergrund */
+/* Sidebar erzwingt massiven, weißen Hintergrund */
 .sidebar {
     height: 100%;
     width: 0; 
@@ -895,17 +895,17 @@ pre, code, .ai-text-content {
     top: 0;
     right: 0;
     
-    /* HIER LIEGT DIE LÖSUNG */
-    background-color: #1a1a1a !important; /* DUNKELGRAU - Fest und massiv */
-    backdrop-filter: none !important;     /* Deaktiviert den Glas-Effekt */
-    opacity: 1 !important;                /* Stellt sicher, dass es nicht durchscheinend ist */
+    /* HIER: Auf Weiß gesetzt */
+    background-color: #FFFFFF !important; 
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+    color: #000000 !important; /* Text schwarz */
     
     overflow-x: hidden;
     transition: 0.5s;
     padding-top: 60px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.5); /* Schatten wieder kräftiger */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
 }
-        
 </style>
 </head>
 <body>
