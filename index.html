@@ -480,19 +480,32 @@ body::before {
     transition: 0.3s;
 }
 
-/* Sidebar Styling */
+/* Sidebar jetzt in Weiß */
 .sidebar {
     height: 100%;
-    width: 0; /* Startet geschlossen */
+    width: 0; 
     position: fixed;
     z-index: 2000;
     top: 0;
     right: 0;
-    background-color: #FFFFFF;
+    
+    /* HIER: Auf Weiß geändert */
+    background-color: #FFFFFF !important; 
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+    
+    /* WICHTIG: Damit man den Text auf Weiß sieht, muss die Schrift dunkel sein */
+    color: #000000 !important; 
+    
     overflow-x: hidden;
     transition: 0.5s;
     padding-top: 60px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Schatten heller gemacht, passt besser zu Weiß */
+}
+
+/* Damit auch die Links in der Sidebar schwarz sind */
+.sidebar-link, .close-btn {
+    color: #000000 !important;
 }
 
 .sidebar-content {
