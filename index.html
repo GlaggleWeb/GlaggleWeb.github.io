@@ -137,7 +137,44 @@ body::before {
     opacity: 1;
 }
 
+/* 1. Standard-Design (Light Mode) */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --search-bar-bg: rgba(255, 255, 255, 0.9);
+    --sidebar-bg: #ffffff;
+    --navbar-bg: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
 
+/* 2. Automatischer Dark Mode (nur wenn das System auf Dunkel eingestellt ist) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --text-color: #ffffff;
+        --search-bar-bg: rgba(40, 40, 40, 0.8);
+        --sidebar-bg: #1e1e1e;
+        --navbar-bg: #121212;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* 3. Anwendung der Variablen auf deine Elemente */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease;
+}
+
+.search-bar-container {
+    background: var(--search-bar-bg) !important;
+    box-shadow: 0 4px 15px var(--shadow-color) !important;
+}
+
+.sidebar, .navbar {
+    background-color: var(--sidebar-bg) !important;
+    color: var(--text-color) !important;
+}
         
 #preloader {
     position: fixed;
