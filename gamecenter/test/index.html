@@ -300,15 +300,27 @@ async function loadCloudScores(username) {
 }
 
 async function uploadScores(username, scores) {
-    const rows = Object.entries(scores)
-        .filter(([,v]) => v > 0)
-        .map(([game_name, coins]) => ({ username, coins, game_name }));
-    if (!rows.length) return;
-    try {
-        const { error } = await supabaseClient
-            .from('leaderboard').upsert(rows, { onConflict: 'username, game_name' });
-        if (error) console.error("uploadScores:", error.message);
-    } catch(e) { console.error("uploadScores:", e); }
+    // Für jeden Score: nur hochladen wenn HÖHER als aktueller Cloud-Wert
+    for (const [game_name, coins] of Object.entries(scores)) {
+        if (coins <= 0) continue;
+        try {
+            // Aktuellen Cloud-Wert holen
+            const { data } = await supabaseClient
+                .from('leaderboard').select('coins')
+                .eq('username', username).eq('game_name', game_name).single();
+            const cloudVal = data ? data.coins : 0;
+            // Nur hochladen wenn neuer Wert höher ist
+            if (coins > cloudVal) {
+                const { error } = await supabaseClient.from('leaderboard')
+                    .upsert({ username, coins, game_name }, { onConflict: 'username, game_name' });
+                if (error) console.error("uploadScores:", error.message);
+            }
+        } catch(e) {
+            // Eintrag existiert noch nicht → einfach einfügen
+            await supabaseClient.from('leaderboard')
+                .upsert({ username, coins, game_name }, { onConflict: 'username, game_name' });
+        }
+    }
 }
 
 async function updateAppwriteCoins(docId, coins) {
@@ -322,8 +334,15 @@ function applyData(name, coins, scores) {
     currentUserName = name;
     localStorage.setItem('glaggleCoins',    coins);
     localStorage.setItem('glaggleUserName', name);
-    Object.entries(scores).forEach(([k,v]) => {
-        if (v > 0) localStorage.setItem(k+"_highscore", v);
+    // Nur übernehmen wenn Cloud-Wert HÖHER als lokaler Wert
+    Object.entries(scores).forEach(([k, v]) => {
+        if (k === 'global') return; // global = coins, schon oben gesetzt
+        if (v > 0) {
+            const localVal = parseInt(localStorage.getItem(k + "_highscore")) || 0;
+            if (v > localVal) {
+                localStorage.setItem(k + "_highscore", v);
+            }
+        }
     });
     updateCoinDisplay();
     updateChatPlaceholder();
@@ -340,10 +359,18 @@ function syncKey(glaggleId) {
 async function doSync(awDoc, finalCoins, finalScores) {
     const name      = awDoc.gamecenterName || awDoc.userName;
     const glaggleId = String(awDoc.glaggleId);
+    const oldName   = localStorage.getItem('glaggleUserName');
+
+    // Falls Name gewechselt hat: alte Leaderboard-Einträge umbenennen
+    if (oldName && oldName !== name) {
+        try {
+            await supabaseClient.from('leaderboard')
+                .update({ username: name })
+                .eq('username', oldName);
+        } catch(e) { console.warn("Rename leaderboard:", e); }
+    }
 
     applyData(name, finalCoins, finalScores);
-
-    // Neuen Stand speichern — GLEICHER KEY wie beim Lesen
     localStorage.setItem(syncKey(glaggleId), String(finalCoins));
 
     await updateAppwriteCoins(awDoc.$id, finalCoins);
@@ -586,12 +613,20 @@ async function updateLeaderboard() {
         ? parseInt(localStorage.getItem('glaggleCoins')) || 0
         : parseInt(localStorage.getItem(sel + "_highscore")) || 0;
 
-    if (scoreToSend > 0) {
+    if (scoreToSend > 0 && currentUserName) {
         try {
-            const { error } = await supabaseClient.from('leaderboard')
-                .upsert({ username: currentUserName, coins: scoreToSend, game_name: sel },
-                        { onConflict: 'username, game_name' });
-            if (error) console.error("LB upsert:", error.message);
+            // Aktuellen Cloud-Wert prüfen — nur hochladen wenn höher
+            const { data: existing } = await supabaseClient
+                .from('leaderboard').select('coins')
+                .eq('username', currentUserName).eq('game_name', sel).single();
+            const cloudVal = existing ? existing.coins : 0;
+
+            if (scoreToSend > cloudVal) {
+                const { error } = await supabaseClient.from('leaderboard')
+                    .upsert({ username: currentUserName, coins: scoreToSend, game_name: sel },
+                            { onConflict: 'username, game_name' });
+                if (error) console.error("LB upsert:", error.message);
+            }
         } catch(e) { console.error("LB upsert:", e); }
     }
 
