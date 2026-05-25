@@ -488,20 +488,25 @@ async function checkLoginAndSync() {
 
         } else {
             // ── BEREITS EINGELOGGT auf diesem Gerät ─────────────
-            // Anti-Cheat: Gain = lokal - lastSynced (nie negativ)
-            const gain = Math.max(0, localCoinsNow - (lastSynced >= 0 ? lastSynced : cloudCoins));
+            const basis = lastSynced >= 0 ? lastSynced : cloudCoins;
+            const gain  = Math.max(0, localCoinsNow - basis);
 
-            if (gain > 0) {
-                // Neue Coins im Hintergrund hochladen (kein Popup)
-                const localScores = getLocalScores();
-                const finalScores = {};
-                new Set([...Object.keys(localScores), ...Object.keys(cloudScores)]).forEach(k => {
-                    finalScores[k] = Math.max(localScores[k]||0, cloudScores[k]||0);
-                });
-                await doSync(awDoc, cloudCoins + gain, finalScores);
+            // WICHTIG: Wenn Appwrite coins=0 zurückgibt aber lokal Coins
+            // vorhanden sind → lokale Coins sind der echte Stand, NICHT resetten!
+            const trueCoins = Math.max(cloudCoins, localCoinsNow);
+
+            const localScores = getLocalScores();
+            const mergedScores = {};
+            new Set([...Object.keys(localScores), ...Object.keys(cloudScores)]).forEach(k => {
+                mergedScores[k] = Math.max(localScores[k]||0, cloudScores[k]||0);
+            });
+
+            if (gain > 0 || (trueCoins > 0 && cloudCoins === 0)) {
+                // Neue Coins verdient ODER Cloud war leer → hochladen
+                await doSync(awDoc, trueCoins, mergedScores);
             } else {
-                // Kein Gain → einfach Cloud-Stand laden
-                applyData(name, cloudCoins, cloudScores);
+                // Alles synchron → anwenden
+                applyData(name, trueCoins, mergedScores);
             }
         }
 
