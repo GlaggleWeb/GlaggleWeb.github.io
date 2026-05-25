@@ -999,6 +999,23 @@ pre, code, .ai-text-content {
     /* Sorgt dafür, dass Padding nicht die Breite sprengt */
     box-sizing: border-box !important;
 }
+/* --- FINALE REPARATUR DES SUCHFELDES --- */
+
+.search-bar-container {
+    width: 100% !important;           /* Zwingt den Browser zur vollen Breite */
+    max-width: 600px !important;      /* Begrenzt es aber bei 600px */
+    display: flex !important;         /* Zwingt es in den Flex-Modus */
+    flex: 0 1 600px !important;       /* Erlaubt Flexibilität, ohne zu springen */
+    margin: 0 auto !important;        /* Zentriert */
+    box-sizing: border-box !important;
+}
+
+/* Verhindert, dass das Suchfeld durch interne Elemente aufgeblasen wird */
+#glaggleQuery {
+    width: 100% !important;
+    flex: 1 !important;
+    min-width: 0 !important;          /* WICHTIG: Erlaubt dem Input, sich zu verkleinern */
+}
 </style>
 </head>
 <body>
