@@ -18,6 +18,7 @@
     body { background-color:var(--bg-color); color:var(--text-color); font-family:'Arial Rounded MT Bold','Segoe UI',sans-serif; margin:0; padding:0; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
     .navbar { display:flex; align-items:center; justify-content:space-between; width:100%; height:70px; background-color:var(--nav-bg); padding:0 40px; box-shadow:0 2px 10px rgba(0,0,0,0.05); position:fixed; top:0; z-index:1000; box-sizing:border-box; }
     .nav-logo { height:35px; cursor:pointer; }
+    .nav-right { display:flex; align-items:center; gap:12px; }
     .hero { margin-top:120px; text-align:center; width:100%; max-width:600px; padding:20px; box-sizing:border-box; }
     .large-logo { width:100%; max-width:280px; height:auto; margin-bottom:20px; }
     .news-container { width:100%; max-width:900px; padding:0 20px; box-sizing:border-box; margin-bottom:20px; }
@@ -45,7 +46,17 @@
     .leader-name { flex-grow:1; text-align:left; padding-left:5px; color:var(--text-color); white-space:normal; word-break:break-word; line-height:1.2; }
     .leader-coins { font-weight:bold; color:#FFD700; flex-shrink:0; margin-left:10px; text-align:right; min-width:60px; }
     @keyframes fadeInSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @media (max-width:600px) { .navbar{padding:0 20px} .hero{margin-top:100px} .game-grid{grid-template-columns:1fr} .game-card{padding:15px} .game-title{font-size:1.1rem} }
+    @media (max-width:600px) { .navbar{padding:0 15px} .hero{margin-top:100px} .game-grid{grid-template-columns:1fr} .game-card{padding:15px} .game-title{font-size:1.1rem} }
+
+    /* LOGIN BUTTON */
+    .nav-login-btn { background:var(--accent); color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; font-size:0.8rem; cursor:pointer; text-decoration:none; white-space:nowrap; transition:all 0.2s; font-family:inherit; }
+    .nav-login-btn:hover { background:#2E94D1; transform:scale(1.05); }
+    .nav-user-info { display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--desc-color); }
+    .nav-user-name { font-weight:bold; color:var(--link-color); max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nav-logout-btn { background:none; border:1px solid #ff4d4d; color:#ff4d4d; padding:5px 10px; border-radius:15px; cursor:pointer; font-size:0.72rem; font-family:inherit; transition:all 0.2s; }
+    .nav-logout-btn:hover { background:#ff4d4d; color:white; }
+
+    /* SYNC POPUP */
     #glaggle-sync-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; animation:gso-fade 0.3s ease; }
     @keyframes gso-fade { from{opacity:0} to{opacity:1} }
     #glaggle-sync-box { background:var(--card-bg); border:2px solid var(--accent); border-radius:28px; padding:32px 26px 26px; max-width:400px; width:92%; text-align:center; box-shadow:0 24px 60px rgba(112,196,247,0.22); animation:gso-slide 0.38s cubic-bezier(0.34,1.56,0.64,1); }
@@ -76,7 +87,11 @@
 
 <nav class="navbar">
     <a href="/"><img src="/glagglelogo.png" alt="Glaggle Logo" class="nav-logo"></a>
-    <div class="nav-right"><span style="font-size:14px;font-weight:bold;color:var(--accent);">Glaggle Gamecenter</span></div>
+    <div class="nav-right">
+        <span style="font-size:14px;font-weight:bold;color:var(--accent);">Glaggle Gamecenter</span>
+        <!-- Login-Status wird per JS gefüllt -->
+        <div id="nav-auth"></div>
+    </div>
 </nav>
 
 <div class="hero">
@@ -88,53 +103,53 @@
     <div class="news-card">
         <div class="news-header"><span class="news-badge">NEU</span><span class="news-date">5. Mai 2026</span></div>
         <h3 class="news-title">Neue Sektion im Gamecenter!</h3>
-        <p class="news-text">Eine neue Sektion mit de Glaggle Pro Games ist rausgekommen! Die Pro Games im neuen Vio Design garantieren mit Musik 100% Spielspass!</p>
+        <p class="news-text">Eine neue Sektion mit de Glaggle Pro Games ist rausgekommen! Die Pro Games im neuen Vio Design garantieren mit Musik 100% Spielspass! Auch sind die Pro Games ab sofort im Leaderboard zum vergleichen da!</p>
     </div>
 </div>
 
 <section>
-    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:var(--accent);font-size:1.8rem;margin-bottom:10px;">✨ Glaggle 3D Games</h2><p style="color:var(--desc-color);opacity:0.8;">Erlebe die nächste Dimension!</p></div>
+    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:var(--accent);font-size:1.8rem;margin-bottom:10px;">✨ Glaggle 3D Games</h2><p style="color:var(--desc-color);opacity:0.8;">Erlebe die nächste Dimension der Glaggle Games mit Tiefe und neuen Mechaniken. Achtung Glaggle Jump 3D gibt keine Coins!</p></div>
     <div class="game-grid">
-        <a href="/glaggleresort" class="game-card" style="border:2px solid var(--accent);"><h2 class="game-title"><span>🐠</span> Glaggle Resort 3D</h2><p class="game-desc">Baue deinen eigenen Resort in 3D!</p><div class="play-btn">Resort eröffnen!</div></a>
-        <a href="/glagglejump3d" class="game-card" style="border:2px solid var(--accent);"><h2 class="game-title"><span>👾</span> Glaggle Jump 3D</h2><p class="game-desc">Das Glaggle Jump jetzt in 3D!</p><div class="play-btn">Los Jumpen!</div></a>
+        <a href="/glaggleresort" class="game-card" style="border:2px solid var(--accent);"><h2 class="game-title"><span>🐠</span> Glaggle Resort 3D</h2><p class="game-desc">Baue deinen eigenen Resort! Betreue Gäste und kaufe upgrades! In 3D</p><div class="play-btn">Resort eröffnen!</div></a>
+        <a href="/glagglejump3d" class="game-card" style="border:2px solid var(--accent);"><h2 class="game-title"><span>👾</span> Glaggle Jump 3D</h2><p class="game-desc">Das Glaggle Jump jetzt in 3D im Unterwasserdesign!</p><div class="play-btn">Los Jumpen!</div></a>
     </div>
 </section>
 <section>
-    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#a55eea;font-size:1.8rem;margin-bottom:10px;">💎 Glaggle Deluxe Games</h2></div>
+    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#a55eea;font-size:1.8rem;margin-bottom:10px;">💎 Glaggle Deluxe Games</h2><p style="color:var(--desc-color);opacity:0.8;">Die Glaggle Deluxe Games sind Klassiker im neuen Glaggle Look!</p></div>
     <div class="game-grid">
-        <a href="/flappyfish" class="game-card"><h2 class="game-title"><span>🐟</span> Glaggle Flappyfish</h2><p class="game-desc">Tauche ab und pass auf die Röhren auf!</p><div class="play-btn">Abtauchen</div></a>
-        <a href="/juggle" class="game-card"><h2 class="game-title"><span>🤹</span> Glaggle Juggle Master</h2><p class="game-desc">Jongliere den Fussball!</p><div class="play-btn">Hop, Hop</div></a>
-        <a href="/crossroad" class="game-card"><h2 class="game-title"><span>🚦</span> Glaggle Cross Road</h2><p class="game-desc">Wie weit kommst du?</p><div class="play-btn">Loslaufen</div></a>
-        <a href="/brick" class="game-card"><h2 class="game-title"><span>🧱</span> Glaggle Brick EXTREM</h2><p class="game-desc">Wie lange schaffst du Blöcke abzubauen?</p><div class="play-btn">Jetzt Spielen</div></a>
+        <a href="/flappyfish" class="game-card"><h2 class="game-title"><span>🐟</span> Glaggle Flappyfish</h2><p class="game-desc">Tauche ab und schwimme los aber pass auf die Röhren auf!</p><div class="play-btn">Abtauchen</div></a>
+        <a href="/juggle" class="game-card"><h2 class="game-title"><span>🤹</span> Glaggle Juggle Master</h2><p class="game-desc">Jongliere den Fussball aber pass auf!</p><div class="play-btn">Hop, Hop</div></a>
+        <a href="/crossroad" class="game-card"><h2 class="game-title"><span>🚦</span> Glaggle Cross Road</h2><p class="game-desc">Wie weit kommst du? Wann überfährt dich das erste Auto? Probiere dein Glück</p><div class="play-btn">Loslaufen</div></a>
+        <a href="/brick" class="game-card"><h2 class="game-title"><span>🧱</span> Glaggle Brick EXTREM</h2><p class="game-desc">Wie lange schaffst du Blöcke abzubauen? Teste es jetzt!</p><div class="play-btn">Jetzt Spielen</div></a>
     </div>
 </section>
 <section>
-    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#163F82;font-size:1.8rem;margin-bottom:10px;">🌟 Glaggle Pro Games</h2></div>
+    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#163F82;font-size:1.8rem;margin-bottom:10px;">🌟 Glaggle Pro Games</h2><p style="color:var(--desc-color);opacity:0.8;">Die Glaggle Pro Games garantieren zu 100% Game Spass im neuen Vio Design!</p></div>
     <div class="game-grid">
-        <a href="/catcher" class="game-card"><h2 class="game-title"><span>😀</span> Glaggle Catcher</h2><p class="game-desc">Fange die Smileys auf!</p><div class="play-btn">Jetzt Catchen</div></a>
-        <a href="/skyjump" class="game-card"><h2 class="game-title"><span>☁️</span> Glaggle Sky Jump</h2><p class="game-desc">Jumpe in den Himmel!</p><div class="play-btn">Up to the Sky!</div></a>
-        <a href="/orbit" class="game-card"><h2 class="game-title"><span>🪐</span> Glaggle Orbit</h2><p class="game-desc">Gehe vom Planeten zum Planeten!</p><div class="play-btn">Losstarten</div></a>
+        <a href="/catcher" class="game-card"><h2 class="game-title"><span>😀</span> Glaggle Catcher</h2><p class="game-desc">Fange die Smileys auf aber sie werden immer schneller und dein Korb immer kleiner!</p><div class="play-btn">Jetzt Catchen</div></a>
+        <a href="/skyjump" class="game-card"><h2 class="game-title"><span>☁️</span> Glaggle Sky Jump</h2><p class="game-desc">Jumpe auf den Plattformen in den Himmel. Aber achtung die Plattformen bewegen sich!</p><div class="play-btn">Up to the Sky!</div></a>
+        <a href="/orbit" class="game-card"><h2 class="game-title"><span>🪐</span> Glaggle Orbit</h2><p class="game-desc">Gehe vom Planeten zum Planeten aber schaue dass du nicht aus der Bahn kommst!</p><div class="play-btn">Losstarten</div></a>
     </div>
 </section>
 <section>
-    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#FFD700;font-size:1.8rem;margin-bottom:10px;">💰 Glaggle Coins Games</h2></div>
+    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:#FFD700;font-size:1.8rem;margin-bottom:10px;">💰 Glaggle Coins Games</h2><p style="color:var(--desc-color);opacity:0.8;">Gewinne groß oder verliere alles – hier dreht sich alles um deine Coins!</p></div>
     <div class="game-grid">
-        <a href="/casino" class="game-card" style="border-color:#FFD700;"><h2 class="game-title"><span>🎰</span> Glaggle Grand Casino</h2><p class="game-desc">Machst du Gewinn oder Verlust?</p><div class="play-btn" style="background:#FFD700;color:#333;">Jetzt Zocken</div></a>
+        <a href="/casino" class="game-card" style="border-color:#FFD700;"><h2 class="game-title"><span>🎰</span> Glaggle Grand Casino</h2><p class="game-desc">Machst du Gewinn oder Verlust? Setze deine Coins im Casino ein!</p><div class="play-btn" style="background:#FFD700;color:#333;">Jetzt Zocken</div></a>
     </div>
 </section>
 <section>
-    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:var(--desc-color);font-size:1.8rem;margin-bottom:10px;">🕹️ Glaggle Classic Games</h2></div>
+    <div style="text-align:center;margin-bottom:25px;"><h2 style="color:var(--desc-color);font-size:1.8rem;margin-bottom:10px;">🕹️ Glaggle Classic Games</h2><p style="color:var(--desc-color);opacity:0.8;">Die zeitlosen Originalen Klassiker Games im Glaggle Design! Perfekt zum Zeitvertreib!</p></div>
     <div class="game-grid">
-        <a href="/snake" class="game-card"><h2 class="game-title"><span>🐍</span> Glaggle Snake</h2><p class="game-desc">Werde zur längsten Schlange!</p><div class="play-btn">Jetzt snaken</div></a>
-        <a href="/tictactoe" class="game-card"><h2 class="game-title"><span>❌</span> Tic Tac Toe Live</h2><p class="game-desc">3-gewinnt gegen Freunde oder KI.</p><div class="play-btn">Jetzt spielen</div></a>
-        <a href="/glagglejump" class="game-card"><h2 class="game-title"><span>🛤️</span> Glaggle Jump</h2><p class="game-desc">Das perfekte Jump and Run!</p><div class="play-btn">Jumpe Los</div></a>
-        <a href="/glagglerace" class="game-card"><h2 class="game-title"><span>🛣️</span> Glaggle Racing</h2><p class="game-desc">Weiche den Hindernissen aus!</p><div class="play-btn">3, 2, 1, Go</div></a>
-        <a href="/icerun" class="game-card"><h2 class="game-title"><span>🧊</span> Glaggle Ice Run</h2><p class="game-desc">Die Eisschollen schmelzen!</p><div class="play-btn">Ab in die Arktis</div></a>
-        <a href="/pong" class="game-card"><h2 class="game-title"><span>🔵</span> Glaggle Pong</h2><p class="game-desc">Klassiker im Glaggle Design!</p><div class="play-btn">Zurück in die 90er!</div></a>
-        <a href="/zahlenraten" class="game-card"><h2 class="game-title"><span>🔢</span> Zahlenraten</h2><p class="game-desc">Errate die geheime Zahl!</p><div class="play-btn">Herausforderung annehmen</div></a>
-        <a href="/stacker" class="game-card"><h2 class="game-title"><span>🗼</span> Glaggle Tower</h2><p class="game-desc">Wie hoch schaffst du es?</p><div class="play-btn">Baue Los!</div></a>
-        <a href="/schiffliversenken" class="game-card"><h2 class="game-title"><span>🛳️</span> Glaggle Schiffli Versenken</h2><p class="game-desc">Platziere deine Flotte geschickt!</p><div class="play-btn">Boom</div></a>
-        <a href="/elfmeter" class="game-card"><h2 class="game-title"><span>⚽️</span> Glaggle Elfmeter König</h2><p class="game-desc">Trickse den Goalie aus!</p><div class="play-btn">Anpfiff</div></a>
+        <a href="/snake" class="game-card"><h2 class="game-title"><span>🐍</span> Glaggle Snake</h2><p class="game-desc">Friss die roten Punkte und werde zur längsten Glaggle-Schlange. Aber pass auf die Wände auf!</p><div class="play-btn">Jetzt snaken</div></a>
+        <a href="/tictactoe" class="game-card"><h2 class="game-title"><span>❌</span> Tic Tac Toe Live</h2><p class="game-desc">Klassisches 3-gewinnt. Spiele live gegen Freunde via Link oder fordere die Kombi-KI heraus.</p><div class="play-btn">Jetzt spielen</div></a>
+        <a href="/glagglejump" class="game-card"><h2 class="game-title"><span>🛤️</span> Glaggle Jump</h2><p class="game-desc">Glaggle Jump. Das perfekte Jump and Run um Zeit zu verbringen!</p><div class="play-btn">Jumpe Los</div></a>
+        <a href="/glagglerace" class="game-card"><h2 class="game-title"><span>🛣️</span> Glaggle Racing</h2><p class="game-desc">Schaffst du es auf der Bahn zu bleiben und den Hindernissen auszuweichen?</p><div class="play-btn">3, 2, 1, Go</div></a>
+        <a href="/icerun" class="game-card"><h2 class="game-title"><span>🧊</span> Glaggle Ice Run</h2><p class="game-desc">Renne los aber achtung die Eisschollen schmelzen!</p><div class="play-btn">Ab in die Arktis</div></a>
+        <a href="/pong" class="game-card"><h2 class="game-title"><span>🔵</span> Glaggle Pong</h2><p class="game-desc">Eines der ersten Computer Spiele im neuen Glaggle Design! Was ist deine Bestzeit?</p><div class="play-btn">Zurück in die 90er!</div></a>
+        <a href="/zahlenraten" class="game-card"><h2 class="game-title"><span>🔢</span> Zahlenraten</h2><p class="game-desc">Errate die geheime Zahl der Kombi. Hast du das Zeug zum Logik-Meister?</p><div class="play-btn">Herausforderung annehmen</div></a>
+        <a href="/stacker" class="game-card"><h2 class="game-title"><span>🗼</span> Glaggle Tower</h2><p class="game-desc">Baue deinen Tower! Wie hoch schaffst du es?</p><div class="play-btn">Baue Los!</div></a>
+        <a href="/schiffliversenken" class="game-card"><h2 class="game-title"><span>🛳️</span> Glaggle Schiffli Versenken</h2><p class="game-desc">Platziere deine Flotte geschickt! Pass auf dass der Gegner dich nicht findet!</p><div class="play-btn">Boom</div></a>
+        <a href="/elfmeter" class="game-card"><h2 class="game-title"><span>⚽️</span> Glaggle Elfmeter König</h2><p class="game-desc">Schaffst du es den Goalie auszutricksen? Probiers aus!</p><div class="play-btn">Anpfiff</div></a>
     </div>
 </section>
 
@@ -142,7 +157,7 @@
     <div class="game-card" style="cursor:default;transform:none;border-color:var(--accent);width:100%;box-sizing:border-box;">
         <h2 class="game-title"><span>💬</span> Globaler Glaggle Chat</h2>
         <div id="chat-box" style="height:300px;overflow-y:auto;background:var(--bg-color);border-radius:12px;padding:15px;border:1px solid var(--card-border);margin-bottom:15px;display:flex;flex-direction:column;gap:10px;">
-            <div style="font-style:italic;opacity:0.5;font-size:0.8rem;">Willkommen im Chat!</div>
+            <div style="font-style:italic;opacity:0.5;font-size:0.8rem;">Willkommen im Chat! Tausche dich mit anderen Nutzern aus!</div>
         </div>
         <div style="display:flex;gap:10px;">
             <input type="text" id="chat-input" placeholder="Nachricht schreiben..." style="flex-grow:1;padding:10px;border-radius:20px;border:1px solid var(--card-border);background:var(--bg-color);color:var(--text-color);outline:none;">
@@ -194,14 +209,22 @@ const _p1 = "gsk_", _p2 = "DhmV9OW7Z0hYFfuFuDWAW", _p3 = "Gdyb3FYQ4lohujYXZhZr0k
 const getG = () => _p1 + _p2 + _p3;
 
 const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
-const appwriteClient = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('69fb638a002b7d03d829');
+const appwriteClient = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
 const appwriteAccount = new Appwrite.Account(appwriteClient);
 const appwriteDB = new Appwrite.Databases(appwriteClient);
-const AW_DB_ID = '69fb65330007c1a1af0a';
+const AW_DB_ID   = '69fb65330007c1a1af0a';
 const AW_COLL_ID = 'accounts';
 
-const GAME_KEYS = ["snake","glagglejump","tower","icerun","flappyfish","juggle","glagglebrick","glagglecross","glagglecatcher","glaggleskyjump","glaggleorbit"];
-const GAME_LABELS = { snake:"🐍 Snake", glagglejump:"🛤️ Jump", tower:"🗼 Tower", icerun:"🧊 Ice Run", flappyfish:"🐠 Flappy Fish", juggle:"🤹 Juggle", glagglebrick:"🧱 Brick", glagglecross:"🚦 Cross Road", glagglecatcher:"😀 Catcher", glaggleskyjump:"☁️ Sky Jump", glaggleorbit:"🪐 Orbit" };
+const GAME_KEYS = ["snake","glagglejump","tower","icerun","flappyfish","juggle",
+                   "glagglebrick","glagglecross","glagglecatcher","glaggleskyjump","glaggleorbit"];
+const GAME_LABELS = {
+    snake:"🐍 Snake", glagglejump:"🛤️ Jump", tower:"🗼 Tower",
+    icerun:"🧊 Ice Run", flappyfish:"🐠 Flappy Fish", juggle:"🤹 Juggle",
+    glagglebrick:"🧱 Brick", glagglecross:"🚦 Cross Road",
+    glagglecatcher:"😀 Catcher", glaggleskyjump:"☁️ Sky Jump", glaggleorbit:"🪐 Orbit"
+};
 
 // ════════════════════════════════════════════════════════════
 // ZUSTAND
@@ -210,8 +233,10 @@ let currentUserName = localStorage.getItem('glaggleUserName');
 let glaggleCoins    = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
 function generateFunnyName() {
-    const a = ["Goldener","Silberner","Hüpfender","Zappeliger","Glänzender","Schneller","Fliegender","Legendärer","Mystischer","Seltener","Turbo"];
-    const n = ["Coin-Sammler","Glaggle-Meister","Snake-Bändiger","Highscore-Held","Jump-Profi","Stacker-König","Ice-Runner","Race-Champion"];
+    const a = ["Goldener","Silberner","Hüpfender","Zappeliger","Glänzender","Schneller",
+               "Fliegender","Legendärer","Mystischer","Seltener","Turbo"];
+    const n = ["Coin-Sammler","Glaggle-Meister","Snake-Bändiger","Highscore-Held",
+               "Jump-Profi","Stacker-König","Ice-Runner","Race-Champion"];
     return `${a[Math.floor(Math.random()*a.length)]} ${n[Math.floor(Math.random()*n.length)]}-${Math.floor(Math.random()*999)}`;
 }
 
@@ -226,18 +251,48 @@ function updateChatPlaceholder() {
 }
 
 // ════════════════════════════════════════════════════════════
+// NAV AUTH ANZEIGE
+// ════════════════════════════════════════════════════════════
+function renderNavLoggedIn(name) {
+    document.getElementById('nav-auth').innerHTML = `
+        <div class="nav-user-info">
+            <span>👤</span>
+            <span class="nav-user-name">${name}</span>
+            <button class="nav-logout-btn" onclick="navLogout()">Abmelden</button>
+        </div>`;
+}
+
+function renderNavLoggedOut() {
+    document.getElementById('nav-auth').innerHTML = `
+        <a href="/login/index.html" class="nav-login-btn">🔑 Anmelden</a>`;
+}
+
+async function navLogout() {
+    try {
+        await appwriteAccount.deleteSession('current');
+        // Sync-Status für dieses Gerät zurücksetzen damit beim nächsten Login Popup kommt
+        localStorage.removeItem('glaggle_synced_id');
+    } catch(e) { console.log("Logout:", e.message); }
+    renderNavLoggedOut();
+}
+
+// ════════════════════════════════════════════════════════════
 // DATEN HELPERS
 // ════════════════════════════════════════════════════════════
 function getLocalScores() {
     const s = {};
-    GAME_KEYS.forEach(k => { const v = parseInt(localStorage.getItem(k+"_highscore"))||0; if(v>0) s[k]=v; });
+    GAME_KEYS.forEach(k => {
+        const v = parseInt(localStorage.getItem(k+"_highscore")) || 0;
+        if (v > 0) s[k] = v;
+    });
     return s;
 }
 
 async function loadCloudScores(username) {
     const s = {};
     try {
-        const { data, error } = await supabaseClient.from('leaderboard').select('game_name,coins').eq('username', username);
+        const { data, error } = await supabaseClient
+            .from('leaderboard').select('game_name,coins').eq('username', username);
         if (error) { console.warn("loadCloudScores:", error.message); return s; }
         if (data) data.forEach(r => { s[r.game_name] = r.coins; });
     } catch(e) { console.warn("loadCloudScores:", e); }
@@ -245,49 +300,64 @@ async function loadCloudScores(username) {
 }
 
 async function uploadScores(username, scores) {
-    const rows = Object.entries(scores).filter(([,v])=>v>0).map(([game_name,coins])=>({username,coins,game_name}));
+    const rows = Object.entries(scores)
+        .filter(([,v]) => v > 0)
+        .map(([game_name, coins]) => ({ username, coins, game_name }));
     if (!rows.length) return;
     try {
-        const { error } = await supabaseClient.from('leaderboard').upsert(rows, { onConflict: 'username, game_name' });
+        const { error } = await supabaseClient
+            .from('leaderboard').upsert(rows, { onConflict: 'username, game_name' });
         if (error) console.error("uploadScores:", error.message);
     } catch(e) { console.error("uploadScores:", e); }
 }
 
 async function updateAppwriteCoins(docId, coins) {
-    try { await appwriteDB.updateDocument(AW_DB_ID, AW_COLL_ID, docId, { coins: String(coins) }); }
-    catch(e) { console.error("updateAppwriteCoins:", e); }
+    try {
+        await appwriteDB.updateDocument(AW_DB_ID, AW_COLL_ID, docId, { coins: String(coins) });
+    } catch(e) { console.error("updateAppwriteCoins:", e); }
 }
 
 function applyData(name, coins, scores) {
-    glaggleCoins = coins;
+    glaggleCoins    = coins;
     currentUserName = name;
-    localStorage.setItem('glaggleCoins', coins);
+    localStorage.setItem('glaggleCoins',    coins);
     localStorage.setItem('glaggleUserName', name);
-    Object.entries(scores).forEach(([k,v]) => { if(v>0) localStorage.setItem(k+"_highscore", v); });
+    Object.entries(scores).forEach(([k,v]) => {
+        if (v > 0) localStorage.setItem(k+"_highscore", v);
+    });
     updateCoinDisplay();
     updateChatPlaceholder();
 }
 
 // ════════════════════════════════════════════════════════════
-// SYNC DURCHFÜHREN (speichert lastSyncedCoins!)
+// SYNC — KEY KONSISTENT MIT glaggleId
 // ════════════════════════════════════════════════════════════
+function syncKey(glaggleId) {
+    // EINZIGER KEY für lastSyncedCoins — überall gleich!
+    return 'glaggle_last_synced_' + glaggleId;
+}
+
 async function doSync(awDoc, finalCoins, finalScores) {
-    const name = awDoc.gamecenterName || awDoc.userName;
+    const name      = awDoc.gamecenterName || awDoc.userName;
+    const glaggleId = String(awDoc.glaggleId);
+
     applyData(name, finalCoins, finalScores);
-    // WICHTIG: neuen Stand als Basis merken → verhindert doppeltes Addieren
-    localStorage.setItem('glaggle_last_synced_coins', String(finalCoins));
+
+    // Neuen Stand speichern — GLEICHER KEY wie beim Lesen
+    localStorage.setItem(syncKey(glaggleId), String(finalCoins));
+
     await updateAppwriteCoins(awDoc.$id, finalCoins);
     await uploadScores(name, { ...finalScores, global: finalCoins });
     console.log("✅ Sync:", finalCoins, "Coins");
 }
 
 // ════════════════════════════════════════════════════════════
-// POPUP (Anti-Cheat: zeigt nur echten Gain, nicht lokale Total)
+// SYNC POPUP
 // ════════════════════════════════════════════════════════════
 function showSyncPopup(awDoc, cloudCoins, cloudScores, localGain) {
-    const finalCoins = cloudCoins + localGain;
+    const finalCoins  = cloudCoins + localGain;
     const localScores = getLocalScores();
-    const name = awDoc.gamecenterName || awDoc.userName;
+    const name        = awDoc.gamecenterName || awDoc.userName;
 
     const finalScores = {};
     new Set([...Object.keys(localScores), ...Object.keys(cloudScores)]).forEach(k => {
@@ -302,10 +372,11 @@ function showSyncPopup(awDoc, cloudCoins, cloudScores, localGain) {
         ? `Deine Cloud-Daten werden auf dieses Gerät geladen.`
         : `Konto verknüpft! Coins & Scores werden ab jetzt gespeichert.`;
 
-    const scoreRows = Object.entries(finalScores).filter(([,v])=>v>0)
-        .map(([k,v])=>`<div class="sr">${GAME_LABELS[k]||k} <span>${v.toLocaleString()} Pkt.</span></div>`).join('');
+    const scoreRows = Object.entries(finalScores)
+        .filter(([,v]) => v > 0)
+        .map(([k,v]) => `<div class="sr">${GAME_LABELS[k]||k} <span>${v.toLocaleString()} Pkt.</span></div>`)
+        .join('');
 
-    // Altes Popup entfernen falls vorhanden
     document.getElementById('glaggle-sync-overlay')?.remove();
 
     const overlay = document.createElement('div');
@@ -328,14 +399,13 @@ function showSyncPopup(awDoc, cloudCoins, cloudScores, localGain) {
       </div>`;
     document.body.appendChild(overlay);
 
-    // "Nur laden": Cloud-Stand übernehmen, Gain NICHT hochladen
     document.getElementById('gs-skip').onclick = () => {
+        const glaggleId = String(awDoc.glaggleId);
         applyData(name, cloudCoins, cloudScores);
-        localStorage.setItem('glaggle_last_synced_coins', String(cloudCoins));
+        localStorage.setItem(syncKey(glaggleId), String(cloudCoins));
         overlay.remove();
     };
 
-    // "Übernehmen": Gain addieren + hochladen
     document.getElementById('gs-confirm').onclick = async () => {
         const btn = document.getElementById('gs-confirm');
         btn.textContent = '⏳ Speichern...';
@@ -346,63 +416,71 @@ function showSyncPopup(awDoc, cloudCoins, cloudScores, localGain) {
 }
 
 // ════════════════════════════════════════════════════════════
-// LOGIN CHECK — ANTI-CHEAT KERN
+// LOGIN CHECK + ANTI-CHEAT
 // ════════════════════════════════════════════════════════════
 async function checkLoginAndSync() {
     try {
         const user = await appwriteAccount.get();
-        const res = await appwriteDB.listDocuments(AW_DB_ID, AW_COLL_ID, [Appwrite.Query.equal('userEmail', user.email)]);
+
+        const res = await appwriteDB.listDocuments(AW_DB_ID, AW_COLL_ID, [
+            Appwrite.Query.equal('userEmail', user.email)
+        ]);
         if (!res.documents.length) { await fallbackSync(); return; }
 
-        const awDoc     = res.documents[0];
-        const glaggleId = String(awDoc.glaggleId);
-        const name      = awDoc.gamecenterName || awDoc.userName;
+        const awDoc      = res.documents[0];
+        const glaggleId  = String(awDoc.glaggleId);
+        const name       = awDoc.gamecenterName || awDoc.userName;
         const cloudCoins = parseInt(awDoc.coins) || 0;
 
         localStorage.setItem('glaggleID', glaggleId);
 
-        const cloudScores = await loadCloudScores(name);
+        // Nav anzeigen
+        renderNavLoggedIn(name);
 
-        // ── ANTI-CHEAT ────────────────────────────────────────────
-        // lastSyncedCoins = Coin-Stand beim letzten Sync auf DIESEM Gerät
-        // localCoinsNow   = aktueller lokaler Stand
-        // localGain       = echte neue Coins seit letztem Sync
-        // → Manipulation: local < lastSynced → Gain = 0
-        // → Abmelden & wieder anmelden: lastSynced = cloudCoins → Gain = 0
-        const lastSyncedCoins = parseInt(localStorage.getItem('glaggle_last_synced_coins_' + glaggleId)) || 0;
-        const localCoinsNow   = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-        const localGain       = Math.max(0, localCoinsNow - lastSyncedCoins);
-        // ─────────────────────────────────────────────────────────
+        const cloudScores    = await loadCloudScores(name);
+        const localCoinsNow  = parseInt(localStorage.getItem('glaggleCoins')) || 0;
 
-        const alreadySynced = localStorage.getItem('glaggle_synced_id') === glaggleId;
+        // lastSyncedCoins — GLEICHER KEY wie in doSync
+        const lastSynced     = parseInt(localStorage.getItem(syncKey(glaggleId))) || -1;
+        const alreadySynced  = localStorage.getItem('glaggle_synced_id') === glaggleId;
 
         if (!alreadySynced) {
-            // Erster Login auf diesem Gerät für diesen Account
+            // ── ERSTER LOGIN auf diesem Gerät ────────────────────
             localStorage.setItem('glaggle_synced_id', glaggleId);
-            // Basis setzen: cloudCoins ist der Stand den wir kennen
-            // lastSynced auf cloudCoins setzen damit Ab+Anmelden keinen Gain erzeugt
-            if (!localStorage.getItem('glaggle_last_synced_coins_' + glaggleId)) {
-                localStorage.setItem('glaggle_last_synced_coins_' + glaggleId, String(cloudCoins));
+
+            // Basis setzen = cloudCoins (verhindert dass lokale Altcoins doppelt zählen)
+            // lastSynced = -1 bedeutet: noch nie gesynced → Basis auf cloudCoins setzen
+            const basis = lastSynced >= 0 ? lastSynced : cloudCoins;
+            if (lastSynced < 0) {
+                localStorage.setItem(syncKey(glaggleId), String(cloudCoins));
             }
-            // Gain neu berechnen mit korrekter Basis
-            const gainAfterReset = Math.max(0, localCoinsNow - cloudCoins);
-            showSyncPopup(awDoc, cloudCoins, cloudScores, gainAfterReset);
+
+            // Gain = nur was seit Basis neu dazugekommen ist
+            const gain = Math.max(0, localCoinsNow - basis);
+            showSyncPopup(awDoc, cloudCoins, cloudScores, gain);
+
         } else {
-            // Bereits eingeloggt — automatischer Hintergrund-Sync
-            if (localGain > 0) {
-                const finalCoins = cloudCoins + localGain;
+            // ── BEREITS EINGELOGGT auf diesem Gerät ─────────────
+            // Anti-Cheat: Gain = lokal - lastSynced (nie negativ)
+            const gain = Math.max(0, localCoinsNow - (lastSynced >= 0 ? lastSynced : cloudCoins));
+
+            if (gain > 0) {
+                // Neue Coins im Hintergrund hochladen (kein Popup)
                 const localScores = getLocalScores();
                 const finalScores = {};
                 new Set([...Object.keys(localScores), ...Object.keys(cloudScores)]).forEach(k => {
                     finalScores[k] = Math.max(localScores[k]||0, cloudScores[k]||0);
                 });
-                await doSync(awDoc, finalCoins, finalScores);
+                await doSync(awDoc, cloudCoins + gain, finalScores);
             } else {
+                // Kein Gain → einfach Cloud-Stand laden
                 applyData(name, cloudCoins, cloudScores);
             }
         }
+
     } catch(e) {
         console.log("Gastmodus:", e.message || e);
+        renderNavLoggedOut();
         await fallbackSync();
     }
 }
@@ -425,9 +503,14 @@ async function checkModeration(text) {
         const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": `Bearer ${getG()}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ model:"llama-3.1-8b-instant", messages:[
-                {role:"system", content:"Du bist Chat-Moderator. Antworte NUR mit BLOCK wenn direkt beleidigt oder rassistische Inhalte gepostet werden. Sonst NUR OK."},
-                {role:"user", content:text}], temperature:0.1 })
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    { role:"system", content:"Du bist Chat-Moderator. Sei locker. Antworte NUR mit BLOCK wenn jemand direkt beleidigt wird oder rassistische/hasserfüllte Inhalte postet. Sonst NUR OK." },
+                    { role:"user", content: text }
+                ],
+                temperature: 0.1
+            })
         });
         const d = await r.json();
         return d.choices[0].message.content.trim().toUpperCase();
@@ -448,7 +531,7 @@ function renderMessage(user, text) {
         label = `<b style="color:#FFD700;text-shadow:0 0 5px rgba(255,215,0,0.5);">👑 Glaggle Developer:</b>`;
         if (!isMe) div.style.border = "2px solid #FFD700";
     } else {
-        label = `<b style="color:${isMe?'#ffffff':'var(--accent)'};">${user}:</b>`;
+        label = `<b style="color:${isMe ? '#ffffff' : 'var(--accent)'};">${user}:</b>`;
     }
     div.innerHTML = `${label} ${text}`;
     chatBox.appendChild(div);
@@ -456,8 +539,12 @@ function renderMessage(user, text) {
 }
 
 async function loadInitialMessages() {
-    const { data } = await supabaseClient.from('messages').select('*').order('created_at',{ascending:false}).limit(500);
-    if (data) { chatBox.innerHTML=''; data.reverse().forEach(m => renderMessage(m.user, m.content)); }
+    const { data } = await supabaseClient.from('messages').select('*')
+        .order('created_at', { ascending: false }).limit(500);
+    if (data) {
+        chatBox.innerHTML = '';
+        data.reverse().forEach(m => renderMessage(m.user, m.content));
+    }
 }
 
 async function sendMessage() {
@@ -467,7 +554,8 @@ async function sendMessage() {
     const result = await checkModeration(text);
     if (result.includes("OK")) {
         await supabaseClient.rpc('delete_old_messages');
-        const { error } = await supabaseClient.from('messages').insert([{ user: currentUserName, content: text }]);
+        const { error } = await supabaseClient.from('messages')
+            .insert([{ user: currentUserName, content: text }]);
         if (!error) chatInput.value = "";
         document.getElementById('chat-status').innerText = "";
     } else {
@@ -478,10 +566,12 @@ async function sendMessage() {
 }
 
 supabaseClient.channel('public:messages')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'}, p => renderMessage(p.new.user, p.new.content))
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages' },
+        p => renderMessage(p.new.user, p.new.content))
     .subscribe();
+
 sendBtn.onclick = sendMessage;
-chatInput.onkeydown = e => { if(e.key==='Enter') sendMessage(); };
+chatInput.onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
 
 // ════════════════════════════════════════════════════════════
 // LEADERBOARD
@@ -493,24 +583,29 @@ const toggleBtn    = document.getElementById('toggle-leaderboard');
 async function updateLeaderboard() {
     const sel = gameSelector.value;
     const scoreToSend = sel === 'global'
-        ? parseInt(localStorage.getItem('glaggleCoins'))||0
-        : parseInt(localStorage.getItem(sel+"_highscore"))||0;
+        ? parseInt(localStorage.getItem('glaggleCoins')) || 0
+        : parseInt(localStorage.getItem(sel + "_highscore")) || 0;
 
     if (scoreToSend > 0) {
         try {
             const { error } = await supabaseClient.from('leaderboard')
-                .upsert({username:currentUserName, coins:scoreToSend, game_name:sel}, {onConflict:'username, game_name'});
+                .upsert({ username: currentUserName, coins: scoreToSend, game_name: sel },
+                        { onConflict: 'username, game_name' });
             if (error) console.error("LB upsert:", error.message);
         } catch(e) { console.error("LB upsert:", e); }
     }
 
     const { data, error } = await supabaseClient.from('leaderboard')
-        .select('username,coins,game_name').eq('game_name',sel).order('coins',{ascending:false}).limit(50);
+        .select('username,coins,game_name')
+        .eq('game_name', sel)
+        .order('coins', { ascending: false })
+        .limit(50);
+
     if (error) { console.error("LB fetch:", error.message); return; }
     if (!data) return;
 
-    const list = document.getElementById('leaderboard-list');
-    const myFixedRank = document.getElementById('my-fixed-rank');
+    const list         = document.getElementById('leaderboard-list');
+    const myFixedRank  = document.getElementById('my-fixed-rank');
     const showMoreCont = document.getElementById('show-more-container');
     list.innerHTML = '';
     myFixedRank.style.display = 'none';
@@ -522,16 +617,19 @@ async function updateLeaderboard() {
     data.forEach((entry, index) => {
         const isMe = entry.username === currentUserName;
         const rank = index + 1;
-        if (isMe) { myOverallRank = rank; if (rank<=10||leaderboardExpanded) userFoundInVisiblePart=true; }
+        if (isMe) {
+            myOverallRank = rank;
+            if (rank <= 10 || leaderboardExpanded) userFoundInVisiblePart = true;
+        }
 
         const row = document.createElement('div');
         row.className = 'leader-row';
         if (rank > 10 && !leaderboardExpanded) row.style.display = 'none';
-        if (isMe) { row.style.background="rgba(112,196,247,0.15)"; row.style.borderRadius="10px"; }
+        if (isMe) { row.style.background = "rgba(112,196,247,0.15)"; row.style.borderRadius = "10px"; }
 
         row.innerHTML = `
-            <span class="leader-rank">${index<3?rankIcons[index]:'#'+rank}</span>
-            <span class="leader-name" style="${isMe?'font-weight:bold;':''}">${isMe?'⭐ ':''}${entry.username}</span>
+            <span class="leader-rank">${index < 3 ? rankIcons[index] : '#'+rank}</span>
+            <span class="leader-name" style="${isMe ? 'font-weight:bold;' : ''}">${isMe ? '⭐ ' : ''}${entry.username}</span>
             <span class="leader-coins" style="display:flex;align-items:center;gap:5px;">
                 <img src="/coin.png" style="width:16px;height:16px;object-fit:contain;">
                 ${entry.coins.toLocaleString()}${unit}
@@ -556,8 +654,8 @@ async function updateLeaderboard() {
     }
 }
 
-gameSelector.onchange = () => { leaderboardExpanded=false; updateLeaderboard(); };
-toggleBtn.onclick = () => { leaderboardExpanded=!leaderboardExpanded; updateLeaderboard(); };
+gameSelector.onchange = () => { leaderboardExpanded = false; updateLeaderboard(); };
+toggleBtn.onclick = () => { leaderboardExpanded = !leaderboardExpanded; updateLeaderboard(); };
 
 // ════════════════════════════════════════════════════════════
 // START
