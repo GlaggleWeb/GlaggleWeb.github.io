@@ -124,55 +124,6 @@ body::before {
     pointer-events: none;
 }
 
-/* --- 1. VARIABLEN (Zentraler Ort für alle Farben) --- */
-:root {
-    /* Light Mode Default */
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --search-bar-bg: rgba(255, 255, 255, 0.9);
-    --sidebar-bg: #ffffff;
-    --navbar-bg: #ffffff;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #121212;
-        --text-color: #ffffff;
-        --search-bar-bg: rgba(40, 40, 40, 0.8);
-        --sidebar-bg: #1e1e1e;
-        --navbar-bg: #121212;
-        --shadow-color: rgba(0, 0, 0, 0.5);
-    }
-}
-
-/* --- 2. BASIS-LAYOUT --- */
-body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s ease;
-}
-
-/* --- 3. SUCHFELD (Ohne Wackeln!) --- */
-.search-bar-container {
-    background-color: var(--search-bar-bg) !important;
-    box-shadow: 0 4px 15px var(--shadow-color) !important;
-    border: 2px solid transparent !important;
-    
-    /* WICHTIG: Keine "all"-Transition, nur Farben! */
-    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
-}
-
-.search-bar-container:focus-within {
-    border-color: #70C4F7 !important;
-    background-color: var(--bg-color) !important;
-}
-
-/* --- 4. SIDEBAR (Anpassen: Ersetze .sidebar durch deine tatsächliche Klasse) --- */
-.sidebar {
-    background-color: var(--sidebar-bg) !important;
-    color: var(--text-color) !important;
-}
 
     #background-layer {
     position: fixed; /* Fixiert den Hintergrund fest im Viewport */
