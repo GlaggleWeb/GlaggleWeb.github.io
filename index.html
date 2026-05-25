@@ -959,6 +959,46 @@ pre, code, .ai-text-content {
     /* Sicherheit: Alles, was übersteht, abschneiden (nur für den Notfall) */
     overflow: hidden !important;
 }
+
+/* --- SICHERSHELL-LAYOUT-FIXES --- */
+
+/* 1. Suchfeld starr bändigen */
+.search-bar-container {
+    width: 90% !important;         /* Nimmt 90% Breite */
+    max-width: 600px !important;   /* Wird nie breiter als 600px */
+    margin: 0 auto !important;     /* Immer zentriert */
+    box-sizing: border-box !important; /* WICHTIG: Padding wird eingerechnet */
+    display: flex !important;
+    align-items: center !important;
+    
+    /* Animationen: NUR Farben, NIEMALS Breite oder Margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Die Korrektur für deine .glaggle-nav */
+.glaggle-nav {
+    display: none; /* Initial versteckt */
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+    
+    /* WICHTIG: Statt fit-content (das springt), definieren wir eine feste Max-Breite */
+    width: 90% !important;        /* Passt sich dem Bildschirm an */
+    max-width: 800px !important;  /* Wird nie breiter als das Suchfeld */
+    margin: 10px auto !important; /* Zentriert */
+    
+    background: #1a1a1a; 
+    padding: 8px 15px;
+    border-radius: 50px; 
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    
+    /* GANZ WICHTIG: Animation nur für Farben, KEIN width/height/margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
+    
+    /* Sorgt dafür, dass Padding nicht die Breite sprengt */
+    box-sizing: border-box !important;
+}
 </style>
 </head>
 <body>
