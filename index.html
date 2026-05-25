@@ -241,29 +241,6 @@ body::before {
 
     .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
 
-   /* Suchfeld deutlich machen */
-.search-bar-container {
-    display: flex; 
-    align-items: center; 
-    
-    /* HIER: Hintergrund undurchsichtiger machen */
-    background: rgba(255, 255, 255, 0.9) !important; 
-    backdrop-filter: blur(10px); /* Sorgt für einen modernen Glaseffekt */
-    
-    /* HIER: Rand und Schatten für besseren Kontrast */
-    border: 2px solid #ffffff !important; 
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; 
-    
-    border-radius: 30px; 
-    padding: 5px 20px;
-    margin-bottom: 60px; 
-    transition: all 0.3s ease;
-}
-
-/* Erlaube nur optische Änderungen, keine Größen- oder Layoutänderungen */
-.search-bar-container, .navbar, .nav-item {
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-}
 /* Texte im Suchfeld lesbar machen */
 #glaggleQuery {
     color: #000000 !important; /* Schrift im Suchfeld schwarz */
@@ -374,18 +351,6 @@ body::before {
     caret-color: transparent;
 }
 
-.search-bar-container {
-    position: relative; /* WICHTIG: Damit der Cursor im Balken bleibt */
-    display: flex; 
-    align-items: center; 
-    background: var(--input-bg);
-    border: 1px solid #dfe1e5; 
-    border-radius: 30px; 
-    padding: 5px 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 60px;
-    transition: all 0.5s ease-in-out;
-}
 
 .custom-caret {
     position: absolute;
@@ -427,10 +392,6 @@ body::before {
     filter: grayscale(0);
 }
 
-/* Verhindert, dass der Button das Layout zerschießt */
-.search-bar-container {
-    gap: 5px;
-}
 
 /* Spezielles Styling für offizielle Projekte */
 /* Spezielles Styling für offizielle Projekte */
@@ -735,21 +696,6 @@ body::before {
 .nav-scroll-wrapper::-webkit-scrollbar {
     display: none; /* Versteckt Scrollbar in Chrome/Safari */
 }
-.glaggle-nav {
-    display: none; /* Wird per JS eingeblendet */
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-    background: #1a1a1a; /* Dein Schwarz */
-    padding: 8px 15px;
-    margin: 10px auto;
-    width: fit-content;
-    max-width: 90%;
-    /* HIER SIND DIE RUNDEN ECKEN */
-    border-radius: 50px; 
-    border: 1px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
 
 .nav-item {
     color: #999;
@@ -941,73 +887,68 @@ pre, code, .ai-text-content {
     box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
 }
 
-/* Das Suchfeld bändigen */
+/* --- CLEAN SLATE: SEARCH BAR --- */
 .search-bar-container {
-    /* WICHTIG: Padding wird von der Breite abgezogen, nicht dazugerechnet */
-    box-sizing: border-box !important; 
-    
-    /* Breite flexibel halten, aber nie über 90% des Bildschirms */
-    width: 90% !important; 
-    
-    /* Maximale Breite, damit es auf Desktops nicht riesig wird */
-    max-width: 600px !important; 
-    
-    /* Zentrierung erzwingen */
-    margin-left: auto !important;
-    margin-right: auto !important;
-    
-    /* Sicherheit: Alles, was übersteht, abschneiden (nur für den Notfall) */
-    overflow: hidden !important;
-}
-
-/* --- SICHERSHELL-LAYOUT-FIXES --- */
-
-/* 1. Suchfeld starr bändigen */
-.search-bar-container {
-    width: 90% !important;         /* Nimmt 90% Breite */
-    max-width: 600px !important;   /* Wird nie breiter als 600px */
-    margin: 0 auto !important;     /* Immer zentriert */
-    box-sizing: border-box !important; /* WICHTIG: Padding wird eingerechnet */
     display: flex !important;
     align-items: center !important;
+    flex-direction: row !important;
     
-    /* Animationen: NUR Farben, NIEMALS Breite oder Margin! */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+    /* Maße */
+    width: 90% !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    
+    /* Layout */
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    
+    /* Farben (Beispiel - bitte an dein Design anpassen) */
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #dfe1e5 !important;
+    border-radius: 30px !important;
 }
 
-/* Die Korrektur für deine .glaggle-nav */
+/* Das Eingabefeld im Suchcontainer */
+#glaggleQuery {
+    flex: 1 !important;
+    min-width: 0 !important; /* WICHTIG: Erlaubt dem Input, flexibel zu schrumpfen */
+    width: 100% !important;
+    padding: 12px 20px !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+/* --- CLEAN SLATE: GLAGGLE NAV --- */
 .glaggle-nav {
-    display: none; /* Initial versteckt */
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
+    display: none; /* Initial versteckt, wird via JS auf 'flex' gesetzt */
     
-    /* WICHTIG: Statt fit-content (das springt), definieren wir eine feste Max-Breite */
-    width: 90% !important;        /* Passt sich dem Bildschirm an */
-    max-width: 800px !important;  /* Wird nie breiter als das Suchfeld */
-    margin: 10px auto !important; /* Zentriert */
+    /* Positionierung */
+    position: sticky !important;
+    top: 10px !important;
+    z-index: 1000 !important;
     
-    background: #1a1a1a; 
-    padding: 8px 15px;
-    border-radius: 50px; 
-    border: 1px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    /* Maße */
+    width: 90% !important;
+    max-width: 800px !important;
+    margin: 10px auto !important;
     
-    /* GANZ WICHTIG: Animation nur für Farben, KEIN width/height/margin! */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
-    
-    /* Sorgt dafür, dass Padding nicht die Breite sprengt */
+    /* Styling */
     box-sizing: border-box !important;
+    background: #1a1a1a !important;
+    padding: 8px 15px !important;
+    border-radius: 50px !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+    
+    /* Animation (nur Farben!) */
+    transition: background-color 0.3s ease !important;
 }
-/* --- FINALE REPARATUR DES SUCHFELDES --- */
 
-.search-bar-container {
-    width: 100% !important;           /* Zwingt den Browser zur vollen Breite */
-    max-width: 600px !important;      /* Begrenzt es aber bei 600px */
-    display: flex !important;         /* Zwingt es in den Flex-Modus */
-    flex: 0 1 600px !important;       /* Erlaubt Flexibilität, ohne zu springen */
-    margin: 0 auto !important;        /* Zentriert */
-    box-sizing: border-box !important;
+/* Die Nav-Elemente */
+.nav-item {
+    flex-shrink: 0 !important; /* Verhindert das Zusammenquetschen */
+    white-space: nowrap !important;
 }
 
 /* Verhindert, dass das Suchfeld durch interne Elemente aufgeblasen wird */
