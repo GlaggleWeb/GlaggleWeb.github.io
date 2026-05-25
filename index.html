@@ -1200,6 +1200,22 @@ function createAiPlaceholder() {
     return aiBox;
 }
 
+function redirectIfMobile() {
+    // 1. Regex für verschiedene mobile User-Agents
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // 2. Ziel-URL definieren
+    const mobileUrl = "https://glaggle.ch/phone"; 
+
+    // 3. Weiterleitung nur, wenn es ein Handy ist UND wir noch nicht auf der mobilen Seite sind
+    if (isMobile && !window.location.href.includes(mobileUrl)) {
+        window.location.href = mobileUrl;
+    }
+}
+
+// Sofort beim Laden der Seite ausführen
+redirectIfMobile();
+    
 document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         e.preventDefault(); // Verhindert Neuladen der Seite
