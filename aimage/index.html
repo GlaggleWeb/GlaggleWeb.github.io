@@ -180,6 +180,8 @@
             <span>A</span><span>I</span><span>m</span><span>a</span><span>g</span><span>e</span>
         </div>
         <div class="flex gap-2 sm:gap-4">
+            <!-- NEU: Button für SVG Generierung -->
+            <a href="https://glaggle.ch/aimage/home" class="hidden sm:flex px-5 py-2 rounded-full border border-slate-300 dark:border-zinc-700 text-sm font-bold hover:bg-slate-100 dark:hover:bg-zinc-800 transition">SVG Grafiken</a>
             <button onclick="showView('search')" class="px-5 sm:px-6 py-2 rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 transition hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 text-sm sm:text-base">Erstellen</button>
             <button onclick="showView('gallery')" class="px-5 sm:px-6 py-2 rounded-full bg-green-500 text-white font-bold hover:bg-green-600 transition hover:shadow-lg hover:shadow-green-500/30 active:scale-95 text-sm sm:text-base">Galerie</button>
         </div>
@@ -199,8 +201,8 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
                     <!-- Model: SDXL -->
                     <button onclick="changeModel('sdxl')" id="btn-sdxl" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 active">
-                        <span class="text-2xl">🎨</span>
-                        <span>SDXL Allrounder</span>
+                        <span class="text-2xl">🎬</span>
+                        <span>Cinematic (Flux)</span>
                     </button>
                     <!-- Model: FLUX -->
                     <button onclick="changeModel('flux')" id="btn-flux" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
@@ -210,12 +212,12 @@
                     <!-- Model: Anime -->
                     <button onclick="changeModel('anime')" id="btn-anime" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
                         <span class="text-2xl">🌸</span>
-                        <span>Anime Dream</span>
+                        <span>Anime (Flux)</span>
                     </button>
                     <!-- Model: Dreamshaper -->
                     <button onclick="changeModel('dream')" id="btn-dream" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
                         <span class="text-2xl">✨</span>
-                        <span>Dreamshaper Art</span>
+                        <span>Fantasy (Flux)</span>
                     </button>
                 </div>
             </div>
@@ -234,20 +236,15 @@
                 <div class="flex items-start gap-3">
                     <span class="text-3xl">💡</span>
                     <div>
-                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg mb-2">Verbindung blockiert? (Fehler gelöst)</h4>
+                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg mb-2">DNS-Blockade oder Schul-/Firmennetzwerk?</h4>
                         <p class="text-sm text-amber-700 dark:text-slate-300 mb-4 leading-relaxed">
-                            Dein Browser blockiert Netzwerkanfragen an Hugging Face. Das kannst du sofort beheben:
+                            Dein aktuelles Netzwerk oder dein Browser verhindert das Auflösen des Hostnamens von Hugging Face (<code class="bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded font-mono">router.huggingface.co</code>). Das kannst du so lösen:
                         </p>
-                        <ul class="space-y-3 text-sm text-amber-900 dark:text-slate-200 list-disc list-inside mb-4">
-                            <li><strong class="text-amber-700 dark:text-amber-400">Nutze Google Chrome oder Firefox:</strong> Safari blockiert Verbindungen aus geschützten Vorschaufenstern (Iframes) komplett. Ein Browserwechsel löst das Problem sofort.</li>
-                            <li><strong class="text-amber-700 dark:text-amber-400">Werbeblocker ausschalten:</strong> uBlock/AdBlock stufen API-Verbindungen oft fälschlicherweise als Werbung ein. Deaktiviere sie kurz für diese Vorschauseite.</li>
-                            <li><strong class="text-amber-700 dark:text-amber-400">DNS-/WLAN-Sperre:</strong> Falls du in einem Firmen- oder Schulnetzwerk bist, blockiert eventuell die Firewall die Adresse <code class="bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded font-mono">huggingface.co</code>.</li>
+                        <ul class="space-y-3 text-sm text-amber-900 dark:text-slate-200 list-disc list-inside">
+                            <li><strong class="text-amber-700 dark:text-amber-400">WLAN wechseln:</strong> Schul-, Uni- oder Firmen-WLANs blockieren KI-Schnittstellen sehr oft. Versuche es über deine mobilen Daten (Handy-Hotspot)!</li>
+                            <li><strong class="text-amber-700 dark:text-amber-400">DNS ändern:</strong> Ändere deinen DNS-Server in den Geräteeinstellungen auf Google (<code class="bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded font-mono">8.8.8.8</code>), um Sperren deines Internetanbieters zu umgehen.</li>
+                            <li><strong class="text-amber-700 dark:text-amber-400">Adblocker:</strong> Schalte uBlock/AdBlock oder Brave-Schutz für diese Seite aus.</li>
                         </ul>
-                        <div class="pt-3 border-t border-amber-500/20">
-                            <button onclick="tryFallbackImage()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow shadow-amber-500/20">
-                                Trotzdem ein Testbild erzeugen (Fallback)
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -293,23 +290,19 @@
     </main>
 
     <script>
-        // === HUGGING FACE TOKEN KONFIGURATION ===
-        const partA = "hf_"; 
-        const partB = "vAhGdGfxEOMBzuv"; 
-        const partC = "RfBxfCPCFbzptlCuOqs";
+        // HINWEIS: Hier kommt nun die URL deines bereitgestellten Cloudflare Workers rein
+        const workerUrl = "frosty-night-90c6.rhpjmf7t2s.workers.dev"; 
 
-        // Map der kostenlosen Modelle auf Hugging Face
         const modelRegistry = {
-            sdxl: "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-            flux: "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
-            anime: "https://api-inference.huggingface.co/models/cagliostrolab/animagine-xl-3.1",
-            dream: "https://api-inference.huggingface.co/models/Lykon/dreamshaper-xl-1-0"
+            sdxl: "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+            flux: "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+            anime: "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+            dream: "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell"
         };
 
         let currentModelKey = "sdxl";
         let myGallery = [];
         let confirmAction = null;
-        let lastFailedPrompt = "";
 
         window.onload = () => {
             // Preloader ausblenden
@@ -346,7 +339,6 @@
             showToast(`Modell gewechselt: ${modelKey.toUpperCase()}`, 'info');
         };
 
-        // Custom Toast System
         function showToast(message, type = 'info') {
             const toast = document.getElementById('custom-toast');
             const toastText = document.getElementById('toast-text');
@@ -370,7 +362,21 @@
             }, 6500);
         }
 
-        // Custom Confirm Modal System
+        // Funktion fügt stil-spezifische Schlagwörter hinzu, um die Stile auf FLUX perfekt zu emulieren
+        function getStyledPrompt(basePrompt, styleKey) {
+            switch(styleKey) {
+                case 'flux':
+                    return `highly detailed raw photorealistic scene, real life texture, 8k resolution, crisp detailing, ${basePrompt}`;
+                case 'anime':
+                    return `beautiful modern anime illustration, vibrant colors, aesthetic clean lineart, manga aesthetic, masterpiece, detailed art, ${basePrompt}`;
+                case 'dream':
+                    return `epic dreamshaper fantasy digital painting, atmospheric volumetric lighting, beautiful surrealism, highly detailed fantasy art, concept design, ${basePrompt}`;
+                case 'sdxl':
+                default:
+                    return `cinematic lighting, professional award-winning photography, rich textures, 3d render masterpiece, detailed, ${basePrompt}`;
+            }
+        }
+
         function showConfirm(action) {
             confirmAction = action;
             const modal = document.getElementById('confirm-modal');
@@ -392,136 +398,90 @@
             }, 300);
         };
 
-        // Bild über HF Inference API generieren
-        async function generateImage() {
-            const promptInput = document.getElementById('prompt');
-            const prompt = promptInput.value.trim();
-            const btn = document.getElementById('generateBtn');
-            const statusCont = document.getElementById('status-container');
-            const statusText = document.getElementById('status-text');
-            const preview = document.getElementById('preview-area');
-            const troubleshootBox = document.getElementById('troubleshoot-box');
-            
-            const fullToken = (partA + partB + partC).trim();
+async function generateImage() {
+    const promptInput = document.getElementById('prompt');
+    const basePrompt = promptInput.value.trim();
+    const btn = document.getElementById('generateBtn');
+    const statusCont = document.getElementById('status-container');
+    const statusText = document.getElementById('status-text');
+    const preview = document.getElementById('preview-area');
+    
+    // WICHTIG: Hier deine Cloudflare Worker URL einfügen!
+    const workerUrl = "frosty-night-90c6.rhpjmf7t2s.workers.dev";
 
-            if (!prompt) {
-                showToast("Bitte gib eine Bildbeschreibung (Prompt) ein!", "info");
-                return;
-            }
+    if (!basePrompt) {
+        showToast("Bitte gib eine Bildbeschreibung ein!", "info");
+        return;
+    }
 
-            lastFailedPrompt = prompt;
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            statusCont.classList.remove('hidden');
-            troubleshootBox.classList.add('hidden');
-            statusText.innerText = "AImage webt Pixel... Bitte warten.";
-            preview.innerHTML = '';
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    statusCont.classList.remove('hidden');
+    statusText.innerText = "Sende Anfrage an sicheren Proxy...";
+    preview.innerHTML = '';
 
-            try {
-                const modelUrl = modelRegistry[currentModelKey];
-                
-                const response = await fetch(modelUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${fullToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ inputs: prompt }),
-                });
+    const styledPrompt = getStylePrompt(basePrompt, currentModelKey);
 
-                if (!response.ok) {
-                    let errorMessage = `API Fehler (${response.status})`;
-                    try {
-                        const errorData = await response.json();
-                        if (errorData && errorData.error) {
-                            errorMessage = Array.isArray(errorData.error) ? errorData.error.join(', ') : errorData.error;
-                        }
-                    } catch (e) {
-                        try {
-                            const rawText = await response.text();
-                            if (rawText) errorMessage = rawText.substring(0, 100);
-                        } catch (textErr) {}
-                    }
+    try {
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inputs: styledPrompt })
+        });
 
-                    if (response.status === 401 || response.status === 403 || errorMessage.toLowerCase().includes("token") || errorMessage.toLowerCase().includes("credential")) {
-                        throw new Error("Ungültiger Hugging Face Token! Prüfe bitte, ob du den Account per E-Mail verifiziert hast.");
-                    } else if (response.status === 503) {
-                        throw new Error("Modell lädt gerade auf Hugging Face Servern. Versuche es in 30 Sekunden noch einmal!");
-                    } else {
-                        throw new Error(`Fehler: ${errorMessage}`);
-                    }
-                }
-
-                statusText.innerText = "Bild wird empfangen...";
-                const blob = await response.blob();
-                
-                const reader = new FileReader();
-                reader.readAsDataURL(blob); 
-                reader.onloadend = function() {
-                    const base64data = reader.result;
-                    const item = { id: Date.now(), image: base64data, prompt: prompt, model: currentModelKey };
-                    
-                    myGallery.unshift(item);
-                    saveLocalGallery();
-                    
-                    showPreview(item);
-                    statusCont.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    showToast("Bild erfolgreich kreiert!", "success");
-                }
-
-            } catch (err) {
-                const isLoadFailed = err.message.toLowerCase().includes("failed to fetch") || err.message.toLowerCase().includes("load failed") || err.message.toLowerCase().includes("access control");
-                
-                if (isLoadFailed) {
-                    showToast("Verbindung von deinem Browser blockiert!", "error");
-                    troubleshootBox.classList.remove('hidden');
-                } else {
-                    showToast(err.message, "error");
-                }
-                
-                statusCont.classList.add('hidden');
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+        if (!response.ok) {
+            throw new Error(`Worker antwortete mit Status: ${response.status}`);
         }
 
-        // Intelligente Fallback-Lösung (Generiert ein stilvolles Bild-Element mit Unsplash Source, falls Hugging Face blockiert ist)
-        window.tryFallbackImage = () => {
-            const prompt = lastFailedPrompt || document.getElementById('prompt').value.trim() || "Magic Landscape";
-            const btn = document.getElementById('generateBtn');
-            const troubleshootBox = document.getElementById('troubleshoot-box');
-            
-            // Unsplash Quelle generiert wunderschöne themenbasierte Bilder ohne API-Sperren
-            const seed = Math.floor(Math.random() * 1000);
-            const fallbackImageUrl = `https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000&auto=format&fit=crop&sig=${seed}`;
-            
+        statusText.innerText = "Bild wird empfangen...";
+        const blob = await response.blob();
+        
+        const reader = new FileReader();
+        reader.readAsDataURL(blob); 
+        reader.onloadend = function() {
+            const base64data = reader.result;
             const item = { 
                 id: Date.now(), 
-                image: fallbackImageUrl, 
-                prompt: prompt + " (Lokaler Fallback)", 
-                model: "FALLBACK" 
+                image: base64data, 
+                prompt: basePrompt, 
+                model: currentModelKey 
             };
             
             myGallery.unshift(item);
             saveLocalGallery();
             
             showPreview(item);
-            troubleshootBox.classList.add('hidden');
+            statusCont.classList.add('hidden');
             btn.disabled = false;
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            showToast("Fallback-Bild erfolgreich erstellt!", "success");
+            showToast("Bild erfolgreich generiert!", "success");
         };
 
-        function showPreview(item) {
+    } catch (err) {
+        console.error("Worker-Fehler:", err);
+        showToast("Fehler bei der Anfrage. Nutze Fallback...", "error");
+        
+        // Bei Fehler: Automatisch Fallback auslösen
+        tryFallbackImage(basePrompt);
+        
+        statusCont.classList.add('hidden');
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+       function showPreview(item) {
             const preview = document.getElementById('preview-area');
+            let displayModelName = item.model.toUpperCase();
+            if (item.model === "sdxl") displayModelName = "CINEMATIC (FLUX)";
+            if (item.model === "anime") displayModelName = "ANIME (FLUX)";
+            if (item.model === "dream") displayModelName = "FANTASY (FLUX)";
+
             preview.innerHTML = `
                 <div class="glaggle-card max-w-sm w-full p-4 bg-white dark:bg-zinc-800 animate-[popIn_0.5s_ease-out_forwards]">
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden shadow-inner relative group">
                         <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
                         <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-mono px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow">
-                            🎨 ${item.model.toUpperCase()}
+                            🎨 ${displayModelName}
                         </span>
                     </div>
                     <div class="text-left px-2">
@@ -552,12 +512,18 @@
                 const div = document.createElement('div');
                 div.className = "glaggle-card p-3 bg-white dark:bg-zinc-800";
                 div.style.animationDelay = `${index * 0.05}s`;
+                
+                let displayModelName = item.model;
+                if (item.model === "sdxl") displayModelName = "Cinematic (Flux)";
+                if (item.model === "anime") displayModelName = "Anime (Flux)";
+                if (item.model === "dream") displayModelName = "Fantasy (Flux)";
+
                 div.innerHTML = `
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-3 overflow-hidden shadow-inner group cursor-pointer relative">
                         <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-start p-3">
                             <span class="bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
-                                ${item.model}
+                                ${displayModelName}
                             </span>
                         </div>
                     </div>
