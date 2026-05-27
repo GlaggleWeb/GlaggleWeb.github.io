@@ -408,14 +408,16 @@ async function generateImage() {
 
     if (!basePrompt) return alert("Bitte gib einen Prompt ein!");
 
-    // 1. UI: Animation zeigen, Vorschau ausblenden
+    // 1. UI: Animation zeigen
     btn.disabled = true;
     btn.textContent = "Generiere...";
     statusContainer.classList.remove('hidden'); 
     previewArea.classList.add('hidden'); 
     
-    // 2. Seed generieren (für Zufallsbilder)
-    const randomSeed = Math.floor(Math.random() * 1000000);
+    // 2. Den "Noise-Trick": Zufällige Zahl generieren
+    const randomNum = Math.floor(Math.random() * 1000000);
+    // Wir hängen die Zufallszahl an den Prompt an, damit dieser jedes Mal einzigartig ist
+    const finalPrompt = `${getStyledPrompt(basePrompt, currentModelKey)} (seed: ${randomNum})`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); 
@@ -424,10 +426,9 @@ async function generateImage() {
         const response = await fetch(workerUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Wir senden jetzt den "randomSeed" in den Parametern mit
+            // Wir senden jetzt nur noch den modifizierten finalPrompt
             body: JSON.stringify({ 
-                inputs: getStyledPrompt(basePrompt, currentModelKey),
-                parameters: { seed: randomSeed } 
+                inputs: finalPrompt
             }),
             signal: controller.signal
         });
@@ -443,14 +444,13 @@ async function generateImage() {
         const item = { 
             id: Date.now(), 
             image: imageUrl, 
-            prompt: basePrompt, 
+            prompt: basePrompt, // Wir speichern den ursprünglichen Prompt
             model: currentModelKey 
         };
         
         myGallery.unshift(item);
         saveLocalGallery();
         
-        // 3. UI: Animation ausblenden, Ergebnis zeigen
         statusContainer.classList.add('hidden');
         previewArea.classList.remove('hidden');
         showPreview(item);
@@ -466,7 +466,7 @@ async function generateImage() {
         statusContainer.classList.add('hidden');
         btn.disabled = false;
         btn.textContent = "Bild generieren";
-        alert("Fehler bei der Generierung. Versuch es erneut!");
+        alert("Fehler bei der Generierung. Versuche es erneut!");
     }
 }
        function showPreview(item) {
