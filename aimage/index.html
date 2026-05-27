@@ -402,71 +402,59 @@ async function generateImage() {
     const promptInput = document.getElementById('prompt');
     const basePrompt = promptInput.value.trim();
     const btn = document.getElementById('generateBtn');
-    const statusCont = document.getElementById('status-container');
-    const statusText = document.getElementById('status-text');
-    const preview = document.getElementById('preview-area');
     
-    // WICHTIG: Hier deine Cloudflare Worker URL einfügen!
-    const workerUrl = "frosty-night-90c6.rhpjmf7t2s.workers.dev";
-
-    if (!basePrompt) {
-        showToast("Bitte gib eine Bildbeschreibung ein!", "info");
-        return;
-    }
-
+    // 1. UI auf "Loading" setzen
     btn.disabled = true;
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    statusCont.classList.remove('hidden');
-    statusText.innerText = "Sende Anfrage an sicheren Proxy...";
-    preview.innerHTML = '';
-
-    const styledPrompt = getStylePrompt(basePrompt, currentModelKey);
+    btn.textContent = "Generiere Bild... (kann 30-60s dauern)";
+    
+    // Zeitlimit auf 90 Sekunden erhöhen, wegen "Cold Start"
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000); 
 
     try {
-        const response = await fetch(workerUrl, {
+        const response = await fetch("DEINE_CLOUDFLARE_WORKER_URL", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputs: styledPrompt })
+            body: JSON.stringify({ inputs: getStylePrompt(basePrompt, currentModelKey) }),
+            signal: controller.signal
         });
 
         if (!response.ok) {
-            throw new Error(`Worker antwortete mit Status: ${response.status}`);
+            const errData = await response.text();
+            throw new Error(`Worker Fehler: ${errData}`);
         }
 
-        statusText.innerText = "Bild wird empfangen...";
+        // Bild als Blob empfangen
         const blob = await response.blob();
-        
-        const reader = new FileReader();
-        reader.readAsDataURL(blob); 
-        reader.onloadend = function() {
-            const base64data = reader.result;
-            const item = { 
-                id: Date.now(), 
-                image: base64data, 
-                prompt: basePrompt, 
-                model: currentModelKey 
-            };
-            
-            myGallery.unshift(item);
-            saveLocalGallery();
-            
-            showPreview(item);
-            statusCont.classList.add('hidden');
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            showToast("Bild erfolgreich generiert!", "success");
+        const imageUrl = URL.createObjectURL(blob); // Schneller als FileReader
+
+        // Galerie-Objekt erstellen
+        const item = { 
+            id: Date.now(), 
+            image: imageUrl, 
+            prompt: basePrompt, 
+            model: currentModelKey 
         };
+        
+        myGallery.unshift(item);
+        saveLocalGallery();
+        showPreview(item);
+        
+        // UI zurücksetzen
+        btn.disabled = false;
+        btn.textContent = "Bild generieren";
+        clearTimeout(timeoutId);
 
     } catch (err) {
-        console.error("Worker-Fehler:", err);
-        showToast("Fehler bei der Anfrage. Nutze Fallback...", "error");
+        clearTimeout(timeoutId);
+        console.error("Fehler bei der Generierung:", err);
         
-        // Bei Fehler: Automatisch Fallback auslösen
-        tryFallbackImage(basePrompt);
-        
-        statusCont.classList.add('hidden');
+        // UI zurücksetzen
         btn.disabled = false;
-        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btn.textContent = "Bild generieren";
+        
+        // Fallback auslösen
+        tryFallbackImage(basePrompt);
     }
 }
        function showPreview(item) {
