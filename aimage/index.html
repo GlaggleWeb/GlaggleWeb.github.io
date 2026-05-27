@@ -403,20 +403,32 @@ async function generateImage() {
     const promptInput = document.getElementById('prompt');
     const basePrompt = promptInput.value.trim();
     const btn = document.getElementById('generateBtn');
-    
-    // UI auf "Loading" setzen
+    const statusContainer = document.getElementById('status-container');
+    const previewArea = document.getElementById('preview-area');
+
+    if (!basePrompt) return alert("Bitte gib einen Prompt ein!");
+
+    // 1. UI: Animation zeigen, Vorschau ausblenden
     btn.disabled = true;
-    btn.textContent = "Generiere Bild... (kann 30-60s dauern)";
+    btn.textContent = "Generiere...";
+    statusContainer.classList.remove('hidden'); 
+    previewArea.classList.add('hidden'); 
     
+    // 2. Seed generieren (für Zufallsbilder)
+    const randomSeed = Math.floor(Math.random() * 1000000);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); 
 
     try {
-        // HIER: Nutze die Variable 'workerUrl', nicht den Platzhalter-Text!
         const response = await fetch(workerUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputs: getStyledPrompt(basePrompt, currentModelKey) }), // Wichtig: Hier muss 'getStyledPrompt' stehen (mit 'd')
+            // Wir senden jetzt den "randomSeed" in den Parametern mit
+            body: JSON.stringify({ 
+                inputs: getStyledPrompt(basePrompt, currentModelKey),
+                parameters: { seed: randomSeed } 
+            }),
             signal: controller.signal
         });
 
@@ -425,13 +437,9 @@ async function generateImage() {
             throw new Error(`Worker Fehler: ${errData}`);
         }
 
-        // ... (Restlicher Code bleibt gleich)
-
-        // Bild als Blob empfangen
         const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob); // Schneller als FileReader
+        const imageUrl = URL.createObjectURL(blob);
 
-        // Galerie-Objekt erstellen
         const item = { 
             id: Date.now(), 
             image: imageUrl, 
@@ -441,23 +449,24 @@ async function generateImage() {
         
         myGallery.unshift(item);
         saveLocalGallery();
+        
+        // 3. UI: Animation ausblenden, Ergebnis zeigen
+        statusContainer.classList.add('hidden');
+        previewArea.classList.remove('hidden');
         showPreview(item);
         
-        // UI zurücksetzen
         btn.disabled = false;
         btn.textContent = "Bild generieren";
         clearTimeout(timeoutId);
 
     } catch (err) {
         clearTimeout(timeoutId);
-        console.error("Fehler bei der Generierung:", err);
+        console.error("Fehler:", err);
         
-        // UI zurücksetzen
+        statusContainer.classList.add('hidden');
         btn.disabled = false;
         btn.textContent = "Bild generieren";
-        
-        // Fallback auslösen
-        tryFallbackImage(basePrompt);
+        alert("Fehler bei der Generierung. Versuch es erneut!");
     }
 }
        function showPreview(item) {
