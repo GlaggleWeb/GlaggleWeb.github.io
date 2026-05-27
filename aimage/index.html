@@ -291,7 +291,8 @@
 
     <script>
         // HINWEIS: Hier kommt nun die URL deines bereitgestellten Cloudflare Workers rein
-        const workerUrl = "frosty-night-90c6.rhpjmf7t2s.workers.dev"; 
+        // Ändere diese Zeile:
+        const workerUrl = "https://frosty-night-90c6.rhpjmf7t2s.workers.dev";
 
         const modelRegistry = {
             sdxl: "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
@@ -403,19 +404,19 @@ async function generateImage() {
     const basePrompt = promptInput.value.trim();
     const btn = document.getElementById('generateBtn');
     
-    // 1. UI auf "Loading" setzen
+    // UI auf "Loading" setzen
     btn.disabled = true;
     btn.textContent = "Generiere Bild... (kann 30-60s dauern)";
     
-    // Zeitlimit auf 90 Sekunden erhöhen, wegen "Cold Start"
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); 
 
     try {
-        const response = await fetch("DEINE_CLOUDFLARE_WORKER_URL", {
+        // HIER: Nutze die Variable 'workerUrl', nicht den Platzhalter-Text!
+        const response = await fetch(workerUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputs: getStylePrompt(basePrompt, currentModelKey) }),
+            body: JSON.stringify({ inputs: getStyledPrompt(basePrompt, currentModelKey) }), // Wichtig: Hier muss 'getStyledPrompt' stehen (mit 'd')
             signal: controller.signal
         });
 
@@ -423,6 +424,8 @@ async function generateImage() {
             const errData = await response.text();
             throw new Error(`Worker Fehler: ${errData}`);
         }
+
+        // ... (Restlicher Code bleibt gleich)
 
         // Bild als Blob empfangen
         const blob = await response.blob();
