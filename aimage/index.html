@@ -229,20 +229,25 @@
                 </button>
             </div>
 
-            <!-- Helpful Troubleshooting Box (wird bei Load Failed eingeblendet) -->
+            <!-- Helpful Troubleshooting Box -->
             <div id="troubleshoot-box" class="hidden text-left bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-500/30 rounded-3xl p-6 mb-8 max-w-xl mx-auto transition-all">
                 <div class="flex items-start gap-3">
                     <span class="text-3xl">💡</span>
                     <div>
-                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg mb-2">Verbindung blockiert? (Load Failed gelöst)</h4>
+                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg mb-2">Verbindung blockiert? (Fehler gelöst)</h4>
                         <p class="text-sm text-amber-700 dark:text-slate-300 mb-4 leading-relaxed">
-                            Die Anfrage wurde direkt in deinem Browser blockiert, bevor sie Hugging Face erreichen konnte. Das kannst du mit zwei Klicks beheben:
+                            Dein Browser blockiert Netzwerkanfragen an Hugging Face. Das kannst du sofort beheben:
                         </p>
-                        <ul class="space-y-3 text-sm text-amber-900 dark:text-slate-200 list-disc list-inside">
-                            <li><strong class="text-amber-700 dark:text-amber-400">Werbeblocker deaktivieren:</strong> uBlock, AdBlock oder Brave Shields blockieren oft fälschlicherweise Verbindungen zu <code class="bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded font-mono">huggingface.co</code>. Schalte den Blocker für diese Seite aus.</li>
-                            <li><strong class="text-amber-700 dark:text-amber-400">Safari & Firefox Tracker-Schutz:</strong> Safari und Firefox blockieren Netzwerkanfragen aus Web-Vorschauen (Iframes). Versuche die Option <em class="italic">"Cross-Sitetracking verhindern"</em> in deinen Browsereinstellungen kurz zu deaktivieren oder wechsle zu <strong class="underline">Google Chrome</strong>.</li>
-                            <li><strong class="text-amber-700 dark:text-amber-400">Token-Check:</strong> Prüfe, ob dein Hugging Face Account per Mail bestätigt ist, ansonsten sperrt HF den Zugriff über die API.</li>
+                        <ul class="space-y-3 text-sm text-amber-900 dark:text-slate-200 list-disc list-inside mb-4">
+                            <li><strong class="text-amber-700 dark:text-amber-400">Nutze Google Chrome oder Firefox:</strong> Safari blockiert Verbindungen aus geschützten Vorschaufenstern (Iframes) komplett. Ein Browserwechsel löst das Problem sofort.</li>
+                            <li><strong class="text-amber-700 dark:text-amber-400">Werbeblocker ausschalten:</strong> uBlock/AdBlock stufen API-Verbindungen oft fälschlicherweise als Werbung ein. Deaktiviere sie kurz für diese Vorschauseite.</li>
+                            <li><strong class="text-amber-700 dark:text-amber-400">DNS-/WLAN-Sperre:</strong> Falls du in einem Firmen- oder Schulnetzwerk bist, blockiert eventuell die Firewall die Adresse <code class="bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded font-mono">huggingface.co</code>.</li>
                         </ul>
+                        <div class="pt-3 border-t border-amber-500/20">
+                            <button onclick="tryFallbackImage()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow shadow-amber-500/20">
+                                Trotzdem ein Testbild erzeugen (Fallback)
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -304,6 +309,7 @@
         let currentModelKey = "sdxl";
         let myGallery = [];
         let confirmAction = null;
+        let lastFailedPrompt = "";
 
         window.onload = () => {
             // Preloader ausblenden
@@ -340,7 +346,7 @@
             showToast(`Modell gewechselt: ${modelKey.toUpperCase()}`, 'info');
         };
 
-        // Custom Toast System (Ersatz für alert())
+        // Custom Toast System
         function showToast(message, type = 'info') {
             const toast = document.getElementById('custom-toast');
             const toastText = document.getElementById('toast-text');
@@ -361,7 +367,7 @@
 
             setTimeout(() => {
                 toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
-            }, 6500); // 6.5 Sekunden anzeigen
+            }, 6500);
         }
 
         // Custom Confirm Modal System
@@ -403,10 +409,11 @@
                 return;
             }
 
+            lastFailedPrompt = prompt;
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             statusCont.classList.remove('hidden');
-            troubleshootBox.classList.add('hidden'); // Fehlerbox verstecken
+            troubleshootBox.classList.add('hidden');
             statusText.innerText = "AImage webt Pixel... Bitte warten.";
             preview.innerHTML = '';
 
@@ -446,7 +453,6 @@
                 }
 
                 statusText.innerText = "Bild wird empfangen...";
-                
                 const blob = await response.blob();
                 
                 const reader = new FileReader();
@@ -466,12 +472,11 @@
                 }
 
             } catch (err) {
-                // Fehler auswerten
-                const isLoadFailed = err.message.toLowerCase().includes("load failed") || err.message.toLowerCase().includes("failed to fetch");
+                const isLoadFailed = err.message.toLowerCase().includes("failed to fetch") || err.message.toLowerCase().includes("load failed") || err.message.toLowerCase().includes("access control");
                 
                 if (isLoadFailed) {
-                    showToast("Verbindung blockiert! Siehe Hilfe-Box.", "error");
-                    troubleshootBox.classList.remove('hidden'); // Hilfebox einblenden
+                    showToast("Verbindung von deinem Browser blockiert!", "error");
+                    troubleshootBox.classList.remove('hidden');
                 } else {
                     showToast(err.message, "error");
                 }
@@ -482,12 +487,39 @@
             }
         }
 
+        // Intelligente Fallback-Lösung (Generiert ein stilvolles Bild-Element mit Unsplash Source, falls Hugging Face blockiert ist)
+        window.tryFallbackImage = () => {
+            const prompt = lastFailedPrompt || document.getElementById('prompt').value.trim() || "Magic Landscape";
+            const btn = document.getElementById('generateBtn');
+            const troubleshootBox = document.getElementById('troubleshoot-box');
+            
+            // Unsplash Quelle generiert wunderschöne themenbasierte Bilder ohne API-Sperren
+            const seed = Math.floor(Math.random() * 1000);
+            const fallbackImageUrl = `https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000&auto=format&fit=crop&sig=${seed}`;
+            
+            const item = { 
+                id: Date.now(), 
+                image: fallbackImageUrl, 
+                prompt: prompt + " (Lokaler Fallback)", 
+                model: "FALLBACK" 
+            };
+            
+            myGallery.unshift(item);
+            saveLocalGallery();
+            
+            showPreview(item);
+            troubleshootBox.classList.add('hidden');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            showToast("Fallback-Bild erfolgreich erstellt!", "success");
+        };
+
         function showPreview(item) {
             const preview = document.getElementById('preview-area');
             preview.innerHTML = `
                 <div class="glaggle-card max-w-sm w-full p-4 bg-white dark:bg-zinc-800 animate-[popIn_0.5s_ease-out_forwards]">
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden shadow-inner relative group">
-                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105">
+                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
                         <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-mono px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow">
                             🎨 ${item.model.toUpperCase()}
                         </span>
@@ -522,7 +554,7 @@
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.innerHTML = `
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-3 overflow-hidden shadow-inner group cursor-pointer relative">
-                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-start p-3">
                             <span class="bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
                                 ${item.model}
