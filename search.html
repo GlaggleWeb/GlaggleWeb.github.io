@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Glaggle Search</title>
+<meta name="description" content="Glaggle — AI-Powered Searchmachine">
+<link rel="shortcut icon" href="/favicon.ico?v=3" type="image/x-icon">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#70C4F7;
+  --blue-d:#2E94D1;
+  --blue-m:#3A9FD6;
+  --green:#34A853;
+  --red:#EA4335;
+  --yellow:#FBBC05;
+  --g4:#4285F4;
+  --navbar-h:72px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--navbar-h) + 58px)}
+body{
+  font-family:'Nunito',sans-serif;
+  background:#f5f7fa;
+  color:#1a1a1a;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* BACKGROUND */
+#bg-layer{
+  position:fixed;inset:0;z-index:0;
+  background-size:cover;background-position:center;background-attachment:fixed;
+  transition:opacity 1.2s ease;
+}
+#bg-overlay{
+  position:fixed;inset:0;z-index:1;
+  background:rgba(245,247,250,0.86);
+  pointer-events:none;
+}
+
+/* NAVBAR */
+.navbar{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--navbar-h);
+  background:#fff;
+  box-shadow:0 2px 18px rgba(0,0,0,0.09);
+  display:flex;align-items:center;
+  padding:0 20px;gap:14px;
+  z-index:1000;
+}
+.nav-logo{flex-shrink:0;text-decoration:none}
+.nav-logo img{height:34px;width:auto;display:block}
+
+.nav-search-wrap{
+  flex:1;max-width:660px;
+  display:flex;align-items:center;
+  background:#f8f9fa;
+  border:2px solid #e4e8ef;
+  border-radius:50px;
+  padding:0 6px 0 18px;
+  height:46px;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.nav-search-wrap:focus-within{
+  border-color:var(--blue);
+  box-shadow:0 0 0 4px rgba(112,196,247,0.16);
+  background:#fff;
+}
+.nav-search-input{
+  flex:1;min-width:0;
+  background:none;border:none;outline:none;
+  font-family:'Nunito',sans-serif;
+  font-size:16px;font-weight:600;color:#1a1a1a;
+}
+.nav-search-input::placeholder{color:#b0b8c4;font-weight:500}
+
+.nav-magic-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:18px;padding:0 7px;flex-shrink:0;
+  transition:transform .25s;
+}
+.nav-magic-btn:hover{transform:scale(1.25) rotate(15deg)}
+
+.nav-search-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--blue);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .2s,transform .15s;
+}
+.nav-search-btn:hover{background:var(--blue-d);transform:scale(1.08)}
+.nav-search-btn svg{width:17px;height:17px;color:#fff;display:block}
+
+.hamburger{
+  margin-left:auto;flex-shrink:0;
+  display:flex;flex-direction:column;gap:5px;
+  cursor:pointer;padding:8px;border-radius:10px;
+  transition:background .15s;
+}
+.hamburger:hover{background:#f0f2f5}
+.hamburger span{display:block;width:24px;height:2.5px;background:#333;border-radius:3px}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;top:0;right:0;height:100%;width:0;
+  background:#fff;color:#000;
+  z-index:2000;overflow:hidden;
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:-6px 0 32px rgba(0,0,0,0.13);
+}
+.sidebar.open{width:270px}
+.sb-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.32);z-index:1999;
+}
+.sb-overlay.open{display:block}
+.sidebar-close{
+  position:absolute;top:14px;left:16px;
+  font-size:28px;cursor:pointer;
+  background:none;border:none;color:#333;line-height:1;
+}
+.sidebar-inner{padding-top:58px;overflow-y:auto;height:100%}
+.sb-user{padding:14px 18px;border-bottom:1px solid #eee;margin-bottom:4px}
+.sb-reg-btn{
+  display:block;text-align:center;
+  background:var(--blue);color:#fff;
+  font-weight:800;font-size:14px;
+  padding:11px;border-radius:12px;
+  text-decoration:none;transition:background .2s;
+}
+.sb-reg-btn:hover{background:var(--blue-d)}
+.sb-login-a{
+  display:block;text-align:center;font-size:13px;
+  margin-top:8px;color:#888;text-decoration:none;
+}
+.sb-login-a:hover{color:var(--blue)}
+details.sb-cat summary{
+  padding:13px 20px;font-size:15px;font-weight:800;
+  cursor:pointer;border-bottom:1px solid #f0f0f0;
+  list-style:none;display:flex;justify-content:space-between;align-items:center;
+  color:#1a1a1a;transition:background .15s;
+}
+details.sb-cat summary:hover{background:#f7f9fc}
+details.sb-cat summary::after{content:'›';font-size:20px;color:var(--blue);transition:transform .2s}
+details.sb-cat[open] summary::after{transform:rotate(90deg)}
+details.sb-cat summary::-webkit-details-marker{display:none}
+.sb-link{
+  display:block;padding:11px 20px 11px 36px;
+  color:#333;font-size:14px;font-weight:700;
+  text-decoration:none;background:#fafbfc;
+  border-bottom:1px solid #f3f3f3;
+  transition:color .15s,background .15s;
+}
+.sb-link:hover{color:var(--blue);background:#f0f9ff}
+
+/* MAIN */
+.page{
+  position:relative;z-index:2;
+  padding-top:var(--navbar-h);
+  min-height:100vh;
+}
+.container{width:100%;max-width:800px;margin:0 auto;padding:0 16px}
+
+/* SECTION NAV */
+.sec-nav{
+  display:none;flex-wrap:nowrap;gap:6px;
+  overflow-x:auto;scrollbar-width:none;
+  padding:11px 16px 12px;
+  background:#fff;
+  border-bottom:1px solid #e4e8ef;
+  position:sticky;top:var(--navbar-h);z-index:500;
+  margin:0 -16px;
+}
+.sec-nav::-webkit-scrollbar{display:none}
+.sec-nav.on{display:flex}
+.sec-pill{
+  flex-shrink:0;padding:7px 18px;border-radius:50px;
+  border:1.5px solid #e4e8ef;background:#fff;color:#555;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;text-decoration:none;
+  transition:all .2s;white-space:nowrap;
+}
+.sec-pill:hover{border-color:var(--blue);color:var(--blue);background:#f0f9ff}
+.sec-pill.active{
+  background:var(--blue);border-color:var(--blue);color:#fff;
+  box-shadow:0 3px 12px rgba(112,196,247,0.38);
+}
+
+/* RESULTS */
+.results{display:flex;flex-direction:column;gap:14px;padding:18px 0 80px}
+
+/* SLIDE-UP */
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(30px) scale(0.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.anim{opacity:0;animation:slideUp .45s cubic-bezier(.22,.68,0,1.15) forwards}
+.d0{animation-delay:.04s}.d1{animation-delay:.09s}.d2{animation-delay:.14s}
+.d3{animation-delay:.19s}.d4{animation-delay:.24s}.d5{animation-delay:.29s}
+.d6{animation-delay:.34s}.d7{animation-delay:.39s}.d8{animation-delay:.44s}
+.d9{animation-delay:.49s}
+
+/* CARD */
+.card{
+  background:#fff;
+  border:1.5px solid #e4e8ef;
+  border-radius:20px;padding:20px 22px;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+}
+.card:hover{
+  transform:translateY(-3px) scale(1.005);
+  box-shadow:0 10px 32px rgba(112,196,247,0.18);
+  border-color:#b8dff7;
+}
+
+/* AI CARD */
+.ai-card{
+  border-left:4px solid var(--blue);
+  background:linear-gradient(135deg,#eef8ff 0%,#fff 60%);
+  border-radius:8px 20px 20px 8px;
+}
+.ai-head{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.ai-head strong{color:var(--blue-d);font-size:15px;font-weight:900;letter-spacing:.2px}
+#ai-text{font-size:14.5px;line-height:1.78;color:#333}
+#ai-text p{margin-bottom:8px}
+#ai-text ul,#ai-text ol{margin-left:20px;margin-bottom:8px}
+#ai-text li{margin-bottom:4px}
+#ai-text strong{color:var(--blue-d)}
+#ai-text code{background:rgba(112,196,247,0.15);padding:2px 6px;border-radius:5px;font-size:13px}
+
+/* FAV CARD */
+.fav-card{
+  border:2px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(135deg,#4285F4,#EA4335,#FBBC05,#34A853) border-box;
+}
+.fav-badge{
+  font-size:11px;font-weight:900;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--blue-d);
+  background:rgba(112,196,247,0.12);
+  padding:3px 10px;border-radius:50px;
+}
+
+/* SECTION LABEL */
+.sec-label{
+  display:flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:900;letter-spacing:1.4px;
+  text-transform:uppercase;color:#aaa;
+  padding:6px 2px 2px;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:#e8eaed}
+
+/* CARD INTERNALS */
+.card-meta{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.card-meta img{width:16px;height:16px;border-radius:3px;flex-shrink:0}
+.card-domain{font-size:12px;color:var(--green);font-weight:800}
+.card-title{
+  display:block;font-size:17px;font-weight:800;
+  color:var(--blue-d);text-decoration:none;
+  line-height:1.3;margin-bottom:6px;transition:color .15s;
+}
+.card-title:hover{color:var(--blue)}
+.card-desc{font-size:13.5px;color:#555;line-height:1.6}
+
+/* WEB LIST */
+.web-item{padding:13px 0;border-bottom:1px solid #f0f0f0}
+.web-item:last-child{border-bottom:none;padding-bottom:0}
+.web-title{
+  display:block;color:var(--blue-d);font-weight:800;font-size:15.5px;
+  text-decoration:none;margin-bottom:3px;transition:color .15s;
+}
+.web-title:hover{color:var(--blue);text-decoration:underline}
+.web-desc{font-size:13px;color:#666;line-height:1.5}
+
+/* WIKI */
+.wiki-img{float:left;margin:0 14px 8px 0;border-radius:10px;width:76px;height:auto}
+.wiki-cf::after{content:'';display:table;clear:both}
+
+/* IMAGES */
+.img-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;margin-top:10px;
+}
+.img-thumb{
+  height:110px;border-radius:12px;overflow:hidden;
+  cursor:zoom-in;border:1.5px solid #e4e8ef;
+  transition:transform .25s,box-shadow .25s;
+}
+.img-thumb:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(0,0,0,0.11)}
+.img-thumb img{width:100%;height:100%;object-fit:cover}
+.load-more{
+  width:100%;padding:11px;margin-top:12px;
+  background:none;border:1.5px solid var(--blue);
+  border-radius:12px;color:var(--blue);
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;transition:background .2s,color .2s;
+}
+.load-more:hover{background:var(--blue);color:#fff}
+
+/* LOADER */
+.loader{display:none;text-align:center;padding:40px 0}
+.loader.on{display:block}
+.spin{
+  display:inline-block;width:40px;height:40px;
+  border:3.5px solid #e4e8ef;border-top-color:var(--blue);
+  border-radius:50%;animation:rotate .8s linear infinite;
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+
+/* SKELETON */
+@keyframes shim{
+  0%{background-position:-600px 0}100%{background-position:600px 0}
+}
+.skel{
+  background:linear-gradient(90deg,#f0f2f5 25%,#e4e6ea 50%,#f0f2f5 75%);
+  background-size:1200px 100%;
+  animation:shim 1.4s infinite;
+  border-radius:8px;height:13px;margin-bottom:9px;
+}
+
+/* MODAL */
+#img-modal{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.9);align-items:center;justify-content:center;
+}
+#img-modal.open{display:flex}
+#img-modal img{max-width:94vw;max-height:88vh;border-radius:12px;object-fit:contain}
+#modal-close{position:absolute;top:18px;right:22px;font-size:34px;color:#fff;cursor:pointer;line-height:1}
+
+/* BACK TOP */
+#back-top{
+  position:fixed;bottom:26px;right:20px;z-index:800;
+  width:46px;height:46px;border-radius:50%;border:none;
+  background:var(--blue);color:#fff;font-size:21px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(112,196,247,0.45);
+  opacity:0;visibility:hidden;
+  transition:opacity .3s,visibility .3s,transform .2s;
+}
+#back-top.show{opacity:1;visibility:visible}
+#back-top:hover{transform:scale(1.1)}
+
+/* QUICK BUTTONS */
+.quick-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:22px 0 10px}
+.quick-btn{
+  display:inline-block;padding:14px 28px;
+  background:var(--blue);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;
+  text-decoration:none;border-radius:50px;
+  transition:background .2s,transform .2s,box-shadow .2s;
+  box-shadow:0 4px 14px rgba(112,196,247,0.35);
+}
+.quick-btn:hover{background:var(--blue-d);transform:translateY(-2px);box-shadow:0 8px 24px rgba(112,196,247,0.45)}
+
+/* MOBILE */
+@media(max-width:600px){
+  .navbar{padding:0 12px;gap:8px;height:60px}
+  :root{--navbar-h:60px}
+  .nav-logo img{height:28px}
+  .nav-search-wrap{height:40px;padding:0 4px 0 14px;max-width:none}
+  .nav-search-input{font-size:14px}
+  .card{padding:14px 14px;border-radius:16px}
+  .card-title{font-size:15.5px}
+  .img-grid{grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:7px}
+  .img-thumb{height:86px}
+  .ai-card{border-radius:6px 16px 16px 6px}
+}
+
+footer{
+  position:relative;z-index:2;
+  text-align:center;padding:30px 0;
+  color:#aaa;font-size:13px;font-weight:700;
+  border-top:1px solid #e4e8ef;background:#fff;
+  margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<div id="bg-layer"></div>
+<div id="bg-overlay"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="https://glaggle.ch" class="nav-logo">
+    <img src="/glagglelogooriginal.png" alt="Glaggle">
+  </a>
+
+  <form class="nav-search-wrap" id="search-form"
+        onsubmit="doSearch();return false;" action="javascript:void(0);">
+    <input type="search" id="q" class="nav-search-input"
+           placeholder="The AI-Powered Searchmachine..."
+           autocomplete="off" enterkeyhint="search" name="q">
+    <button type="button" class="nav-magic-btn"
+            onclick="optimizeQuery()" title="Suche mit KI optimieren">&#x2728;</button>
+    <button type="submit" class="nav-search-btn" aria-label="Suchen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+      </svg>
+    </button>
+  </form>
+
+  <div class="hamburger" onclick="toggleSidebar()" aria-label="Menü">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <button class="sidebar-close" onclick="toggleSidebar()">&#x00D7;</button>
+  <div class="sidebar-inner">
+
+    <div class="sb-user">
+      <div id="user-logged-in" style="display:none">
+        <p style="font-size:12px;color:#888;margin-bottom:3px">Eingeloggt als:</p>
+        <p id="user-name-display" style="font-weight:800;color:var(--blue);margin-bottom:10px"></p>
+        <a href="/account/overview/index.html" class="sb-reg-btn">Account Übersicht</a>
+        <button onclick="logout()"
+          style="width:100%;background:none;border:1px solid #f55;color:#f55;padding:8px;
+                 border-radius:10px;cursor:pointer;font-size:13px;
+                 font-family:'Nunito',sans-serif;font-weight:700;margin-top:8px">
+          Abmelden
+        </button>
+      </div>
+      <div id="user-logged-out">
+        <a href="/account/index.html" class="sb-reg-btn">Registrieren</a>
+        <a href="/login/index.html" class="sb-login-a">Schon ein Konto? Einloggen</a>
+      </div>
+    </div>
+
+    <details class="sb-cat">
+      <summary>KI Tools</summary>
+      <a href="https://glaggle.ch/glame"       class="sb-link">Glame AI</a>
+      <a href="https://glame.glaggle.ch/"      class="sb-link">Glame AI Pro</a>
+      <a href="https://glaggle.ch/quizai"      class="sb-link">Quiz Studio Pro</a>
+      <a href="https://glaggle.ch/aimage/"     class="sb-link">AImage</a>
+      <a href="https://glaggle.ch/aimage/home" class="sb-link">AImage SVG</a>
+      <a href="https://glaggle.ch/avideo"      class="sb-link">AVideo</a>
+    </details>
+
+    <details class="sb-cat">
+      <summary>Glaggle Tools</summary>
+      <a href="https://glaggle.ch/designstudio"  class="sb-link">Design Studio</a>
+      <a href="https://glaggle.ch/codemaker"     class="sb-link">Code Maker</a>
+      <a href="https://glaggle.ch/avideostudio"  class="sb-link">AVideo Studio</a>
+      <a href="https://glaggle.ch/canvas"        class="sb-link">Bildschirmschoner</a>
+    </details>
+
+    <details class="sb-cat">
+      <summary>Gaming</summary>
+      <a href="https://glaggle.ch/gamecenter" class="sb-link">Gamecenter</a>
+    </details>
+
+    <details class="sb-cat">
+      <summary>Info</summary>
+      <a href="https://glaggle.ch/faq"          class="sb-link">FAQ &amp; Über Uns</a>
+      <a href="https://glaggle.ch/history"      class="sb-link">Glaggle History</a>
+      <a href="https://glaggle.ch/historysites" class="sb-link">Glaggle Historysites</a>
+    </details>
+
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="page">
+  <div class="container">
+
+    <nav class="sec-nav" id="sec-nav" aria-label="Ergebnisbereiche">
+      <a href="#sec-ai"   class="sec-pill" data-t="sec-ai">Glaggle AI</a>
+      <a href="#sec-fav"  class="sec-pill" data-t="sec-fav">Empfehlungen</a>
+      <a href="#sec-web"  class="sec-pill" data-t="sec-web">WebSearch</a>
+      <a href="#sec-imgs" class="sec-pill" data-t="sec-imgs">Bilder</a>
+      <a href="#sec-wiki" class="sec-pill" data-t="sec-wiki">Wikipedia</a>
+    </nav>
+
+    <div class="loader" id="loader"><div class="spin"></div></div>
+
+    <div class="results" id="results"></div>
+
+    <div class="quick-btns" id="qbtns" style="display:none">
+      <a href="https://glaggle.ch/glame"      class="quick-btn">Glame Chatbot &#x2192;</a>
+      <a href="https://glaggle.ch/gamecenter" class="quick-btn">Gamecenter &#x2192;</a>
+    </div>
+
+  </div>
+</main>
+
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#x2191;</button>
+
+<div id="img-modal" onclick="closeModal()">
+  <span id="modal-close">&#x00D7;</span>
+  <img id="modal-img" src="" alt="">
+</div>
+
+<footer>&#169; 2026 Glaggle &#8212; Glaggle your life!</footer>
+
+<script src="/favoriten.js" onerror="console.warn('favoriten.js not found')"></script>
+<script>
+const p1="gsk_",p2="FAnwmg4IMqrAexyzdupqWGdyb",p3="3FYiivhNRW9aQu5VibY0j0eKQ5r";
+function gkey(){return p1+p2+p3}
+
+const sb=supabase.createClient(
+  "https://lbdlyomgopqrlyxmmqvz.supabase.co",
+  "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"
+);
+const awC=new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('69fb638a002b7d03d829');
+const awAcc=new Appwrite.Account(awC);
+
+/* BACKGROUND */
+const bgArr=[
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_nbuiju",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_cljpxj",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_dgzyiw.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_w4sqni.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_qljo0d.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_jcetoc.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_ahnzth.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_h4yutr.png",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_rlyfgz.png",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_wvjbqf.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_ethrh9.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_mzwf9r.jpg",
+  "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_jzcflm.jpg"
+];
+let bgIdx=Math.floor(Math.random()*bgArr.length);
+const bgEl=document.getElementById('bg-layer');
+bgEl.style.backgroundImage="url('"+bgArr[bgIdx]+"')";
+setInterval(function(){
+  bgEl.style.opacity='0';
+  setTimeout(function(){
+    bgIdx=(bgIdx+1)%bgArr.length;
+    bgEl.style.backgroundImage="url('"+bgArr[bgIdx]+"')";
+    bgEl.style.opacity='1';
+  },1200);
+},15000);
+
+/* URL HELPERS */
+function getQ(){return(new URLSearchParams(window.location.search).get('q')||'').trim()}
+function setQ(q){var u=new URL(window.location.href);u.searchParams.set('q',q);window.history.pushState({},'',u.toString())}
+
+/* DOM */
+var inputEl=document.getElementById('q');
+var resultsEl=document.getElementById('results');
+var loaderEl=document.getElementById('loader');
+var secNavEl=document.getElementById('sec-nav');
+var qbtnsEl=document.getElementById('qbtns');
+
+/* DELAY CLASS MAP */
+var delays=['d0','d1','d2','d3','d4','d5','d6','d7','d8','d9'];
+var delayCounter=0;
+function nextDelay(){return delays[Math.min(delayCounter++,delays.length-1)]}
+function resetDelay(){delayCounter=0}
+
+/* INIT */
+document.addEventListener('DOMContentLoaded',function(){
+  var q=getQ();
+  if(q){inputEl.value=q;document.title=q+' \u2014 Glaggle';runSearch(q);}
+  checkLogin();
+});
+window.addEventListener('popstate',function(){
+  var q=getQ();
+  if(q){inputEl.value=q;document.title=q+' \u2014 Glaggle';runSearch(q);}
+});
+
+/* SEARCH */
+function doSearch(){
+  var q=inputEl.value.trim();if(!q)return;
+  setQ(q);document.title=q+' \u2014 Glaggle';
+  runSearch(q);
+}
+
+async function runSearch(query){
+  resultsEl.innerHTML='';
+  qbtnsEl.style.display='none';
+  loaderEl.classList.add('on');
+  hideSecs();
+  resetDelay();
+
+  var aiCard=buildAiCard();
+  resultsEl.appendChild(aiCard);
+  loaderEl.classList.remove('on');
+
+  await Promise.allSettled([
+    fetchAI(query),
+    fetchFavs(query),
+    fetchSupabase(query),
+    fetchImages(query,0),
+    fetchWiki(query)
+  ]);
+
+  qbtnsEl.style.display='flex';
+}
+
+/* SECTIONS */
+function hideSecs(){
+  secNavEl.classList.remove('on');
+  secNavEl.querySelectorAll('.sec-pill').forEach(function(p){p.style.display='none'});
+}
+function showSec(id){
+  secNavEl.classList.add('on');
+  var p=secNavEl.querySelector('[data-t="'+id+'"]');
+  if(p)p.style.display='inline-block';
+}
+
+/* AI CARD */
+function buildAiCard(){
+  var d=document.createElement('div');
+  d.className='card ai-card anim d0';
+  d.id='sec-ai';
+  d.innerHTML=
+    '<div class="ai-head"><span style="font-size:1.3rem">&#x2728;</span><strong>Glaggle AI Zusammenfassung</strong></div>'+
+    '<div id="ai-text">'+
+    '<div class="skel" style="width:85%"></div>'+
+    '<div class="skel" style="width:95%"></div>'+
+    '<div class="skel" style="width:60%"></div>'+
+    '</div>';
+  showSec('sec-ai');
+  return d;
+}
+
+async function fetchAI(query){
+  var el=document.getElementById('ai-text');
+  if(!el)return;
+  try{
+    var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Authorization":"Bearer "+gkey(),"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"llama-3.1-8b-instant",
+        messages:[
+          {role:"system",content:"Du bist Glaggle AI, die Suchzusammenfassungs-KI von Glaggle Inc. Antworte kurz, pr\u00e4zise und strukturiert auf Deutsch. Halte dich kurz!"},
+          {role:"user",content:query}
+        ]
+      })
+    });
+    var d=await r.json();
+    var ans=d.choices[0].message.content;
+    el.innerHTML='';el.style.fontStyle='normal';
+    var i=0,cur='';
+    function type(){if(i<ans.length){cur+=ans.charAt(i++);el.innerHTML=marked.parse(cur);setTimeout(type,6);}}
+    type();
+  }catch(e){if(el)el.innerHTML='<p>Zusammenfassung momentan nicht verf\u00fcgbar.</p>';}
+}
+
+/* FAVS */
+async function fetchFavs(query){
+  var favs=typeof meineLieblingsSeiten!=='undefined'?meineLieblingsSeiten:[];
+  if(!favs.length)return;
+  var q=query.toLowerCase().trim();
+  var direct=favs.filter(function(s){return s.title.toLowerCase().includes(q)||s.desc.toLowerCase().includes(q)});
+
+  var aiFavs=[];
+  try{
+    var ctx=favs.map(function(s){return"App: "+s.title+", Info: "+s.desc}).join(' | ');
+    var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Authorization":"Bearer "+gkey(),"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"llama-3.1-8b-instant",temperature:0.1,
+        messages:[
+          {role:"system",content:"Suche in: ["+ctx+"]. Antworte NUR mit JSON-Array der passenden Objekte. Kein Text!"},
+          {role:"user",content:q}
+        ]
+      })
+    });
+    var d=await r.json();
+    var txt=d.choices[0].message.content;
+    var s=txt.indexOf('['),e=txt.lastIndexOf(']')+1;
+    if(s!==-1&&e>0)aiFavs=JSON.parse(txt.substring(s,e));
+  }catch(e){}
+
+  var all=[...direct];
+  aiFavs.forEach(function(af){if(!all.find(function(g){return g.title.toLowerCase()===af.title.toLowerCase()}))all.push(af);});
+  if(!all.length)return;
+
+  var anc=document.createElement('div');anc.id='sec-fav';
+  resultsEl.appendChild(anc);
+  var lbl=makeLabel('\u2728 Glaggle AI Empfehlungen');
+  resultsEl.appendChild(lbl);
+
+  all.forEach(function(fav,i){
+    var c=document.createElement('div');
+    c.className='card fav-card anim '+delays[Math.min(i,delays.length-1)];
+    var dom='';try{dom=new URL(fav.url).hostname.replace('www.','')}catch(e){}
+    c.innerHTML=
+      '<div class="card-meta">'+
+      '<img src="https://www.google.com/s2/favicons?domain='+dom+'&sz=32" onerror="this.style.display=\'none\'">'+
+      '<span class="fav-badge">\u2728 Glaggle empfiehlt</span></div>'+
+      '<a class="card-title" href="'+fav.url+'" target="_blank" rel="noopener" style="font-size:18px">'+fav.title+'</a>'+
+      '<p class="card-desc">'+fav.desc+'</p>';
+    resultsEl.appendChild(c);
+  });
+  showSec('sec-fav');
+}
+
+/* SUPABASE */
+async function fetchSupabase(query){
+  try{
+    var res=await sb.from('search_index').select('*')
+      .or('title.ilike.%'+query+'%,description.ilike.%'+query+'%')
+      .order('clicks',{ascending:false}).limit(10);
+    if(res.error||!res.data||!res.data.length)return;
+
+    var anc=document.createElement('div');anc.id='sec-web';
+    var card=document.createElement('div');
+    card.className='card anim d1';
+    card.style.borderLeft='4px solid #34A853';
+    card.style.borderRadius='8px 20px 20px 8px';
+
+    var html='<div class="ai-head"><span style="font-size:1.2rem">&#x1F310;</span><strong style="color:#34A853">GLAGGLE WEBSEARCH</strong></div>';
+    res.data.forEach(function(r){
+      var dom='';try{dom=new URL(r.url).hostname.replace('www.','')}catch(e){}
+      html+='<div class="web-item">'+
+        '<div class="card-meta">'+
+        '<img src="https://www.google.com/s2/favicons?domain='+dom+'&sz=16" onerror="this.style.display=\'none\'">'+
+        '<span style="font-size:12px;color:#bbb;font-weight:700">'+dom+'</span></div>'+
+        '<a class="web-title" href="'+r.url+'" target="_blank" rel="noopener" onclick="registerClick(\''+r.id+'\')">'+r.title+'</a>'+
+        '<p class="web-desc">'+(r.description||'')+'</p></div>';
+    });
+    card.innerHTML=html;
+
+    resultsEl.appendChild(anc);
+    resultsEl.appendChild(makeLabel('\uD83C\uDF10 Web Ergebnisse'));
+    resultsEl.appendChild(card);
+    showSec('sec-web');
+  }catch(e){console.error('Supabase:',e)}
+}
+
+/* IMAGES */
+var imgQ='',imgSeen=new Set();
+
+async function fetchImages(query,offset){
+  imgQ=query;
+  var url='https://de.wikipedia.org/w/api.php?action=query&generator=search'
+    +'&gsrsearch='+encodeURIComponent(query)+'&gsrlimit=9&gsroffset='+offset
+    +'&prop=pageimages&piprop=thumbnail&pithumbsize=900&format=json&origin=*';
+  try{
+    var r=await fetch(url);var d=await r.json();
+    var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
+    var imgs=pages.filter(function(p){return p.thumbnail&&p.thumbnail.source}).map(function(p){return p.thumbnail.source});
+    if(!imgs.length&&offset===0)return;
+
+    var grid=document.getElementById('img-grid');
+    if(offset===0){
+      imgSeen=new Set();
+      var anc=document.createElement('div');anc.id='sec-imgs';
+      var card=document.createElement('div');card.className='card anim d2';
+      grid=document.createElement('div');grid.className='img-grid';grid.id='img-grid';
+      var btn=document.createElement('button');btn.className='load-more';btn.textContent='Mehr Bilder laden...';
+      btn.onclick=function(){fetchImages(imgQ,document.querySelectorAll('#img-grid .img-thumb').length)};
+      card.appendChild(grid);card.appendChild(btn);
+      resultsEl.appendChild(anc);
+      resultsEl.appendChild(makeLabel('\uD83D\uDDBC Bilder'));
+      resultsEl.appendChild(card);
+      showSec('sec-imgs');
+    }else{grid=document.getElementById('img-grid');if(!grid)return;}
+
+    imgs.forEach(function(src){
+      if(imgSeen.has(src))return;imgSeen.add(src);
+      var t=document.createElement('div');t.className='img-thumb';
+      var img=document.createElement('img');img.src=src;img.loading='lazy';img.alt='';
+      t.onclick=function(){openModal(src)};
+      t.appendChild(img);grid.appendChild(t);
+    });
+  }catch(e){console.error('Images:',e)}
+}
+
+/* WIKIPEDIA */
+async function fetchWiki(query){
+  var url='https://de.wikipedia.org/w/api.php?action=query&generator=search'
+    +'&gsrsearch='+encodeURIComponent(query)
+    +'&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200'
+    +'&exintro&explaintext&exsentences=3&format=json&origin=*';
+  try{
+    var r=await fetch(url);var d=await r.json();
+    if(!d.query||!d.query.pages)return;
+    var pages=Object.values(d.query.pages).filter(function(p){return p.extract||p.title});
+    if(!pages.length)return;
+
+    var anc=document.createElement('div');anc.id='sec-wiki';
+    resultsEl.appendChild(anc);
+    resultsEl.appendChild(makeLabel('\uD83D\uDCD6 Wikipedia'));
+
+    pages.forEach(function(p,i){
+      var wurl='https://de.wikipedia.org/wiki/'+encodeURIComponent(p.title);
+      var thumb=p.thumbnail?p.thumbnail.source:null;
+      var extract=(p.extract||'').substring(0,290);
+      if((p.extract||'').length>290)extract+='...';
+      var c=document.createElement('div');
+      c.className='card anim '+delays[Math.min(i,delays.length-1)];
+      c.innerHTML=
+        '<div class="card-meta">'+
+        '<img src="https://www.google.com/s2/favicons?domain=wikipedia.org&sz=16" onerror="this.style.display=\'none\'">'+
+        '<span class="card-domain">wikipedia.org</span></div>'+
+        '<a class="card-title" href="'+wurl+'" target="_blank" rel="noopener">'+p.title+'</a>'+
+        '<div class="wiki-cf">'+
+        (thumb?'<img class="wiki-img" src="'+thumb+'" alt="">':'')+
+        '<p class="card-desc">'+extract+'</p></div>';
+      resultsEl.appendChild(c);
+    });
+    showSec('sec-wiki');
+  }catch(e){console.error('Wiki:',e)}
+}
+
+/* HELPERS */
+function makeLabel(txt){
+  var d=document.createElement('div');d.className='sec-label anim d0';d.textContent=txt;return d;
+}
+function openModal(src){
+  document.getElementById('modal-img').src=src;
+  document.getElementById('img-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('img-modal').classList.remove('open')}
+async function registerClick(id){try{await sb.rpc('increment_clicks',{row_id:parseInt(id)})}catch(e){}}
+
+/* AI OPTIMIZER */
+async function optimizeQuery(){
+  var q=inputEl.value.trim();if(!q)return;
+  var btn=document.querySelector('.nav-magic-btn');btn.textContent='\u23F3';
+  try{
+    var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Authorization":"Bearer "+gkey(),"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"llama-3.1-8b-instant",
+        messages:[
+          {role:"system",content:"Suchoptimierer: Formuliere kurz um (2-4 W\u00f6rter), korrigiere Fehler. NUR die optimierte Anfrage."},
+          {role:"user",content:q}
+        ]
+      })
+    });
+    var d=await r.json();
+    var opt=d.choices[0].message.content.replace(/"/g,'');
+    inputEl.value=opt;doSearch();
+  }catch(e){doSearch();}
+  finally{btn.textContent='\u2728';}
+}
+
+/* SCROLL SPY */
+window.addEventListener('scroll',function(){
+  var ids=['sec-ai','sec-fav','sec-web','sec-imgs','sec-wiki'];
+  var cur='';
+  ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<=140)cur=id;
+  });
+  if(window.scrollY<80)cur='sec-ai';
+  secNavEl.querySelectorAll('.sec-pill').forEach(function(p){
+    p.classList.toggle('active',p.dataset.t===cur);
+  });
+  document.getElementById('back-top').classList.toggle('show',window.scrollY>300);
+},{passive:true});
+
+secNavEl.addEventListener('click',function(e){
+  var p=e.target.closest('.sec-pill');if(!p)return;
+  e.preventDefault();
+  var target=document.getElementById(p.dataset.t);
+  if(target){
+    var top=target.getBoundingClientRect().top+window.scrollY-130;
+    window.scrollTo({top:top,behavior:'smooth'});
+  }
+});
+
+/* SIDEBAR */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('open');
+}
+
+/* LOGIN */
+async function checkLogin(){
+  try{
+    var u=await awAcc.get();
+    document.getElementById('user-logged-in').style.display='block';
+    document.getElementById('user-logged-out').style.display='none';
+    document.getElementById('user-name-display').innerText=u.name;
+  }catch(e){
+    document.getElementById('user-logged-in').style.display='none';
+    document.getElementById('user-logged-out').style.display='block';
+  }
+}
+async function logout(){
+  try{await awAcc.deleteSession('current');location.reload();}
+  catch(e){alert('Fehler beim Abmelden');}
+}
+</script>
+</body>
+</html>
