@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Glaggle Run</title>
+    <title>Glaggle Run - Jump & Run</title>
     <style>
         :root {
             --bg-color: #1a0b2e;
@@ -306,8 +306,11 @@
 
         // --- STEUERUNG ---
         function jump(e) {
-            if(e && e.type !== 'keydown') e.preventDefault();
+            // WICHTIG: Zuerst prüfen, ob das Spiel läuft. Wenn nicht, Funktion abbrechen, 
+            // damit Buttons ganz normal angeklickt werden können!
             if (!gameRunning) return;
+            
+            if(e && e.type !== 'keydown' && e.cancelable) e.preventDefault();
             
             if (player.jumpsLeft > 0) {
                 player.vy = player.jumpStrength;
