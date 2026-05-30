@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Run</title>
+    <style>
+        :root {
+            --bg-color: #1a0b2e;
+            --text-color: #ffffff;
+            --nav-bg: #2a1b41;
+            --card-bg: #2a1b41;
+            --card-border: #9d4edd;
+            --accent: #ff9e00;
+            --danger: #FF6B6B;
+            --coin-gold: #FFD700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 65px; 
+            background-color: var(--nav-bg);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed; 
+            top: 0; 
+            z-index: 1000;
+        }
+
+        .main-content { margin-top: 85px; width: 100%; max-width: 600px; padding: 15px; text-align: center; }
+
+        #game-container {
+            position: relative; 
+            width: 100%; 
+            height: 500px; 
+            background: linear-gradient(to top, #2a1b41, #1a0b2e);
+            border: 4px solid var(--card-border);
+            border-radius: 20px; 
+            overflow: hidden; 
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .score-val { font-size: 14px; opacity: 0.9; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0px #cc7a00; margin-bottom: 10px;
+            width: 200px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #cc7a00; }
+
+        #coin-display {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--nav-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .coin-img { width: 24px; height: 24px; object-fit: contain; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); border-color: #FFD700; }
+            100% { transform: scale(1); }
+        }
+        .pulse { animation: pulse 0.5s ease-in-out; }
+
+        .btn-secondary {
+            background: transparent !important;
+            border: 2px solid var(--accent) !important;
+            box-shadow: none !important;
+            margin-top: 5px;
+            color: var(--accent) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .btn-secondary:active {
+            background: rgba(255, 158, 0, 0.1) !important;
+            transform: scale(0.98);
+        }
+        
+        @media (max-width: 600px) {
+            .main-content { 
+                margin-top: 75px; 
+                padding: 8px; /* Reduzierter Abstand an den Rändern auf Handys */
+                max-width: 100%; 
+            }
+            #game-container { 
+                height: 380px; /* Perfekte Höhe für Hochformat-Handys */
+                border-width: 3px;
+                border-radius: 15px;
+            }
+            .score-box {
+                margin-bottom: 10px;
+                padding: 8px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            #game-container { height: 350px; }
+            .main-content { margin-top: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Run</div>
+        <div style="font-size: 24px;">🏃‍♂️</div>
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Distanz <b id="score">0m</b></div>
+            <div class="score-val">Rekord <b id="highscore">0m</b></div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="menu-overlay" class="overlay">
+                <h1 id="msg" style="margin-bottom: 5px;">🏃‍♂️ Glaggle Run</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
+                    Tippe um zu springen.<br><b>Doppeltipp für Doppelsprung!</b><br>Falle nicht in den Abgrund.
+                </p>
+                
+                <button class="btn" onclick="startGame(event)">Starten</button>
+
+                <!-- Glaggle Standard Game Center Button -->
+                <a href="https://glaggle.ch/gamecenter" class="btn btn-secondary">
+                    Game Center 🏠
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-display">
+        <img src="coin.png" class="coin-img" alt="Coin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>'">
+        <span id="coin-count">0</span>
+    </div>
+
+    <button id="music-toggle" onclick="toggleMusic(event)" style="position: fixed; bottom: 20px; left: 20px; background: var(--nav-bg); border: 2px solid var(--accent); color: white; padding: 10px; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+    🔊
+    </button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu-overlay');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const coinEl = document.getElementById('coin-count');
+        const container = document.getElementById('game-container');
+
+        let gameRunning = false;
+        let score = 0;
+        let distanceTraveled = 0;
+        
+        // Spezifischer Highscore-Key für den Platformer
+        const HS_KEY = 'plattformer_highscore';
+        let highscore = localStorage.getItem(HS_KEY) || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+        highscoreEl.innerText = Math.floor(highscore) + "m";
+        coinEl.innerText = coins;
+
+        // --- MUSIK SETUP ---
+        // Füge hier deinen Cloudinary-Link ein!
+        const musicUrl = 'HIER_DEINEN_CLOUDINARY_LINK_EINFÜGEN.mp3'; 
+        
+        // Fallback-Musik, falls noch kein Link vorhanden ist (entfernen wenn Link eingesetzt)
+        const activeMusicUrl = musicUrl.includes('HIER_') ? 'https://res.cloudinary.com/dcvdvvbnj/video/upload/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3' : musicUrl;
+
+        const bgMusic = new Audio(activeMusicUrl); 
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+        let musicActive = true;
+
+        function toggleMusic(e) {
+            if(e) e.stopPropagation();
+            const btn = document.getElementById('music-toggle');
+            if (!bgMusic.paused) {
+                bgMusic.pause();
+                btn.innerText = "🔈";
+                musicActive = false;
+            } else {
+                bgMusic.play().catch(err => console.log("Audio blockiert"));
+                btn.innerText = "🔊";
+                musicActive = true;
+            }
+        }
+
+        // --- SPIEL VARIABLEN ---
+        const player = {
+            x: 50, y: 0, width: 38, height: 38,
+            vy: 0, jumpStrength: -11, gravity: 0.6,
+            jumpsLeft: 2, // Für Doppelsprung
+            rotation: 0
+        };
+
+        let platforms = [];
+        let inGameCoins = [];
+        let gameSpeed = 5;
+        let bgOffset = 0; // Für Parallax Background
+
+        function resize() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- LEVEL GENERIERUNG ---
+        function spawnPlatform(x, y, w) {
+            platforms.push({ x: x, y: y, w: w, h: 20 });
+            
+            // Zufällig Münzen auf der Plattform spawnen (noch seltener: nur 5% Chance und max 1 Münze)
+            if (Math.random() > 0.95) {
+                let numCoins = 1; // Nur noch maximal 1 Münze
+                for(let i = 0; i < numCoins; i++) {
+                    let coinX = x + (w / (numCoins + 1)) * (i + 1);
+                    inGameCoins.push({ 
+                        x: coinX, 
+                        y: y - 30, // Über der Plattform
+                        radius: 10,
+                        collected: false
+                    });
+                }
+            }
+        }
+
+        function initLevel() {
+            platforms = [];
+            inGameCoins = [];
+            gameSpeed = 4.5;
+            // Startplattform
+            spawnPlatform(0, canvas.height - 100, canvas.width);
+        }
+
+        function generateMoreLevel() {
+            let lastPlatform = platforms[platforms.length - 1];
+            // Wenn die letzte Plattform sich auf den Bildschirm bewegt hat, spawne eine neue
+            if (lastPlatform.x + lastPlatform.w < canvas.width + 100) {
+                // Berechne Abstand und Höhe der nächsten Plattform
+                let minGap = 80;
+                let maxGap = 200 + (gameSpeed * 10); // Lücke wird etwas größer je schneller
+                let gap = Math.random() * (maxGap - minGap) + minGap;
+                
+                let w = Math.random() * 200 + 100; // Breite: 100 - 300
+                
+                // Höhe variieren (hoch oder runter)
+                let yOffset = (Math.random() * 160) - 80;
+                let newY = lastPlatform.y + yOffset;
+                
+                // Grenzen einhalten
+                if (newY > canvas.height - 40) newY = canvas.height - 40;
+                if (newY < 150) newY = 150;
+
+                spawnPlatform(lastPlatform.x + lastPlatform.w + gap, newY, w);
+            }
+        }
+
+        // --- STEUERUNG ---
+        function jump(e) {
+            if(e && e.type !== 'keydown') e.preventDefault();
+            if (!gameRunning) return;
+            
+            if (player.jumpsLeft > 0) {
+                player.vy = player.jumpStrength;
+                player.jumpsLeft--;
+            }
+        }
+
+        // Event Listeners für Sprung
+        container.addEventListener('mousedown', jump);
+        container.addEventListener('touchstart', jump, {passive: false});
+        window.addEventListener('keydown', (e) => { 
+            if(e.code === 'Space') jump(e); 
+        });
+
+        // --- HAUPTSPIEL ---
+        function startGame(e) {
+            if(e) e.stopPropagation();
+            
+            if (musicActive) {
+                bgMusic.play().catch(() => console.log("Audio braucht Nutzerinteraktion..."));
+            }
+
+            score = 0;
+            distanceTraveled = 0;
+            
+            // Spieler zurücksetzen
+            player.x = 80;
+            player.y = canvas.height - 150;
+            player.vy = 0;
+            player.jumpsLeft = 2;
+            player.rotation = 0;
+            
+            initLevel();
+            gameRunning = true;
+            menu.style.display = "none";
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function collectCoin() {
+            coins++;
+            localStorage.setItem('glaggleCoins', coins);
+            coinEl.innerText = coins;
+            document.getElementById('coin-display').classList.add('pulse');
+            setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 500);
+        }
+
+        function gameLoop() {
+            if(!gameRunning) return;
+
+            // Schwierigkeit / Geschwindigkeit erhöhen
+            gameSpeed += 0.001;
+            
+            // Score aktualisieren
+            distanceTraveled += gameSpeed;
+            score = Math.floor(distanceTraveled / 50);
+            scoreEl.innerText = score + "m";
+
+            // Spieler Physik
+            player.vy += player.gravity;
+            player.y += player.vy;
+            player.rotation += player.vy * 0.02;
+
+            // Level generieren & Plattformen bewegen
+            generateMoreLevel();
+            
+            let grounded = false;
+
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                let p = platforms[i];
+                p.x -= gameSpeed;
+
+                // Kollisionserkennung (nur von oben landen)
+                // Prüfen ob Spieler im vorherigen Frame über der Plattform war
+                let wasAbove = (player.y - player.vy + player.height) <= p.y + 5;
+                
+                if (wasAbove && player.vy > 0 && 
+                    player.x + player.width > p.x && 
+                    player.x < p.x + p.w &&
+                    player.y + player.height >= p.y &&
+                    player.y + player.height <= p.y + p.h + player.vy) {
+                    
+                    player.y = p.y - player.height;
+                    player.vy = 0;
+                    player.jumpsLeft = 2; // Doppelsprung wieder aufladen
+                    grounded = true;
+                    player.rotation = 0; // Gerade auf der Plattform stehen
+                }
+
+                // Plattformen löschen die aus dem Bild sind
+                if (p.x + p.w < -100) {
+                    platforms.splice(i, 1);
+                }
+            }
+
+            // Münzen bewegen und sammeln
+            for (let i = inGameCoins.length - 1; i >= 0; i--) {
+                let c = inGameCoins[i];
+                c.x -= gameSpeed;
+
+                // Kollision Spieler mit Münze (AABB Bounding Box leicht angepasst)
+                if (!c.collected &&
+                    player.x < c.x + c.radius && 
+                    player.x + player.width > c.x - c.radius &&
+                    player.y < c.y + c.radius && 
+                    player.y + player.height > c.y - c.radius) {
+                    
+                    c.collected = true;
+                    collectCoin();
+                }
+
+                // Münze löschen
+                if (c.x < -50 || c.collected) {
+                    inGameCoins.splice(i, 1);
+                }
+            }
+
+            // Game Over Check (ins Nichts gefallen)
+            if (player.y > canvas.height + 50) {
+                gameOver();
+                return;
+            }
+
+            // Rendering
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            // Hintergrund
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Parallax Sterne/Punkte
+            bgOffset -= gameSpeed * 0.2;
+            if (bgOffset <= -150) bgOffset = 0;
+            
+            ctx.fillStyle = "rgba(255,255,255,0.1)";
+            for(let i=0; i<8; i++) {
+                ctx.beginPath();
+                ctx.arc(((i*150) + bgOffset + 1500) % canvas.width, (i*80) % canvas.height, 1.5, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Plattformen zeichnen
+            platforms.forEach(p => {
+                ctx.fillStyle = "#9d4edd";
+                ctx.beginPath();
+                if(ctx.roundRect) ctx.roundRect(p.x, p.y, p.w, p.h, 6);
+                else ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.fill();
+                
+                // Neon Rand
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Innerer Leuchteffekt (optional, fügt etwas Tiefe hinzu)
+                ctx.fillStyle = "rgba(255, 158, 0, 0.2)";
+                ctx.fillRect(p.x, p.y, p.w, 4);
+            });
+
+            // Münzen zeichnen
+            inGameCoins.forEach(c => {
+                ctx.fillStyle = "#FFD700";
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // Münz-Detail
+                ctx.fillStyle = "#daa520";
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radius - 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Spieler zeichnen (Glaggle Face)
+            ctx.save();
+            ctx.translate(player.x + player.width/2, player.y + player.height/2);
+            
+            // Rotation im Sprung
+            if (player.vy !== 0) {
+                ctx.rotate(player.rotation);
+            }
+            
+            // Bounce-Effekt / Stretching (rein kosmetisch)
+            let stretch = player.vy * 0.015; 
+            // Clamp stretch
+            stretch = Math.max(-0.2, Math.min(0.2, stretch));
+            ctx.scale(1 - Math.abs(stretch), 1 + stretch);
+
+            // Gelber Körper
+            ctx.fillStyle = "#FFD700";
+            ctx.beginPath();
+            ctx.arc(0, 0, player.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Augen
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(-7, -4, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(7, -4, 2.5, 0, Math.PI*2); ctx.fill();
+            
+            // Lächeln
+            ctx.beginPath(); 
+            ctx.arc(0, 2, 8, 0.1*Math.PI, 0.9*Math.PI); 
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            
+            let currentHigh = parseInt(localStorage.getItem(HS_KEY)) || 0;
+            
+            if (score > currentHigh) {
+                localStorage.setItem(HS_KEY, score);
+                highscore = score;
+                highscoreEl.innerText = score + "m";
+                document.getElementById('msg').innerHTML = "🏆 NEUER REKORD!<br><span style='color:var(--accent)'>" + score + "m</span>";
+            } else {
+                document.getElementById('msg').innerHTML = "💀 ABGESTÜRZT!<br>Distanz: " + score + "m";
+            }
+            
+            // UI Button zum Neustart anzeigen
+            menu.style.display = "flex";
+        }
+    </script>
+</body>
+</html>
