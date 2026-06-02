@@ -1109,6 +1109,38 @@ footer {
     opacity: 0;
     animation: wordFadeUp 0.3s ease forwards;
 }
+
+@keyframes spinGlow {
+    0%   { transform: rotate(0deg) scale(1);   }
+    50%  { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1);  }
+}
+
+@keyframes wordFadeUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0);   }
+}
+
+@keyframes popupIn {
+    from { opacity:0; transform:scale(0.92) translateY(20px); }
+    to   { opacity:1; transform:scale(1) translateY(0);       }
+}
+
+@keyframes overlayIn {
+    from { opacity:0; }
+    to   { opacity:1; }
+}
+
+#ai-open-chat-btn:hover {
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 6px 20px rgba(112,196,247,0.5) !important;
+}
+
+#ai-expand-btn:hover {
+    background: rgba(112,196,247,0.25) !important;
+    transform: translateY(-1px);
+}
+        
 </style>
 </head>
 <body>
@@ -1281,53 +1313,77 @@ function createAiPlaceholder() {
     const aiBox = document.createElement('div');
     aiBox.className = 'glaggle-entry';
     aiBox.id = "ai-container";
-    aiBox.style.borderRadius = "25px";
-    aiBox.style.borderLeft = "5px solid #70C4F7";
-    aiBox.style.background = "linear-gradient(90deg, var(--card-bg), rgba(112, 196, 247, 0.05))";
+    aiBox.style.cssText = `
+        border-radius: 25px;
+        border-left: 5px solid #70C4F7;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+        cursor: default;
+    `;
+
+    // Hover-Effekt
+    aiBox.addEventListener('mouseenter', () => {
+        aiBox.style.background = 'rgba(255,255,255,0.95)';
+        aiBox.style.boxShadow = '0 8px 32px rgba(112,196,247,0.3)';
+        aiBox.style.transform = 'translateY(-2px)';
+        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
+            el.style.color = '#111';
+        });
+    });
+    aiBox.addEventListener('mouseleave', () => {
+        aiBox.style.background = 'rgba(255,255,255,0.08)';
+        aiBox.style.boxShadow = '';
+        aiBox.style.transform = 'translateY(0)';
+        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
+            el.style.color = '';
+        });
+    });
+
     aiBox.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <span style="font-size:1.2rem;">✨</span>
-            <strong style="color:var(--link-color);">Glaggle AI Zusammenfassung</strong>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:1.2rem; animation: spinGlow 3s infinite linear;">✨</span>
+            <strong style="color:#70C4F7; font-size:1.05rem; letter-spacing:0.5px;">Glaggle AI Zusammenfassung</strong>
         </div>
 
-        <!-- Vorschau-Bereich mit Fade -->
-        <div id="ai-preview" style="position:relative; max-height:90px; overflow:hidden;">
-            <p id="ai-text" style="font-style:italic; color:var(--desc-color);">Glaggle denkt nach...</p>
+        <!-- Vorschau -->
+        <div id="ai-preview" style="position:relative; max-height:100px; overflow:hidden;">
+            <p id="ai-text" style="font-style:italic; color:var(--desc-color); line-height:1.7;"></p>
+            <!-- Glasmorphism Fade -->
             <div id="ai-fade" style="
-                position:absolute; bottom:0; left:0; right:0; height:50px;
-                background: linear-gradient(transparent, var(--card-bg, #fff));
+                position:absolute; bottom:0; left:0; right:0; height:60px;
+                background: linear-gradient(to bottom, transparent, rgba(30,30,40,0.85));
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
                 pointer-events:none;
+                border-radius: 0 0 12px 12px;
             "></div>
         </div>
 
-        <!-- Voller Text, erstmal versteckt -->
-        <div id="ai-full" style="display:none;">
-            <div id="ai-text-full"></div>
-
-            <!-- Chat-Bereich -->
-            <div id="ai-chat" style="margin-top:16px; border-top:1px solid rgba(112,196,247,0.3); padding-top:14px; display:none;">
-                <div id="ai-chat-messages" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
-                <div style="display:flex; gap:8px;">
-                    <input id="ai-chat-input" type="text" placeholder="Stell eine Folgefrage..." style="
-                        flex:1; border:1px solid rgba(112,196,247,0.5); border-radius:20px;
-                        padding:10px 16px; font-size:0.9rem; outline:none;
-                        background:var(--input-bg, #fff); color:var(--text-color);
-                    ">
-                    <button id="ai-chat-send" style="
-                        background:#70C4F7; color:white; border:none; border-radius:20px;
-                        padding:10px 18px; font-weight:bold; cursor:pointer; font-size:0.9rem;
-                        transition:background 0.2s;
-                    ">Senden</button>
-                </div>
-            </div>
+        <!-- Voller Text -->
+        <div id="ai-full" style="display:none; opacity:0; transform:translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease;">
+            <div id="ai-text-full" style="line-height:1.8;"></div>
+            <!-- Chat öffnen Button -->
+            <button id="ai-open-chat-btn" style="
+                margin-top:16px;
+                background: linear-gradient(135deg, #70C4F7, #2E94D1);
+                color:white; border:none; border-radius:20px;
+                padding:10px 22px; cursor:pointer; font-weight:bold; font-size:0.9rem;
+                box-shadow: 0 4px 15px rgba(112,196,247,0.4);
+                transition: transform 0.2s, box-shadow 0.2s;
+                display: flex; align-items: center; gap: 8px;
+            ">💬 Mit Glaggle AI chatten</button>
         </div>
 
         <!-- Mehr erfahren Button -->
         <button id="ai-expand-btn" style="
-            display:none; margin-top:12px; background:none;
-            border:1px solid #70C4F7; color:#70C4F7; border-radius:20px;
-            padding:8px 20px; cursor:pointer; font-weight:bold; font-size:0.85rem;
-            transition:all 0.3s;
+            display:none; margin-top:14px;
+            background: rgba(112,196,247,0.1);
+            border: 1px solid #70C4F7;
+            color:#70C4F7; border-radius:20px;
+            padding:9px 22px; cursor:pointer; font-weight:bold; font-size:0.85rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         ">Mehr erfahren ↓</button>
     `;
     return aiBox;
@@ -1479,19 +1535,31 @@ async function fetchGroqAI(query) {
                 wordIndex++;
                 setTimeout(typeWord, 35);
             } else {
-                // Fertig → Button zeigen
                 expandBtn.style.display = 'inline-block';
                 aiFullDiv.innerHTML = marked.parse(antwort);
 
                 expandBtn.onclick = () => {
-                    document.getElementById('ai-preview').style.display = 'none';
-                    document.getElementById('ai-full').style.display = 'block';
+                    const preview = document.getElementById('ai-preview');
+                    const full = document.getElementById('ai-full');
                     expandBtn.style.display = 'none';
 
+                    // Vorschau ausblenden
+                    preview.style.transition = 'opacity 0.3s ease';
+                    preview.style.opacity = '0';
                     setTimeout(() => {
-                        document.getElementById('ai-chat').style.display = 'block';
-                        setupAiChat(antwort);
-                    }, 200);
+                        preview.style.display = 'none';
+                        full.style.display = 'block';
+                        // Voller Text einblenden
+                        requestAnimationFrame(() => {
+                            full.style.opacity = '1';
+                            full.style.transform = 'translateY(0)';
+                        });
+
+                        // Chat-Button Listener
+                        document.getElementById('ai-open-chat-btn').onclick = () => {
+                            openAiChat(antwort);
+                        };
+                    }, 300);
                 };
             }
         }
@@ -1502,30 +1570,81 @@ async function fetchGroqAI(query) {
     }
 }
 
-// SEPARAT — außerhalb von fetchGroqAI!
+function openAiChat(context) {
+    const overlay = document.getElementById('ai-chat-overlay');
+    overlay.style.display = 'flex';
+    
+    // Popup neu animieren
+    const popup = document.getElementById('ai-chat-popup');
+    popup.style.animation = 'none';
+    requestAnimationFrame(() => {
+        popup.style.animation = 'popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards';
+    });
+
+    // Chat leeren und neu aufsetzen
+    document.getElementById('ai-chat-messages').innerHTML = '';
+    setupAiChat(context);
+
+    // Schließen per Overlay-Klick
+    overlay.onclick = (e) => { if (e.target === overlay) closeAiChat(); };
+}
+
+function closeAiChat() {
+    const overlay = document.getElementById('ai-chat-overlay');
+    const popup = document.getElementById('ai-chat-popup');
+    popup.style.animation = 'none';
+    popup.style.transform = 'scale(0.92) translateY(20px)';
+    popup.style.opacity = '0';
+    popup.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        popup.style.transform = '';
+        popup.style.opacity = '';
+        popup.style.transition = '';
+    }, 250);
+}
+
 function setupAiChat(context) {
     const input = document.getElementById('ai-chat-input');
     const sendBtn = document.getElementById('ai-chat-send');
     const messages = document.getElementById('ai-chat-messages');
     const chatHistory = [
-        { role: "system", content: "Du bist Glaggle AI. Der Nutzer hat gerade diese Zusammenfassung gelesen: " + context + ". Beantworte Folgefragen dazu kurz und präzise auf Deutsch." }
+        { role: "system", content: "Du bist Glaggle AI. Kontext: " + context + ". Antworte kurz und präzise auf Deutsch." }
     ];
 
+    // Alte Listener entfernen
+    const newSend = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newSend, sendBtn);
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+
     async function sendMessage() {
-        const msg = input.value.trim();
+        const msg = newInput.value.trim();
         if (!msg) return;
 
+        // User Bubble
         const userBubble = document.createElement('div');
-        userBubble.style.cssText = "align-self:flex-end; background:#70C4F7; color:white; padding:8px 14px; border-radius:18px 18px 4px 18px; max-width:80%; font-size:0.9rem;";
+        userBubble.style.cssText = `
+            align-self:flex-end; background:linear-gradient(135deg,#70C4F7,#2E94D1);
+            color:white; padding:10px 16px; border-radius:18px 18px 4px 18px;
+            max-width:80%; font-size:0.9rem; line-height:1.5;
+            animation: wordFadeUp 0.25s ease forwards;
+        `;
         userBubble.innerText = msg;
         messages.appendChild(userBubble);
-        input.value = '';
-
+        newInput.value = '';
         chatHistory.push({ role: "user", content: msg });
 
+        // Lade-Bubble
         const loadBubble = document.createElement('div');
-        loadBubble.style.cssText = "align-self:flex-start; background:rgba(112,196,247,0.15); color:var(--text-color); padding:8px 14px; border-radius:18px 18px 18px 4px; font-size:0.9rem;";
-        loadBubble.innerText = "...";
+        loadBubble.style.cssText = `
+            align-self:flex-start; background:rgba(112,196,247,0.12);
+            border:1px solid rgba(112,196,247,0.2);
+            color:#ccc; padding:10px 16px; border-radius:18px 18px 18px 4px;
+            font-size:0.9rem; line-height:1.5;
+            animation: wordFadeUp 0.25s ease forwards;
+        `;
+        loadBubble.innerHTML = '<span style="opacity:0.6">✨ Glaggle denkt nach...</span>';
         messages.appendChild(loadBubble);
         messages.scrollTop = messages.scrollHeight;
 
@@ -1538,6 +1657,7 @@ function setupAiChat(context) {
             const data = await res.json();
             const reply = data.choices[0].message.content;
             chatHistory.push({ role: "assistant", content: reply });
+            loadBubble.style.color = 'white';
             loadBubble.innerHTML = marked.parse(reply);
         } catch(e) {
             loadBubble.innerText = "Fehler beim Antworten.";
@@ -1545,9 +1665,14 @@ function setupAiChat(context) {
         messages.scrollTop = messages.scrollHeight;
     }
 
-    sendBtn.onclick = sendMessage;
-    input.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    newSend.onclick = sendMessage;
+    newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    
+    // Fokus setzen
+    setTimeout(() => newInput.focus(), 100);
 }
+
+
 
 async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
@@ -2527,5 +2652,75 @@ setInterval(changeBackground, 15000);
     <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
 </div>
     
-</div></body>
+<!-- Glaggle AI Chat Popup -->
+<div id="ai-chat-overlay" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(6px);
+    z-index:9000;
+    align-items:center; justify-content:center;
+">
+    <div id="ai-chat-popup" style="
+        background: rgba(20,20,30,0.92);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(112,196,247,0.3);
+        border-radius: 24px;
+        width: min(560px, 92vw);
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        animation: popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        overflow: hidden;
+    ">
+        <!-- Header -->
+        <div style="
+            padding:18px 20px; border-bottom:1px solid rgba(112,196,247,0.2);
+            display:flex; align-items:center; justify-content:space-between;
+            background: rgba(112,196,247,0.08);
+        ">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.3rem;">✨</span>
+                <strong style="color:#70C4F7; font-size:1rem;">Glaggle AI Chat</strong>
+            </div>
+            <button onclick="closeAiChat()" style="
+                background:none; border:none; color:#999; font-size:1.5rem;
+                cursor:pointer; transition:color 0.2s; line-height:1;
+                padding:4px 8px; border-radius:8px;
+            " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">✕</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="ai-chat-messages" style="
+            flex:1; overflow-y:auto; padding:16px 20px;
+            display:flex; flex-direction:column; gap:12px;
+            scrollbar-width:thin; scrollbar-color:#70C4F7 transparent;
+        "></div>
+
+        <!-- Input -->
+        <div style="
+            padding:14px 16px; border-top:1px solid rgba(112,196,247,0.2);
+            display:flex; gap:10px; align-items:center;
+            background: rgba(0,0,0,0.2);
+        ">
+            <input id="ai-chat-input" type="text" placeholder="Stell eine Folgefrage..." style="
+                flex:1; background:rgba(255,255,255,0.08);
+                border:1px solid rgba(112,196,247,0.3); border-radius:20px;
+                padding:11px 18px; font-size:0.9rem; outline:none;
+                color:white; transition:border-color 0.3s;
+            " onfocus="this.style.borderColor='#70C4F7'" onblur="this.style.borderColor='rgba(112,196,247,0.3)'">
+            <button id="ai-chat-send" style="
+                background: linear-gradient(135deg, #70C4F7, #2E94D1);
+                color:white; border:none; border-radius:20px;
+                padding:11px 20px; font-weight:bold; cursor:pointer;
+                font-size:0.9rem; white-space:nowrap;
+                transition:transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 4px 12px rgba(112,196,247,0.3);
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Senden ↗
+            </button>
+        </div>
+    </div>
+</div>
+</body>
 </html>
