@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Glaggle | AI-Powered Searchmachine</title>
     
     <meta name="description" content="Glaggle your life! Nutze die KI-gestützte GlaggleWebSearch, chatte mit Glame AI Pro kostenlos und ohne Login, oder besuche unser Gamecenter. Jetzt entdecken auf Glaggle.ch.">
@@ -1015,6 +1015,67 @@ pre, code, .ai-text-content {
     width: 100% !important;
     flex: 1 !important;
     min-width: 0 !important;          /* WICHTIG: Erlaubt dem Input, sich zu verkleinern */
+}
+
+/* ===== FIX 1: Suchleiste springt nicht mehr ===== */
+/* Alle bisherigen .search-bar-container Regeln mit diesem EINEN Block ersetzen */
+.search-bar-container {
+    display: flex !important;
+    align-items: center !important;
+    width: min(600px, 90vw) !important;   /* Immer stabil, reagiert nie auf Fokus */
+    margin: 0 auto 60px auto !important;
+    padding: 5px 20px !important;
+    border-radius: 30px !important;
+    border: 2px solid #ffffff !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    /* NUR visuelle Properties animieren, NIEMALS width/flex/margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.search-bar-container:focus-within {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #70C4F7 !important;
+    box-shadow: 0 0 20px rgba(112, 196, 247, 0.5) !important;
+    /* Kein transform: scale() — das verschiebt das Layout! */
+}
+
+#glaggleQuery {
+    flex: 1 !important;
+    min-width: 0 !important;   /* Verhindert, dass Input-Inhalt den Container aufbläht */
+    border: none !important;
+    outline: none !important;
+    padding: 12px !important;
+    font-size: 18px !important;
+    background: transparent !important;
+    color: #000000 !important;
+    caret-color: transparent !important;
+}
+
+/* ===== FIX 2: Grauer Balken auf iPhone ===== */
+body {
+    /* Safe Area für den iPhone Home-Indicator */
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+}
+
+/* Navbar oben absichern */
+.navbar {
+    padding-top: env(safe-area-inset-top) !important;
+    height: calc(80px + env(safe-area-inset-top)) !important;
+}
+
+/* main-content entsprechend nach unten verschieben */
+.main-content {
+    margin-top: calc(120px + env(safe-area-inset-top)) !important;
+}
+
+/* Footer bekommt auch Luft nach unten */
+footer {
+    padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
 }
 </style>
 </head>
