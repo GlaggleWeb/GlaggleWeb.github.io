@@ -1341,24 +1341,18 @@ function createAiPlaceholder() {
             <strong style="color:#70C4F7; font-size:1.05rem; letter-spacing:0.5px;">Glaggle AI Zusammenfassung</strong>
         </div>
 
-        <!-- Vorschau -->
-        <div id="ai-preview" style="position:relative; max-height:100px; overflow:hidden;">
+        <div id="ai-preview" style="
+            position:relative; 
+            max-height:100px; 
+            overflow:hidden;
+            -webkit-mask-image: linear-gradient(to bottom, black 40px, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 40px, transparent 100%);
+        ">
             <p id="ai-text" style="font-style:italic; color:var(--desc-color); line-height:1.7;"></p>
-            <!-- Glasmorphism Fade -->
-            <div id="ai-fade" style="
-                position:absolute; bottom:0; left:0; right:0; height:60px;
-                background: linear-gradient(to bottom, transparent, rgba(30,30,40,0.85));
-                backdrop-filter: blur(2px);
-                -webkit-backdrop-filter: blur(2px);
-                pointer-events:none;
-                border-radius: 0 0 12px 12px;
-            "></div>
         </div>
 
-        <!-- Voller Text -->
         <div id="ai-full" style="display:none; opacity:0; transform:translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease;">
             <div id="ai-text-full" style="line-height:1.8;"></div>
-            <!-- Chat öffnen Button -->
             <button id="ai-open-chat-btn" style="
                 margin-top:16px;
                 background: linear-gradient(135deg, #70C4F7, #2E94D1);
@@ -1370,7 +1364,6 @@ function createAiPlaceholder() {
             ">💬 Mit Glaggle AI chatten</button>
         </div>
 
-        <!-- Mehr erfahren Button -->
         <button id="ai-expand-btn" style="
             display:none; margin-top:14px;
             background: rgba(112,196,247,0.1);
@@ -1491,8 +1484,6 @@ async function searchWikipedia(query, lang) {
 }
 
 
-    
-    
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
@@ -1522,46 +1513,60 @@ async function fetchGroqAI(query) {
         const words = antwort.split(' ');
         let wordIndex = 0;
         let currentText = '';
+        let typingTimeout = null; // Speichert die ID der Animation, um sie abbrechen zu können
 
+        // Logik für das sofortige Aufklappen bei Klick
+        const handleExpand = () => {
+            clearTimeout(typingTimeout); // Stoppt die laufende Schreib-Animation sofort
+            
+            const preview = document.getElementById('ai-preview');
+            const full = document.getElementById('ai-full');
+            expandBtn.style.display = 'none';
+
+            // Vorschau sanft ausblenden
+            preview.style.transition = 'opacity 0.3s ease';
+            preview.style.opacity = '0';
+            
+            setTimeout(() => {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                
+                // Setzt direkt den kompletten formatierten Text ein
+                aiFullDiv.innerHTML = marked.parse(antwort); 
+                
+                // Voller Text animiert einblenden
+                requestAnimationFrame(() => {
+                    full.style.opacity = '1';
+                    full.style.transform = 'translateY(0)';
+                });
+
+                // Chat-Button Event Handler zuweisen
+                document.getElementById('ai-open-chat-btn').onclick = () => {
+                    openAiChat(antwort);
+                };
+            }, 300);
+        };
+
+        // Button sofort sichtbar machen und Klick-Event verknüpfen
+        expandBtn.style.display = 'inline-block';
+        expandBtn.onclick = handleExpand;
+
+        // Startet den Typewriter-Effekt im Hintergrund
         function typeWord() {
             if (wordIndex < words.length) {
                 currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
                 aiText.innerHTML = marked.parse(currentText);
                 wordIndex++;
-                setTimeout(typeWord, 35);
+                typingTimeout = setTimeout(typeWord, 35);
             } else {
-                expandBtn.style.display = 'inline-block';
+                // Wenn der Text komplett durchgetippt wurde, Inhalt für das Aufklappen vorbereiten
                 aiFullDiv.innerHTML = marked.parse(antwort);
-
-                expandBtn.onclick = () => {
-                    const preview = document.getElementById('ai-preview');
-                    const full = document.getElementById('ai-full');
-                    expandBtn.style.display = 'none';
-
-                    // Vorschau ausblenden
-                    preview.style.transition = 'opacity 0.3s ease';
-                    preview.style.opacity = '0';
-                    setTimeout(() => {
-                        preview.style.display = 'none';
-                        full.style.display = 'block';
-                        // Voller Text einblenden
-                        requestAnimationFrame(() => {
-                            full.style.opacity = '1';
-                            full.style.transform = 'translateY(0)';
-                        });
-
-                        // Chat-Button Listener
-                        document.getElementById('ai-open-chat-btn').onclick = () => {
-                            openAiChat(antwort);
-                        };
-                    }, 300);
-                };
             }
         }
         typeWord();
 
     } catch (e) { 
-        document.getElementById('ai-text').innerText = "Zusammenfassung momentan nicht verfügbar."; 
+        document.getElementById('ai-text').innerText = "Glaggle-AI-Zusammenfassung momentan nicht verfügbar."; 
     }
 }
 
