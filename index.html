@@ -1135,6 +1135,47 @@ footer {
     background: rgba(112,196,247,0.25) !important;
     transform: translateY(-1px);
 }
+
+/* Globaler Basis-Stil für alle Glaggle-Einträge (KI, WebSearch, Favoriten, Wikipedia) */
+.glaggle-entry {
+    background: rgba(255, 255, 255, 0.2); /* Normaler Glasmorphismus-Hintergrund */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+    cursor: default;
+}
+
+/* STANDARD: Text ist hier bereits im normalen Glas-Zustand SCHWARZ */
+.glaggle-entry p, 
+.glaggle-entry li, 
+.glaggle-entry strong, 
+.glaggle-entry h1, 
+.glaggle-entry h2, 
+.glaggle-entry h3, 
+.glaggle-entry span,
+.glaggle-entry a {
+    color: #111111 !important; /* Macht den Text standardmäßig dunkel/schwarz */
+    transition: color 0.4s ease !important;
+}
+
+/* DER HOVER-EFFEKT: Schaltet um auf einen rein weißen Hintergrund */
+.glaggle-entry:hover {
+    background: #ffffff !important; /* Einfach weißer Hintergrund bei Hover */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Text bleibt auch beim Hovern zuverlässig schwarz */
+.glaggle-entry:hover p,
+.glaggle-entry:hover li,
+.glaggle-entry:hover strong,
+.glaggle-entry:hover h1,
+.glaggle-entry:hover h2,
+.glaggle-entry:hover h3,
+.glaggle-entry:hover span,
+.glaggle-entry:hover a {
+    color: #111111 !important;
+}
         
 </style>
 </head>
