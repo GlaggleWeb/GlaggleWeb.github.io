@@ -1098,6 +1098,17 @@ footer {
     
     transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
 }
+
+@keyframes wordFadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ai-word {
+    display: inline-block;
+    opacity: 0;
+    animation: wordFadeUp 0.3s ease forwards;
+}
 </style>
 </head>
 <body>
@@ -1270,7 +1281,7 @@ function createAiPlaceholder() {
     const aiBox = document.createElement('div');
     aiBox.className = 'glaggle-entry';
     aiBox.id = "ai-container";
-    aiBox.style.borderRadius = "25px"; // Abgerundet wie gewünscht
+    aiBox.style.borderRadius = "25px";
     aiBox.style.borderLeft = "5px solid #70C4F7";
     aiBox.style.background = "linear-gradient(90deg, var(--card-bg), rgba(112, 196, 247, 0.05))";
     aiBox.innerHTML = `
@@ -1278,26 +1289,49 @@ function createAiPlaceholder() {
             <span style="font-size:1.2rem;">✨</span>
             <strong style="color:var(--link-color);">Glaggle AI Zusammenfassung</strong>
         </div>
-        <p id="ai-text" style="font-style: italic; color: var(--desc-color);">Glaggle denkt nach...</p>
+
+        <!-- Vorschau-Bereich mit Fade -->
+        <div id="ai-preview" style="position:relative; max-height:90px; overflow:hidden;">
+            <p id="ai-text" style="font-style:italic; color:var(--desc-color);">Glaggle denkt nach...</p>
+            <div id="ai-fade" style="
+                position:absolute; bottom:0; left:0; right:0; height:50px;
+                background: linear-gradient(transparent, var(--card-bg, #fff));
+                pointer-events:none;
+            "></div>
+        </div>
+
+        <!-- Voller Text, erstmal versteckt -->
+        <div id="ai-full" style="display:none;">
+            <div id="ai-text-full"></div>
+
+            <!-- Chat-Bereich -->
+            <div id="ai-chat" style="margin-top:16px; border-top:1px solid rgba(112,196,247,0.3); padding-top:14px; display:none;">
+                <div id="ai-chat-messages" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
+                <div style="display:flex; gap:8px;">
+                    <input id="ai-chat-input" type="text" placeholder="Stell eine Folgefrage..." style="
+                        flex:1; border:1px solid rgba(112,196,247,0.5); border-radius:20px;
+                        padding:10px 16px; font-size:0.9rem; outline:none;
+                        background:var(--input-bg, #fff); color:var(--text-color);
+                    ">
+                    <button id="ai-chat-send" style="
+                        background:#70C4F7; color:white; border:none; border-radius:20px;
+                        padding:10px 18px; font-weight:bold; cursor:pointer; font-size:0.9rem;
+                        transition:background 0.2s;
+                    ">Senden</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mehr erfahren Button -->
+        <button id="ai-expand-btn" style="
+            display:none; margin-top:12px; background:none;
+            border:1px solid #70C4F7; color:#70C4F7; border-radius:20px;
+            padding:8px 20px; cursor:pointer; font-weight:bold; font-size:0.85rem;
+            transition:all 0.3s;
+        ">Mehr erfahren ↓</button>
     `;
     return aiBox;
 }
-
-function redirectIfMobile() {
-    // 1. Regex für verschiedene mobile User-Agents
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // 2. Ziel-URL definieren
-    const mobileUrl = "https://glaggle.ch/phone"; 
-
-    // 3. Weiterleitung nur, wenn es ein Handy ist UND wir noch nicht auf der mobilen Seite sind
-    if (isMobile && !window.location.href.includes(mobileUrl)) {
-        window.location.href = mobileUrl;
-    }
-}
-
-// Sofort beim Laden der Seite ausführen
-redirectIfMobile();
     
 document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
@@ -1404,6 +1438,10 @@ async function searchWikipedia(query, lang) {
         if(navWiki) navWiki.style.display = 'none';
     }
 }
+
+
+    
+    
 async function fetchGroqAI(query) {
     const aiTextElement = document.getElementById('ai-text');
     try {
@@ -1421,25 +1459,94 @@ async function fetchGroqAI(query) {
         const data = await res.json();
         const antwort = data.choices[0].message.content;
 
-        // BUTTON EINBLENDEN
         document.getElementById('nav-ai').style.display = 'block';
-        // Aktive Klasse setzen, da AI meistens zuerst kommt
         document.getElementById('nav-ai').classList.add('active');
 
-        aiTextElement.style.fontStyle = "normal";
-        let i = 0; let currentText = "";
-       function type() {
-    if (i < antwort.length) {
-        currentText += antwort.charAt(i);
-        aiTextElement.innerHTML = marked.parse(currentText);
-        i++; 
-        // Verkürze die Wartezeit auf 0,01 Sekunden
-        setTimeout(type, 0.00000000001); 
+        const aiText = document.getElementById('ai-text');
+        const expandBtn = document.getElementById('ai-expand-btn');
+        const aiFullDiv = document.getElementById('ai-text-full');
+
+        aiText.style.fontStyle = "normal";
+
+        const words = antwort.split(' ');
+        let wordIndex = 0;
+        let currentText = '';
+
+        function typeWord() {
+            if (wordIndex < words.length) {
+                currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
+                aiText.innerHTML = marked.parse(currentText);
+                wordIndex++;
+                setTimeout(typeWord, 35);
+            } else {
+                // Fertig → Button zeigen
+                expandBtn.style.display = 'inline-block';
+                aiFullDiv.innerHTML = marked.parse(antwort);
+
+                expandBtn.onclick = () => {
+                    document.getElementById('ai-preview').style.display = 'none';
+                    document.getElementById('ai-full').style.display = 'block';
+                    expandBtn.style.display = 'none';
+
+                    setTimeout(() => {
+                        document.getElementById('ai-chat').style.display = 'block';
+                        setupAiChat(antwort);
+                    }, 200);
+                };
+            }
+        }
+        typeWord();
+
+    } catch (e) { 
+        document.getElementById('ai-text').innerText = "Zusammenfassung momentan nicht verfügbar."; 
     }
 }
 
-        type();
-    } catch (e) { aiTextElement.innerText = "Zusammenfassung momentan nicht verfügbar."; }
+// SEPARAT — außerhalb von fetchGroqAI!
+function setupAiChat(context) {
+    const input = document.getElementById('ai-chat-input');
+    const sendBtn = document.getElementById('ai-chat-send');
+    const messages = document.getElementById('ai-chat-messages');
+    const chatHistory = [
+        { role: "system", content: "Du bist Glaggle AI. Der Nutzer hat gerade diese Zusammenfassung gelesen: " + context + ". Beantworte Folgefragen dazu kurz und präzise auf Deutsch." }
+    ];
+
+    async function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        const userBubble = document.createElement('div');
+        userBubble.style.cssText = "align-self:flex-end; background:#70C4F7; color:white; padding:8px 14px; border-radius:18px 18px 4px 18px; max-width:80%; font-size:0.9rem;";
+        userBubble.innerText = msg;
+        messages.appendChild(userBubble);
+        input.value = '';
+
+        chatHistory.push({ role: "user", content: msg });
+
+        const loadBubble = document.createElement('div');
+        loadBubble.style.cssText = "align-self:flex-start; background:rgba(112,196,247,0.15); color:var(--text-color); padding:8px 14px; border-radius:18px 18px 18px 4px; font-size:0.9rem;";
+        loadBubble.innerText = "...";
+        messages.appendChild(loadBubble);
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+                body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: chatHistory })
+            });
+            const data = await res.json();
+            const reply = data.choices[0].message.content;
+            chatHistory.push({ role: "assistant", content: reply });
+            loadBubble.innerHTML = marked.parse(reply);
+        } catch(e) {
+            loadBubble.innerText = "Fehler beim Antworten.";
+        }
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    sendBtn.onclick = sendMessage;
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 }
 
 async function getAiProcessedFavs(query) {
