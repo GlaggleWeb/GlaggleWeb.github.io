@@ -1265,9 +1265,41 @@ footer {
 
         <details class="sidebar-category">
     <summary>🎨 Design</summary>
-    <div style="padding: 15px 20px; background: rgba(0,0,0,0.03);">
+    <div style="padding: 15px 20px; background: rgba(0,0,0,0.03);" id="sidebar-design-container">
 
-        <!-- HINTERGRUNDBILDER -->
+        <style>
+            .theme-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%; /* Macht aus den Dreiecken Kreise */
+                border: 2px solid white;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                cursor: pointer;
+                transition: transform 0.2s, border-color 0.2s;
+                padding: 0;
+            }
+            .theme-btn:hover {
+                transform: scale(1.1);
+            }
+            /* Kontrast-Sicherung für das Sidebar-Icon/Text bei dunklen Designs */
+            .dark-theme-active .sidebar-category summary,
+            .dark-theme-active #sidebar-design-container p {
+                color: #ffffff !important;
+            }
+            .dark-theme-active .hamburger span {
+                background-color: #ffffff !important;
+            }
+            /* Checkered Pattern für "Kein Overlay" */
+            .no-overlay-btn {
+                background: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                            linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                            linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                            linear-gradient(-45deg, transparent 75%, #ccc 75%) !important;
+                background-size: 8px 8px !important;
+                background-color: #fff !important;
+            }
+        </style>
+
         <p style="font-size: 0.75rem; color: #888; margin-bottom: 10px;">Glaggle Spotlight</p>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px;">
             <button class="bg-btn active-bg" onclick="setBgMode('auto')" id="bg-btn-auto"
@@ -1283,34 +1315,36 @@ footer {
                 🖼️ Eigenes
             </button>
         </div>
-        <input type="file" id="custom-bg-input" accept="image/*" style="display:none;" onchange="loadCustomBg(event)">
 
-        <!-- Vorschau-Grid der Spotlight Bilder -->
         <div id="spotlight-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;">
         </div>
 
-        <!-- OVERLAY -->
+        <div id="custom-upload-zone" onclick="document.getElementById('custom-bg-input').click()" style="
+            margin-top: 8px; padding: 10px; border: 2px dashed #7b2ff7; border-radius: 8px; 
+            text-align: center; background: #f9f5ff; cursor: pointer; font-size: 0.75rem; color: #7b2ff7; display: none;">
+            <span>➕ Bild vom Gerät auswählen</span>
+        </div>
+        <input type="file" id="custom-bg-input" accept="image/*" style="display:none;" onchange="loadCustomBg(event)">
+
         <p style="font-size: 0.75rem; color: #888; margin: 14px 0 10px;">Overlay-Farbe</p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <button class="theme-btn" onclick="setOverlay('rgba(0,0,0,0.4)')" style="background:#1a1a1a;" title="Standard Dunkel"></button>
-            <button class="theme-btn" onclick="setOverlay('rgba(0,50,100,0.5)')" style="background:#003264;" title="Ozean"></button>
-            <button class="theme-btn" onclick="setOverlay('rgba(80,0,80,0.5)')" style="background:#500050;" title="Lila"></button>
-            <button class="theme-btn" onclick="setOverlay('rgba(0,80,40,0.5)')" style="background:#005028;" title="Wald"></button>
-            <button class="theme-btn" onclick="setOverlay('rgba(150,60,0,0.5)')" style="background:#963c00;" title="Sonnenuntergang"></button>
-            <button class="theme-btn" onclick="setOverlay('rgba(0,0,0,0)')" style="background: linear-gradient(135deg, #eee 25%, #ccc 25%); border: 1px solid #aaa;" title="Kein Overlay"></button>
+            <button class="theme-btn" onclick="setOverlay('rgba(0,0,0,0.4)', true)" style="background:#1a1a1a;" title="Standard Dunkel"></button>
+            <button class="theme-btn" onclick="setOverlay('rgba(0,50,100,0.5)', true)" style="background:#003264;" title="Ozean"></button>
+            <button class="theme-btn" onclick="setOverlay('rgba(80,0,80,0.5)', true)" style="background:#500050;" title="Lila"></button>
+            <button class="theme-btn" onclick="setOverlay('rgba(0,80,40,0.5)', true)" style="background:#005028;" title="Wald"></button>
+            <button class="theme-btn" onclick="setOverlay('rgba(150,60,0,0.5)', true)" style="background:#963c00;" title="Sonnenuntergang"></button>
+            <button class="theme-btn no-overlay-btn" onclick="setOverlay('rgba(0,0,0,0)', false)" title="Kein Overlay"></button>
         </div>
 
-        <!-- NAVBAR -->
         <p style="font-size: 0.75rem; color: #888; margin: 14px 0 10px;">Navbar-Farbe</p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <button class="theme-btn" onclick="setNavbar('#ffffff', '#000000')" style="background:#ffffff; border: 1px solid #ddd;" title="Weiß (Standard)"></button>
-            <button class="theme-btn" onclick="setNavbar('#1a1a2e', '#ffffff')" style="background:#1a1a2e;" title="Nacht"></button>
-            <button class="theme-btn" onclick="setNavbar('#70C4F7', '#ffffff')" style="background:#70C4F7;" title="Glaggle Blau"></button>
-            <button class="theme-btn" onclick="setNavbar('#2d2d2d', '#ffffff')" style="background:#2d2d2d;" title="Anthrazit"></button>
-            <button class="theme-btn" onclick="setNavbar('#e8f5e9', '#000000')" style="background:#e8f5e9; border: 1px solid #ddd;" title="Mintgrün"></button>
+            <button class="theme-btn" onclick="setNavbar('#ffffff', '#000000', false)" style="background:#ffffff; border: 1px solid #ddd;" title="Weiß (Standard)"></button>
+            <button class="theme-btn" onclick="setNavbar('#1a1a2e', '#ffffff', true)" style="background:#1a1a2e;" title="Nacht"></button>
+            <button class="theme-btn" onclick="setNavbar('#70C4F7', '#ffffff', false)" style="background:#70C4F7;" title="Glaggle Blau"></button>
+            <button class="theme-btn" onclick="setNavbar('#2d2d2d', '#ffffff', true)" style="background:#2d2d2d;" title="Anthrazit"></button>
+            <button class="theme-btn" onclick="setNavbar('#e8f5e9', '#000000', false)" style="background:#e8f5e9; border: 1px solid #ddd;" title="Mintgrün"></button>
         </div>
 
-        <!-- SUCHFELD -->
         <p style="font-size: 0.75rem; color: #888; margin: 14px 0 10px;">Suchfeld</p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <button class="theme-btn" onclick="setSearchbar('rgba(255,255,255,0.9)', '#ffffff')" style="background:#ffffff; border:1px solid #ddd;" title="Weiß"></button>
@@ -2758,8 +2792,8 @@ backToTopBtn.addEventListener("click", () => {
 });
 
 // ===== DESIGN SYSTEM =====
+// ===== DESIGN SYSTEM =====
 
-// Deine bestehenden Spotlight-Bilder
 const spotlightImages = [
     "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_nbuiju",
     "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_cljpxj",
@@ -2784,10 +2818,9 @@ const spotlightImages = [
 let bgInterval = null;
 let currentIndex = Math.floor(Math.random() * spotlightImages.length);
 
-// Hintergrund-Grid aufbauen (wird aufgerufen sobald Sidebar zum ersten Mal geöffnet wird)
 function buildSpotlightGrid() {
     const grid = document.getElementById('spotlight-grid');
-    if (!grid || grid.children.length > 0) return; // Nicht doppelt aufbauen
+    if (!grid || grid.children.length > 0) return;
 
     spotlightImages.forEach((url, i) => {
         const btn = document.createElement('button');
@@ -2810,15 +2843,14 @@ function buildSpotlightGrid() {
     });
 }
 
-// Wird aufgerufen beim Öffnen der Sidebar
 const origToggleMenu = window.toggleMenu;
 window.toggleMenu = function() {
-    origToggleMenu();
+    if(typeof origToggleMenu === "function") origToggleMenu();
     setTimeout(buildSpotlightGrid, 100);
 };
 
 function setBgMode(mode, fixedIndex = null) {
-    // Alle Buttons zurücksetzen
+    // Buttons zurücksetzen
     ['auto','none','custom'].forEach(id => {
         const btn = document.getElementById('bg-btn-' + id);
         if (btn) {
@@ -2826,10 +2858,13 @@ function setBgMode(mode, fixedIndex = null) {
             btn.style.opacity = '1';
         }
     });
-    // Grid-Buttons zurücksetzen
+    
     document.querySelectorAll('#spotlight-grid button').forEach(b => {
         b.style.borderColor = 'transparent';
     });
+
+    // Blendet die Upload-Zone standardmäßig aus
+    document.getElementById('custom-upload-zone').style.display = 'none';
 
     if (mode === 'auto') {
         document.getElementById('bg-btn-auto').style.border = '2px solid #70C4F7';
@@ -2845,14 +2880,15 @@ function setBgMode(mode, fixedIndex = null) {
         document.getElementById('spotlight-grid').style.pointerEvents = 'none';
         stopBgRotation();
         const bgLayer = document.getElementById('background-layer');
-        bgLayer.style.opacity = '0';
-        setTimeout(() => { bgLayer.style.backgroundImage = 'none'; bgLayer.style.opacity = '1'; }, 500);
+        if(bgLayer) {
+            bgLayer.style.opacity = '0';
+            setTimeout(() => { bgLayer.style.backgroundImage = 'none'; bgLayer.style.opacity = '1'; }, 500);
+        }
         localStorage.setItem('glaggle-bg-mode', 'none');
 
     } else if (mode === 'fixed' && fixedIndex !== null) {
         document.getElementById('spotlight-grid').style.opacity = '1';
         document.getElementById('spotlight-grid').style.pointerEvents = 'auto';
-        // Aktiven Button markieren
         const activeBtn = document.querySelector(`#spotlight-grid button[data-index="${fixedIndex}"]`);
         if (activeBtn) activeBtn.style.borderColor = '#70C4F7';
         stopBgRotation();
@@ -2862,6 +2898,8 @@ function setBgMode(mode, fixedIndex = null) {
 
     } else if (mode === 'custom') {
         document.getElementById('bg-btn-custom').style.border = '2px solid #7b2ff7';
+        // Zeigt die Upload-Zone an und triggert das Auswahlfenster (unten auf Mobilgeräten)
+        document.getElementById('custom-upload-zone').style.display = 'block';
         document.getElementById('custom-bg-input').click();
     }
 }
@@ -2873,13 +2911,13 @@ function loadCustomBg(event) {
     reader.onload = (e) => {
         stopBgRotation();
         setBackgroundImage(e.target.result);
-        // Eigenes Bild nicht in localStorage (zu groß) — bleibt nur für diese Session
     };
     reader.readAsDataURL(file);
 }
 
 function setBackgroundImage(url) {
     const bgLayer = document.getElementById('background-layer');
+    if(!bgLayer) return;
     bgLayer.style.opacity = '0';
     setTimeout(() => {
         bgLayer.style.backgroundImage = `url('${url}')`;
@@ -2890,6 +2928,7 @@ function setBackgroundImage(url) {
 function startBgRotation() {
     stopBgRotation();
     const bgLayer = document.getElementById('background-layer');
+    if(!bgLayer) return;
     bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`;
     bgLayer.style.opacity = '1';
     bgInterval = setInterval(() => {
@@ -2909,7 +2948,8 @@ function stopBgRotation() {
     }
 }
 
-function setOverlay(color) {
+// Erweitert um das Umschalten der Kontrast-Klasse
+function setOverlay(color, isDark = false) {
     const style = document.getElementById('dynamic-overlay') || (() => {
         const s = document.createElement('style');
         s.id = 'dynamic-overlay';
@@ -2917,14 +2957,28 @@ function setOverlay(color) {
         return s;
     })();
     style.textContent = `body::before { background: ${color} !important; }`;
-    localStorage.setItem('glaggle-overlay', color);
+    localStorage.setItem('glaggle-overlay', JSON.stringify({color, isDark}));
+    
+    // Klasse hinzufügen/entfernen um Text/Icons hell zu machen
+    if(isDark) {
+        document.body.classList.add('dark-theme-active');
+    } else {
+        document.body.classList.remove('dark-theme-active');
+    }
 }
 
-function setNavbar(bg, textColor) {
+function setNavbar(bg, textColor, isDark = false) {
     const navbar = document.querySelector('.navbar');
-    navbar.style.setProperty('background-color', bg, 'important');
+    if(navbar) navbar.style.setProperty('background-color', bg, 'important');
+    
     document.querySelectorAll('.hamburger span').forEach(s => s.style.backgroundColor = textColor);
-    localStorage.setItem('glaggle-navbar', JSON.stringify({bg, textColor}));
+    localStorage.setItem('glaggle-navbar', JSON.stringify({bg, textColor, isDark}));
+    
+    if(isDark) {
+        document.body.classList.add('dark-theme-active');
+    } else if(!localStorage.getItem('glaggle-overlay')?.includes('"isDark":true')) {
+        document.body.classList.remove('dark-theme-active');
+    }
 }
 
 function setSearchbar(bg, borderColor) {
@@ -2941,34 +2995,41 @@ function setSearchbar(bg, borderColor) {
 function resetDesign() {
     ['glaggle-overlay','glaggle-navbar','glaggle-searchbar','glaggle-bg-mode','glaggle-bg-fixed'].forEach(k => localStorage.removeItem(k));
     ['dynamic-overlay','dynamic-searchbar'].forEach(id => document.getElementById(id)?.remove());
-    setNavbar('#ffffff', '#000000');
-    // Grid zurücksetzen
+    document.body.classList.remove('dark-theme-active');
+    setNavbar('#ffffff', '#000000', false);
+    
     document.querySelectorAll('#spotlight-grid button').forEach(b => b.style.borderColor = 'transparent');
     document.getElementById('spotlight-grid').style.opacity = '0.5';
     document.getElementById('spotlight-grid').style.pointerEvents = 'none';
     document.getElementById('bg-btn-auto').style.border = '2px solid #70C4F7';
+    document.getElementById('custom-upload-zone').style.display = 'none';
     startBgRotation();
 }
 
-// Gespeichertes Design beim Laden wiederherstellen
+// Laden beim Seitenstart
 (function loadSavedDesign() {
     const overlay = localStorage.getItem('glaggle-overlay');
-    if (overlay) setOverlay(overlay);
+    if (overlay) {
+        const d = JSON.parse(overlay);
+        setOverlay(d.color, d.isDark);
+    }
 
     const navbar = localStorage.getItem('glaggle-navbar');
-    if (navbar) { const d = JSON.parse(navbar); setNavbar(d.bg, d.textColor); }
+    if (navbar) { 
+        const d = JSON.parse(navbar); 
+        setNavbar(d.bg, d.textColor, d.isDark); 
+    }
 
     const searchbar = localStorage.getItem('glaggle-searchbar');
     if (searchbar) { const d = JSON.parse(searchbar); setSearchbar(d.bg, d.borderColor); }
 
     const bgMode = localStorage.getItem('glaggle-bg-mode');
     if (!bgMode || bgMode === 'auto') {
-        startBgRotation(); // Standard: Auto-Rotation
+        startBgRotation();
     } else if (bgMode === 'none') {
         setBgMode('none');
     } else if (bgMode === 'fixed') {
         const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
-        // Grid noch nicht gebaut beim Laden — direkt Bild setzen
         stopBgRotation();
         setBackgroundImage(spotlightImages[idx]);
     }
