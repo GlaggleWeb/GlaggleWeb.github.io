@@ -1434,14 +1434,11 @@ function applyCustomTheme() {
 // ===== MUSIK KOMPLETT =====
 let glaggleAudio = null; // falls noch nicht definiert, sonst diese Zeile weglassen
 
-document.getElementById('music-sel').addEventListener('change', function() {
+// NEU (fix):
+document.getElementById('music-select').addEventListener('change', function() {
     if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
-    const ctrl = document.getElementById('music-ctrl');
-    if (!this.value) {
-        ctrl.style.display = 'none';
-        localStorage.removeItem('glaggle-music');
-        return;
-    }
+    const ctrl = document.getElementById('music-controls');
+    if (!this.value) { ctrl.style.display = 'none'; localStorage.removeItem('glaggle-music'); return; }
     ctrl.style.display = 'flex';
     const volume = document.getElementById('music-vol').value;
     localStorage.setItem('glaggle-music', JSON.stringify({ url: this.value, volume: parseInt(volume) }));
@@ -1467,10 +1464,10 @@ function restoreMusic() {
     if (!saved) return;
     try {
         const { url, volume } = JSON.parse(saved);
-        const sel = document.getElementById('music-sel');
-        const vol = document.getElementById('music-vol');
-        const lbl = document.getElementById('vol-lbl');
-        const ctrl = document.getElementById('music-ctrl');
+// NEU:
+const sel = document.getElementById('music-select');
+const lbl = document.getElementById('vol-label');
+const ctrl = document.getElementById('music-controls');
         if (!sel || !url) return;
         sel.value = url;
         if (vol) vol.value = volume;
@@ -1516,7 +1513,7 @@ function resetDesignFull() {
 // ===== THEME BEIM LADEN WIEDERHERSTELLEN =====
 function restoreTheme() {
     const savedName = localStorage.getItem('glaggle-theme-name');
-    const savedData = localStorage.getItem('glaggle-theme-data');
+const savedData = localStorage.getItem('glaggle-theme');eme-data');
 
     if (savedData) {
         try {
