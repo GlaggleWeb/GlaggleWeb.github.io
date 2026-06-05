@@ -3466,6 +3466,24 @@ let recognition = null;
 let isListening = false;
 let voiceOpen = false;
 
+// Musik leiser machen
+function duckMusic(duck = true) {
+    if (!glaggleAudio) return;
+    const target = duck ? 0.08 : (document.getElementById('music-vol')?.value / 100 || 0.4);
+    
+    // Sanftes Fade statt abrupter Wechsel
+    const current = glaggleAudio.volume;
+    const steps = 20;
+    const diff = (target - current) / steps;
+    let i = 0;
+    
+    const fade = setInterval(() => {
+        i++;
+        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
+        if (i >= steps) clearInterval(fade);
+    }, 30); // 30ms × 20 = 600ms sanftes Fade
+}
+    
 function toggleVoiceAssistant() {
     const popup = document.getElementById('voice-popup');
     voiceOpen = !voiceOpen;
@@ -3480,6 +3498,7 @@ function closeVoiceAssistant() {
 
 function startListening() {
     if (isListening) { stopListening(); return; }
+    duckMusic(true);
 
     // Browser-Unterstützung prüfen
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3533,6 +3552,7 @@ function stopListening() {
     document.getElementById('voice-wave').classList.remove('active');
     document.getElementById('voice-mic-btn').classList.remove('listening');
     document.getElementById('voice-btn').classList.remove('listening');
+    // Musik erst nach dem Sprechen wieder lauter — nicht hier
 }
 
 async function askGroqVoice(text) {
@@ -3578,21 +3598,63 @@ async function askGroqVoice(text) {
 
 function speakResponse(text) {
     if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel(); // Vorherige Ausgabe stoppen
+    window.speechSynthesis.cancel();
+
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'de-DE';
-    utter.rate = 1.05;
-    utter.pitch = 1;
+    utter.rate = 0.88;      // Langsamer — natürlicher
+    utter.pitch = 0.75;     // Tiefer — männlich
+    utter.volume = 1;
 
-    // Deutsche Stimme bevorzugen
-    const voices = window.speechSynthesis.getVoices();
-    const deVoice = voices.find(v => v.lang.startsWith('de'));
-    if (deVoice) utter.voice = deVoice;
+    // Warten bis Stimmen geladen sind, dann beste wählen
+    function chooseVoice() {
+        const voices = window.speechSynthesis.getVoices();
 
-    utter.onstart = () => setVoiceStatus('🔊 Glaggle spricht...');
-    utter.onend   = () => setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
+        // Priorität: Tiefe deutsche Männerstimmen zuerst
+        const preferred = [
+            'Google Deutsch',
+            'Microsoft Stefan',
+            'Microsoft Markus',
+            'Anna',             // macOS Deutsch
+            'Markus',
+            'Yannick',
+            'Google German'
+        ];
 
-    window.speechSynthesis.speak(utter);
+        let chosen = null;
+
+        // 1. Versuch: Bevorzugte Stimme nach Name
+        for (const name of preferred) {
+            chosen = voices.find(v => v.name.includes(name));
+            if (chosen) break;
+        }
+
+        // 2. Versuch: Irgendeine deutsche Männerstimme
+        if (!chosen) {
+            chosen = voices.find(v =>
+                v.lang.startsWith('de') && v.name.toLowerCase().includes('male')
+            );
+        }
+
+        // 3. Fallback: Irgendeine deutsche Stimme
+        if (!chosen) {
+            chosen = voices.find(v => v.lang.startsWith('de'));
+        }
+
+        if (chosen) utter.voice = chosen;
+
+        utter.onstart = () => setVoiceStatus('🔊 Glaggle spricht...');
+        utter.onend   = () => setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
+        duckMusic(false);
+        window.speechSynthesis.speak(utter);
+    }
+
+    // Stimmen sind manchmal noch nicht geladen beim ersten Aufruf
+    if (window.speechSynthesis.getVoices().length > 0) {
+        chooseVoice();
+    } else {
+        window.speechSynthesis.onvoiceschanged = chooseVoice;
+    }
 }
 
 function setVoiceStatus(msg) {
