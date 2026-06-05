@@ -3465,8 +3465,25 @@ function resetDesign() {
 let recognition = null;
 let isListening = false;
 let voiceOpen = false;
+let preDuckVolume = null;
 
-    
+// HIER: fadeVolume nach draußen gezogen, damit duckMusic() darauf zugreifen kann!
+function fadeVolume(target) {
+    if (typeof glaggleAudio === 'undefined' || !glaggleAudio) return;
+    const steps = 25;
+    const diff = (target - glaggleAudio.volume) / steps;
+    let i = 0;
+    const fade = setInterval(() => {
+        i++;
+        if (typeof glaggleAudio === 'undefined' || !glaggleAudio) { clearInterval(fade); return; }
+        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
+        if (i >= steps) {
+            glaggleAudio.volume = target;
+            clearInterval(fade);
+        }
+    }, 25);
+}
+
 function toggleVoiceAssistant() {
     const popup = document.getElementById('voice-popup');
     voiceOpen = !voiceOpen;
@@ -3505,28 +3522,11 @@ function startListening() {
         document.getElementById('voice-transcript').innerText = '...';
     };
 
-    function fadeVolume(target) {
-    if (!glaggleAudio) return;
-    const steps = 25;
-    const diff = (target - glaggleAudio.volume) / steps;
-    let i = 0;
-    const fade = setInterval(() => {
-        i++;
-        if (!glaggleAudio) { clearInterval(fade); return; }
-        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
-        if (i >= steps) {
-            glaggleAudio.volume = target;
-            clearInterval(fade);
-        }
-    }, 25);
-}
-
     recognition.onresult = (e) => {
         const transcript = Array.from(e.results)
             .map(r => r[0].transcript).join('');
         document.getElementById('voice-transcript').innerText = '🗣️ ' + transcript;
 
-        // Wenn Ergebnis final ist → an KI schicken
         if (e.results[e.results.length - 1].isFinal) {
             stopListening();
             askGroqVoice(transcript);
@@ -3551,7 +3551,6 @@ function stopListening() {
     document.getElementById('voice-wave').classList.remove('active');
     document.getElementById('voice-mic-btn').classList.remove('listening');
     document.getElementById('voice-btn').classList.remove('listening');
-    // Musik erst nach dem Sprechen wieder lauter — nicht hier
 }
 
 async function askGroqVoice(text) {
@@ -3586,7 +3585,6 @@ async function askGroqVoice(text) {
         responseBox.innerText = answer;
         setVoiceStatus('✅ Fertig — tippe erneut zum Sprechen');
 
-        // Antwort vorlesen (Text-to-Speech)
         speakResponse(answer);
 
     } catch(e) {
@@ -3594,8 +3592,6 @@ async function askGroqVoice(text) {
         setVoiceStatus('❌ Verbindungsfehler');
     }
 }
-
-let preDuckVolume = null;
 
 function duckMusic(duck = true) {
     if (typeof glaggleAudio === 'undefined' || !glaggleAudio || glaggleAudio.paused) return;
@@ -3605,7 +3601,7 @@ function duckMusic(duck = true) {
     if (currentVol <= 0) return;
 
     if (duck) {
-        preDuckVolume = glaggleAudio.volume; // Original merken
+        preDuckVolume = glaggleAudio.volume;
         fadeVolume(Math.min(0.06, currentVol * 0.15));
     } else {
         fadeVolume(preDuckVolume !== null ? preDuckVolume : currentVol);
@@ -3613,29 +3609,21 @@ function duckMusic(duck = true) {
     }
 }
 
-
-
 function speakResponse(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'de-DE';
-    utter.rate = 0.82;    // Noch etwas langsamer
-    utter.pitch = 0.6;    // Tiefer und männlicher
+    utter.rate = 0.82;
+    utter.pitch = 0.6;
     utter.volume = 1;
 
     function chooseVoice() {
         const voices = window.speechSynthesis.getVoices();
-
         const preferred = [
-            'Microsoft Stefan',
-            'Microsoft Markus',
-            'Google Deutsch',
-            'Markus',
-            'Yannick',
-            'Google German',
-            'Anna'
+            'Microsoft Stefan', 'Microsoft Markus', 'Google Deutsch',
+            'Markus', 'Yannick', 'Google German', 'Anna'
         ];
 
         let chosen = null;
@@ -3644,9 +3632,7 @@ function speakResponse(text) {
             if (chosen) break;
         }
         if (!chosen) {
-            chosen = voices.find(v =>
-                v.lang.startsWith('de') && v.name.toLowerCase().includes('male')
-            );
+            chosen = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('male'));
         }
         if (!chosen) {
             chosen = voices.find(v => v.lang.startsWith('de'));
@@ -3654,19 +3640,17 @@ function speakResponse(text) {
 
         if (chosen) utter.voice = chosen;
 
-        // ✅ onstart und onend HIER drin definieren, NACH chooseVoice
         utter.onstart = () => {
             setVoiceStatus('🔊 Glaggle spricht...');
-            // Musik bleibt leise (wurde schon in startListening geduckt)
         };
 
         utter.onend = () => {
             setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
-            duckMusic(false); // ✅ Erst HIER wieder lauter — wenn Stimme fertig ist
+            duckMusic(false);
         };
 
         utter.onerror = () => {
-            duckMusic(false); // Auch bei Fehler Musik wieder lauter
+            duckMusic(false);
         };
 
         window.speechSynthesis.speak(utter);
@@ -3682,6 +3666,39 @@ function speakResponse(text) {
 function setVoiceStatus(msg) {
     document.getElementById('voice-status').innerText = msg;
 }
+
+// HIER: Autoplay-Lösung für das Neuladen der Seite
+function tryAutoplayMusic() {
+    // Falls deine Musik-Logik einen State speichert (z. B. im LocalStorage oder einer Checkbox)
+    // Ersetze 'true' ggf. mit deiner eigenen Abfrage, ob Musik laufen SOLLTE
+    const musicShouldPlay = true; 
+
+    if (musicShouldPlay && typeof glaggleAudio !== 'undefined' && glaggleAudio) {
+        const playPromise = glaggleAudio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log("Autoplay erfolgreich gestartet!");
+            }).catch(error => {
+                console.log("Browser blockiert Autoplay. Warte auf ersten Klick des Nutzers...");
+                
+                // Sobald der Nutzer das erste Mal klickt, spielen wir die Musik ab
+                const startOnInteraction = () => {
+                    glaggleAudio.play().then(() => {
+                        document.removeEventListener('click', startOnInteraction);
+                    }).catch(e => console.error("Klick-Play fehlgeschlagen:", e));
+                };
+                document.addEventListener('click', startOnInteraction);
+            });
+        }
+    }
+}
+
+// Führt den Autoplay-Versuch aus, sobald die Seite geladen ist
+window.addEventListener('DOMContentLoaded', () => {
+    // Kurze Verzögerung, um sicherzugehen, dass dein 'glaggleAudio'-Objekt bereits existiert
+    setTimeout(tryAutoplayMusic, 500); 
+});
 </script>
 </body>
 </html>
