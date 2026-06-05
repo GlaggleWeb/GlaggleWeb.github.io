@@ -1315,6 +1315,80 @@ footer {
     transform: scale(1.03);
     box-shadow: 0 6px 25px rgba(112, 196, 247, 0.5);
 }
+
+/* Glaggle In-Page Push Benachrichtigung */
+.glaggle-push-notice {
+    background: rgba(112, 196, 247, 0.12); /* Sanftes, transparentes Glaggle-Blau */
+    border: 1px solid rgba(112, 196, 247, 0.25);
+    border-radius: 20px;
+    padding: 12px 20px;
+    
+    /* Schiebt die Box trotz des großen Suchleisten-Abstands schön darunter */
+    margin-top: -40px; 
+    margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px; /* Exakt so breit wie deine Suchleiste */
+    box-sizing: border-box;
+    
+    /* Animationen für das Hereinfliegen */
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sichtbarer Zustand (wird per JS getriggert) */
+.glaggle-push-notice.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.push-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.push-emoji {
+    font-size: 1.2rem;
+    animation: pushHeartbeat 2s infinite ease-in-out;
+}
+
+.glaggle-push-notice p {
+    color: #eee; /* Heller Text für den Darkmode-Look */
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 500;
+    text-align: left;
+}
+
+/* Schließen-Button */
+.push-close-btn {
+    background: none;
+    border: none;
+    color: #70C4F7;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.push-close-btn:hover {
+    background-color: rgba(112, 196, 247, 0.2);
+    color: #fff;
+}
+
+/* Kleiner Herzschlag-Effekt für das Emoji */
+@keyframes pushHeartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
 </style>
 </head>
 <body>
@@ -1708,6 +1782,14 @@ if (document.readyState === 'loading') {
         <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
         <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
     </form>
+
+    <div id="glaggle-push-notice" class="glaggle-push-notice" style="display: none;">
+        <div class="push-content">
+            <span class="push-emoji">💙</span>
+            <p>Gefällt dir Glaggle? Dann empfehle es gerne weiter!</p>
+        </div>
+        <button class="push-close-btn" onclick="dismissPushNotice()" title="Schließen">✕</button>
+    </div>
     
 <nav class="glaggle-nav" id="main-nav">
     <div class="nav-scroll-wrapper">
@@ -3423,6 +3505,42 @@ function dismissWelcomePopup() {
     setTimeout(() => {
         overlay.style.display = 'none';
     }, 400);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Prüfen, ob der Nutzer die Nachricht in der Vergangenheit schon weggedrückt hat
+    const isDismissed = localStorage.getItem('glaggle_push_dismissed');
+
+    if (!isDismissed) {
+        // Nach genau 5 Sekunden (5000 Millisekunden) wird die Box eingeblendet
+        setTimeout(() => {
+            const pushNotice = document.getElementById('glaggle-push-notice');
+            if (pushNotice) {
+                pushNotice.style.display = 'flex'; // Sichtbar im Layout machen
+                
+                // Minimale Verzögerung, damit das CSS das sanfte Einblenden animiert
+                setTimeout(() => {
+                    pushNotice.classList.add('show');
+                }, 50);
+            }
+        }, 5000); 
+    }
+});
+
+// Funktion zum Schließen und permanenten Merken
+function dismissPushNotice() {
+    const pushNotice = document.getElementById('glaggle-push-notice');
+    if (pushNotice) {
+        pushNotice.classList.remove('show'); // Animation rückwärts abspielen
+        
+        // Im Browser permanent speichern, dass die Box weggedrückt wurde
+        localStorage.setItem('glaggle_push_dismissed', 'true');
+        
+        // Nach dem Ausblenden komplett aus dem Layout entfernen
+        setTimeout(() => {
+            pushNotice.style.display = 'none';
+        }, 500);
+    }
 }
 </script>
 
