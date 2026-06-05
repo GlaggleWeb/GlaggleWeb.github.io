@@ -1176,7 +1176,145 @@ footer {
 .glaggle-entry:hover a {
     color: #111111 !important;
 }
-        
+
+/* Overlay & Container */
+.welcome-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(15px);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s ease;
+}
+.welcome-overlay.show { opacity: 1; }
+
+.welcome-popup {
+    position: relative;
+    width: min(440px, 92vw);
+    background: rgba(15, 15, 25, 0.96);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(112, 196, 247, 0.15);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.welcome-overlay.show .welcome-popup { transform: scale(1) translateY(0); }
+
+.welcome-gradient-border {
+    height: 6px; width: 100%;
+    background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
+}
+
+.welcome-content {
+    padding: 35px 25px 25px 25px;
+    text-align: center;
+    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    color: #eee;
+}
+
+.welcome-emoji { font-size: 3rem; display: inline-block; margin-bottom: 10px; }
+
+.welcome-content h2 { color: #70C4F7; font-size: 1.5rem; margin-bottom: 15px; }
+.welcome-content p { color: #bbb; font-size: 0.95rem; line-height: 1.6; }
+
+/* Folien-Sichtbarkeit */
+.welcome-slide {
+    display: none;
+    animation: fadeInSlide 0.4s ease forwards;
+}
+.welcome-slide.active { display: block; }
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Styling Folie 2 (Versprechen) */
+.welcome-promises {
+    list-style: none;
+    text-align: left;
+    margin: 20px auto;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.welcome-promises li {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #ccc;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.promise-icon { font-size: 1.1rem; }
+
+/* Styling Folie 3 (Anleitung) */
+.welcome-guide {
+    text-align: left;
+    margin: 20px auto;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.guide-step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.step-num {
+    background: rgba(112, 196, 247, 0.15);
+    color: #70C4F7;
+    border: 1px solid rgba(112, 196, 247, 0.3);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 0.85rem; flex-shrink: 0;
+}
+.guide-step p { font-size: 0.9rem; margin: 0; }
+
+/* Footer & Navigation */
+.welcome-footer {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Punkte / Dots */
+.welcome-dots {
+    display: flex;
+    gap: 8px;
+}
+.welcome-dot {
+    width: 8px; height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+/* Der aktive Punkt wird breiter gezogen (Pillen-Look) */
+.welcome-dot.active {
+    background: #70C4F7;
+    width: 20px;
+    border-radius: 4px;
+}
+
+/* Button */
+.welcome-btn {
+    background: linear-gradient(135deg, #70C4F7, #2E94D1);
+    color: white; border: none; border-radius: 50px;
+    padding: 12px 45px; font-size: 0.95rem; font-weight: bold;
+    cursor: pointer; box-shadow: 0 5px 20px rgba(112, 196, 247, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.welcome-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 25px rgba(112, 196, 247, 0.5);
+}
 </style>
 </head>
 <body>
@@ -3211,6 +3349,80 @@ function resetDesign() {
         setBackgroundImage(spotlightImages[idx]);
     }
 })();
+
+let currentWelcomeSlide = 1;
+const totalWelcomeSlides = 3;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    
+    // Prüfen, ob der Nutzer die Seite zum ersten Mal besucht
+    const hasVisitedBefore = localStorage.getItem('glaggle_first_timer');
+    
+    if (!hasVisitedBefore) {
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.classList.add('show');
+        }, 100);
+    }
+});
+
+// Schaltet zur nächsten Folie oder schließt das Fenster auf Folie 3
+function nextSlide() {
+    if (currentWelcomeSlide < totalWelcomeSlides) {
+        currentWelcomeSlide++;
+        showSlide(currentWelcomeSlide);
+    } else {
+        dismissWelcomePopup();
+    }
+}
+
+// Direktes Springen durch Klicken auf die Punkte
+function goToSlide(slideNum) {
+    currentWelcomeSlide = slideNum;
+    showSlide(currentWelcomeSlide);
+}
+
+// Steuert die Sichtbarkeit der Elemente
+function showSlide(slideNum) {
+    // Alle Folien deaktivieren
+    document.querySelectorAll('.welcome-slide').forEach(slide => {
+        slide.classList.remove('active');
+    });
+    // Gewünschte Folie aktivieren
+    document.querySelector(`.welcome-slide[data-slide="${slideNum}"]`).classList.add('active');
+
+    // Punkte aktualisieren
+    const dots = document.querySelectorAll('.welcome-dot');
+    dots.forEach((dot, index) => {
+        if (index + 1 === slideNum) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+
+    // Button-Text anpassen
+    const actionBtn = document.getElementById('welcome-action-btn');
+    if (slideNum === totalWelcomeSlides) {
+        actionBtn.innerText = "Los geht's!";
+    } else {
+        actionBtn.innerText = "Weiter";
+    }
+}
+
+// Pop-up schließen und Besuch loggen
+function dismissWelcomePopup() {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    overlay.classList.remove('show');
+    
+    // Merken, dass der Nutzer da war
+    localStorage.setItem('glaggle_first_timer', 'true');
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, 400);
+}
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
@@ -3700,5 +3912,58 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(tryAutoplayMusic, 500); 
 });
 </script>
+
+<div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
+    <div class="welcome-popup">
+        <div class="welcome-gradient-border"></div>
+        <div class="welcome-content">
+            
+            <div class="welcome-slide active" data-slide="1">
+                <span class="welcome-emoji">✨</span>
+                <h2>Willkommen auf Glaggle.ch</h2>
+                <p>Schön, dass du da bist! Wir freuen uns dich auf Glaggle.ch zu sehen.</p>
+            </div>
+
+            <div class="welcome-slide" data-slide="2">
+                <span class="welcome-emoji">🤝</span>
+                <h2>Unsere Versprechen</h2>
+                <ul class="welcome-promises">
+                    <li><span class="promise-icon">🔒</span> <strong>100% Privatsphäre:</strong> "Wir geben deine Daten niemals für Werbung oder kommerzielle Zwecke weiter. </li>
+                    <li><span class="promise-icon">👤</span> <strong>Kein LogIn zwang:</strong> Du kannst alle Glaggle Dienste ohne LogIn nutzen.</li>
+                    <li><span class="promise-icon">✅</span> <strong>100% Kostenlos:</strong> Einzigartiges Design, optimiert für dich.</li>
+                </ul>
+            </div>
+
+            <div class="welcome-slide" data-slide="3">
+                <span class="welcome-emoji">🚀</span>
+                <h2>Kurzanleitung</h2>
+                <div class="welcome-guide">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <p><strong>Suchen:</strong> Tippe deine Frage ins Suchfeld ein und drücke die Enter-Taste oder klicke auf die blaue Lupe.</p>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <p><strong>Mehr von Glaggle:</strong> Klicke auf die drei Striche oben rechts, um auf weitere Glaggle-Tools zu kommen.</p>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <p><strong>Glaggle Assistan:</strong> Drücke auf das Mikrofon um mit Glaggle Assistant zu sprechen.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="welcome-footer">
+                <div class="welcome-dots">
+                    <span class="welcome-dot active" onclick="goToSlide(1)"></span>
+                    <span class="welcome-dot" onclick="goToSlide(2)"></span>
+                    <span class="welcome-dot" onclick="goToSlide(3)"></span>
+                </div>
+                <button id="welcome-action-btn" class="welcome-btn" onclick="nextSlide()">Weiter</button>
+            </div>
+
+        </div>
+    </div>
+</div>
 </body>
 </html>
