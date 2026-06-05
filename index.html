@@ -1464,13 +1464,13 @@ function restoreMusic() {
     if (!saved) return;
     try {
         const { url, volume } = JSON.parse(saved);
-// NEU:
-const sel = document.getElementById('music-select');
-const lbl = document.getElementById('vol-label');
-const ctrl = document.getElementById('music-controls');
+        const sel = document.getElementById('music-select');
+        const vol = document.getElementById('music-vol');   // ✅ NEU
+        const lbl = document.getElementById('vol-label');
+        const ctrl = document.getElementById('music-controls');
         if (!sel || !url) return;
         sel.value = url;
-        if (vol) vol.value = volume;
+        if (vol) vol.value = volume;                        // ✅ jetzt definiert
         if (lbl) lbl.textContent = volume + '%';
         if (ctrl) ctrl.style.display = 'flex';
         glaggleAudio = new Audio(url);
@@ -1513,7 +1513,7 @@ function resetDesignFull() {
 // ===== THEME BEIM LADEN WIEDERHERSTELLEN =====
 function restoreTheme() {
     const savedName = localStorage.getItem('glaggle-theme-name');
-const savedData = localStorage.getItem('glaggle-theme');eme-data');
+    const savedData = localStorage.getItem('glaggle-theme');
 
     if (savedData) {
         try {
