@@ -1475,6 +1475,7 @@ function restoreMusic() {
         if (ctrl) ctrl.style.display = 'flex';
         glaggleAudio = new Audio(url);
         glaggleAudio.loop = true;
+        glaggleAudio.preload = 'auto';
         glaggleAudio.volume = volume / 100;
         glaggleAudio.play().catch(() => {});
     } catch(e) {}
