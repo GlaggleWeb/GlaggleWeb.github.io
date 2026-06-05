@@ -1316,12 +1316,12 @@ footer {
     box-shadow: 0 6px 25px rgba(112, 196, 247, 0.5);
 }
 
-/* Glaggle In-Page Push Benachrichtigung */
+/* Glaggle In-Page Push Benachrichtigung (MASSIV & UNDURCHSICHTIG) */
 .glaggle-push-notice {
-    background: rgba(112, 196, 247, 0.12); /* Sanftes, transparentes Glaggle-Blau */
-    border: 1px solid rgba(112, 196, 247, 0.25);
+    background: #FFFFFF !important; /* 100% massives Weiß, absolut blickdicht */
+    border: 2px solid #70C4F7 !important; /* Fester Glaggle-Blauer Rand */
     border-radius: 20px;
-    padding: 12px 20px;
+    padding: 14px 20px;
     
     /* Schiebt die Box trotz des großen Suchleisten-Abstands schön darunter */
     margin-top: -40px; 
@@ -1335,6 +1335,9 @@ footer {
     width: 100%;
     max-width: 600px; /* Exakt so breit wie deine Suchleiste */
     box-sizing: border-box;
+    
+    /* Eleganter Schatten für Tiefe, passend zu deiner Suchleiste */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
     
     /* Animationen für das Hereinfliegen */
     opacity: 0;
@@ -1355,15 +1358,15 @@ footer {
 }
 
 .push-emoji {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     animation: pushHeartbeat 2s infinite ease-in-out;
 }
 
 .glaggle-push-notice p {
-    color: #eee; /* Heller Text für den Darkmode-Look */
-    font-size: 0.9rem;
+    color: #000000 !important; /* Massives Schwarz für maximale Lesbarkeit */
+    font-size: 0.95rem;
     margin: 0;
-    font-weight: 500;
+    font-weight: 600; /* Leicht fett, damit es direkt ins Auge springt */
     text-align: left;
 }
 
@@ -1371,17 +1374,17 @@ footer {
 .push-close-btn {
     background: none;
     border: none;
-    color: #70C4F7;
+    color: #555555 !important; /* Dunkelgraues Schließen-Kreuz */
     cursor: pointer;
-    font-size: 1rem;
-    padding: 5px 8px;
+    font-size: 1.1rem;
+    padding: 5px 10px;
     border-radius: 8px;
-    transition: background-color 0.2s, color 0.2s;
+    transition: all 0.2s ease;
 }
 
 .push-close-btn:hover {
-    background-color: rgba(112, 196, 247, 0.2);
-    color: #fff;
+    background-color: rgba(112, 196, 247, 0.15); /* Sanfter blauer Hover-Effekt */
+    color: #2E94D1 !important;
 }
 
 /* Kleiner Herzschlag-Effekt für das Emoji */
@@ -1786,7 +1789,7 @@ if (document.readyState === 'loading') {
     <div id="glaggle-push-notice" class="glaggle-push-notice" style="display: none;">
         <div class="push-content">
             <span class="push-emoji">💙</span>
-            <p>Gefällt dir Glaggle? Dann empfehle es gerne weiter!</p>
+            <p>Gefällt dir Glaggle.ch? Wir würden uns freuen wenn du uns weiter empfehlen würdest!</p>
         </div>
         <button class="push-close-btn" onclick="dismissPushNotice()" title="Schließen">✕</button>
     </div>
