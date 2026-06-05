@@ -3579,12 +3579,13 @@ async function askGroqVoice(text) {
     }
 }
 
-// Musik leiser machen — NUR wenn sie gerade spielt und Lautstärke > 0
 function duckMusic(duck = true) {
-    if (!glaggleAudio || glaggleAudio.paused) return; // Keine Musik → nichts tun
+    // Warten bis glaggleAudio sicher existiert
+    if (typeof glaggleAudio === 'undefined' || !glaggleAudio || glaggleAudio.paused) return;
     
-    const currentVol = parseFloat(document.getElementById('music-vol')?.value || 40) / 100;
-    if (currentVol === 0) return; // Lautstärke ist 0 → nicht anfassen
+    const volEl = document.getElementById('music-vol');
+    const currentVol = volEl ? parseFloat(volEl.value) / 100 : 0.4;
+    if (currentVol <= 0) return;
     
     const target = duck ? Math.min(0.06, currentVol * 0.15) : currentVol;
     const steps = 25;
@@ -3593,9 +3594,10 @@ function duckMusic(duck = true) {
 
     const fade = setInterval(() => {
         i++;
+        if (!glaggleAudio) { clearInterval(fade); return; }
         glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
         if (i >= steps) clearInterval(fade);
-    }, 25); // 25ms × 25 = ~600ms Fade
+    }, 25);
 }
 
 function speakResponse(text) {
