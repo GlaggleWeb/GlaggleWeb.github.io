@@ -3505,6 +3505,22 @@ function startListening() {
         document.getElementById('voice-transcript').innerText = '...';
     };
 
+    function fadeVolume(target) {
+    if (!glaggleAudio) return;
+    const steps = 25;
+    const diff = (target - glaggleAudio.volume) / steps;
+    let i = 0;
+    const fade = setInterval(() => {
+        i++;
+        if (!glaggleAudio) { clearInterval(fade); return; }
+        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
+        if (i >= steps) {
+            glaggleAudio.volume = target;
+            clearInterval(fade);
+        }
+    }, 25);
+}
+
     recognition.onresult = (e) => {
         const transcript = Array.from(e.results)
             .map(r => r[0].transcript).join('');
@@ -3579,26 +3595,25 @@ async function askGroqVoice(text) {
     }
 }
 
+let preDuckVolume = null;
+
 function duckMusic(duck = true) {
-    // Warten bis glaggleAudio sicher existiert
     if (typeof glaggleAudio === 'undefined' || !glaggleAudio || glaggleAudio.paused) return;
     
     const volEl = document.getElementById('music-vol');
     const currentVol = volEl ? parseFloat(volEl.value) / 100 : 0.4;
     if (currentVol <= 0) return;
-    
-    const target = duck ? Math.min(0.06, currentVol * 0.15) : currentVol;
-    const steps = 25;
-    const diff = (target - glaggleAudio.volume) / steps;
-    let i = 0;
 
-    const fade = setInterval(() => {
-        i++;
-        if (!glaggleAudio) { clearInterval(fade); return; }
-        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
-        if (i >= steps) clearInterval(fade);
-    }, 25);
+    if (duck) {
+        preDuckVolume = glaggleAudio.volume; // Original merken
+        fadeVolume(Math.min(0.06, currentVol * 0.15));
+    } else {
+        fadeVolume(preDuckVolume !== null ? preDuckVolume : currentVol);
+        preDuckVolume = null;
+    }
 }
+
+
 
 function speakResponse(text) {
     if (!window.speechSynthesis) return;
