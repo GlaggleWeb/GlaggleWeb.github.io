@@ -3466,23 +3466,6 @@ let recognition = null;
 let isListening = false;
 let voiceOpen = false;
 
-// Musik leiser machen
-function duckMusic(duck = true) {
-    if (!glaggleAudio) return;
-    const target = duck ? 0.08 : (document.getElementById('music-vol')?.value / 100 || 0.4);
-    
-    // Sanftes Fade statt abrupter Wechsel
-    const current = glaggleAudio.volume;
-    const steps = 20;
-    const diff = (target - current) / steps;
-    let i = 0;
-    
-    const fade = setInterval(() => {
-        i++;
-        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
-        if (i >= steps) clearInterval(fade);
-    }, 30); // 30ms × 20 = 600ms sanftes Fade
-}
     
 function toggleVoiceAssistant() {
     const popup = document.getElementById('voice-popup');
@@ -3596,60 +3579,82 @@ async function askGroqVoice(text) {
     }
 }
 
+// Musik leiser machen — NUR wenn sie gerade spielt und Lautstärke > 0
+function duckMusic(duck = true) {
+    if (!glaggleAudio || glaggleAudio.paused) return; // Keine Musik → nichts tun
+    
+    const currentVol = parseFloat(document.getElementById('music-vol')?.value || 40) / 100;
+    if (currentVol === 0) return; // Lautstärke ist 0 → nicht anfassen
+    
+    const target = duck ? Math.min(0.06, currentVol * 0.15) : currentVol;
+    const steps = 25;
+    const diff = (target - glaggleAudio.volume) / steps;
+    let i = 0;
+
+    const fade = setInterval(() => {
+        i++;
+        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
+        if (i >= steps) clearInterval(fade);
+    }, 25); // 25ms × 25 = ~600ms Fade
+}
+
 function speakResponse(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'de-DE';
-    utter.rate = 0.88;      // Langsamer — natürlicher
-    utter.pitch = 0.75;     // Tiefer — männlich
+    utter.rate = 0.82;    // Noch etwas langsamer
+    utter.pitch = 0.6;    // Tiefer und männlicher
     utter.volume = 1;
 
-    // Warten bis Stimmen geladen sind, dann beste wählen
     function chooseVoice() {
         const voices = window.speechSynthesis.getVoices();
 
-        // Priorität: Tiefe deutsche Männerstimmen zuerst
         const preferred = [
-            'Google Deutsch',
             'Microsoft Stefan',
             'Microsoft Markus',
-            'Anna',             // macOS Deutsch
+            'Google Deutsch',
             'Markus',
             'Yannick',
-            'Google German'
+            'Google German',
+            'Anna'
         ];
 
         let chosen = null;
-
-        // 1. Versuch: Bevorzugte Stimme nach Name
         for (const name of preferred) {
             chosen = voices.find(v => v.name.includes(name));
             if (chosen) break;
         }
-
-        // 2. Versuch: Irgendeine deutsche Männerstimme
         if (!chosen) {
             chosen = voices.find(v =>
                 v.lang.startsWith('de') && v.name.toLowerCase().includes('male')
             );
         }
-
-        // 3. Fallback: Irgendeine deutsche Stimme
         if (!chosen) {
             chosen = voices.find(v => v.lang.startsWith('de'));
         }
 
         if (chosen) utter.voice = chosen;
 
-        utter.onstart = () => setVoiceStatus('🔊 Glaggle spricht...');
-        utter.onend   = () => setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
-        duckMusic(false);
+        // ✅ onstart und onend HIER drin definieren, NACH chooseVoice
+        utter.onstart = () => {
+            setVoiceStatus('🔊 Glaggle spricht...');
+            // Musik bleibt leise (wurde schon in startListening geduckt)
+        };
+
+        utter.onend = () => {
+            setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
+            duckMusic(false); // ✅ Erst HIER wieder lauter — wenn Stimme fertig ist
+        };
+
+        utter.onerror = () => {
+            duckMusic(false); // Auch bei Fehler Musik wieder lauter
+        };
+
         window.speechSynthesis.speak(utter);
     }
 
-    // Stimmen sind manchmal noch nicht geladen beim ersten Aufruf
     if (window.speechSynthesis.getVoices().length > 0) {
         chooseVoice();
     } else {
