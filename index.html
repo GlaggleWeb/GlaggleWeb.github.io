@@ -1337,7 +1337,7 @@ footer {
 <select id="music-select" onchange="handleMusicChange(this)">
   <option value="">🔇 Keine Musik</option>
   <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/eliveta-summer-473846_n1ssy1.mp3">☀️ Summer Chill</option>
-  <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3">🎉 Party Music</option>
+  <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/fl_attachment/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3">🎉 Party Music</option>
 </select>
 <div id="music-controls">
   <span style="font-size:13px">🔊</span>
@@ -1510,7 +1510,6 @@ function resetDesignFull() {
   document.getElementById('music-controls').style.display = 'none';
   startBgRotation();
 }
-// ===== THEME BEIM LADEN WIEDERHERSTELLEN =====
 function restoreTheme() {
     const savedName = localStorage.getItem('glaggle-theme-name');
     const savedData = localStorage.getItem('glaggle-theme');
@@ -1524,9 +1523,9 @@ function restoreTheme() {
     }
 
     if (savedName) {
-        document.querySelectorAll('#t-grid .t-btn').forEach(b => b.classList.remove('t-active'));
-        const btn = document.querySelector(`#t-grid [data-t="${savedName}"]`);
-        if (btn) btn.classList.add('t-active');
+        document.querySelectorAll('#theme-grid .t-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`#theme-grid [data-t="${savedName}"]`);
+        if (btn) btn.classList.add('active');
     }
 }
 
