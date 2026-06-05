@@ -1449,7 +1449,7 @@ document.getElementById('music-select').addEventListener('change', function() {
 });
 
 document.getElementById('music-vol').addEventListener('input', function() {
-    document.getElementById('vol-lbl').textContent = this.value + '%';
+    document.getElementById('vol-label').textContent = this.value + '%'
     if (glaggleAudio) glaggleAudio.volume = this.value / 100;
     const saved = localStorage.getItem('glaggle-music');
     if (saved) {
