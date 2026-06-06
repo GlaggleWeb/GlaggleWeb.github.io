@@ -1760,6 +1760,44 @@ if (document.readyState === 'loading') {
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
 <main class="main-content">
+
+<div id="beta-banner" style="
+    width: min(800px, 92vw);
+    margin: 100px auto 0 auto;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(251,188,5,0.15), rgba(234,67,53,0.1));
+    border: 1.5px solid rgba(251,188,5,0.5);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.4rem;">⚠️</span>
+        <div>
+            <p style="margin:0; font-weight:700; font-size:0.9rem; color:#FBBC05;">Beta-Version</p>
+            <p style="margin:4px 0 0 0; font-size:0.82rem; color:#ccc; line-height:1.5;">
+                Du verwendest eine Vorschauversion von Glaggle Search. Es können Fehler, 
+                unvollständige Ergebnisse oder unerwartetes Verhalten auftreten. 
+                Wir arbeiten laufend daran, die Qualität zu verbessern.
+            </p>
+        </div>
+    </div>
+    <button onclick="this.parentElement.style.display='none'" style="
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        transition: color 0.2s;
+    " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">✕</button>
+</div>
     
 <div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center;">
     <img src="Glaggle Logo Clip kurz.gif" id="glaggle-gif" class="large-logo" alt="Glaggle Animation" 
