@@ -1835,107 +1835,222 @@ const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur de
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ================================================================
-// GLAGGLE SMART SEARCH — Intelligente Suche mit Tippfehler-Toleranz
-// Einfügen direkt nach: function getGKey() { return p1 + p2 + p3; }
+// GLAGGLE SMART SEARCH — Komplette Ersatz-Datei
+//
+// ANLEITUNG (2 Schritte):
+//
+// SCHRITT 1: Suche in index.html diese 3 Funktionen und LÖSCHE sie:
+//   - async function getAiProcessedFavs(query) { ... }
+//   - async function searchSupabase(query) { ... }
+//   - async function glaggleSearch() { ... }
+//
+// SCHRITT 2: Füge den gesamten Inhalt dieser Datei direkt nach
+//   function getGKey() { return p1 + p2 + p3; }
+//   ein. Fertig.
 // ================================================================
 
 
-// ── 1. TIPPFEHLER-TOLERANZ (Levenshtein-Distanz) ────────────────
-// Berechnet wie "ähnlich" zwei Wörter sind
-// "yuotube" vs "youtube" → Distanz 2 → trotzdem Treffer
+// ────────────────────────────────────────────────────────────────
+// KERN 1: LEVENSHTEIN — Misst Tippfehler-Abstand zwischen 2 Wörtern
+// Beispiel: "yuotube" vs "youtube" → Abstand 2 → trotzdem Treffer
+// ────────────────────────────────────────────────────────────────
 function levenshtein(a, b) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
     const m = a.length, n = b.length;
-    const dp = Array.from({ length: m + 1 }, (_, i) =>
-        Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0)
-    );
-    for (let i = 1; i <= m; i++) {
+    const dp = [];
+    for (let i = 0; i <= m; i++) {
+        dp[i] = [i];
         for (let j = 1; j <= n; j++) {
-            dp[i][j] = a[i-1] === b[j-1]
-                ? dp[i-1][j-1]
+            dp[i][j] = i === 0 ? j
+                : a[i-1] === b[j-1] ? dp[i-1][j-1]
                 : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
         }
     }
     return dp[m][n];
 }
 
-// Prüft ob zwei Wörter "ähnlich genug" sind (Tippfehler-tolerant)
-function fuzzyMatch(word, target) {
-    const w = word.toLowerCase();
-    const t = target.toLowerCase();
-    if (t.includes(w)) return true;          // Exakter Teilstring
-    if (w.length <= 3) return t === w;       // Kurze Wörter: nur exakt
-    const maxDist = w.length <= 5 ? 1 : 2;  // Kurze Wörter: 1 Fehler erlaubt, lange: 2
-    return levenshtein(w, t) <= maxDist;
+// Prüft ob 2 Wörter "ähnlich genug" sind (toleriert Tippfehler)
+function fuzzyMatch(input, target) {
+    const a = input.toLowerCase();
+    const b = target.toLowerCase();
+    if (b.includes(a)) return true;               // Exakter Teilstring → sofort ja
+    if (a.length <= 3) return a === b;             // Kurze Wörter nur exakt
+    const maxErr = a.length <= 5 ? 1 : 2;         // 1 Fehler bis 5 Zeichen, sonst 2
+    return levenshtein(a, b) <= maxErr;
 }
 
 
-// ── 2. SEMANTISCHE SYNONYME ──────────────────────────────────────
-// Erweiterbar: einfach neue Einträge hinzufügen
-const SYNONYME = {
-    // Video / Medien
-    'video':      ['youtube', 'avideo', 'schauen', 'film', 'clips'],
-    'musik':      ['audio', 'sound', 'song', 'lied'],
-    'film':       ['youtube', 'video', 'schauen'],
+// ────────────────────────────────────────────────────────────────
+// KERN 2: TIPPFEHLER-KORREKTUR
+// Korrigiert die gesamte Suchanfrage bevor sie verarbeitet wird
+// "Yuotbe"  → "youtube"
+// "speil"   → "spiel"
+// "glagel"  → "glaggle"
+// ────────────────────────────────────────────────────────────────
+function buildDictionary() {
+    const words = new Set();
 
-    // KI / Chat
-    'ki':         ['glame', 'chatbot', 'ai', 'assistent', 'künstliche intelligenz'],
-    'ai':         ['glame', 'chatbot', 'ki', 'assistent'],
-    'chatbot':    ['glame', 'ki', 'ai', 'chat'],
-    'chat':       ['glame', 'ki', 'ai'],
-    'fragen':     ['glame', 'ki', 'chatbot'],
-    'antworten':  ['glame', 'ki', 'chatbot'],
+    // Aus deinen Favoriten alle Wörter automatisch extrahieren
+    if (typeof meineLieblingsSeiten !== 'undefined') {
+        meineLieblingsSeiten.forEach(e => {
+            (e.title + ' ' + e.desc + ' ' + e.url)
+                .toLowerCase()
+                .replace(/[^a-zäöüß0-9\s]/g, ' ')
+                .split(/\s+/)
+                .filter(w => w.length > 2)
+                .forEach(w => words.add(w));
+        });
+    }
 
-    // Bild / Design
-    'bild':       ['aimage', 'image', 'foto', 'design', 'generieren'],
-    'bilder':     ['aimage', 'image', 'foto', 'design'],
-    'foto':       ['aimage', 'bild', 'image'],
-    'image':      ['aimage', 'bild', 'foto'],
-    'generieren': ['aimage', 'erstellen', 'zeichnen'],
-    'design':     ['designstudio', 'aimage', 'erstellen', 'gestalten'],
-    'gestalten':  ['designstudio', 'design'],
+    // Häufige deutsche Suchwörter als Basis-Wörterbuch
+    const base = [
+        'youtube','google','instagram','facebook','twitter','tiktok','netflix',
+        'spotify','wikipedia','amazon','reddit','twitch','discord','whatsapp',
+        'video','videos','musik','bild','bilder','foto','fotos','film','serie',
+        'spiel','spiele','game','games','gaming','coins','punkte',
+        'wetter','nachrichten','news','sport','rezept','rezepte',
+        'kochen','reise','urlaub','hotel','flug','karte','route',
+        'chatbot','assistent','intelligenz','künstlich','lernen','fragen',
+        'generieren','erstellen','design','code','programmieren','entwicklung',
+        'quiz','schule','geschichte','verlauf','suche','suchmaschine',
+        'rechner','timer','uhr','kalender','übersetzen','übersetzer',
+        'glaggle','glame','gamecenter','aimage','avideo','quizai',
+        'designstudio','codemaker','historysites','bildschirmschoner',
+    ];
+    base.forEach(w => words.add(w));
 
-    // Spiele / Gaming
-    'spiel':      ['gamecenter', 'game', 'spielen', 'coins'],
-    'spiele':     ['gamecenter', 'game', 'spielen'],
-    'game':       ['gamecenter', 'spiel', 'spielen', 'coins'],
-    'gaming':     ['gamecenter', 'game', 'spielen'],
-    'spielen':    ['gamecenter', 'game'],
-    'coins':      ['gamecenter', 'punkte', 'sammeln'],
+    return [...words];
+}
 
-    // Quiz / Lernen
-    'quiz':       ['quizai', 'quiz studio', 'fragen', 'lernen'],
-    'lernen':     ['quizai', 'quiz', 'fragen'],
-    'frage':      ['quizai', 'quiz', 'chatbot'],
+function correctQuery(rawQuery) {
+    const dict   = buildDictionary();
+    const words  = rawQuery.trim().split(/\s+/);
+    const result = words.map(word => {
+        const w = word.toLowerCase();
+        if (w.length <= 2) return w;
+        if (dict.includes(w)) return w;   // Bereits korrekt
 
-    // Suche / Glaggle
-    'suche':      ['glaggle', 'suchmaschine', 'google'],
-    'suchen':     ['glaggle', 'suchmaschine'],
-    'suchmaschine':['glaggle'],
+        let best = w, bestDist = Infinity;
+        const maxAllow = w.length <= 5 ? 1 : w.length <= 8 ? 2 : 3;
 
-    // Code / Entwicklung
-    'code':       ['codemaker', 'programmieren', 'entwicklung'],
-    'programmieren':['codemaker', 'code'],
+        for (const dw of dict) {
+            if (Math.abs(dw.length - w.length) > maxAllow) continue;
+            const d = levenshtein(w, dw);
+            if (d < bestDist && d <= maxAllow) {
+                bestDist = d;
+                best = dw;
+            }
+            if (d === 0) break;
+        }
+        return best;
+    });
 
-    // Geschichte / Info
-    'geschichte': ['history', 'glaggle history', 'historysites'],
-    'verlauf':    ['history', 'glaggle history'],
+    const corrected = result.join(' ');
+    if (corrected !== rawQuery.toLowerCase()) {
+        console.log(`🔧 Glaggle korrigiert: "${rawQuery}" → "${corrected}"`);
+    }
+    return corrected;
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// KERN 3: SEMANTISCHE SYNONYME
+// "video" findet YouTube, "spiel" findet Gamecenter usw.
+// Einfach unten neue Zeilen hinzufügen um es zu erweitern!
+// ────────────────────────────────────────────────────────────────
+const GLAGGLE_SYNONYME = {
+    // Medien & Video
+    'video':         ['youtube','avideo','film','schauen','clips','streaming'],
+    'videos':        ['youtube','avideo','film'],
+    'film':          ['youtube','video','schauen','netflix'],
+    'streaming':     ['youtube','netflix','video'],
+    'musik':         ['spotify','audio','sound','song','lied'],
+    'song':          ['spotify','musik','audio'],
+
+    // KI & Chat
+    'ki':            ['glame','chatbot','ai','assistent','künstliche'],
+    'ai':            ['glame','chatbot','ki','assistent'],
+    'chatbot':       ['glame','ki','ai','chat'],
+    'chat':          ['glame','ki','ai','chatbot'],
+    'assistent':     ['glame','ki','chatbot'],
+    'fragen':        ['glame','ki','quiz'],
+    'antworten':     ['glame','ki'],
+    'künstlich':     ['glame','ki','ai'],
+    'intelligenz':   ['glame','ki','ai'],
+
+    // Bild & Design
+    'bild':          ['aimage','image','foto','design','generieren'],
+    'bilder':        ['aimage','image','fotos','design'],
+    'foto':          ['aimage','bild','image'],
+    'fotos':         ['aimage','bilder','image'],
+    'image':         ['aimage','bild','foto'],
+    'generieren':    ['aimage','erstellen','zeichnen'],
+    'zeichnen':      ['aimage','designstudio','erstellen'],
+    'design':        ['designstudio','aimage','erstellen','gestalten','canva'],
+    'gestalten':     ['designstudio','design'],
+    'erstellen':     ['designstudio','aimage','codemaker'],
+    'grafik':        ['designstudio','aimage','design'],
+
+    // Gaming & Spiele
+    'spiel':         ['gamecenter','game','spielen','coins'],
+    'spiele':        ['gamecenter','games','spielen'],
+    'game':          ['gamecenter','spiel','spielen','coins'],
+    'games':         ['gamecenter','spiele','spielen'],
+    'gaming':        ['gamecenter','game','spielen'],
+    'spielen':       ['gamecenter','game','spiel'],
+    'coins':         ['gamecenter','punkte','sammeln'],
+    'punkte':        ['gamecenter','coins'],
+
+    // Quiz & Lernen
+    'quiz':          ['quizai','fragen','lernen','test'],
+    'quizze':        ['quizai','quiz','fragen'],
+    'lernen':        ['quizai','quiz','fragen','schule'],
+    'frage':         ['quizai','quiz','chatbot'],
+    'test':          ['quizai','quiz'],
+    'schule':        ['quizai','lernen','quiz'],
+
+    // Suche & Glaggle
+    'suche':         ['glaggle','suchmaschine'],
+    'suchen':        ['glaggle','suchmaschine'],
+    'suchmaschine':  ['glaggle'],
+    'google':        ['glaggle'],
+
+    // Code & Entwicklung
+    'code':          ['codemaker','programmieren','entwicklung'],
+    'coding':        ['codemaker','programmieren','code'],
+    'programmieren': ['codemaker','code','entwicklung'],
+    'entwicklung':   ['codemaker','code'],
+    'website':       ['codemaker','designstudio','code'],
+
+    // Video erstellen
+    'videoerstellen':['avideostudio','avideo','video'],
+    'videoschnitt':  ['avideostudio','avideo'],
+    'screensaver':   ['bildschirmschoner','canvas'],
+    'hintergrund':   ['bildschirmschoner','canvas','design'],
+
+    // Info & Geschichte
+    'geschichte':    ['history','glaggle history','historysites'],
+    'verlauf':       ['history','glaggle history'],
+    'info':          ['faq','history','glaggle'],
+    'hilfe':         ['faq','glaggle'],
+    'über':          ['faq','history','glaggle'],
 };
 
-// Gibt alle relevanten Suchbegriffe für einen Query zurück
-function expandQuery(rawQuery) {
-    const q = rawQuery.toLowerCase().trim();
+function expandQuery(query) {
+    const q      = query.toLowerCase().trim();
     const tokens = q.split(/\s+/).filter(t => t.length > 1);
     const expanded = new Set(tokens);
 
     tokens.forEach(token => {
         // Direkte Synonyme
-        if (SYNONYME[token]) {
-            SYNONYME[token].forEach(s => expanded.add(s));
+        if (GLAGGLE_SYNONYME[token]) {
+            GLAGGLE_SYNONYME[token].forEach(s => expanded.add(s));
         }
-        // Fuzzy: Prüfe ob token einem Synonym-Schlüssel ähnelt
-        Object.keys(SYNONYME).forEach(key => {
+        // Fuzzy: Prüft ob Token einem Synonym-Schlüssel ähnelt (Tippfehler in Synonymen)
+        Object.keys(GLAGGLE_SYNONYME).forEach(key => {
             if (fuzzyMatch(token, key)) {
-                SYNONYME[key].forEach(s => expanded.add(s));
+                GLAGGLE_SYNONYME[key].forEach(s => expanded.add(s));
                 expanded.add(key);
             }
         });
@@ -1945,61 +2060,130 @@ function expandQuery(rawQuery) {
 }
 
 
-// ── 3. SMART SCORING FÜR FAVORITEN ──────────────────────────────
-// Bewertet jeden Favoriten-Eintrag intelligent
+// ────────────────────────────────────────────────────────────────
+// KERN 4: SMART SCORING
+// Bewertet jeden Eintrag mit einem Punktesystem
+// Je höher der Score, desto weiter oben erscheint das Ergebnis
+// ────────────────────────────────────────────────────────────────
 function scoreEntry(entry, queryTokens, expandedTokens) {
-    const title = entry.title.toLowerCase();
-    const desc  = entry.desc.toLowerCase();
-    const url   = entry.url.toLowerCase();
+    const title = (entry.title || '').toLowerCase();
+    const desc  = (entry.desc  || entry.description || '').toLowerCase();
+    const url   = (entry.url   || '').toLowerCase();
     let score   = 0;
 
     for (const token of queryTokens) {
-        // ── EXAKTER TREFFER ──
-        if (title === token)                    score += 20; // "YouTube" sucht "YouTube"
-        if (title.startsWith(token))            score += 10; // "Glaggle" sucht "Glaggle Design"
-        if (title.includes(token))              score += 7;  // Teilstring im Titel
-        if (desc.includes(token))               score += 3;  // In Beschreibung
-        if (url.includes(token))                score += 2;  // In URL
+        // Exakte Treffer (hohe Punkte)
+        if (title === token)             score += 25;  // Perfekter Titeltreff
+        if (title.startsWith(token))     score += 12;  // Titel beginnt damit
+        if (title.includes(token))       score += 8;   // Token irgendwo im Titel
+        if (desc.includes(token))        score += 4;   // In der Beschreibung
+        if (url.includes(token))         score += 2;   // In der URL
 
-        // ── FUZZY TREFFER (Tippfehler) ──
-        const titleWords = title.split(/\s+/);
-        for (const tw of titleWords) {
-            if (fuzzyMatch(token, tw)) score += 5;
-        }
-        const descWords = desc.split(/\s+/);
-        for (const dw of descWords) {
+        // Fuzzy Treffer (Tippfehler tolerieren)
+        title.split(/\s+/).forEach(tw => {
+            if (fuzzyMatch(token, tw)) score += 6;
+        });
+        desc.split(/\s+/).forEach(dw => {
             if (fuzzyMatch(token, dw)) score += 2;
-        }
+        });
     }
 
-    // ── SEMANTISCHE TREFFER (Synonyme) ──
-    for (const expanded of expandedTokens) {
-        if (title.includes(expanded)) score += 4;
-        if (desc.includes(expanded))  score += 2;
-        if (url.includes(expanded))   score += 1;
+    // Semantische Treffer (durch Synonyme gefunden)
+    for (const syn of expandedTokens) {
+        if (title.includes(syn)) score += 5;
+        if (desc.includes(syn))  score += 2;
+        if (url.includes(syn))   score += 1;
     }
+
+    // Click-Boost: Beliebte Seiten kommen weiter oben
+    const clicks = entry.clicks || 0;
+    score += Math.log(clicks + 1) * 1.5;
+
+    // HTTPS-Bonus
+    if (url.startsWith('https')) score += 0.5;
 
     return score;
 }
 
-// Haupt-Funktion: Ersetzt getAiProcessedFavs()
-async function getAiProcessedFavs(rawQuery) {
-    if (!rawQuery || rawQuery.trim().length < 2) return [];
 
-    const queryTokens   = rawQuery.toLowerCase().split(/\s+/).filter(t => t.length > 1);
-    const expandedTokens = expandQuery(rawQuery);
+// ────────────────────────────────────────────────────────────────
+// HAUPTFUNKTION 1: glaggleSearch()
+// Ersetzt die alte glaggleSearch() komplett
+// ────────────────────────────────────────────────────────────────
+async function glaggleSearch() {
+    const rawInput = document.getElementById('glaggleQuery').value.trim();
+    if (!rawInput) return;
 
-    // ── LOKALES SCORING (blitzschnell) ──────────────────────
+    // SCHRITT 1: Tippfehler korrigieren
+    const query = correctQuery(rawInput);
+
+    // SCHRITT 2: Expanded tokens für Synonyme
+    const queryTokens    = query.split(/\s+/).filter(t => t.length > 1);
+    const expandedTokens = expandQuery(query);
+
+    // SCHRITT 3: UI zurücksetzen
+    const navLeiste = document.querySelector('.glaggle-nav');
+    if (navLeiste) navLeiste.style.display = 'block';
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.display = 'none';
+        item.classList.remove('active');
+    });
+
+    const resultsDiv = document.getElementById('glaggleResults');
+    const loader     = document.getElementById('glaggleLoader');
+    resultsDiv.innerHTML = '';
+    loader.style.display = 'block';
+
+    // SCHRITT 4: Widgets prüfen (Rechner, Timer etc.)
+    checkWidgets(query);
+    resultsDiv.appendChild(createAiPlaceholder());
+
+    // SCHRITT 5: Alle Quellen parallel abfragen
+    try {
+        await Promise.allSettled([
+            fetchGroqAI(query),
+            (async () => {
+                const favs = await getAiProcessedFavs(query);
+                if (favs && favs.length > 0) {
+                    document.getElementById('nav-fav').style.display = 'block';
+                    favs.forEach((res, i) => {
+                        renderResult(res.title, res.desc || res.description, res.url, 'fav', i === 0 ? 'fav-section' : null);
+                    });
+                }
+            })(),
+            searchSupabase(query),
+            searchGlaggleImages(query),
+            searchWikipedia(query, 'de'),
+        ]);
+    } catch(e) {
+        console.error(e);
+    } finally {
+        loader.style.display = 'none';
+        setTimeout(refreshObserver, 500);
+    }
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// HAUPTFUNKTION 2: getAiProcessedFavs()
+// Ersetzt die alte getAiProcessedFavs() komplett
+// Sucht in meineLieblingsSeiten mit Smart-Scoring + KI-Ergänzung
+// ────────────────────────────────────────────────────────────────
+async function getAiProcessedFavs(query) {
+    if (!query || query.trim().length < 2) return [];
+
+    const queryTokens    = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+    const expandedTokens = expandQuery(query);
+
+    // LOKALES SMART-SCORING (blitzschnell, kein API-Call nötig)
     const scored = meineLieblingsSeiten
-        .map(entry => ({
-            ...entry,
-            _score: scoreEntry(entry, queryTokens, expandedTokens)
-        }))
+        .map(entry => ({ ...entry, _score: scoreEntry(entry, queryTokens, expandedTokens) }))
         .filter(e => e._score > 0)
         .sort((a, b) => b._score - a._score);
 
-    // Duplikate entfernen (gleiche URL)
-    const seen = new Set();
+    // Duplikate (gleiche URL) entfernen
+    const seen   = new Set();
     const unique = scored.filter(e => {
         if (seen.has(e.url)) return false;
         seen.add(e.url);
@@ -2008,17 +2192,14 @@ async function getAiProcessedFavs(rawQuery) {
 
     const topLocal = unique.slice(0, 5);
 
-    // ── KI ALS ERGÄNZUNG (nur wenn wenig lokale Treffer) ────
-    if (topLocal.length >= 3) {
-        // Reicht — KI-Call sparen
-        return topLocal;
-    }
+    // Wenn 3+ lokale Treffer: KI-Call sparen, sofort zurückgeben
+    if (topLocal.length >= 3) return topLocal;
 
-    // Wenn weniger als 3 Treffer: Groq fragen
+    // Wenn wenig lokale Treffer: Groq KI als Ergänzung fragen
     try {
         const context = meineLieblingsSeiten
             .map(s => `"${s.title}": ${s.desc}`)
-            .join(', ');
+            .join(' | ');
 
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -2032,13 +2213,13 @@ async function getAiProcessedFavs(rawQuery) {
                 messages: [
                     {
                         role: "system",
-                        content: `Du bist ein App-Finder. Verfügbare Apps: [${context}].
-Aufgabe: Finde Apps die zur Suchanfrage passen (semantisch, auch Synonyme).
-Antworte NUR mit einem JSON-Array der passenden App-Objekte im Format:
-[{"title":"...","desc":"...","url":"..."}]
-Kein Text drumherum, nur reines JSON.`
+                        content: `Du bist ein App-Finder für Glaggle.
+Verfügbare Apps: [${context}]
+Finde Apps die zur Suchanfrage passen — auch semantisch und über Synonyme.
+Antworte NUR mit einem JSON-Array im Format: [{"title":"...","desc":"...","url":"..."}]
+Absolut kein Text ausserhalb des JSON.`
                     },
-                    { role: "user", content: rawQuery }
+                    { role: "user", content: query }
                 ]
             })
         });
@@ -2049,19 +2230,18 @@ Kein Text drumherum, nur reines JSON.`
         const end     = content.lastIndexOf(']') + 1;
         if (start === -1 || end <= 0) return topLocal;
 
-        const aiFavs  = JSON.parse(content.substring(start, end));
+        const aiFavs   = JSON.parse(content.substring(start, end));
+        const seenUrls = new Set(topLocal.map(e => e.url));
+        const combined = [...topLocal];
 
-        // Kombinieren & Duplikate entfernen
-        const allResults = [...topLocal];
-        const seenUrls   = new Set(topLocal.map(e => e.url));
         aiFavs.forEach(af => {
             if (af.url && !seenUrls.has(af.url)) {
-                allResults.push(af);
+                combined.push(af);
                 seenUrls.add(af.url);
             }
         });
 
-        return allResults.slice(0, 5);
+        return combined.slice(0, 5);
 
     } catch(e) {
         console.error('KI-Favs Fehler:', e);
@@ -2070,26 +2250,30 @@ Kein Text drumherum, nur reines JSON.`
 }
 
 
-// ── 4. SMART WEBSEARCH SCORING ───────────────────────────────────
-// Ersetzt searchSupabase() — mit Tippfehler + semantischem Scoring
-
-async function searchSupabase(rawQuery) {
+// ────────────────────────────────────────────────────────────────
+// HAUPTFUNKTION 3: searchSupabase()
+// Ersetzt die alte searchSupabase() komplett
+// Holt mehr Kandidaten aus der DB, scored sie dann clientseitig
+// ────────────────────────────────────────────────────────────────
+async function searchSupabase(query) {
     const resultsDiv = document.getElementById('glaggleResults');
     const navWebBtn  = document.getElementById('nav-web');
     const oldWebBox  = document.getElementById('glaggle-web-search-box');
     if (oldWebBox) oldWebBox.remove();
 
-    const queryTokens    = rawQuery.toLowerCase().split(/\s+/).filter(t => t.length > 1);
-    const expandedTokens = expandQuery(rawQuery);
+    const queryTokens    = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+    const expandedTokens = expandQuery(query);
+
+    // Alle relevanten Begriffe für die DB-Abfrage (Original + Synonyme)
+    const allTerms = [...new Set([...queryTokens, ...expandedTokens])].slice(0, 6);
 
     try {
-        // Supabase: alle möglichen Kandidaten holen (großzügig)
-        const orConditions = [...new Set([...queryTokens, ...expandedTokens])]
-            .slice(0, 5) // Max 5 Begriffe für die DB-Query
+        // DB-Abfrage: Großzügig viele Kandidaten holen
+        const orConditions = allTerms
             .map(t => `title.ilike.%${t}%,description.ilike.%${t}%`)
             .join(',');
 
-        let dbQuery = supabaseClient.from('search_index').select('*').limit(30);
+        let dbQuery = supabaseClient.from('search_index').select('*').limit(40);
         if (orConditions) dbQuery = dbQuery.or(orConditions);
 
         const { data, error } = await dbQuery;
@@ -2099,26 +2283,26 @@ async function searchSupabase(rawQuery) {
             return;
         }
 
-        // ── CLIENTSEITIGES SMART-SCORING ────────────────────
+        // CLIENTSEITIGES SMART-SCORING — bessere Reihenfolge als Supabase
         const scored = data
             .map(res => ({
                 ...res,
                 _score: scoreEntry(
-                    { title: res.title, desc: res.description || '', url: res.url },
+                    { title: res.title, desc: res.description || '', url: res.url, clicks: res.clicks },
                     queryTokens,
                     expandedTokens
-                ) + Math.log((res.clicks || 0) + 1) * 1.5  // Click-Boost
+                )
             }))
             .filter(r => r._score > 0)
             .sort((a, b) => b._score - a._score);
 
-        // Max 2 Ergebnisse pro Domain
+        // Max 2 Ergebnisse pro Domain (Diversity)
         const domainCount = new Map();
         const deduped = scored.filter(r => {
             let domain = '';
             try { domain = new URL(r.url).hostname; } catch(e) { return true; }
-            const count = domainCount.get(domain) || 0;
-            if (count < 2) { domainCount.set(domain, count + 1); return true; }
+            const c = domainCount.get(domain) || 0;
+            if (c < 2) { domainCount.set(domain, c + 1); return true; }
             return false;
         }).slice(0, 8);
 
@@ -2129,11 +2313,11 @@ async function searchSupabase(rawQuery) {
 
         if (navWebBtn) navWebBtn.style.display = 'block';
 
-        // ── BOX BAUEN ────────────────────────────────────────
+        // Ergebnis-Box aufbauen
         const webBox = document.createElement('div');
-        webBox.id    = 'glaggle-web-search-box';
+        webBox.id        = 'glaggle-web-search-box';
         webBox.className = 'glaggle-entry fav-project';
-        webBox.style.borderLeft = '5px solid #34A853';
+        webBox.style.borderLeft     = '5px solid #34A853';
         webBox.style.scrollMarginTop = '100px';
         webBox.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -2158,11 +2342,11 @@ async function searchSupabase(rawQuery) {
             try { domain = new URL(res.url).hostname.replace('www.',''); } catch(e) {}
 
             const topBadge = res._score > 15
-                ? `<span style="font-size:0.65rem;background:#34A85322;color:#34A853;padding:1px 6px;border-radius:4px;margin-left:4px;">★ Top</span>`
+                ? `<span style="font-size:0.65rem;background:#34A85322;color:#34A853;padding:1px 6px;border-radius:4px;margin-left:5px;">★ Top</span>`
                 : '';
 
             item.innerHTML = `
-                <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
                     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16"
                          style="width:16px;height:16px;" onerror="this.style.display='none'">
                     <small style="color:var(--desc-color);font-size:0.75rem;">${domain}</small>
@@ -2183,339 +2367,6 @@ async function searchSupabase(rawQuery) {
         console.error('WebSearch Fehler:', e);
     }
 }
-
-// ============================================================
-// GLAGGLE SUCHALGORITHMEN — Komplette Implementierung
-// Einfach in deine index.html einbauen (Anleitung unten)
-// ============================================================
-
-
-// ════════════════════════════════════════════════════════════
-// EBENE 1 — QUERY PROCESSING
-// Ersetzt: const query = document.getElementById('glaggleQuery').value.trim();
-// ════════════════════════════════════════════════════════════
-
-function preprocessQuery(raw) {
-    // Schritt 1: Basis-Normalisierung
-    let q = raw.trim().toLowerCase();
-
-    // Schritt 2: Sonderzeichen entfernen (aber Umlaute behalten)
-    q = q.replace(/[^\w\säöüß]/gi, ' ').replace(/\s+/g, ' ').trim();
-
-    // Schritt 3: Deutsche Stopwords entfernen
-    const stopwords = [
-        'was', 'ist', 'wie', 'der', 'die', 'das', 'und', 'oder',
-        'in', 'von', 'zu', 'ein', 'eine', 'einen', 'dem', 'den',
-        'bei', 'mit', 'an', 'auf', 'für', 'im', 'am', 'ich',
-        'du', 'er', 'sie', 'wir', 'ihr', 'es', 'mein', 'dein'
-    ];
-    let tokens = q.split(/\s+/).filter(t => t.length > 1 && !stopwords.includes(t));
-
-    // Schritt 4: Synonyme expandieren
-    const synonyms = {
-        'ki':        'künstliche intelligenz',
-        'ai':        'künstliche intelligenz',
-        'vid':       'video',
-        'bild':      'bild image foto',
-        'game':      'spiel game',
-        'games':     'spiele games',
-        'suche':     'suchmaschine suche',
-        'chat':      'chatbot ki assistent',
-        'code':      'code programmieren entwicklung',
-        'design':    'design gestalten layout',
-        'music':     'musik audio sound',
-    };
-    const expandedTokens = [];
-    tokens.forEach(t => {
-        expandedTokens.push(t);
-        if (synonyms[t]) {
-            synonyms[t].split(' ').forEach(s => {
-                if (!expandedTokens.includes(s)) expandedTokens.push(s);
-            });
-        }
-    });
-
-    // Schritt 5: Intent erkennen (für späteres Routing)
-    let intent = 'informational'; // Standard
-    const navigationalKeywords = ['glaggle', 'glame', 'gamecenter', 'aimage', 'avideo', 'quizai'];
-    const calculatorKeywords   = ['rechner', 'calculator', 'berechnen'];
-    const timerKeywords        = ['timer', 'minuten', 'sekunden', 'countdown'];
-
-    if (navigationalKeywords.some(k => q.includes(k))) intent = 'navigational';
-    if (calculatorKeywords.some(k => q.includes(k)))   intent = 'calculator';
-    if (timerKeywords.some(k => q.includes(k)))        intent = 'timer';
-
-    return {
-        original:  raw.trim(),          // Originaltext (für API-Calls)
-        normalized: expandedTokens.join(' '), // Für lokale Suche
-        tokens:    expandedTokens,       // Einzelne Wörter
-        intent:    intent                // Was will der User?
-    };
-}
-
-
-// ════════════════════════════════════════════════════════════
-// EBENE 2 — BM25 SCORING
-// Ersetzt: die .filter(s => s.title.toLowerCase().includes(q)) Zeilen
-// ════════════════════════════════════════════════════════════
-
-function bm25Score(queryObj, doc) {
-    const k1  = 1.5;  // Term-Frequency-Sättigung (1.2–2.0 üblich)
-    const b   = 0.75; // Längen-Normalisierung (0=keine, 1=volle)
-    const avgTitleLen = 4;  // Durchschnittliche Titelwortanzahl deiner Seiten
-    const avgDescLen  = 12; // Durchschnittliche Beschreibungswortanzahl
-
-    const tokens     = queryObj.tokens;
-    const titleWords = (doc.title || '').toLowerCase().split(/\s+/);
-    const descWords  = (doc.desc  || '').toLowerCase().split(/\s+/);
-    const urlWords   = (doc.url   || '').toLowerCase().split(/[\/\.\-\_]/);
-
-    let score = 0;
-
-    for (const token of tokens) {
-        // --- TITEL (dreifaches Gewicht) ---
-        const titleMatches = titleWords.filter(w => w.includes(token)).length;
-        if (titleMatches > 0) {
-            const titleBM25 = (titleMatches * (k1 + 1)) /
-                              (titleMatches + k1 * (1 - b + b * titleWords.length / avgTitleLen));
-            score += 3 * titleBM25;
-
-            // Exakter Treffer (ganzer Titel stimmt überein)
-            if (doc.title.toLowerCase() === token) score += 10;
-            // Titel beginnt mit dem Suchbegriff
-            if (doc.title.toLowerCase().startsWith(token)) score += 4;
-        }
-
-        // --- BESCHREIBUNG (einfaches Gewicht) ---
-        const descMatches = descWords.filter(w => w.includes(token)).length;
-        if (descMatches > 0) {
-            const descBM25 = (descMatches * (k1 + 1)) /
-                             (descMatches + k1 * (1 - b + b * descWords.length / avgDescLen));
-            score += descBM25;
-        }
-
-        // --- URL-Bonus (falls der Begriff in der URL vorkommt) ---
-        if (urlWords.some(w => w.includes(token))) score += 0.5;
-    }
-
-    // --- CLICK BOOST (logarithmisch, damit ein Ausreißer nicht alles dominiert) ---
-    const clicks = doc.clicks || 0;
-    score += Math.log(clicks + 1) * 0.8;
-
-    // --- FRESHNESS BONUS (falls ein "updated"-Feld vorhanden ist) ---
-    if (doc.updated_at) {
-        const daysSinceUpdate = (Date.now() - new Date(doc.updated_at)) / (1000 * 60 * 60 * 24);
-        if (daysSinceUpdate < 7)   score += 2;
-        else if (daysSinceUpdate < 30)  score += 1;
-        else if (daysSinceUpdate < 180) score += 0.3;
-    }
-
-    // --- HTTPS BONUS ---
-    if (doc.url && doc.url.startsWith('https://')) score += 0.3;
-
-    return score;
-}
-
-
-// ════════════════════════════════════════════════════════════
-// EBENE 3A — RECIPROCAL RANK FUSION
-// Kombiniert Ergebnisse aus mehreren Quellen fair
-// ════════════════════════════════════════════════════════════
-
-function reciprocalRankFusion(resultLists, k = 60) {
-    const scores = new Map();
-
-    resultLists.forEach((list, listIndex) => {
-        // Verschiedene Quellen bekommen leicht unterschiedliche Gewichte:
-        // Favoriten (0) > DB (1) > Wiki (2)
-        const sourceWeight = listIndex === 0 ? 1.2 : listIndex === 1 ? 1.0 : 0.8;
-
-        list.forEach((item, rank) => {
-            const key = item.url;
-            if (!key) return;
-
-            const rrfScore  = sourceWeight / (k + rank + 1);
-            const existing  = scores.get(key);
-
-            if (existing) {
-                existing.score += rrfScore;
-            } else {
-                scores.set(key, { item, score: rrfScore });
-            }
-        });
-    });
-
-    return [...scores.values()]
-        .sort((a, b) => b.score - a.score)
-        .map(e => e.item);
-}
-
-
-// ════════════════════════════════════════════════════════════
-// EBENE 3B — DIVERSITY PENALTY
-// Verhindert, dass dieselbe Domain mehrfach erscheint
-// ════════════════════════════════════════════════════════════
-
-function deduplicateDomains(results, maxPerDomain = 1) {
-    const domainCount = new Map();
-
-    return results.filter(item => {
-        if (!item || !item.url) return false;
-
-        let domain = '';
-        try {
-            domain = new URL(item.url).hostname.replace('www.', '');
-        } catch(e) {
-            return true; // Bei ungültiger URL trotzdem behalten
-        }
-
-        const count = domainCount.get(domain) || 0;
-        if (count < maxPerDomain) {
-            domainCount.set(domain, count + 1);
-            return true;
-        }
-        return false;
-    });
-}
-
-
-// ════════════════════════════════════════════════════════════
-// ERSATZ FÜR: getAiProcessedFavs()
-// Nutzt jetzt BM25 statt einfachem .includes()
-// ════════════════════════════════════════════════════════════
-
-
-
-// Hilfsfunktion: Nur KI-Extras holen (keine Duplikate zu vorhandenen)
-async function getAiFavsOnly(originalQuery, alreadyFound) {
-    const alreadyUrls = new Set(alreadyFound.map(f => f.url));
-    const remaining   = meineLieblingsSeiten.filter(s => !alreadyUrls.has(s.url));
-    if (remaining.length === 0) return [];
-
-    const context = remaining.map(s => `${s.title}: ${s.desc}`).join(' | ');
-
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": "Bearer " + getGKey(),
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
-            messages: [
-                {
-                    role: "system",
-                    content: `Finde weitere passende Apps aus: [${context}]. Nur JSON-Array, max 3 Ergebnisse.`
-                },
-                { role: "user", content: originalQuery }
-            ],
-            temperature: 0.1,
-            max_tokens: 300
-        })
-    });
-
-    const data    = await res.json();
-    const content = data.choices[0].message.content;
-    const start   = content.indexOf('[');
-    const end     = content.lastIndexOf(']') + 1;
-    if (start === -1 || end <= 0) return [];
-    return JSON.parse(content.substring(start, end));
-}
-
-
-// ════════════════════════════════════════════════════════════
-// ERSATZ FÜR: glaggleSearch()
-// Nutzt jetzt preprocessQuery + RRF Fusion
-// ════════════════════════════════════════════════════════════
-
-async function glaggleSearch() {
-    const rawQuery = document.getElementById('glaggleQuery').value.trim();
-    if (!rawQuery) return;
-
-    // ── QUERY VORVERARBEITEN ──────────────────────────────────
-    const queryObj = preprocessQuery(rawQuery);
-
-    // Intent-basiertes Routing (Widgets zuerst prüfen)
-    if (queryObj.intent === 'calculator' || queryObj.intent === 'timer') {
-        checkWidgets(rawQuery);
-    }
-
-    // ── UI RESET ─────────────────────────────────────────────
-    const navLeiste = document.querySelector('.glaggle-nav');
-    if (navLeiste) navLeiste.style.display = 'block';
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.style.display = 'none';
-        item.classList.remove('active');
-    });
-
-    const resultsDiv = document.getElementById('glaggleResults');
-    const loader     = document.getElementById('glaggleLoader');
-    resultsDiv.innerHTML = '';
-    loader.style.display = 'block';
-
-    // Für Widgets trotzdem die Widget-Funktion aufrufen
-    if (queryObj.intent !== 'calculator' && queryObj.intent !== 'timer') {
-        checkWidgets(rawQuery);
-    }
-
-    resultsDiv.appendChild(createAiPlaceholder());
-
-    // ── ALLE QUELLEN PARALLEL ABFRAGEN ───────────────────────
-    // Ergebnisse aus allen Quellen sammeln
-    let favResults  = [];
-    let dbResults   = [];
-    let wikiResults = [];
-
-    try {
-        await Promise.allSettled([
-
-            // KI-Zusammenfassung (unverändert, nutzt Original-Query für bessere Antworten)
-            fetchGroqAI(rawQuery),
-
-            // Favoriten mit neuem BM25-Scoring
-            (async () => {
-                const favs = await getAiProcessedFavs(rawQuery);
-                favResults = favs;
-                if (favs && favs.length > 0) {
-                    document.getElementById('nav-fav').style.display = 'block';
-                    favs.forEach((res, index) => {
-                        const id = (index === 0) ? 'fav-section' : null;
-                        renderResult(res.title, res.desc, res.url, 'fav', id);
-                    });
-                }
-            })(),
-
-            // Supabase DB (nutzt normalisierten Query für bessere Treffer)
-            (async () => {
-                dbResults = await searchSupabaseWithScoring(queryObj);
-            })(),
-
-            // Bilder (unverändert)
-            searchGlaggleImages(rawQuery),
-
-            // Wikipedia (nutzt normalisierten Query)
-            searchWikipedia(queryObj.normalized, 'de')
-                .then(results => { wikiResults = results || []; })
-                .catch(() => {})
-        ]);
-
-    } catch(e) {
-        console.error(e);
-    } finally {
-        loader.style.display = 'none';
-        setTimeout(refreshObserver, 500);
-    }
-}
-
-
-// ════════════════════════════════════════════════════════════
-// ERSATZ FÜR: searchSupabase()
-// Nutzt jetzt clientseitiges BM25-Nachscoring
-// ════════════════════════════════════════════════════════════
-
-
-
-// Ende der Datei
 
 const client = new Appwrite.Client()
         .setEndpoint('https://cloud.appwrite.io/v1')
