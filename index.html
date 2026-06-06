@@ -1786,6 +1786,39 @@ if (document.readyState === 'loading') {
         <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
     </form>
 
+    <a href="/preview" style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(600px, 90vw);
+    margin: -45px auto 20px auto;
+    padding: 14px 22px;
+    background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease infinite;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 35px rgba(0,0,0,0.35)'"
+   onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 25px rgba(0,0,0,0.25)'">
+
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:rgba(255,255,255,0.25); border-radius:20px; padding:3px 10px; font-size:0.7rem; font-weight:800; color:white; letter-spacing:1px; text-transform:uppercase;">Beta</span>
+        <span style="color:white; font-weight:700; font-size:0.95rem;">Probiere jetzt die Glaggle Search Seite mit besseren Algorithmen aus!</span>
+    </div>
+    <span style="color:white; font-size:1.1rem;">→</span>
+</a>
+
+<style>
+@keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+</style>
+    
     <div id="glaggle-push-notice" class="glaggle-push-notice" style="display: none;">
         <div class="push-content">
             <span class="push-emoji">💙</span>
