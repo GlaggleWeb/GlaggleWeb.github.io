@@ -1,1 +1,4411 @@
-h
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Glaggle | The AI-Powered Searchmachine</title>
+    
+    <meta name="description" content="Glaggle your life! Nutze die KI-gestützte GlaggleWebSearch, chatte mit Glame AI Pro kostenlos und ohne Login, oder besuche unser Gamecenter. Jetzt entdecken auf Glaggle.ch.">
+    <meta name="keywords" content="Glaggle, AI Powered Searchmachine, AI, AI No SignUp, Gamecenter, Glaggle Gamecenter, Quiz Studio, Glame, Searchmachine">
+    <meta name="author" content="Glaggle.ch">
+    
+    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
+    <link rel="canonical" href="https://glaggle.ch">
+
+    <meta property="og:type" content="website">
+    
+    <meta name="msvalidate.01" content="A0C60E86E6016FC8B90A3EC932FF0F78" />
+    
+<meta property="og:url" content="https://glaggle.ch/">
+<meta property="og:title" content="Glaggle">
+<meta property="og:description" content="Glaggle - Glaggle your life! GlaggleWebSearch (AI Powered), Glaggle Gamecenter, Glame AI">
+<meta property="og:image" content="https://glaggle.ch/glagglelogo.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Glaggle">
+<meta name="twitter:description" content="Glaggle - Glaggle your life!">
+<meta name="twitter:image" content="https://glaggle.ch/glagglelogo.png"> 
+
+<meta name="theme-color" content="#ffffff"> 
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Glaggle">
+
+<meta name="referrer" content="no-referrer-when-downgrade">
+
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Glaggle",
+  "url": "https://glaggle.ch/",
+  "description": "Glaggle your life! AI Powered Web Search and The Glame AI Chatbot.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Glaggle",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://glaggle.ch/glagglelogo.png"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://glaggle.ch/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+    <style>
+/* Globale Einstellungen */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Der EINZIGE Body-Block */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Verhindert horizontales Scrollen */
+    
+    /* Hintergrund-Logik */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
+    /* Animationen */
+    transition: background-color 0.3s, opacity 2s ease-in-out, background-image 1s ease-in-out;
+    opacity: 1; /* War vorher 2, das war falsch! */
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Overlay bleibt separat, da es ein Pseudoelement ist */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Dunkles Overlay */
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+    #background-layer {
+    position: fixed; /* Fixiert den Hintergrund fest im Viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Legt den Hintergrund hinter alles andere */
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1s ease-in-out; /* Hier kommt der sanfte Wechsel rein */
+    opacity: 1;
+}
+
+
+        
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color, #ffffff); /* Nutzt deine Hintergrundfarbe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Immer ganz oben */
+    transition: opacity 0.5s ease;
+}
+
+.loader-logo {
+    width: 150px; /* Oder deine gewünschte Größe */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+/* Versteckt den Preloader */
+.preloader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+    /* NAVIGATION */
+    .navbar {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%; 
+    height: 80px; 
+    
+    /* HIER: Festes, massives Schwarz (oder deine Wunschfarbe) */
+    background-color: #FFFFFF !important; 
+    
+    /* HIER: Den Glas-Effekt deaktivieren */
+    backdrop-filter: none !important;
+    
+    padding: 0 20px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten etwas dunkler für Kontrast */
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+/* Hamburger Icon Linien schwarz erzwingen */
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #000000 !important; /* Schwarz */
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+/* Falls der Container selbst noch eine Farbe hat */
+.hamburger {
+    color: #000000 !important;
+}
+
+.search-bar-container:focus-within {
+    background: rgba(255, 255, 255, 1) !important; /* Wird voll weiß */
+    border-color: #70C4F7 !important; /* Glaggle-Blau leuchtet am Rand auf */
+    box-shadow: 0 0 20px rgba(112, 196, 247, 0.5) !important; /* Leuchten um das Feld herum */
+    transform: scale(1.01); /* Das Feld wird beim Klicken ganz leicht größer */
+}
+
+    .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
+    .nav-center { justify-content: center; }
+    .nav-right { justify-content: flex-end; gap: 10px; }
+    .logo-img { height: 40px; width: auto; }
+    .nav-slogan { font-size: 18px; font-weight: bold; color: var(--text-color); white-space: nowrap; }
+
+    .nav-button {
+        text-decoration: none; color: white; background-color: #8cc9f5;
+        padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 13px;
+        transition: 0.3s; white-space: nowrap;
+    }
+    .nav-button:hover { background-color: #7ab8e6; transform: scale(1.05); }
+
+    /* HAUPTINHALT */
+    .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
+
+    /* --- HIER SIND DEINE GEWÜNSCHTEN ÄNDERUNGEN --- */
+
+    .large-logo { 
+        width: 100%; 
+        max-width: 600px; /* Genau so breit wie die Suche */
+        height: auto; 
+        margin-bottom: 40px; /* Abstand zum Suchbalken */
+    }
+
+    .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
+
+   /* Suchfeld deutlich machen */
+.search-bar-container {
+    display: flex; 
+    align-items: center; 
+    
+    /* HIER: Hintergrund undurchsichtiger machen */
+    background: rgba(255, 255, 255, 0.9) !important; 
+    backdrop-filter: blur(10px); /* Sorgt für einen modernen Glaseffekt */
+    
+    /* HIER: Rand und Schatten für besseren Kontrast */
+    border: 2px solid #ffffff !important; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; 
+    
+    border-radius: 30px; 
+    padding: 5px 20px;
+    margin-bottom: 60px; 
+    transition: all 0.3s ease;
+}
+
+/* Erlaube nur optische Änderungen, keine Größen- oder Layoutänderungen */
+.search-bar-container, .navbar, .nav-item {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+/* Texte im Suchfeld lesbar machen */
+#glaggleQuery {
+    color: #000000 !important; /* Schrift im Suchfeld schwarz */
+    font-weight: 500;
+}
+
+/* Placeholder-Text ebenfalls dunkler machen */
+#glaggleQuery::placeholder {
+    color: #555555 !important;
+    opacity: 1;
+}
+    /* -------------------------------------------- */
+
+    .search-bar-container:focus-within { box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); border-color: #70C4F7; }
+
+    #glaggleQuery {
+        flex: 1; border: none; outline: none; padding: 12px;
+        font-size: 18px; background: transparent; color: var(--text-color);
+    }
+.search-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; 
+    height: 44px;
+    padding: 0;
+    position: relative;
+    z-index: 10; /* Höher als der Cursor */
+    flex-shrink: 0;
+    -webkit-appearance: none; /* Verhindert iOS Button-Styles */
+}
+.search-icon-btn::before {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 24px;
+    background-color: #70C4F7;
+    /* Deine SVG Maske */
+    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+    -webkit-mask-size: contain;
+}
+    .results-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Abstand zwischen den Ergebnissen */
+    }
+
+    .glaggle-entry {
+        background: var(--card-bg); padding: 25px; 
+        border-radius: 18px; border: 1px solid var(--card-border);
+        text-align: left; transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+    .glaggle-entry:hover { 
+    transform: translateY(-5px) scale(1.02); /* Schiebt es hoch UND macht es 2% größer */
+    border-color: #70C4F7; 
+    box-shadow: 0 10px 25px rgba(112, 196, 247, 0.2); 
+    z-index: 10;
+    transition: all 0.5s ease-in-out;/* Stellt sicher, dass das vergrößerte Element über den anderen liegt */
+}
+    .glaggle-entry a { color: var(--link-color); text-decoration: none; font-size: 1.2rem; font-weight: bold; }
+    .glaggle-entry p { color: var(--desc-color); margin-top: 8px; font-size: 0.95rem; line-height: 1.5; }
+
+    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .favicon { width: 18px; height: 18px; border-radius: 4px; }
+
+    .loader { display: none; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #70C4F7; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .button-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 30px; }
+    .web-button {
+        display: inline-block; padding: 15px 25px; background-color: #70C4F7;
+        color: white; text-decoration: none; font-weight: bold;
+        border-radius: 50px; transition: 0.5s; min-width: 180px;
+    }
+    .web-button:hover { background-color: #2E94D1; transform: translateY(-2px); }
+
+    @media (max-width: 700px) {
+        .nav-center { display: none; }
+        .navbar { padding: 0 15px; }
+    }
+
+/* Markdown Styling für die KI Box */
+#ai-text ul, #ai-text ol {
+    text-align: left;
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+#ai-text code {
+    background: rgba(112, 196, 247, 0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+#ai-text strong {
+    color: var(--link-color);
+}
+
+/* Den echten Strich unsichtbar machen */
+#glaggleQuery {
+    caret-color: transparent;
+}
+
+.search-bar-container {
+    position: relative; /* WICHTIG: Damit der Cursor im Balken bleibt */
+    display: flex; 
+    align-items: center; 
+    background: var(--input-bg);
+    border: 1px solid #dfe1e5; 
+    border-radius: 30px; 
+    padding: 5px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 60px;
+    transition: all 0.5s ease-in-out;
+}
+
+.custom-caret {
+    position: absolute;
+    width: 3px;
+    height: 24px;
+    background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853, #FF6D00);
+    background-size: 100% 300%;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 5px;
+    animation: glaggleFlow 3s infinite alternate ease-in-out;
+    display: none;
+    /* Vertikale Zentrierung innerhalb des Containers */
+    top: 50%;
+    transform: translateY(-50%);
+}
+/* Die Farben wandern sanft auf und ab */
+@keyframes glaggleFlow {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
+}
+
+/* Styling für den KI-Optimierer Button */
+.ai-magic-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    filter: grayscale(0.5);
+}
+
+.ai-magic-btn:hover {
+    transform: scale(1.2) rotate(10deg);
+    filter: grayscale(0);
+}
+
+/* Verhindert, dass der Button das Layout zerschießt */
+.search-bar-container {
+    gap: 5px;
+}
+
+/* Spezielles Styling für offizielle Projekte */
+/* Spezielles Styling für offizielle Projekte */
+.glaggle-entry.fav-project {
+    border-radius: 25px !important;
+    border: 2px solid transparent !important;
+    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
+                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out !important;
+}
+
+.glaggle-entry.fav-project:hover {
+    /* Gleicher Hub (-5px) und gleiche Skalierung (1.02) wie normale Container */
+    transform: translateY(-5px) scale(1.02); 
+    
+    /* Ein weicheres, farbiges Glühen statt eines harten Schattens */
+    box-shadow: 0 10px 25px rgba(112, 196, 247, 0.25) !important;
+    
+    /* Rand bleibt bunt, wird aber durch den Schatten weicher unterstützt */
+    border-color: transparent !important;
+    z-index: 20;
+}
+
+.quick-time-btn:hover {
+    background: #70C4F7 !important;
+    color: white !important;
+    border-color: #70C4F7 !important;
+}
+
+@keyframes pulse-red {
+    0% { background-color: var(--card-bg); box-shadow: 0 0 0px rgba(234, 67, 53, 0); }
+    50% { background-color: rgba(234, 67, 53, 0.2); box-shadow: 0 0 20px rgba(234, 67, 53, 0.4); }
+    100% { background-color: var(--card-bg); box-shadow: 0 0 0px rgba(234, 67, 53, 0); }
+}
+
+/* Widget-Breite für Desktop */
+.timer-container {
+    width: 100%;
+    max-width: 650px; /* Viel breiter auf PC */
+    margin: 0 auto 20px auto;
+}
+
+/* Der Fortschrittsbalken */
+.timer-progress-bg {
+    width: 100%;
+    height: 12px;
+    background: var(--card-border);
+    border-radius: 10px;
+    margin-top: 25px;
+    overflow: hidden;
+}
+
+.timer-progress-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #70C4F7, #34A853);
+    transition: width 1s linear;
+}
+
+/* Hamburger Icon Styling */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
+    color: black !important;
+}
+
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+/* Sidebar jetzt in Weiß */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    
+    /* HIER: Auf Weiß geändert */
+    background-color: #FFFFFF !important; 
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+    
+    /* WICHTIG: Damit man den Text auf Weiß sieht, muss die Schrift dunkel sein */
+    color: #000000 !important; 
+    
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Schatten heller gemacht, passt besser zu Weiß */
+}
+
+/* Damit auch die Links in der Sidebar schwarz sind */
+.sidebar-link, .close-btn {
+    color: #000000 !important;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.sidebar-link {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--card-border);
+    transition: 0.3s;
+}
+
+.sidebar-link:hover {
+    color: var(--link-color);
+    background-color: var(--card-bg);
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 36px;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Overlay Effekt */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+}
+
+/* Wenn aktiv */
+.sidebar.active { width: 250px; }
+.overlay.active { display: block; }
+
+/* Größere Schrift auf Desktop */
+@media (min-width: 768px) {
+    #timer-display-input {
+        font-size: 8rem !important; /* Massive Anzeige für PC */
+    }
+    .quick-btn {
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* Navbar hell machen */
+.navbar {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%; 
+    height: 80px; 
+    background-color: #FFFFFF !important; /* Weiß */
+    backdrop-filter: none !important;
+    padding: 0 20px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Dezentere Schatten für Weiß */
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+/* Sidebar hell machen und Text schwarz */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: #FFFFFF !important; /* Weiß */
+    color: #000000 !important; /* Text schwarz */
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* Sidebar Links erzwingen wir ebenfalls auf Schwarz */
+.sidebar-link, .close-btn {
+    color: #000000 !important;
+}
+
+/* --- NEU: Styling für Unterkategorien --- */
+
+.sidebar-category {
+    border-bottom: 1px solid var(--card-border);
+}
+
+.sidebar-category summary {
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    cursor: pointer;
+    list-style: none; /* Entfernt Standard-Pfeil */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.sidebar-category summary:hover {
+    background-color: var(--card-bg);
+    color: var(--link-color);
+}
+
+/* Ein kleiner schicker Pfeil rechts */
+.sidebar-category summary::after {
+    content: '›'; 
+    font-size: 1.5rem;
+    transition: transform 0.3s;
+}
+
+/* Dreht den Pfeil, wenn ausgeklappt */
+.sidebar-category[open] summary::after {
+    transform: rotate(90deg);
+}
+
+/* Die Links innerhalb der Kategorie */
+.sidebar-category .sidebar-link {
+    padding: 12px 20px 12px 40px; /* Weiter nach rechts eingerückt */
+    font-size: 1rem;
+    border-bottom: none; /* Entfernt die Linie zwischen Unterpunkten */
+    display: block;
+    background-color: rgba(0,0,0,0.05); /* Leichte Abhebung */
+}
+
+/* Entfernt den Standard-Pfeil im Safari */
+.sidebar-category summary::-webkit-details-marker {
+    display: none;
+}
+#backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    border: none;
+    background-color: #70C4F7; /* Glaggle Grün */
+    color: white;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    
+    /* Animation */
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Zentrierung des Pfeils */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Diese Klasse wird per JS hinzugefügt */
+#backToTop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#backToTop:hover {
+    transform: scale(1.1);
+    background-color: #0C7EC6
+;
+}
+
+.nav-scroll-wrapper {
+    display: flex;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 10px;
+    overflow-x: auto; /* Scrollbar für schmale Bildschirme */
+    scrollbar-width: none; /* Versteckt Scrollbar in Firefox */
+}
+
+.nav-scroll-wrapper::-webkit-scrollbar {
+    display: none; /* Versteckt Scrollbar in Chrome/Safari */
+}
+.glaggle-nav {
+    display: none; /* Wird per JS eingeblendet */
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+    background: #1a1a1a; /* Dein Schwarz */
+    padding: 8px 15px;
+    margin: 10px auto;
+    width: fit-content;
+    max-width: 90%;
+    /* HIER SIND DIE RUNDEN ECKEN */
+    border-radius: 50px; 
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.nav-item {
+    color: #999;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Der aktive Status mit dem weißen „Pillen-Look“ */
+.nav-item.active {
+    background: #333;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #555;
+}
+.nav-item:hover {
+    color: #fff;
+}
+
+/* Weiches Scrollen mit Abstand für die Leiste */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 60px; /* Damit die Überschrift nicht unter der Leiste landet */
+}
+
+/* Erzeugt einen Puffer oben, damit die Überschrift nicht von der Nav verdeckt wird */
+#ai-container, 
+#fav-section, 
+#glaggle-web-search-box, 
+#glaggle-image-container, 
+#wiki-section {
+    scroll-margin-top: 120px;
+}
+
+.glaggle-entry {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#captcha-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Dunkler Hintergrund */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.captcha-box {
+    background: #222;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.ai-container {
+    /* 1. Das hier erzwingt, dass er aus dem Fluss des Bodys "ausbricht" */
+    position: relative; 
+    z-index: 10; 
+    
+    /* 2. Damit er wieder wie früher aussieht (fest definierte Breite) */
+    max-width: 800px; 
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* Falls er vorher "normal" in der Mitte stand: */
+    display: block; 
+}
+
+/* AI Container radikal vom Listen-Design befreien */
+.ai-container {
+    all: unset !important; /* Setzt alles auf Standard zurück */
+    display: block !important;
+    
+    /* Layout: Zentriert und feststehend */
+    width: 90% !important;
+    max-width: 800px !important;
+    margin: 40px auto !important; /* Abstand nach oben/unten */
+    padding: 30px !important;
+    
+    /* Design: Eigener Look, kein Listen-Look */
+    background: #1a1a1a; !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    
+    /* Animationen ausstellen */
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Hover-Effekte der Liste komplett blockieren */
+.ai-container:hover {
+    transform: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+#glaggleResults {
+    width: 100%;             /* Nutzt die volle Breite */
+    max-width: 600px;        /* Oder deine Standard-Breite */
+    margin: 0 auto;          /* Zentriert den Bereich */
+    padding: 15px;           /* Abstand zum Rand */
+    box-sizing: border-box;  /* WICHTIG: Padding nicht auf die Breite addieren */
+    
+    /* DIESE BEIDEN ZEILEN LÖSEN DAS PROBLEM */
+    overflow-wrap: break-word; /* Bricht lange Wörter/Links um */
+    word-wrap: break-word;     /* Fallback für ältere Browser */
+}
+
+/* Falls du Bilder in den Ergebnissen hast, müssen die auch begrenzt werden */
+#glaggleResults img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 1. Den Container anpassen */
+.results-container {
+    width: 100%;
+    padding: 0 15px; /* Erzeugt einen kleinen Abstand links und rechts zum Display-Rand */
+    box-sizing: border-box; /* WICHTIG: Padding wird von der Breite abgezogen */
+    overflow-x: hidden; /* Verhindert das Rausscrollen */
+}
+
+/* 2. Die einzelnen Karten (Ergebnisse) reparieren */
+.glaggle-entry {
+    width: 100%; /* Nimmt genau die Breite des verfügbaren Platzes ein */
+    margin: 0 auto 20px auto; /* Zentriert die Karte und gibt Abstand nach unten */
+    box-sizing: border-box; /* Verhindert, dass Padding/Border die Karte breiter machen */
+    max-width: 100%; /* Überschreitet niemals die Bildschirmbreite */
+    word-wrap: break-word; /* Bricht lange Wörter um */
+    overflow-wrap: break-word;
+}
+
+/* Zwingt den gesamten Ergebnis-Bereich dazu, sich anzupassen */
+#glaggleResults {
+    width: 100% !important;
+    max-width: 100vw !important; /* Maximale Breite ist die Fensterbreite */
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important; /* Schneidet alles ab, was zu breit ist */
+}
+
+/* Zwingt alle Kind-Elemente, sich an den Container zu halten */
+.glaggle-entry, .glaggle-entry * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    /* Wort-Umbruch erzwingen */
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+}
+
+/* Spezieller Schutz für Code-Blöcke oder lange Links */
+pre, code, .ai-text-content {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+}
+
+/* Sidebar erzwingt massiven, weißen Hintergrund */
+.sidebar {
+    height: 100%;
+    width: 0; 
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    
+    /* HIER: Auf Weiß gesetzt */
+    background-color: #FFFFFF !important; 
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+    color: #000000 !important; /* Text schwarz */
+    
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
+}
+
+/* Das Suchfeld bändigen */
+.search-bar-container {
+    /* WICHTIG: Padding wird von der Breite abgezogen, nicht dazugerechnet */
+    box-sizing: border-box !important; 
+    
+    /* Breite flexibel halten, aber nie über 90% des Bildschirms */
+    width: 90% !important; 
+    
+    /* Maximale Breite, damit es auf Desktops nicht riesig wird */
+    max-width: 600px !important; 
+    
+    /* Zentrierung erzwingen */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    
+    /* Sicherheit: Alles, was übersteht, abschneiden (nur für den Notfall) */
+    overflow: hidden !important;
+}
+
+/* --- SICHERSHELL-LAYOUT-FIXES --- */
+
+/* 1. Suchfeld starr bändigen */
+.search-bar-container {
+    width: 90% !important;         /* Nimmt 90% Breite */
+    max-width: 600px !important;   /* Wird nie breiter als 600px */
+    margin: 0 auto !important;     /* Immer zentriert */
+    box-sizing: border-box !important; /* WICHTIG: Padding wird eingerechnet */
+    display: flex !important;
+    align-items: center !important;
+    
+    /* Animationen: NUR Farben, NIEMALS Breite oder Margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Die Korrektur für deine .glaggle-nav */
+.glaggle-nav {
+    display: none; /* Initial versteckt */
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+    
+    /* WICHTIG: Statt fit-content (das springt), definieren wir eine feste Max-Breite */
+    width: 90% !important;        /* Passt sich dem Bildschirm an */
+    max-width: 800px !important;  /* Wird nie breiter als das Suchfeld */
+    margin: 10px auto !important; /* Zentriert */
+    
+    background: #1a1a1a; 
+    padding: 8px 15px;
+    border-radius: 50px; 
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    
+    /* GANZ WICHTIG: Animation nur für Farben, KEIN width/height/margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
+    
+    /* Sorgt dafür, dass Padding nicht die Breite sprengt */
+    box-sizing: border-box !important;
+}
+/* --- FINALE REPARATUR DES SUCHFELDES --- */
+
+.search-bar-container {
+    width: 100% !important;           /* Zwingt den Browser zur vollen Breite */
+    max-width: 600px !important;      /* Begrenzt es aber bei 600px */
+    display: flex !important;         /* Zwingt es in den Flex-Modus */
+    flex: 0 1 600px !important;       /* Erlaubt Flexibilität, ohne zu springen */
+    margin: 0 auto !important;        /* Zentriert */
+    box-sizing: border-box !important;
+}
+
+/* Verhindert, dass das Suchfeld durch interne Elemente aufgeblasen wird */
+#glaggleQuery {
+    width: 100% !important;
+    flex: 1 !important;
+    min-width: 0 !important;          /* WICHTIG: Erlaubt dem Input, sich zu verkleinern */
+}
+
+/* ===== FIX 1: Suchleiste springt nicht mehr ===== */
+/* Alle bisherigen .search-bar-container Regeln mit diesem EINEN Block ersetzen */
+.search-bar-container {
+    display: flex !important;
+    align-items: center !important;
+    width: min(600px, 90vw) !important;   /* Immer stabil, reagiert nie auf Fokus */
+    margin: 0 auto 60px auto !important;
+    padding: 5px 20px !important;
+    border-radius: 30px !important;
+    border: 2px solid #ffffff !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    /* NUR visuelle Properties animieren, NIEMALS width/flex/margin! */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.search-bar-container:focus-within {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #70C4F7 !important;
+    box-shadow: 0 0 20px rgba(112, 196, 247, 0.5) !important;
+    /* Kein transform: scale() — das verschiebt das Layout! */
+}
+
+#glaggleQuery {
+    flex: 1 !important;
+    min-width: 0 !important;   /* Verhindert, dass Input-Inhalt den Container aufbläht */
+    border: none !important;
+    outline: none !important;
+    padding: 12px !important;
+    font-size: 18px !important;
+    background: transparent !important;
+    color: #000000 !important;
+    caret-color: transparent !important;
+}
+
+/* ===== FIX 2: Grauer Balken auf iPhone ===== */
+body {
+    /* Safe Area für den iPhone Home-Indicator */
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+}
+
+/* Navbar oben absichern */
+.navbar {
+    padding-top: env(safe-area-inset-top) !important;
+    height: calc(80px + env(safe-area-inset-top)) !important;
+}
+
+/* main-content entsprechend nach unten verschieben */
+.main-content {
+    margin-top: calc(120px + env(safe-area-inset-top)) !important;
+}
+
+/* Footer bekommt auch Luft nach unten */
+footer {
+    padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
+}
+
+.glaggle-nav {
+    display: none;
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+    
+    width: fit-content !important;  /* Nur so breit wie der Inhalt */
+    max-width: calc(100vw - 20px) !important;  /* Aber nie breiter als der Screen */
+    margin: 10px auto !important;
+    
+    background: #1a1a1a;
+    padding: 8px 15px;
+    border-radius: 50px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    
+    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+@keyframes wordFadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ai-word {
+    display: inline-block;
+    opacity: 0;
+    animation: wordFadeUp 0.3s ease forwards;
+}
+
+
+@keyframes wordFadeUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0);   }
+}
+
+@keyframes popupIn {
+    from { opacity:0; transform:scale(0.92) translateY(20px); }
+    to   { opacity:1; transform:scale(1) translateY(0);       }
+}
+
+@keyframes overlayIn {
+    from { opacity:0; }
+    to   { opacity:1; }
+}
+
+#ai-open-chat-btn:hover {
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 6px 20px rgba(112,196,247,0.5) !important;
+}
+
+#ai-expand-btn:hover {
+    background: rgba(112,196,247,0.25) !important;
+    transform: translateY(-1px);
+}
+
+/* Globaler Basis-Stil für alle Glaggle-Einträge (KI, WebSearch, Favoriten, Wikipedia) */
+.glaggle-entry {
+    background: rgba(255, 255, 255, 0.2); /* Normaler Glasmorphismus-Hintergrund */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+    cursor: default;
+}
+
+/* STANDARD: Text ist hier bereits im normalen Glas-Zustand SCHWARZ */
+.glaggle-entry p, 
+.glaggle-entry li, 
+.glaggle-entry strong, 
+.glaggle-entry h1, 
+.glaggle-entry h2, 
+.glaggle-entry h3, 
+.glaggle-entry span,
+.glaggle-entry a {
+    color: #111111 !important; /* Macht den Text standardmäßig dunkel/schwarz */
+    transition: color 0.4s ease !important;
+}
+
+/* DER HOVER-EFFEKT: Schaltet um auf einen rein weißen Hintergrund */
+.glaggle-entry:hover {
+    background: #ffffff !important; /* Einfach weißer Hintergrund bei Hover */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Text bleibt auch beim Hovern zuverlässig schwarz */
+.glaggle-entry:hover p,
+.glaggle-entry:hover li,
+.glaggle-entry:hover strong,
+.glaggle-entry:hover h1,
+.glaggle-entry:hover h2,
+.glaggle-entry:hover h3,
+.glaggle-entry:hover span,
+.glaggle-entry:hover a {
+    color: #111111 !important;
+}
+
+/* Overlay & Container */
+.welcome-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(15px);
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s ease;
+}
+.welcome-overlay.show { opacity: 1; }
+
+.welcome-popup {
+    position: relative;
+    width: min(440px, 92vw);
+    background: rgba(15, 15, 25, 0.96);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(112, 196, 247, 0.15);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.welcome-overlay.show .welcome-popup { transform: scale(1) translateY(0); }
+
+.welcome-gradient-border {
+    height: 6px; width: 100%;
+    background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
+}
+
+.welcome-content {
+    padding: 35px 25px 25px 25px;
+    text-align: center;
+    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    color: #eee;
+}
+
+.welcome-emoji { font-size: 3rem; display: inline-block; margin-bottom: 10px; }
+
+.welcome-content h2 { color: #70C4F7; font-size: 1.5rem; margin-bottom: 15px; }
+.welcome-content p { color: #bbb; font-size: 0.95rem; line-height: 1.6; }
+
+/* Folien-Sichtbarkeit */
+.welcome-slide {
+    display: none;
+    animation: fadeInSlide 0.4s ease forwards;
+}
+.welcome-slide.active { display: block; }
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Styling Folie 2 (Versprechen) */
+.welcome-promises {
+    list-style: none;
+    text-align: left;
+    margin: 20px auto;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.welcome-promises li {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #ccc;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.promise-icon { font-size: 1.1rem; }
+
+/* Styling Folie 3 (Anleitung) */
+.welcome-guide {
+    text-align: left;
+    margin: 20px auto;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.guide-step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.step-num {
+    background: rgba(112, 196, 247, 0.15);
+    color: #70C4F7;
+    border: 1px solid rgba(112, 196, 247, 0.3);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 0.85rem; flex-shrink: 0;
+}
+.guide-step p { font-size: 0.9rem; margin: 0; }
+
+/* Footer & Navigation */
+.welcome-footer {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Punkte / Dots */
+.welcome-dots {
+    display: flex;
+    gap: 8px;
+}
+.welcome-dot {
+    width: 8px; height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+/* Der aktive Punkt wird breiter gezogen (Pillen-Look) */
+.welcome-dot.active {
+    background: #70C4F7;
+    width: 20px;
+    border-radius: 4px;
+}
+
+/* Button */
+.welcome-btn {
+    background: linear-gradient(135deg, #70C4F7, #2E94D1);
+    color: white; border: none; border-radius: 50px;
+    padding: 12px 45px; font-size: 0.95rem; font-weight: bold;
+    cursor: pointer; box-shadow: 0 5px 20px rgba(112, 196, 247, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.welcome-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 25px rgba(112, 196, 247, 0.5);
+}
+
+/* Glaggle In-Page Push Benachrichtigung (MASSIV & UNDURCHSICHTIG) */
+.glaggle-push-notice {
+    background: #FFFFFF !important; /* 100% massives Weiß, absolut blickdicht */
+    border: 2px solid #70C4F7 !important; /* Fester Glaggle-Blauer Rand */
+    border-radius: 20px;
+    padding: 14px 20px;
+    
+    /* Schiebt die Box trotz des großen Suchleisten-Abstands schön darunter */
+    margin-top: -40px; 
+    margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px; /* Exakt so breit wie deine Suchleiste */
+    box-sizing: border-box;
+    
+    /* Eleganter Schatten für Tiefe, passend zu deiner Suchleiste */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    
+    /* Animationen für das Hereinfliegen */
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sichtbarer Zustand (wird per JS getriggert) */
+.glaggle-push-notice.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.push-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.push-emoji {
+    font-size: 1.3rem;
+    animation: pushHeartbeat 2s infinite ease-in-out;
+}
+
+.glaggle-push-notice p {
+    color: #000000 !important; /* Massives Schwarz für maximale Lesbarkeit */
+    font-size: 0.95rem;
+    margin: 0;
+    font-weight: 600; /* Leicht fett, damit es direkt ins Auge springt */
+    text-align: left;
+}
+
+/* Schließen-Button */
+.push-close-btn {
+    background: none;
+    border: none;
+    color: #555555 !important; /* Dunkelgraues Schließen-Kreuz */
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.push-close-btn:hover {
+    background-color: rgba(112, 196, 247, 0.15); /* Sanfter blauer Hover-Effekt */
+    color: #2E94D1 !important;
+}
+
+/* Kleiner Herzschlag-Effekt für das Emoji */
+@keyframes pushHeartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+</style>
+</head>
+<body>
+
+<div id="background-layer"></div>
+
+<div id="page-wrapper">
+    
+<div id="preloader">
+    <img src="../glagglelogooriginal.png" alt="Glaggle Loading..." class="loader-logo">
+</div>
+    
+   <nav class="navbar">
+    <div class="nav-left">
+        <a href="https://glaggle.ch"><img src="../glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
+    </div>
+    <div class="nav-right">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</nav>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
+    
+    <div class="sidebar-content">
+    <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+    
+    <div id="user-logged-in" style="display: none;">
+        <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
+        <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+        
+        <a href="account/overview/index.html" class="sidebar-link" 
+           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            Account Übersicht
+        </a>
+
+        <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
+            Abmelden
+        </button>
+    </div>
+
+    <div id="user-logged-out">
+        <a href="account/index.html" class="sidebar-link" 
+           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
+           Registrieren
+        </a>
+        <a href="login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">
+           Schon ein Konto? Einloggen
+        </a>
+    </div>
+
+</div>
+        <details class="sidebar-category">
+            <summary>KI Tools</summary>
+            <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
+            <a href="https://glame.glaggle.ch/" class="sidebar-link">Glame AI Pro</a>
+            <a href="https://glaggle.ch/quizai" class="sidebar-link">Quiz Studio Pro</a>
+            <a href="https://glaggle.ch/aimage/" class="sidebar-link">AImage</a>
+            <a href="https://glaggle.ch/aimage/home" class="sidebar-link">AImage SVG</a>
+            <a href="https://glaggle.ch/avideo" class="sidebar-link">AVideo</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Glaggle Tools</summary>
+            <a href="https://glaggle.ch/designstudio" class="sidebar-link">Glaggle Design Studio</a>
+            <a href="https://glaggle.ch/codemaker" class="sidebar-link">Glaggle Code Maker</a>
+            <a href="https://glaggle.ch/avideostudio" class="sidebar-link">Glaggle AVideo Studio</a>
+            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Gaming</summary>
+            <a href="https://glaggle.ch/gamecenter" class="sidebar-link">Gamecenter</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Info</summary>
+            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ & Über Uns</a>
+            <a href="https://glaggle.ch/history" class="sidebar-link">Glaggle History</a>
+            <a href="https://glaggle.ch/historysites" class="sidebar-link">Glaggle Historysites</a>
+        </details>
+
+<details class="sidebar-category">
+<summary>🎨 Design</summary>
+<div style="padding:15px 20px;background:rgba(0,0,0,0.03);" id="sidebar-design-container">
+
+<style>
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.t-btn{border:2px solid transparent;border-radius:8px;padding:7px 3px;cursor:pointer;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s}
+.t-btn.active{border-color:#70C4F7!important;box-shadow:0 0 0 2px rgba(112,196,247,.3)}
+.t-swatch{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,.12)}
+#custom-pickers{display:none;padding:10px;background:rgba(0,0,0,.05);border-radius:8px;margin-top:6px}
+#music-controls{display:none;align-items:center;gap:8px;margin-top:8px}
+#music-vol{flex:1}
+#design-preview-bar{height:5px;border-radius:3px;margin:12px 0 4px;transition:background .4s}
+#design-reset{width:100%;margin-top:10px;padding:8px;border-radius:8px;border:1px solid #ddd;background:none;color:#888;font-size:12px;cursor:pointer}
+#music-select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#000}
+.sidebar.dark-sidebar #music-select{background:#333;color:#fff;border-color:#555}
+</style>
+
+<p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Theme</p>
+<div class="theme-grid" id="theme-grid">
+  <button class="t-btn active" data-t="hell" onclick="applyTheme('hell',this)" style="background:#f8f8f8;color:#333">
+    <div class="t-swatch" style="background:#fff;border-color:#ccc"></div>Hell
+  </button>
+  <button class="t-btn" data-t="dunkel" onclick="applyTheme('dunkel',this)" style="background:#1a1a1a;color:#eee">
+    <div class="t-swatch" style="background:#1a1a1a"></div>Dunkel
+  </button>
+  <button class="t-btn" data-t="blau" onclick="applyTheme('blau',this)" style="background:#e8f4fd;color:#1a5276">
+    <div class="t-swatch" style="background:#2980b9"></div>Blau
+  </button>
+  <button class="t-btn" data-t="grün" onclick="applyTheme('grün',this)" style="background:#eafaf1;color:#1e8449">
+    <div class="t-swatch" style="background:#27ae60"></div>Grün
+  </button>
+  <button class="t-btn" data-t="rot" onclick="applyTheme('rot',this)" style="background:#fdedec;color:#922b21">
+    <div class="t-swatch" style="background:#e74c3c"></div>Rot
+  </button>
+  <button class="t-btn" data-t="gelb" onclick="applyTheme('gelb',this)" style="background:#fef9e7;color:#7d6608">
+    <div class="t-swatch" style="background:#f1c40f;border-color:#aaa"></div>Gelb
+  </button>
+  <button class="t-btn" data-t="violett" onclick="applyTheme('violett',this)" style="background:#f4ecf7;color:#6c3483">
+    <div class="t-swatch" style="background:#8e44ad"></div>Violett
+  </button>
+  <button class="t-btn" data-t="custom" onclick="toggleCustomPickers()" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b);color:#fff">
+    <div class="t-swatch" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b)"></div>Eigene
+  </button>
+</div>
+
+<div id="custom-pickers">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div>
+      <div style="font-size:11px;color:#888;margin-bottom:3px">Navbar</div>
+      <input type="color" id="cp-navbar" value="#ffffff" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+    </div>
+    <div>
+      <div style="font-size:11px;color:#888;margin-bottom:3px">Suchfeld</div>
+      <input type="color" id="cp-search" value="#f0f8ff" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+    </div>
+    <div>
+      <div style="font-size:11px;color:#888;margin-bottom:3px">Overlay</div>
+      <input type="color" id="cp-overlay" value="#000000" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+    </div>
+    <div>
+      <div style="font-size:11px;color:#888;margin-bottom:3px">Akzentfarbe</div>
+      <input type="color" id="cp-accent" value="#70C4F7" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+    </div>
+  </div>
+  <button onclick="applyCustomTheme()" style="width:100%;padding:8px;background:#70C4F7;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer">Übernehmen ✓</button>
+</div>
+
+<div id="design-preview-bar" style="background:linear-gradient(90deg,#fff 33%,#70C4F7 33% 66%,#333 66%)"></div>
+
+<p style="font-size:11px;color:#888;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Hintergrundmusik</p>
+<select id="music-select" onchange="handleMusicChange(this)">
+  <option value="">🔇 Keine Musik</option>
+  <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/eliveta-summer-473846_n1ssy1.mp3">☀️ Summer Chill</option>
+  <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/fl_attachment/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3">🎉 Party Music</option>
+  <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/alex-morgan-downtempo-chill-electronic-528322_qeq0gi.mp3">🏝️ Relax Beat</option>
+</select>
+<div id="music-controls">
+  <span style="font-size:13px">🔊</span>
+  <input type="range" id="music-vol" min="0" max="100" value="40">
+  <span id="vol-label" style="font-size:12px;color:#888;min-width:32px">40%</span>
+</div>
+
+<button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
+</div>
+</details>
+
+<script>
+/* ===== GLAGGLE UNIFIED THEME SYSTEM ===== */
+const THEMES = {
+  hell:    {navbar:'#ffffff',navText:'#000000',search:'rgba(255,255,255,0.9)',searchBorder:'#ffffff',overlay:'rgba(0,0,0,0.4)',isDark:false,accent:'#70C4F7',sidebar:'#ffffff',sidebarText:'#000000'},
+  dunkel:  {navbar:'#1a1a1a',navText:'#ffffff',search:'rgba(40,40,40,0.9)',searchBorder:'#555',overlay:'rgba(0,0,0,0.65)',isDark:true,accent:'#70C4F7',sidebar:'#1a1a1a',sidebarText:'#ffffff'},
+  blau:    {navbar:'#1a3a5c',navText:'#ffffff',search:'rgba(200,230,255,0.92)',searchBorder:'#2980b9',overlay:'rgba(0,30,70,0.5)',isDark:true,accent:'#2980b9',sidebar:'#1a3a5c',sidebarText:'#ffffff'},
+  grün:    {navbar:'#1a3a2a',navText:'#ffffff',search:'rgba(200,255,220,0.92)',searchBorder:'#27ae60',overlay:'rgba(0,50,20,0.5)',isDark:true,accent:'#27ae60',sidebar:'#1a3a2a',sidebarText:'#ffffff'},
+  rot:     {navbar:'#3a1a1a',navText:'#ffffff',search:'rgba(255,210,210,0.92)',searchBorder:'#e74c3c',overlay:'rgba(60,0,0,0.5)',isDark:true,accent:'#e74c3c',sidebar:'#3a1a1a',sidebarText:'#ffffff'},
+  gelb:    {navbar:'#3a3000',navText:'#ffffff',search:'rgba(255,248,200,0.95)',searchBorder:'#f1c40f',overlay:'rgba(40,30,0,0.45)',isDark:true,accent:'#f1c40f',sidebar:'#3a3000',sidebarText:'#ffffff'},
+  violett: {navbar:'#2a1040',navText:'#ffffff',search:'rgba(230,210,255,0.92)',searchBorder:'#8e44ad',overlay:'rgba(30,0,60,0.5)',isDark:true,accent:'#8e44ad',sidebar:'#2a1040',sidebarText:'#ffffff'}
+};
+
+function applyThemeData(t) {
+  // Navbar
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    navbar.style.setProperty('background-color', t.navbar, 'important');
+    navbar.style.setProperty('box-shadow', '0 2px 10px rgba(0,0,0,0.15)', 'important');
+  }
+  // Hamburger Linien
+  document.querySelectorAll('.hamburger span').forEach(s => s.style.setProperty('background-color', t.navText, 'important'));
+  // Sidebar
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.style.setProperty('background-color', t.sidebar, 'important');
+    sidebar.style.setProperty('color', t.sidebarText, 'important');
+  }
+  document.querySelectorAll('.sidebar-link, .close-btn, .sidebar-category summary').forEach(el => {
+    el.style.setProperty('color', t.sidebarText, 'important');
+  });
+  // Suchfeld
+  const dynSb = document.getElementById('dyn-searchbar') || (() => {
+    const s = document.createElement('style'); s.id = 'dyn-searchbar';
+    document.head.appendChild(s); return s;
+  })();
+  dynSb.textContent = `.search-bar-container{background:${t.search}!important;border-color:${t.searchBorder}!important;}`;
+  // Overlay
+  const dynOv = document.getElementById('dyn-overlay') || (() => {
+    const s = document.createElement('style'); s.id = 'dyn-overlay';
+    document.head.appendChild(s); return s;
+  })();
+  dynOv.textContent = `body::before{background:${t.overlay}!important;}`;
+  // Preview Bar
+  const bar = document.getElementById('design-preview-bar');
+  if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
+  // Speichern
+  localStorage.setItem('glaggle-theme', JSON.stringify(t));
+}
+
+function applyTheme(name, btn) {
+  const t = THEMES[name];
+  if (!t) return;
+  document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('custom-pickers').style.display = 'none';
+  applyThemeData(t);
+  localStorage.setItem('glaggle-theme-name', name);
+}
+
+function toggleCustomPickers() {
+  const p = document.getElementById('custom-pickers');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-t="custom"]').classList.add('active');
+}
+
+function applyCustomTheme() {
+  const t = {
+    navbar:       document.getElementById('cp-navbar').value,
+    navText:      '#ffffff',
+    search:       document.getElementById('cp-search').value + 'ee',
+    searchBorder: document.getElementById('cp-accent').value,
+    overlay:      document.getElementById('cp-overlay').value + '88',
+    isDark:       true,
+    accent:       document.getElementById('cp-accent').value,
+    sidebar:      document.getElementById('cp-navbar').value,
+    sidebarText:  '#ffffff'
+  };
+  applyThemeData(t);
+  localStorage.setItem('glaggle-theme-name', 'custom');
+}
+
+// ===== MUSIK KOMPLETT =====
+let glaggleAudio = null; // falls noch nicht definiert, sonst diese Zeile weglassen
+
+// NEU (fix):
+document.getElementById('music-select').addEventListener('change', function() {
+    if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+    const ctrl = document.getElementById('music-controls');
+    if (!this.value) { ctrl.style.display = 'none'; localStorage.removeItem('glaggle-music'); return; }
+    ctrl.style.display = 'flex';
+    const volume = document.getElementById('music-vol').value;
+    localStorage.setItem('glaggle-music', JSON.stringify({ url: this.value, volume: parseInt(volume) }));
+    glaggleAudio = new Audio(this.value);
+    glaggleAudio.loop = true;
+    glaggleAudio.volume = volume / 100;
+    glaggleAudio.play().catch(() => {});
+});
+
+document.getElementById('music-vol').addEventListener('input', function() {
+    document.getElementById('vol-label').textContent = this.value + '%'
+    if (glaggleAudio) glaggleAudio.volume = this.value / 100;
+    const saved = localStorage.getItem('glaggle-music');
+    if (saved) {
+        const d = JSON.parse(saved);
+        d.volume = parseInt(this.value);
+        localStorage.setItem('glaggle-music', JSON.stringify(d));
+    }
+});
+
+function restoreMusic() {
+    const saved = localStorage.getItem('glaggle-music');
+    if (!saved) return;
+    try {
+        const { url, volume } = JSON.parse(saved);
+        const sel = document.getElementById('music-select');
+        const vol = document.getElementById('music-vol');   // ✅ NEU
+        const lbl = document.getElementById('vol-label');
+        const ctrl = document.getElementById('music-controls');
+        if (!sel || !url) return;
+        sel.value = url;
+        if (vol) vol.value = volume;                        // ✅ jetzt definiert
+        if (lbl) lbl.textContent = volume + '%';
+        if (ctrl) ctrl.style.display = 'flex';
+        glaggleAudio = new Audio(url);
+        glaggleAudio.loop = true;
+        glaggleAudio.volume = volume / 100;
+        glaggleAudio.play().catch(() => {});
+    } catch(e) {}
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreMusic);
+} else {
+    restoreMusic();
+}
+function handleMusicChange(sel) {
+  if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+  const ctrl = document.getElementById('music-controls');
+  if (!sel.value) { ctrl.style.display = 'none'; return; }
+  ctrl.style.display = 'flex';
+  glaggleAudio = new Audio(sel.value);
+  glaggleAudio.loop = true;
+  glaggleAudio.volume = document.getElementById('music-vol').value / 100;
+  glaggleAudio.play().catch(() => {});
+}
+document.getElementById('music-vol').oninput = function() {
+  document.getElementById('vol-label').textContent = this.value + '%';
+  if (glaggleAudio) glaggleAudio.volume = this.value / 100;
+};
+
+/* ===== RESET ===== */
+function resetDesignFull() {
+  ['glaggle-theme','glaggle-theme-name','glaggle-bg-mode','glaggle-bg-fixed'].forEach(k => localStorage.removeItem(k));
+  ['dyn-overlay','dyn-searchbar'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+  applyTheme('hell', document.querySelector('[data-t="hell"]'));
+  if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+  document.getElementById('music-select').value = '';
+  document.getElementById('music-controls').style.display = 'none';
+  startBgRotation();
+}
+function restoreTheme() {
+    const savedName = localStorage.getItem('glaggle-theme-name');
+    const savedData = localStorage.getItem('glaggle-theme');
+
+    if (savedData) {
+        try {
+            applyThemeData(JSON.parse(savedData));
+        } catch(e) {}
+    } else if (savedName && THEMES[savedName]) {
+        applyThemeData(THEMES[savedName]);
+    }
+
+    if (savedName) {
+        document.querySelectorAll('#theme-grid .t-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`#theme-grid [data-t="${savedName}"]`);
+        if (btn) btn.classList.add('active');
+    }
+}
+
+// Auf DOMContentLoaded warten, damit Navbar sicher existiert
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreTheme);
+} else {
+    restoreTheme(); // DOM bereits fertig
+}
+
+</script>
+
+    </div>
+</div>
+
+<div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+<main class="main-content">
+    
+<div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center;">
+    <img src="Glaggle Logo Clip kurz.gif" id="glaggle-gif" class="large-logo" alt="Glaggle Animation" 
+         style="display: block; width: 100%; height: auto;">
+    
+    <img src="../glagglelogo-3.png" id="static-logo-light" class="large-logo" alt="Glaggle Logo" 
+         style="display: none; width: 100%; height: auto;">
+
+    <img src="../glagglelogo-3.png" id="static-logo-dark" class="large-logo" alt="Glaggle Logo Dark" 
+         style="display: none; width: 100%; height: auto;">
+</div>
+    
+    <form class="search-bar-container" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
+        <div class="custom-caret"></div> 
+        
+        <input type="search" 
+               id="glaggleQuery" 
+               placeholder="The AI-Powered Searchmachine..." 
+               autocomplete="off" 
+               enterkeyhint="search" 
+               name="q">
+        
+        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
+        <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
+    </form>
+
+    <div id="glaggle-push-notice" class="glaggle-push-notice" style="display: none;">
+        <div class="push-content">
+            <span class="push-emoji">💙</span>
+            <p>Gefällt dir Glaggle.ch? Wir würden uns freuen wenn du uns weiter empfehlen würdest!</p>
+        </div>
+        <button class="push-close-btn" onclick="dismissPushNotice()" title="Schließen">✕</button>
+    </div>
+    
+<nav class="glaggle-nav" id="main-nav">
+    <div class="nav-scroll-wrapper">
+        <a href="#ai-container" id="nav-ai" class="nav-item">Glaggle AI</a>
+        <a href="#fav-section" id="nav-fav" class="nav-item">Empfehlungen</a>
+        <a href="#glaggle-web-search-box" id="nav-web" class="nav-item">WebSearch</a>
+        <a href="#glaggle-image-container" id="nav-img" class="nav-item">Bilder</a>
+        <a href="#wiki-section" id="nav-wiki" class="nav-item">Wikipedia</a>
+    </div>
+</nav>
+
+    <div class="loader" id="glaggleLoader"></div>
+    <div id="glaggleResults" class="results-container"></div>
+
+    <div class="button-container" id="quickButtons">
+        <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
+        <a href="https://glaggle.ch/gamecenter" class="web-button">Gamecenter →</a>
+    </div>
+</main>
+
+<button id="backToTop" title="Nach oben">
+    <span style="font-size: 20px;">↑</span>
+</button>
+    
+<footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
+    &copy; 2026 Glaggle — Glaggle your life!
+</footer>
+<script src="favoriten.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+
+<script>
+
+const p1 = "gsk_"; 
+const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
+const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
+
+const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// GLAGGLE SUCHALGORITHMEN — Komplette Implementierung
+// Einfach in deine index.html einbauen (Anleitung unten)
+// ============================================================
+
+
+// ════════════════════════════════════════════════════════════
+// EBENE 1 — QUERY PROCESSING
+// Ersetzt: const query = document.getElementById('glaggleQuery').value.trim();
+// ════════════════════════════════════════════════════════════
+
+function preprocessQuery(raw) {
+    // Schritt 1: Basis-Normalisierung
+    let q = raw.trim().toLowerCase();
+
+    // Schritt 2: Sonderzeichen entfernen (aber Umlaute behalten)
+    q = q.replace(/[^\w\säöüß]/gi, ' ').replace(/\s+/g, ' ').trim();
+
+    // Schritt 3: Deutsche Stopwords entfernen
+    const stopwords = [
+        'was', 'ist', 'wie', 'der', 'die', 'das', 'und', 'oder',
+        'in', 'von', 'zu', 'ein', 'eine', 'einen', 'dem', 'den',
+        'bei', 'mit', 'an', 'auf', 'für', 'im', 'am', 'ich',
+        'du', 'er', 'sie', 'wir', 'ihr', 'es', 'mein', 'dein'
+    ];
+    let tokens = q.split(/\s+/).filter(t => t.length > 1 && !stopwords.includes(t));
+
+    // Schritt 4: Synonyme expandieren
+    const synonyms = {
+        'ki':        'künstliche intelligenz',
+        'ai':        'künstliche intelligenz',
+        'vid':       'video',
+        'bild':      'bild image foto',
+        'game':      'spiel game',
+        'games':     'spiele games',
+        'suche':     'suchmaschine suche',
+        'chat':      'chatbot ki assistent',
+        'code':      'code programmieren entwicklung',
+        'design':    'design gestalten layout',
+        'music':     'musik audio sound',
+    };
+    const expandedTokens = [];
+    tokens.forEach(t => {
+        expandedTokens.push(t);
+        if (synonyms[t]) {
+            synonyms[t].split(' ').forEach(s => {
+                if (!expandedTokens.includes(s)) expandedTokens.push(s);
+            });
+        }
+    });
+
+    // Schritt 5: Intent erkennen (für späteres Routing)
+    let intent = 'informational'; // Standard
+    const navigationalKeywords = ['glaggle', 'glame', 'gamecenter', 'aimage', 'avideo', 'quizai'];
+    const calculatorKeywords   = ['rechner', 'calculator', 'berechnen'];
+    const timerKeywords        = ['timer', 'minuten', 'sekunden', 'countdown'];
+
+    if (navigationalKeywords.some(k => q.includes(k))) intent = 'navigational';
+    if (calculatorKeywords.some(k => q.includes(k)))   intent = 'calculator';
+    if (timerKeywords.some(k => q.includes(k)))        intent = 'timer';
+
+    return {
+        original:  raw.trim(),          // Originaltext (für API-Calls)
+        normalized: expandedTokens.join(' '), // Für lokale Suche
+        tokens:    expandedTokens,       // Einzelne Wörter
+        intent:    intent                // Was will der User?
+    };
+}
+
+
+// ════════════════════════════════════════════════════════════
+// EBENE 2 — BM25 SCORING
+// Ersetzt: die .filter(s => s.title.toLowerCase().includes(q)) Zeilen
+// ════════════════════════════════════════════════════════════
+
+function bm25Score(queryObj, doc) {
+    const k1  = 1.5;  // Term-Frequency-Sättigung (1.2–2.0 üblich)
+    const b   = 0.75; // Längen-Normalisierung (0=keine, 1=volle)
+    const avgTitleLen = 4;  // Durchschnittliche Titelwortanzahl deiner Seiten
+    const avgDescLen  = 12; // Durchschnittliche Beschreibungswortanzahl
+
+    const tokens     = queryObj.tokens;
+    const titleWords = (doc.title || '').toLowerCase().split(/\s+/);
+    const descWords  = (doc.desc  || '').toLowerCase().split(/\s+/);
+    const urlWords   = (doc.url   || '').toLowerCase().split(/[\/\.\-\_]/);
+
+    let score = 0;
+
+    for (const token of tokens) {
+        // --- TITEL (dreifaches Gewicht) ---
+        const titleMatches = titleWords.filter(w => w.includes(token)).length;
+        if (titleMatches > 0) {
+            const titleBM25 = (titleMatches * (k1 + 1)) /
+                              (titleMatches + k1 * (1 - b + b * titleWords.length / avgTitleLen));
+            score += 3 * titleBM25;
+
+            // Exakter Treffer (ganzer Titel stimmt überein)
+            if (doc.title.toLowerCase() === token) score += 10;
+            // Titel beginnt mit dem Suchbegriff
+            if (doc.title.toLowerCase().startsWith(token)) score += 4;
+        }
+
+        // --- BESCHREIBUNG (einfaches Gewicht) ---
+        const descMatches = descWords.filter(w => w.includes(token)).length;
+        if (descMatches > 0) {
+            const descBM25 = (descMatches * (k1 + 1)) /
+                             (descMatches + k1 * (1 - b + b * descWords.length / avgDescLen));
+            score += descBM25;
+        }
+
+        // --- URL-Bonus (falls der Begriff in der URL vorkommt) ---
+        if (urlWords.some(w => w.includes(token))) score += 0.5;
+    }
+
+    // --- CLICK BOOST (logarithmisch, damit ein Ausreißer nicht alles dominiert) ---
+    const clicks = doc.clicks || 0;
+    score += Math.log(clicks + 1) * 0.8;
+
+    // --- FRESHNESS BONUS (falls ein "updated"-Feld vorhanden ist) ---
+    if (doc.updated_at) {
+        const daysSinceUpdate = (Date.now() - new Date(doc.updated_at)) / (1000 * 60 * 60 * 24);
+        if (daysSinceUpdate < 7)   score += 2;
+        else if (daysSinceUpdate < 30)  score += 1;
+        else if (daysSinceUpdate < 180) score += 0.3;
+    }
+
+    // --- HTTPS BONUS ---
+    if (doc.url && doc.url.startsWith('https://')) score += 0.3;
+
+    return score;
+}
+
+
+// ════════════════════════════════════════════════════════════
+// EBENE 3A — RECIPROCAL RANK FUSION
+// Kombiniert Ergebnisse aus mehreren Quellen fair
+// ════════════════════════════════════════════════════════════
+
+function reciprocalRankFusion(resultLists, k = 60) {
+    const scores = new Map();
+
+    resultLists.forEach((list, listIndex) => {
+        // Verschiedene Quellen bekommen leicht unterschiedliche Gewichte:
+        // Favoriten (0) > DB (1) > Wiki (2)
+        const sourceWeight = listIndex === 0 ? 1.2 : listIndex === 1 ? 1.0 : 0.8;
+
+        list.forEach((item, rank) => {
+            const key = item.url;
+            if (!key) return;
+
+            const rrfScore  = sourceWeight / (k + rank + 1);
+            const existing  = scores.get(key);
+
+            if (existing) {
+                existing.score += rrfScore;
+            } else {
+                scores.set(key, { item, score: rrfScore });
+            }
+        });
+    });
+
+    return [...scores.values()]
+        .sort((a, b) => b.score - a.score)
+        .map(e => e.item);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// EBENE 3B — DIVERSITY PENALTY
+// Verhindert, dass dieselbe Domain mehrfach erscheint
+// ════════════════════════════════════════════════════════════
+
+function deduplicateDomains(results, maxPerDomain = 1) {
+    const domainCount = new Map();
+
+    return results.filter(item => {
+        if (!item || !item.url) return false;
+
+        let domain = '';
+        try {
+            domain = new URL(item.url).hostname.replace('www.', '');
+        } catch(e) {
+            return true; // Bei ungültiger URL trotzdem behalten
+        }
+
+        const count = domainCount.get(domain) || 0;
+        if (count < maxPerDomain) {
+            domainCount.set(domain, count + 1);
+            return true;
+        }
+        return false;
+    });
+}
+
+
+// ════════════════════════════════════════════════════════════
+// ERSATZ FÜR: getAiProcessedFavs()
+// Nutzt jetzt BM25 statt einfachem .includes()
+// ════════════════════════════════════════════════════════════
+
+async function getAiProcessedFavs(rawQuery) {
+    const queryObj = preprocessQuery(rawQuery);
+    const q = queryObj.normalized;
+
+    if (q.length < 2) return [];
+
+    // SCHRITT 1: Lokales BM25-Scoring (blitzschnell, kein API-Call)
+    const localResults = meineLieblingsSeiten
+        .map(s => ({ ...s, _score: bm25Score(queryObj, s) }))
+        .filter(s => s._score > 0.3)
+        .sort((a, b) => b._score - a._score)
+        .slice(0, 6);
+
+    // Wenn bereits gute lokale Treffer: KI nur als optionale Erweiterung
+    if (localResults.length >= 3) {
+        // Im Hintergrund trotzdem KI versuchen für semantische Erweiterungen
+        try {
+            const aiExtras = await getAiFavsOnly(queryObj.original, localResults);
+            const combined = [...localResults, ...aiExtras];
+            return deduplicateDomains(combined.slice(0, 6));
+        } catch(e) {
+            return deduplicateDomains(localResults);
+        }
+    }
+
+    // Wenn wenig lokale Treffer: Vollständiger KI-Call
+    try {
+        const context = meineLieblingsSeiten
+            .map(s => `App: ${s.title} | Info: ${s.desc}`)
+            .join(' | ');
+
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + getGKey(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Du bist ein App-Finder für Glaggle.
+Liste: [${context}]
+Regeln:
+1. Finde semantisch passende Apps (z.B. "Designtool" → Canva, Figma)
+2. Verstehe Synonyme und verwandte Begriffe
+3. Antworte NUR mit einem JSON-Array der gefundenen Objekte
+4. Kein Text, keine Erklärung, nur JSON`
+                    },
+                    { role: "user", content: queryObj.original }
+                ],
+                temperature: 0.1
+            })
+        });
+
+        const data = await res.json();
+        const content = data.choices[0].message.content;
+
+        let aiFavs = [];
+        const start = content.indexOf('[');
+        const end   = content.lastIndexOf(']') + 1;
+        if (start !== -1 && end > 0) {
+            aiFavs = JSON.parse(content.substring(start, end));
+        }
+
+        // Kombinieren: lokale BM25-Treffer + KI-Treffer, dann deduplizieren
+        const combined = [...localResults, ...aiFavs];
+        const unique   = deduplicateDomains(combined);
+        return unique.slice(0, 6);
+
+    } catch(e) {
+        console.error('Favs-Fehler:', e);
+        return localResults; // Fallback auf lokale Ergebnisse
+    }
+}
+
+// Hilfsfunktion: Nur KI-Extras holen (keine Duplikate zu vorhandenen)
+async function getAiFavsOnly(originalQuery, alreadyFound) {
+    const alreadyUrls = new Set(alreadyFound.map(f => f.url));
+    const remaining   = meineLieblingsSeiten.filter(s => !alreadyUrls.has(s.url));
+    if (remaining.length === 0) return [];
+
+    const context = remaining.map(s => `${s.title}: ${s.desc}`).join(' | ');
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + getGKey(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+                {
+                    role: "system",
+                    content: `Finde weitere passende Apps aus: [${context}]. Nur JSON-Array, max 3 Ergebnisse.`
+                },
+                { role: "user", content: originalQuery }
+            ],
+            temperature: 0.1,
+            max_tokens: 300
+        })
+    });
+
+    const data    = await res.json();
+    const content = data.choices[0].message.content;
+    const start   = content.indexOf('[');
+    const end     = content.lastIndexOf(']') + 1;
+    if (start === -1 || end <= 0) return [];
+    return JSON.parse(content.substring(start, end));
+}
+
+
+// ════════════════════════════════════════════════════════════
+// ERSATZ FÜR: glaggleSearch()
+// Nutzt jetzt preprocessQuery + RRF Fusion
+// ════════════════════════════════════════════════════════════
+
+async function glaggleSearch() {
+    const rawQuery = document.getElementById('glaggleQuery').value.trim();
+    if (!rawQuery) return;
+
+    // ── QUERY VORVERARBEITEN ──────────────────────────────────
+    const queryObj = preprocessQuery(rawQuery);
+
+    // Intent-basiertes Routing (Widgets zuerst prüfen)
+    if (queryObj.intent === 'calculator' || queryObj.intent === 'timer') {
+        checkWidgets(rawQuery);
+    }
+
+    // ── UI RESET ─────────────────────────────────────────────
+    const navLeiste = document.querySelector('.glaggle-nav');
+    if (navLeiste) navLeiste.style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.display = 'none';
+        item.classList.remove('active');
+    });
+
+    const resultsDiv = document.getElementById('glaggleResults');
+    const loader     = document.getElementById('glaggleLoader');
+    resultsDiv.innerHTML = '';
+    loader.style.display = 'block';
+
+    // Für Widgets trotzdem die Widget-Funktion aufrufen
+    if (queryObj.intent !== 'calculator' && queryObj.intent !== 'timer') {
+        checkWidgets(rawQuery);
+    }
+
+    resultsDiv.appendChild(createAiPlaceholder());
+
+    // ── ALLE QUELLEN PARALLEL ABFRAGEN ───────────────────────
+    // Ergebnisse aus allen Quellen sammeln
+    let favResults  = [];
+    let dbResults   = [];
+    let wikiResults = [];
+
+    try {
+        await Promise.allSettled([
+
+            // KI-Zusammenfassung (unverändert, nutzt Original-Query für bessere Antworten)
+            fetchGroqAI(rawQuery),
+
+            // Favoriten mit neuem BM25-Scoring
+            (async () => {
+                const favs = await getAiProcessedFavs(rawQuery);
+                favResults = favs;
+                if (favs && favs.length > 0) {
+                    document.getElementById('nav-fav').style.display = 'block';
+                    favs.forEach((res, index) => {
+                        const id = (index === 0) ? 'fav-section' : null;
+                        renderResult(res.title, res.desc, res.url, 'fav', id);
+                    });
+                }
+            })(),
+
+            // Supabase DB (nutzt normalisierten Query für bessere Treffer)
+            (async () => {
+                dbResults = await searchSupabaseWithScoring(queryObj);
+            })(),
+
+            // Bilder (unverändert)
+            searchGlaggleImages(rawQuery),
+
+            // Wikipedia (nutzt normalisierten Query)
+            searchWikipedia(queryObj.normalized, 'de')
+                .then(results => { wikiResults = results || []; })
+                .catch(() => {})
+        ]);
+
+    } catch(e) {
+        console.error(e);
+    } finally {
+        loader.style.display = 'none';
+        setTimeout(refreshObserver, 500);
+    }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// ERSATZ FÜR: searchSupabase()
+// Nutzt jetzt clientseitiges BM25-Nachscoring
+// ════════════════════════════════════════════════════════════
+
+async function searchSupabaseWithScoring(queryObj) {
+    const resultsDiv  = document.getElementById('glaggleResults');
+    const navWebBtn   = document.getElementById('nav-web');
+    const oldWebBox   = document.getElementById('glaggle-web-search-box');
+    if (oldWebBox) oldWebBox.remove();
+
+    try {
+        // Supabase-Abfrage mit mehreren Suchbegriffen (OR-verknüpft)
+        const mainToken   = queryObj.tokens[0] || queryObj.original;
+        const secondToken = queryObj.tokens[1] || '';
+
+        let query = supabaseClient
+            .from('search_index')
+            .select('*')
+            .limit(20); // Mehr holen, dann clientseitig sortieren
+
+        // Dynamische OR-Bedingung für alle Tokens
+        const orConditions = queryObj.tokens
+            .slice(0, 3) // Max 3 Tokens für die DB-Anfrage
+            .map(t => `title.ilike.%${t}%,description.ilike.%${t}%`)
+            .join(',');
+
+        if (orConditions) {
+            query = query.or(orConditions);
+        }
+
+        const { data, error } = await query;
+
+        if (error || !data || data.length === 0) {
+            if (navWebBtn) navWebBtn.style.display = 'none';
+            return [];
+        }
+
+        // ── CLIENTSEITIGES BM25-NACHSCORING ──────────────────
+        // Supabase gibt uns die Kandidaten, wir sortieren sie besser
+        const scored = data
+            .map(res => ({
+                ...res,
+                _score: bm25Score(queryObj, {
+                    title:      res.title,
+                    desc:       res.description,
+                    url:        res.url,
+                    clicks:     res.clicks,
+                    updated_at: res.updated_at
+                })
+            }))
+            .filter(res => res._score > 0)
+            .sort((a, b) => b._score - a._score);
+
+        // Domain-Deduplizierung: max 2 Ergebnisse pro Domain
+        const deduped = deduplicateDomains(
+            scored.map(r => ({ ...r, url: r.url })),
+            2
+        ).slice(0, 8);
+
+        if (deduped.length === 0) {
+            if (navWebBtn) navWebBtn.style.display = 'none';
+            return [];
+        }
+
+        if (navWebBtn) navWebBtn.style.display = 'block';
+
+        // ── ERGEBNIS-BOX BAUEN ───────────────────────────────
+        const webBox = document.createElement('div');
+        webBox.id    = 'glaggle-web-search-box';
+        webBox.className = 'glaggle-entry fav-project';
+        webBox.style.borderLeft    = '5px solid #34A853';
+        webBox.style.scrollMarginTop = '100px';
+
+        webBox.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <span style="font-size:1.2rem;">🌐</span>
+                <strong style="color:#34A853; letter-spacing:0.5px;">GLAGGLE WEBSEARCH</strong>
+                <span style="font-size:0.75rem; color:#888; margin-left:auto;">${deduped.length} Ergebnisse</span>
+            </div>
+            <div id="supabase-results-list"></div>
+        `;
+
+        const imgBox = document.getElementById('glaggle-image-container');
+        if (imgBox) imgBox.before(webBox);
+        else resultsDiv.appendChild(webBox);
+
+        const list = webBox.querySelector('#supabase-results-list');
+
+        deduped.forEach(res => {
+            const item = document.createElement('div');
+            item.className = 'supabase-result-item';
+            item.style.cssText = 'margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--card-border);';
+
+            let domain = 'Link';
+            try { domain = new URL(res.url).hostname.replace('www.', ''); } catch(e) {}
+
+            // Score-Badge (optional, für Debugging ausblendbar)
+            const scoreBadge = res._score > 5
+                ? `<span style="font-size:0.65rem; background:#34A85322; color:#34A853; padding:1px 5px; border-radius:4px; margin-left:4px;">★ Top</span>`
+                : '';
+
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16"
+                         style="width:16px; height:16px;" onerror="this.style.display='none'">
+                    <small style="color:var(--desc-color); font-size:0.75rem;">${domain}</small>
+                    ${scoreBadge}
+                </div>
+                <a href="${res.url}" target="_blank" onclick="registerClick('${res.id}')"
+                   style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
+                    ${res.title}
+                </a>
+                <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;">
+                    ${res.description || 'Keine Beschreibung verfügbar.'}
+                </p>
+            `;
+            list.appendChild(item);
+        });
+
+        return deduped;
+
+    } catch(e) {
+        console.error('Supabase Scoring Fehler:', e);
+        return [];
+    }
+}
+
+// Ende der Datei
+
+const client = new Appwrite.Client()
+        .setEndpoint('https://cloud.appwrite.io/v1')
+        .setProject('69fb638a002b7d03d829');
+
+    const account = new Appwrite.Account(client);
+
+
+    
+function getGKey() { return p1 + p2 + p3; }
+
+function createAiPlaceholder() {
+    const aiBox = document.createElement('div');
+    aiBox.className = 'glaggle-entry';
+    aiBox.id = "ai-container";
+    aiBox.style.cssText = `
+        border-radius: 25px;
+        border-left: 5px solid #70C4F7;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+        cursor: default;
+    `;
+
+    // Hover-Effekt
+    aiBox.addEventListener('mouseenter', () => {
+        aiBox.style.background = 'rgba(255,255,255,0.95)';
+        aiBox.style.boxShadow = '0 8px 32px rgba(112,196,247,0.3)';
+        aiBox.style.transform = 'translateY(-2px)';
+        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
+            el.style.color = '#111';
+        });
+    });
+    aiBox.addEventListener('mouseleave', () => {
+        aiBox.style.background = 'rgba(255,255,255,0.08)';
+        aiBox.style.boxShadow = '';
+        aiBox.style.transform = 'translateY(0)';
+        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
+            el.style.color = '';
+        });
+    });
+
+    aiBox.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:1.2rem; animation: spinGlow 3s infinite linear;">✨</span>
+            <strong style="color:#70C4F7; font-size:1.05rem; letter-spacing:0.5px;">Glaggle AI Zusammenfassung</strong>
+        </div>
+
+        <div id="ai-preview" style="
+            position:relative; 
+            max-height:100px; 
+            overflow:hidden;
+            -webkit-mask-image: linear-gradient(to bottom, black 40px, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 40px, transparent 100%);
+        ">
+            <p id="ai-text" style="font-style:italic; color:var(--desc-color); line-height:1.7;"></p>
+        </div>
+
+        <div id="ai-full" style="display:none; opacity:0; transform:translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease;">
+            <div id="ai-text-full" style="line-height:1.8;"></div>
+            <button id="ai-open-chat-btn" style="
+                margin-top:16px;
+                background: linear-gradient(135deg, #70C4F7, #2E94D1);
+                color:white; border:none; border-radius:20px;
+                padding:10px 22px; cursor:pointer; font-weight:bold; font-size:0.9rem;
+                box-shadow: 0 4px 15px rgba(112,196,247,0.4);
+                transition: transform 0.2s, box-shadow 0.2s;
+                display: flex; align-items: center; gap: 8px;
+            ">💬 Mit Glaggle AI chatten</button>
+        </div>
+
+        <button id="ai-expand-btn" style="
+            display:none; margin-top:14px;
+            background: rgba(112,196,247,0.1);
+            border: 1px solid #70C4F7;
+            color:#70C4F7; border-radius:20px;
+            padding:9px 22px; cursor:pointer; font-weight:bold; font-size:0.85rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        ">Mehr erfahren ↓</button>
+    `;
+    return aiBox;
+}
+    
+document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Verhindert Neuladen der Seite
+        glaggleSearch();
+        this.blur(); // Schließt die mobile Tastatur
+    }
+});
+    
+async function searchWikipedia(query, lang) {
+    try {
+        // KORREKTUR: prop=pageimages|extracts und die entsprechenden Parameter für Bilder hinzugefügt
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=200&exintro&explaintext&exsentences=3&format=json&origin=*`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if(data.query && data.query.pages) {
+            // BUTTON EINBLENDEN
+            const navWiki = document.getElementById('nav-wiki');
+            if(navWiki) navWiki.style.display = 'block';
+
+            // Wikipedia gibt die Seiten unsortiert zurück, wir wandeln sie in ein Array um
+            const pages = Object.values(data.query.pages);
+
+            pages.forEach((page, index) => {
+                // Wir prüfen auf extract ODER title, falls mal kein Text da ist
+                if (page.extract || page.title) {
+                    const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
+                    const thumb = page.thumbnail ? page.thumbnail.source : null;
+                    
+                    let shortExtract = page.extract || "";
+                    if (shortExtract.length > 250) {
+                        shortExtract = shortExtract.substring(0, 250) + "...";
+                    }
+
+                    const content = thumb 
+                        ? `<img src="${thumb}" style="float:left; margin:0 15px 10px 0; border-radius:8px; width:80px; height:auto;">${shortExtract}` 
+                        : shortExtract;
+
+                    // ID NUR BEIM ERSTEN ELEMENT SETZEN (für den Sprung aus der Nav)
+                    const id = (index === 0) ? "wiki-section" : null;
+                    
+                    renderResult(page.title, content, wikiUrl, "wiki", id);
+                }
+            });
+        } else {
+            // Falls keine Ergebnisse: Button verstecken
+            const navWiki = document.getElementById('nav-wiki');
+            if(navWiki) navWiki.style.display = 'none';
+        }
+    } catch (e) { 
+        console.error("Wiki Fehler", e); 
+        const navWiki = document.getElementById('nav-wiki');
+        if(navWiki) navWiki.style.display = 'none';
+    }
+}
+
+
+async function fetchGroqAI(query) {
+    const aiTextElement = document.getElementById('ai-text');
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert!" },
+                    { role: "user", content: query }
+                ] 
+            })
+        });
+        const data = await res.json();
+        const antwort = data.choices[0].message.content;
+
+        document.getElementById('nav-ai').style.display = 'block';
+        document.getElementById('nav-ai').classList.add('active');
+
+        const aiText = document.getElementById('ai-text');
+        const expandBtn = document.getElementById('ai-expand-btn');
+        const aiFullDiv = document.getElementById('ai-text-full');
+
+        aiText.style.fontStyle = "normal";
+
+        const words = antwort.split(' ');
+        let wordIndex = 0;
+        let currentText = '';
+        let typingTimeout = null; // Speichert die ID der Animation, um sie abbrechen zu können
+
+        // Logik für das sofortige Aufklappen bei Klick
+        const handleExpand = () => {
+            clearTimeout(typingTimeout); // Stoppt die laufende Schreib-Animation sofort
+            
+            const preview = document.getElementById('ai-preview');
+            const full = document.getElementById('ai-full');
+            expandBtn.style.display = 'none';
+
+            // Vorschau sanft ausblenden
+            preview.style.transition = 'opacity 0.3s ease';
+            preview.style.opacity = '0';
+            
+            setTimeout(() => {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                
+                // Setzt direkt den kompletten formatierten Text ein
+                aiFullDiv.innerHTML = marked.parse(antwort); 
+                
+                // Voller Text animiert einblenden
+                requestAnimationFrame(() => {
+                    full.style.opacity = '1';
+                    full.style.transform = 'translateY(0)';
+                });
+
+                // Chat-Button Event Handler zuweisen
+                document.getElementById('ai-open-chat-btn').onclick = () => {
+                    openAiChat(antwort);
+                };
+            }, 300);
+        };
+
+        // Button sofort sichtbar machen und Klick-Event verknüpfen
+        expandBtn.style.display = 'inline-block';
+        expandBtn.onclick = handleExpand;
+
+        // Startet den Typewriter-Effekt im Hintergrund
+        function typeWord() {
+            if (wordIndex < words.length) {
+                currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
+                aiText.innerHTML = marked.parse(currentText);
+                wordIndex++;
+                typingTimeout = setTimeout(typeWord, 35);
+            } else {
+                // Wenn der Text komplett durchgetippt wurde, Inhalt für das Aufklappen vorbereiten
+                aiFullDiv.innerHTML = marked.parse(antwort);
+            }
+        }
+        typeWord();
+
+    } catch (e) { 
+        document.getElementById('ai-text').innerText = "Glaggle-AI-Zusammenfassung momentan nicht verfügbar."; 
+    }
+}
+
+function openAiChat(context) {
+    const overlay = document.getElementById('ai-chat-overlay');
+    overlay.style.display = 'flex';
+    
+    // Popup neu animieren
+    const popup = document.getElementById('ai-chat-popup');
+    popup.style.animation = 'none';
+    requestAnimationFrame(() => {
+        popup.style.animation = 'popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards';
+    });
+
+    // Chat leeren und neu aufsetzen
+    document.getElementById('ai-chat-messages').innerHTML = '';
+    setupAiChat(context);
+
+    // Schließen per Overlay-Klick
+    overlay.onclick = (e) => { if (e.target === overlay) closeAiChat(); };
+}
+
+function closeAiChat() {
+    const overlay = document.getElementById('ai-chat-overlay');
+    const popup = document.getElementById('ai-chat-popup');
+    popup.style.animation = 'none';
+    popup.style.transform = 'scale(0.92) translateY(20px)';
+    popup.style.opacity = '0';
+    popup.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        popup.style.transform = '';
+        popup.style.opacity = '';
+        popup.style.transition = '';
+    }, 250);
+}
+
+function setupAiChat(context) {
+    const input = document.getElementById('ai-chat-input');
+    const sendBtn = document.getElementById('ai-chat-send');
+    const messages = document.getElementById('ai-chat-messages');
+    const chatHistory = [
+        { role: "system", content: "Du bist Glaggle AI. Kontext: " + context + ". Antworte kurz und präzise auf Deutsch." }
+    ];
+
+    // Alte Listener entfernen
+    const newSend = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newSend, sendBtn);
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+
+async function sendMessage() {
+    const msg = newInput.value.trim();
+    if (!msg) return;
+
+    // User Bubble
+    const userBubble = document.createElement('div');
+    userBubble.style.cssText = `
+        align-self:flex-end; background:linear-gradient(135deg,#70C4F7,#2E94D1);
+        color:white; padding:10px 16px; border-radius:18px 18px 4px 18px;
+        max-width:80%; font-size:0.9rem; line-height:1.5;
+        animation: wordFadeUp 0.25s ease forwards;
+    `;
+    userBubble.innerText = msg;
+    messages.appendChild(userBubble);
+    newInput.value = '';
+    chatHistory.push({ role: "user", content: msg });
+
+    // Lade-Bubble (wird gleich als Streaming-Ziel genutzt)
+    const loadBubble = document.createElement('div');
+    loadBubble.style.cssText = `
+        align-self:flex-start; background:rgba(112,196,247,0.12);
+        border:1px solid rgba(112,196,247,0.2);
+        color:#ccc; padding:10px 16px; border-radius:18px 18px 18px 4px;
+        font-size:0.9rem; line-height:1.5;
+        animation: wordFadeUp 0.25s ease forwards;
+    `;
+    loadBubble.innerHTML = '<span style="opacity:0.6">✨ Glaggle denkt nach...</span>';
+    messages.appendChild(loadBubble);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: chatHistory,
+                stream: true // 1. Streaming aktivieren!
+            })
+        });
+
+        if (!res.ok) throw new Error("API-Fehler");
+
+        // 2. Stream-Reader und Decoder aufsetzen
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        
+        let accumulatedReply = "";
+        let buffer = ""; 
+        
+        // Loader-Text entfernen, sobald die ersten Daten eintreffen
+        loadBubble.style.color = 'white';
+        loadBubble.innerHTML = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // Chunks decodieren und in den Puffer schreiben
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            
+            // Die letzte Zeile im Puffer lassen, falls sie unvollständig abgeschnitten wurde
+            buffer = lines.pop(); 
+
+            for (const line of lines) {
+                const cleanedLine = line.trim();
+                if (!cleanedLine) continue;
+                if (cleanedLine === "data: [DONE]") break;
+
+                if (cleanedLine.startsWith("data: ")) {
+                    try {
+                        const jsonStr = cleanedLine.slice(6);
+                        const parsed = JSON.parse(jsonStr);
+                        const content = parsed.choices[0]?.delta?.content || "";
+                        
+                        // Text Stück für Stück aufbauen
+                        accumulatedReply += content;
+                        
+                        // Live-Rendering des aktuellen Stands
+                        loadBubble.innerHTML = marked.parse(accumulatedReply);
+                        
+                        // Automatisch mitscrollen bei langem Text
+                        messages.scrollTop = messages.scrollHeight;
+                    } catch (e) {
+                        // Ignorieren, falls das JSON innerhalb einer Zeile unvollständig war
+                    }
+                }
+            }
+        }
+
+        // Nach dem Streamen die finale Antwort in den Verlauf pushen
+        chatHistory.push({ role: "assistant", content: accumulatedReply });
+
+    } catch(e) {
+        loadBubble.innerText = "Fehler beim Antworten.";
+        console.error(e);
+    }
+    messages.scrollTop = messages.scrollHeight;
+}
+
+    newSend.onclick = sendMessage;
+    newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    
+    // Fokus setzen
+    setTimeout(() => newInput.focus(), 100);
+}
+    
+// Erweitere die Parameterliste um 'dbId' (die ID aus deiner Supabase-Tabelle)
+function renderResult(title, text, url, type = "web", elementId = null, dbId = null) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const domain = new URL(url).hostname.replace('www.', '');
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    const div = document.createElement('div');
+    
+    if (elementId) {
+        div.id = elementId;
+    }
+    
+    if(type === "fav") {
+        div.className = 'glaggle-entry fav-project';
+        const btnFav = document.getElementById('nav-fav');
+        if(btnFav) btnFav.style.display = 'block';
+    } else {
+        div.className = 'glaggle-entry';
+        const btnWeb = document.getElementById('nav-web');
+        if(btnWeb) btnWeb.style.display = 'block';
+    }
+
+    // NEU: Der Link ruft jetzt 'registerClick' auf, wenn er geklickt wird
+    // Wir übergeben die dbId nur, wenn es ein Web-Resultat aus der DB ist
+    const clickHandler = dbId ? `onclick="registerClick('${dbId}')"` : "";
+
+    div.innerHTML = `
+        <div class="result-header">
+            <img src="${favicon}" class="favicon" onerror="this.style.display='none'">
+            <small style="color: #34a853; font-weight:bold;">${type === "fav" ? "✨ GLAGGLE AI EMPFIEHLT!" : domain}</small>
+        </div>
+        <a href="${url}" target="_blank" ${clickHandler} style="${type === 'fav' ? 'font-size: 1.3rem;' : ''}">
+            ${title}
+        </a>
+        <p>${text.replace(/<\/?[^>]+(>|$)/g, "")}</p>
+    `;
+    
+    const aiBox = document.getElementById('ai-container');
+    
+    if (type === "fav" && aiBox) {
+        aiBox.after(div);
+    } else {
+        resultsDiv.appendChild(div);
+    }
+}
+
+const input = document.getElementById('glaggleQuery');
+const container = document.querySelector('.search-bar-container');
+// Wir suchen gezielt das Caret im Container
+const fakeCaret = container.querySelector('.custom-caret');
+
+function updateCaret() {
+    // Prüfen, ob das Element überhaupt existiert, bevor wir darauf zugreifen
+    if (!fakeCaret) return; 
+
+    if (document.activeElement === input) {
+        fakeCaret.style.display = 'block';
+        
+        const inputStyle = window.getComputedStyle(input);
+        const measurementSpan = document.createElement('span');
+        
+        measurementSpan.style.font = inputStyle.font;
+        measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
+        measurementSpan.style.textTransform = inputStyle.textTransform;
+        measurementSpan.style.whiteSpace = 'pre';
+        measurementSpan.style.visibility = 'hidden';
+        measurementSpan.style.position = 'absolute';
+        
+        measurementSpan.textContent = input.value.substring(0, input.selectionStart);
+        document.body.appendChild(measurementSpan);
+        
+        const textWidth = measurementSpan.offsetWidth;
+        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
+        fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
+        
+        document.body.removeChild(measurementSpan);
+    } else {
+        fakeCaret.style.display = 'none';
+    }
+}
+
+// Events für die Live-Verfolgung
+['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
+    input.addEventListener(event, updateCaret);
+});
+
+input.addEventListener('blur', () => {
+    setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
+});
+
+// Initial aufrufen
+updateCaret();
+
+// --- 2. KI SUCHOPTIMIERUNG ---
+async function optimizeSearch() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    const magicBtn = document.querySelector('.ai-magic-btn');
+    magicBtn.innerText = "⏳"; // Lade-Status
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.1-8b-instant", 
+                messages: [
+                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert (wenn es zb schreibfehler hat korrigiere das wort so dass es korrekt geschrieben ist). Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. (nur Beispiel) der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
+                    { role: "user", content: query }
+                ] 
+            })
+        });
+        const data = await res.json();
+        const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Anführungszeichen entfernen
+        
+        input.value = optimizedQuery;
+        updateCaret();
+        glaggleSearch(); // Starte Suche direkt mit dem neuen Begriff
+    } catch (e) {
+        console.error("Optimierung fehlgeschlagen", e);
+    } finally {
+        magicBtn.innerText = "✨";
+    }
+}
+
+    function checkWidgets(query) {
+    const q = query.toLowerCase();
+    const resultsDiv = document.getElementById('glaggleResults');
+
+const mathRegex = /^[0-9+\-*/().\s^%]+$/;
+if (q === "rechner" || q === "calculator") {
+    renderCalculatorWidget("");
+    return true;
+} else if (mathRegex.test(q) && /[0-9]/.test(q) && /[+\-*/^%]/.test(q)) {
+    renderCalculatorWidget(q);
+    return true;
+}
+
+    // --- TIMER ---
+   // In deiner checkWidgets Funktion:
+if (q === "timer") {
+    renderTimerWidget(0); // Startet bei Null
+    return true;
+} else if (q.includes("timer") || q.includes("minuten")) {
+    const mins = q.match(/\d+/) ? parseInt(q.match(/\d+/)[0]) : 0;
+    renderTimerWidget(mins);
+    return true;
+}
+
+    // --- WETTER (Simuliert für das Beispiel) ---
+    if (q.includes("wetter")) {
+        const city = q.replace("wetter", "").replace("in", "").trim() || "deinen Standort";
+        renderWidget("☁️ Wetter", `Wetter für <strong>${city}</strong>`, `
+            <div style="display:flex; align-items:center; gap:20px; justify-content:center;">
+                <span style="font-size:3rem;">☀️</span>
+                <span style="font-size:2rem; font-weight:bold;">22°C</span>
+            </div>
+            <p style="margin:5px 0 0 0;">Heiter bis sonnig - Glaggle-Tag!</p>
+        `);
+        return true;
+    }
+
+    return false;
+}
+
+// Universal-Funktion für einfache Widgets
+function renderWidget(title, subtitle, content) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project'; // Dein schöner bunter Rahmen
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <strong style="color:var(--link-color);">${title}</strong>
+        </div>
+        <p style="margin-bottom:15px;">${subtitle}</p>
+        <div style="text-align:center;">${content}</div>
+    `;
+    resultsDiv.prepend(div);
+}
+
+function renderTimerWidget(initialMinutes) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    let totalSeconds = initialMinutes * 60;
+    let interval = null;
+
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.textAlign = 'center';
+    
+    div.innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.75rem;">Glaggle Timekeeper</div>
+        
+        <div style="margin: 15px 0;">
+            <input type="text" id="timer-display-input" value="${formatTime(totalSeconds)}" 
+                style="background: transparent; border: none; color: var(--text-color); font-size: 4.5rem; font-family: sans-serif; text-align: center; width: 100%; outline: none; font-weight: 800; letter-spacing: -2px;">
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px;">
+            ${[0.5, 1, 3, 5, 10, 15, 30, 60].map(m => `
+                <button class="quick-btn" data-sec="${m * 60}" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--input-bg); color: var(--text-color); cursor: pointer; font-size: 0.8rem; font-weight: bold;">
+                    ${m < 1 ? '30s' : m >= 60 ? '1h' : m + 'm'}
+                </button>
+            `).join('')}
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="timer-run-btn" style="padding: 14px 35px; border-radius: 35px; border: none; background: #34A853; color: white; font-weight: bold; cursor: pointer; min-width: 140px; box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);">START</button>
+            <button id="timer-clear-btn" style="padding: 14px 20px; border-radius: 35px; border: 1px solid var(--card-border); background: transparent; color: var(--text-color); cursor: pointer;">RESET</button>
+        </div>
+        
+        <audio id="timer-audio-element" loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    `;
+    
+    resultsDiv.prepend(div);
+
+    const displayInput = div.querySelector('#timer-display-input');
+    const runBtn = div.querySelector('#timer-run-btn');
+    const clearBtn = div.querySelector('#timer-clear-btn');
+    const audio = div.querySelector('#timer-audio-element');
+    const quickBtns = div.querySelectorAll('.quick-btn');
+
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60);
+        let s = sec % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // WICHTIG: Erfasst manuelles Tippen sofort
+    function syncInput() {
+        const val = displayInput.value;
+        if (val.includes(':')) {
+            const [m, s] = val.split(':').map(v => parseInt(v) || 0);
+            totalSeconds = (m * 60) + s;
+        } else {
+            totalSeconds = (parseInt(val) || 0) * 60;
+        }
+    }
+
+    displayInput.oninput = syncInput;
+
+    function triggerAlarm() {
+        audio.play().catch(e => console.log("Audio braucht Nutzerinteraktion"));
+        div.style.animation = "pulse-red 1.5s infinite";
+        runBtn.innerText = "ALARM STOPPEN";
+        runBtn.style.background = "#EA4335";
+
+        // Notification Logik
+        if (Notification.permission === "granted") {
+            new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!", icon: "favicon.ico" });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") new Notification("Glaggle Timer", { body: "Zeit ist abgelaufen!" });
+            });
+        }
+    }
+
+    runBtn.onclick = () => {
+        // Falls Alarm läuft: Stoppen
+        if (!audio.paused) {
+            audio.pause();
+            audio.currentTime = 0;
+            div.style.animation = "none";
+            runBtn.innerText = "START";
+            runBtn.style.background = "#34A853";
+            return;
+        }
+
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+            runBtn.innerText = "WEITER";
+            runBtn.style.background = "#34A853";
+        } else {
+            syncInput(); // Letzte manuelle Änderung übernehmen
+            if (totalSeconds <= 0) return;
+            
+            runBtn.innerText = "PAUSE";
+            runBtn.style.background = "#FBBC05";
+            
+            interval = setInterval(() => {
+                totalSeconds--;
+                displayInput.value = formatTime(totalSeconds);
+                if (totalSeconds <= 0) {
+                    clearInterval(interval);
+                    interval = null;
+                    triggerAlarm();
+                }
+            }, 1000);
+        }
+    };
+
+    clearBtn.onclick = () => {
+        clearInterval(interval);
+        interval = null;
+        audio.pause();
+        audio.currentTime = 0;
+        div.style.animation = "none";
+        totalSeconds = 0;
+        displayInput.value = "00:00";
+        runBtn.innerText = "START";
+        runBtn.style.background = "#34A853";
+    };
+
+    quickBtns.forEach(btn => {
+        btn.onclick = () => {
+            totalSeconds += parseInt(btn.dataset.sec);
+            displayInput.value = formatTime(totalSeconds);
+        };
+    });
+}
+function renderCalculatorWidget(initialQuery) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.maxWidth = "350px"; // App-Format
+    div.style.margin = "0 auto 20px auto";
+
+    div.innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; color: var(--link-color); text-transform: uppercase; font-size: 0.8rem; text-align:center;">Glaggle Math</div>
+        
+        <div style="background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 15px; text-align: right;">
+            <div id="calc-history" style="font-size: 0.8rem; opacity: 0.6; min-height: 1.2em;"></div>
+            <div id="calc-display" style="font-size: 2rem; font-family: 'Courier New', monospace; overflow: hidden; white-space: nowrap;">${initialQuery || '0'}</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;" id="calc-buttons">
+            <button class="calc-btn" data-val="C" style="background:#EA4335; color:white;">C</button>
+            <button class="calc-btn" data-val="(">(</button>
+            <button class="calc-btn" data-val=")">)</button>
+            <button class="calc-btn" data-val="/" style="background:var(--nav-bg); color:var(--link-color);">÷</button>
+            
+            <button class="calc-btn" data-val="7">7</button>
+            <button class="calc-btn" data-val="8">8</button>
+            <button class="calc-btn" data-val="9">9</button>
+            <button class="calc-btn" data-val="*" style="background:var(--nav-bg); color:var(--link-color);">×</button>
+            
+            <button class="calc-btn" data-val="4">4</button>
+            <button class="calc-btn" data-val="5">5</button>
+            <button class="calc-btn" data-val="6">6</button>
+            <button class="calc-btn" data-val="-" style="background:var(--nav-bg); color:var(--link-color);">-</button>
+            
+            <button class="calc-btn" data-val="1">1</button>
+            <button class="calc-btn" data-val="2">2</button>
+            <button class="calc-btn" data-val="3">3</button>
+            <button class="calc-btn" data-val="+" style="background:var(--nav-bg); color:var(--link-color);">+</button>
+            
+            <button class="calc-btn" data-val="0" style="grid-column: span 2;">0</button>
+            <button class="calc-btn" data-val=".">.</button>
+            <button class="calc-btn" data-val="=" style="background:#34A853; color:white;">=</button>
+        </div>
+    `;
+
+    resultsDiv.prepend(div);
+
+    const display = div.querySelector('#calc-display');
+    const history = div.querySelector('#calc-history');
+    let currentInput = initialQuery || "";
+
+    // Event Delegation für die Buttons
+    div.querySelector('#calc-buttons').onclick = (e) => {
+        const val = e.target.dataset.val;
+        if (!val) return;
+
+        if (val === "C") {
+            currentInput = "";
+            display.innerText = "0";
+            history.innerText = "";
+        } else if (val === "=") {
+            try {
+                const result = Function('"use strict";return (' + currentInput.replace(/x/g, '*') + ')')();
+                history.innerText = currentInput + " =";
+                currentInput = result.toString();
+                display.innerText = currentInput;
+            } catch (e) {
+                display.innerText = "Fehler";
+                currentInput = "";
+            }
+        } else {
+            if (display.innerText === "0" || display.innerText === "Fehler") {
+                currentInput = val;
+            } else {
+                currentInput += val;
+            }
+            display.innerText = currentInput;
+        }
+    };
+
+    // Style für die Buttons
+    const buttons = div.querySelectorAll('.calc-btn');
+    buttons.forEach(btn => {
+        Object.assign(btn.style, {
+            padding: "15px 5px",
+            borderRadius: "8px",
+            border: "1px solid var(--card-border)",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            transition: "0.2s"
+        });
+        btn.onmouseover = () => btn.style.filter = "brightness(0.9)";
+        btn.onmouseout = () => btn.style.filter = "brightness(1)";
+    });
+
+    // Direkt berechnen, wenn initial eine Formel da war
+    if (initialQuery) {
+        div.querySelector('[data-val="="]').click();
+    }
+}
+
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
+}
+
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    // Wir geben der Seite eine kleine Extra-Zehntelsekunde für den Wow-Effekt
+    setTimeout(() => {
+        preloader.classList.add('preloader-hidden');
+    }, 500);
+});
+async function searchGlaggleImages(query, offset = 0) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const limit = 8;
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const hasImages = data.query && data.query.pages && 
+                          Object.values(data.query.pages).some(page => page.thumbnail);
+
+        if (!hasImages) {
+            if (offset === 0) return; 
+            const loadMoreBtn = document.getElementById('load-more-imgs');
+            if (loadMoreBtn) loadMoreBtn.style.display = "none";
+            return;
+        }
+
+        const navImg = document.getElementById('nav-img');
+        if (navImg) navImg.style.display = 'block';
+
+        let imageWrapper = document.getElementById('glaggle-image-container');
+        if (!imageWrapper) {
+            imageWrapper = document.createElement('div');
+            imageWrapper.id = 'glaggle-image-container'; 
+            imageWrapper.className = 'glaggle-entry fav-project';
+            imageWrapper.style.marginTop = "15px";
+            imageWrapper.innerHTML = `
+                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
+                <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
+                    Mehr Bilder laden...
+                </button>
+            `;
+            resultsDiv.appendChild(imageWrapper);
+            
+            document.getElementById('load-more-imgs').onclick = () => {
+                const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
+                searchGlaggleImages(query, currentCount);
+            };
+        }
+
+        const grid = document.getElementById('glaggle-image-grid');
+        const loadMoreBtn = document.getElementById('load-more-imgs');
+
+        // --- DUPLIKAT-FILTER START ---
+        // Wir sammeln alle bisherigen Bild-URLs im Grid
+        const existingSrcs = new Set();
+        document.querySelectorAll('#glaggle-image-grid img').forEach(img => existingSrcs.add(img.src));
+
+        Object.values(data.query.pages).forEach(page => {
+            if (page.thumbnail && page.thumbnail.source) {
+                const src = page.thumbnail.source;
+
+                // Nur hinzufügen, wenn das Bild noch nicht im Grid ist
+                if (!existingSrcs.has(src)) {
+                    existingSrcs.add(src); // Sofort zum Set hinzufügen für diese Schleife
+
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.height = "120px";
+                    imgContainer.style.borderRadius = "10px";
+                    imgContainer.style.overflow = "hidden";
+                    imgContainer.style.cursor = "zoom-in";
+                    imgContainer.style.border = "1px solid var(--card-border)";
+                    
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+
+                    imgContainer.onclick = () => {
+                        const modal = document.getElementById('imageModal');
+                        const modalImg = document.getElementById('modalImg');
+                        modal.style.display = "flex";
+                        modalImg.src = src;
+                    };
+
+                    imgContainer.appendChild(img);
+                    grid.appendChild(imgContainer);
+                }
+            }
+        });
+        // --- DUPLIKAT-FILTER ENDE ---
+
+        loadMoreBtn.innerText = "Mehr Bilder...";
+
+    } catch (e) {
+        console.error("Fehler beim Bilderladen", e);
+    }
+}
+
+
+    
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    const gif = document.getElementById('glaggle-gif');
+    const staticLogoLight = document.getElementById('static-logo-light');
+    const staticLogoDark = document.getElementById('static-logo-dark');
+
+    if (preloader) {
+        setTimeout(() => preloader.classList.add('preloader-hidden'), 500);
+    }
+
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const targetLogo = isDarkMode ? staticLogoDark : staticLogoLight;
+
+    function showStaticLogo() {
+        if (gif) gif.style.display = 'none';
+        if (targetLogo) targetLogo.style.display = 'block';
+    }
+
+    function showGif() {
+        if (gif) {
+            const cleanSrc = gif.src.split('?')[0];
+            gif.src = cleanSrc + "?t=" + new Date().getTime();
+            gif.style.display = 'block';
+        }
+        setTimeout(() => showStaticLogo(), 2000);
+    }
+
+    // Kleines Testbild laden und Zeit messen
+    const testImg = new Image();
+    const startTime = Date.now();
+    // Wir nutzen dein eigenes Favicon als Testbild (ist bereits gecacht oder klein)
+    testImg.src = "favicon.ico?speed=" + startTime;
+
+    testImg.onload = function() {
+        const duration = Date.now() - startTime;
+        // Wenn das Bild länger als 300ms braucht → langsam
+        if (duration > 300) {
+            showStaticLogo();
+        } else {
+            showGif();
+        }
+    };
+
+    testImg.onerror = function() {
+        // Bei Fehler sicherheitshalber kein GIF
+        showStaticLogo();
+    };
+
+    // Fallback: Nach 800ms wenn noch kein Ergebnis → kein GIF
+    setTimeout(() => {
+        if (gif && gif.style.display !== 'none') return;
+        if (targetLogo && targetLogo.style.display === 'none') {
+            showStaticLogo();
+        }
+    }, 800);
+});
+
+
+// Diese kleine Funktion muss zusätzlich irgendwo im Code stehen:
+async function registerClick(id) {
+    await supabaseClient.rpc('increment_clicks', { row_id: id });
+}
+
+async function registerClick(id) {
+    try {
+        const rowId = parseInt(id);
+        // Ruft die SQL-Funktion in deinem Supabase-Backend auf
+        const { error } = await supabaseClient.rpc('increment_clicks', { row_id: rowId });
+        
+        if (error) {
+            console.error("RPC Fehler:", error.message);
+        } else {
+            console.log("Klick erfolgreich registriert für ID:", rowId);
+        }
+    } catch (err) {
+        console.error("Tracking fehlgeschlagen:", err);
+    }
+}
+    
+function refreshObserver() {
+    const targets = [
+        'ai-container', 
+        'fav-section', 
+        'glaggle-web-search-box', 
+        'glaggle-image-container', 
+        'wiki-section'
+    ];
+    
+    if (typeof observer !== 'undefined') {
+        targets.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+    } else {
+        // Falls du kein Observer-Objekt hast, ist das nicht schlimm,
+        // da dein Scroll-Spy unten die Arbeit übernimmt.
+        console.log("Glaggle Info: Scroll-Spy aktiv.");
+    }
+}
+
+// 2. Klick-Logik mit Korrektur (Verhindert doppeltes Triggern)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('nav-item')) {
+        e.preventDefault();
+        
+        const targetId = e.target.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+            // Visueller Wechsel sofort
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            e.target.classList.add('active');
+
+            const offset = 100; 
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = targetElement.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+});
+
+// 3. Dein Präziser Scroll-Spy (Optimiert)
+window.addEventListener('scroll', () => {
+    const sections = [
+        'ai-container', 
+        'fav-section', 
+        'glaggle-web-search-box', 
+        'glaggle-image-container', 
+        'wiki-section'
+    ];
+
+    let currentSection = "";
+
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        // WICHTIG: Prüfen, ob das Element existiert und sichtbar ist
+        if (el && el.style.display !== 'none' && el.offsetHeight > 0) {
+            const rect = el.getBoundingClientRect();
+            // Die Logik "Was ist unter 160px" funktioniert super für Overlays
+            if (rect.top <= 160) {
+                currentSection = id;
+            }
+        }
+    });
+
+    // Spezialfall: Wenn wir ganz oben sind, immer AI markieren
+    if (window.scrollY < 100) {
+        currentSection = "ai-container";
+    }
+
+    // Nur aktualisieren, wenn wir eine Sektion gefunden haben
+    if (currentSection) {
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            const href = nav.getAttribute('href');
+            if (href === `#${currentSection}`) {
+                nav.classList.add('active');
+            } else {
+                nav.classList.remove('active');
+            }
+        });
+    }
+}, { passive: true });
+
+async function registerClick(id) {
+    try {
+        // Ruft die SQL-Funktion in Supabase auf
+        await supabaseClient.rpc('increment_clicks', { row_id: id });
+        console.log("Klick gezählt!");
+    } catch (err) {
+        console.error("Tracking Fehler:", err);
+    }
+}
+
+async function checkLogin() {
+    try {
+        const user = await account.get();
+        console.log("Login erfolgreich erkannt:", user.name);
+
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+        const nameDisplay = document.getElementById('user-name-display');
+
+        // WICHTIG: Nur stylen, wenn die Divs wirklich existieren!
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'block', 'important');
+            loggedOutDiv.style.setProperty('display', 'none', 'important');
+            if (nameDisplay) nameDisplay.innerText = user.name;
+        }
+    } catch (error) {
+        console.log("Nicht eingeloggt oder Fehler:", error.message);
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'none', 'important');
+            loggedOutDiv.style.setProperty('display', 'block', 'important');
+        }
+    }
+}
+
+// Ruf die Funktion erst auf, wenn das HTML GANZ fertig geladen ist
+window.addEventListener('load', () => {
+    setTimeout(checkLogin, 500); // 500ms Puffer, damit die Sidebar sicher da ist
+});
+
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        location.reload(); // Seite neu laden, um Status zu aktualisieren
+    } catch (error) {
+        alert("Fehler beim Abmelden");
+    }
+}
+
+// Beim Start ausführen
+checkLogin();
+
+const backToTopBtn = document.getElementById("backToTop");
+
+// 1. Überwachen, wie weit gescrollt wurde
+window.addEventListener("scroll", () => {
+  // Zeigt den Button an, wenn mehr als 300px nach unten gescrollt wurde
+  if (window.scrollY > 300) {
+    backToTopBtn.classList.add("show");
+  } else {
+    backToTopBtn.classList.remove("show");
+  }
+});
+
+// 2. Klick-Event: Smooth nach oben scrollen
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" // Sorgt für das weiche Scrollen
+  });
+});
+
+// ===== DESIGN SYSTEM =====
+// ===== DESIGN SYSTEM =====
+
+const spotlightImages = [
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_nbuiju",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_cljpxj",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_dgzyiw.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_w4sqni.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_qljo0d.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_jcetoc.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_ahnzth.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_h4yutr.png",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_rlyfgz.png",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_wvjbqf.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_ethrh9.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_mzwf9r.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_jzcflm.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_vehyus.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_yojntw.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_gqsslr.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_kfrajj.jpg",
+    "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_akjjqf.jpg"
+];
+
+let bgInterval = null;
+let currentIndex = Math.floor(Math.random() * spotlightImages.length);
+
+function buildSpotlightGrid() {
+    const grid = document.getElementById('spotlight-grid');
+    if (!grid || grid.children.length > 0) return;
+
+    spotlightImages.forEach((url, i) => {
+        const btn = document.createElement('button');
+        btn.style.cssText = `
+            width: 100%; aspect-ratio: 16/9;
+            border-radius: 8px; border: 2px solid transparent;
+            background-image: url('${url}');
+            background-size: cover; background-position: center;
+            cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+            padding: 0; overflow: hidden;
+        `;
+        btn.title = `Bild ${i + 1}`;
+        btn.dataset.index = i;
+        btn.onclick = () => {
+            setBgMode('fixed', i);
+        };
+        btn.onmouseover = () => btn.style.transform = 'scale(1.05)';
+        btn.onmouseout = () => btn.style.transform = 'scale(1)';
+        grid.appendChild(btn);
+    });
+}
+
+const origToggleMenu = window.toggleMenu;
+window.toggleMenu = function() {
+    if(typeof origToggleMenu === "function") origToggleMenu();
+    setTimeout(buildSpotlightGrid, 100);
+};
+
+function setBgMode(mode, fixedIndex = null) {
+    // Buttons zurücksetzen
+    ['auto','none','custom'].forEach(id => {
+        const btn = document.getElementById('bg-btn-' + id);
+        if (btn) {
+            btn.style.border = '2px solid transparent';
+            btn.style.opacity = '1';
+        }
+    });
+    
+    document.querySelectorAll('#spotlight-grid button').forEach(b => {
+        b.style.borderColor = 'transparent';
+    });
+
+    // Blendet die Upload-Zone standardmäßig aus
+    document.getElementById('custom-upload-zone').style.display = 'none';
+
+    if (mode === 'auto') {
+        document.getElementById('bg-btn-auto').style.border = '2px solid #70C4F7';
+        document.getElementById('spotlight-grid').style.opacity = '0.5';
+        document.getElementById('spotlight-grid').style.pointerEvents = 'none';
+        localStorage.removeItem('glaggle-bg-mode');
+        localStorage.removeItem('glaggle-bg-fixed');
+        startBgRotation();
+
+    } else if (mode === 'none') {
+        document.getElementById('bg-btn-none').style.border = '2px solid #70C4F7';
+        document.getElementById('spotlight-grid').style.opacity = '0.5';
+        document.getElementById('spotlight-grid').style.pointerEvents = 'none';
+        stopBgRotation();
+        const bgLayer = document.getElementById('background-layer');
+        if(bgLayer) {
+            bgLayer.style.opacity = '0';
+            setTimeout(() => { bgLayer.style.backgroundImage = 'none'; bgLayer.style.opacity = '1'; }, 500);
+        }
+        localStorage.setItem('glaggle-bg-mode', 'none');
+
+    } else if (mode === 'fixed' && fixedIndex !== null) {
+        document.getElementById('spotlight-grid').style.opacity = '1';
+        document.getElementById('spotlight-grid').style.pointerEvents = 'auto';
+        const activeBtn = document.querySelector(`#spotlight-grid button[data-index="${fixedIndex}"]`);
+        if (activeBtn) activeBtn.style.borderColor = '#70C4F7';
+        stopBgRotation();
+        setBackgroundImage(spotlightImages[fixedIndex]);
+        localStorage.setItem('glaggle-bg-mode', 'fixed');
+        localStorage.setItem('glaggle-bg-fixed', fixedIndex);
+
+    } else if (mode === 'custom') {
+        document.getElementById('bg-btn-custom').style.border = '2px solid #7b2ff7';
+        // Zeigt die Upload-Zone an und triggert das Auswahlfenster (unten auf Mobilgeräten)
+        document.getElementById('custom-upload-zone').style.display = 'block';
+        document.getElementById('custom-bg-input').click();
+    }
+}
+
+function loadCustomBg(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        stopBgRotation();
+        setBackgroundImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+}
+
+function setBackgroundImage(url) {
+    const bgLayer = document.getElementById('background-layer');
+    if(!bgLayer) return;
+    bgLayer.style.opacity = '0';
+    setTimeout(() => {
+        bgLayer.style.backgroundImage = `url('${url}')`;
+        bgLayer.style.opacity = '1';
+    }, 500);
+}
+
+function startBgRotation() {
+    stopBgRotation();
+    const bgLayer = document.getElementById('background-layer');
+    if(!bgLayer) return;
+    bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`;
+    bgLayer.style.opacity = '1';
+    bgInterval = setInterval(() => {
+        bgLayer.style.opacity = '0';
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % spotlightImages.length;
+            bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`;
+            bgLayer.style.opacity = '1';
+        }, 1000);
+    }, 15000);
+}
+
+function stopBgRotation() {
+    if (bgInterval) {
+        clearInterval(bgInterval);
+        bgInterval = null;
+    }
+}
+
+// Erweitert um das Umschalten der Kontrast-Klasse
+function setOverlay(color, isDark = false) {
+    const style = document.getElementById('dynamic-overlay') || (() => {
+        const s = document.createElement('style');
+        s.id = 'dynamic-overlay';
+        document.head.appendChild(s);
+        return s;
+    })();
+    style.textContent = `body::before { background: ${color} !important; }`;
+    localStorage.setItem('glaggle-overlay', JSON.stringify({color, isDark}));
+    
+    // Klasse hinzufügen/entfernen um Text/Icons hell zu machen
+    if(isDark) {
+        document.body.classList.add('dark-theme-active');
+    } else {
+        document.body.classList.remove('dark-theme-active');
+    }
+}
+
+function setNavbar(bg, textColor, isDark = false) {
+    const navbar = document.querySelector('.navbar');
+    if(navbar) navbar.style.setProperty('background-color', bg, 'important');
+    
+    document.querySelectorAll('.hamburger span').forEach(s => s.style.backgroundColor = textColor);
+    localStorage.setItem('glaggle-navbar', JSON.stringify({bg, textColor, isDark}));
+    
+    if(isDark) {
+        document.body.classList.add('dark-theme-active');
+    } else if(!localStorage.getItem('glaggle-overlay')?.includes('"isDark":true')) {
+        document.body.classList.remove('dark-theme-active');
+    }
+}
+
+function setSearchbar(bg, borderColor) {
+    const style = document.getElementById('dynamic-searchbar') || (() => {
+        const s = document.createElement('style');
+        s.id = 'dynamic-searchbar';
+        document.head.appendChild(s);
+        return s;
+    })();
+    style.textContent = `.search-bar-container { background: ${bg} !important; border-color: ${borderColor} !important; }`;
+    localStorage.setItem('glaggle-searchbar', JSON.stringify({bg, borderColor}));
+}
+
+function resetDesign() {
+    ['glaggle-overlay','glaggle-navbar','glaggle-searchbar','glaggle-bg-mode','glaggle-bg-fixed'].forEach(k => localStorage.removeItem(k));
+    ['dynamic-overlay','dynamic-searchbar'].forEach(id => document.getElementById(id)?.remove());
+    document.body.classList.remove('dark-theme-active');
+    setNavbar('#ffffff', '#000000', false);
+    
+    document.querySelectorAll('#spotlight-grid button').forEach(b => b.style.borderColor = 'transparent');
+    document.getElementById('spotlight-grid').style.opacity = '0.5';
+    document.getElementById('spotlight-grid').style.pointerEvents = 'none';
+    document.getElementById('bg-btn-auto').style.border = '2px solid #70C4F7';
+    document.getElementById('custom-upload-zone').style.display = 'none';
+    startBgRotation();
+}
+
+// Laden beim Seitenstart
+(function loadSavedDesign() {
+    const overlay = localStorage.getItem('glaggle-overlay');
+    if (overlay) {
+        const d = JSON.parse(overlay);
+        setOverlay(d.color, d.isDark);
+    }
+
+    const navbar = localStorage.getItem('glaggle-navbar');
+    if (navbar) { 
+        const d = JSON.parse(navbar); 
+        setNavbar(d.bg, d.textColor, d.isDark); 
+    }
+
+    const searchbar = localStorage.getItem('glaggle-searchbar');
+    if (searchbar) { const d = JSON.parse(searchbar); setSearchbar(d.bg, d.borderColor); }
+
+    const bgMode = localStorage.getItem('glaggle-bg-mode');
+    if (!bgMode || bgMode === 'auto') {
+        startBgRotation();
+    } else if (bgMode === 'none') {
+        setBgMode('none');
+    } else if (bgMode === 'fixed') {
+        const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
+        stopBgRotation();
+        setBackgroundImage(spotlightImages[idx]);
+    }
+})();
+
+let currentWelcomeSlide = 1;
+const totalWelcomeSlides = 3;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    
+    // Prüfen, ob der Nutzer die Seite zum ersten Mal besucht
+    const hasVisitedBefore = localStorage.getItem('glaggle_first_timer');
+    
+    if (!hasVisitedBefore) {
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.classList.add('show');
+        }, 100);
+    }
+});
+
+// Schaltet zur nächsten Folie oder schließt das Fenster auf Folie 3
+function nextSlide() {
+    if (currentWelcomeSlide < totalWelcomeSlides) {
+        currentWelcomeSlide++;
+        showSlide(currentWelcomeSlide);
+    } else {
+        dismissWelcomePopup();
+    }
+}
+
+// Direktes Springen durch Klicken auf die Punkte
+function goToSlide(slideNum) {
+    currentWelcomeSlide = slideNum;
+    showSlide(currentWelcomeSlide);
+}
+
+// Steuert die Sichtbarkeit der Elemente
+function showSlide(slideNum) {
+    // Alle Folien deaktivieren
+    document.querySelectorAll('.welcome-slide').forEach(slide => {
+        slide.classList.remove('active');
+    });
+    // Gewünschte Folie aktivieren
+    document.querySelector(`.welcome-slide[data-slide="${slideNum}"]`).classList.add('active');
+
+    // Punkte aktualisieren
+    const dots = document.querySelectorAll('.welcome-dot');
+    dots.forEach((dot, index) => {
+        if (index + 1 === slideNum) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+
+    // Button-Text anpassen
+    const actionBtn = document.getElementById('welcome-action-btn');
+    if (slideNum === totalWelcomeSlides) {
+        actionBtn.innerText = "Los geht's!";
+    } else {
+        actionBtn.innerText = "Weiter";
+    }
+}
+
+// Pop-up schließen und Besuch loggen
+function dismissWelcomePopup() {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    overlay.classList.remove('show');
+    
+    // Merken, dass der Nutzer da war
+    localStorage.setItem('glaggle_first_timer', 'true');
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, 400);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Prüfen, ob der Nutzer die Nachricht in der Vergangenheit schon weggedrückt hat
+    const isDismissed = localStorage.getItem('glaggle_push_dismissed');
+
+    if (!isDismissed) {
+        // Nach genau 5 Sekunden (5000 Millisekunden) wird die Box eingeblendet
+        setTimeout(() => {
+            const pushNotice = document.getElementById('glaggle-push-notice');
+            if (pushNotice) {
+                pushNotice.style.display = 'flex'; // Sichtbar im Layout machen
+                
+                // Minimale Verzögerung, damit das CSS das sanfte Einblenden animiert
+                setTimeout(() => {
+                    pushNotice.classList.add('show');
+                }, 50);
+            }
+        }, 30000); 
+    }
+});
+
+// Funktion zum Schließen und permanenten Merken
+function dismissPushNotice() {
+    const pushNotice = document.getElementById('glaggle-push-notice');
+    if (pushNotice) {
+        pushNotice.classList.remove('show'); // Animation rückwärts abspielen
+        
+        // Im Browser permanent speichern, dass die Box weggedrückt wurde
+        localStorage.setItem('glaggle_push_dismissed', 'true');
+        
+        // Nach dem Ausblenden komplett aus dem Layout entfernen
+        setTimeout(() => {
+            pushNotice.style.display = 'none';
+        }, 500);
+    }
+}
+</script>
+
+<div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
+    <img id="modalImg" style="max-width:95%; max-height:95%; border-radius:8px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+    <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
+</div>
+    
+<!-- Glaggle AI Chat Popup -->
+<div id="ai-chat-overlay" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(6px);
+    z-index:9000;
+    align-items:center; justify-content:center;
+">
+    <div id="ai-chat-popup" style="
+        background: rgba(20,20,30,0.92);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(112,196,247,0.3);
+        border-radius: 24px;
+        width: min(560px, 92vw);
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        animation: popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        overflow: hidden;
+    ">
+        <!-- Header -->
+        <div style="
+            padding:18px 20px; border-bottom:1px solid rgba(112,196,247,0.2);
+            display:flex; align-items:center; justify-content:space-between;
+            background: rgba(112,196,247,0.08);
+        ">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.3rem;">✨</span>
+                <strong style="color:#70C4F7; font-size:1rem;">Glaggle AI Chat</strong>
+            </div>
+            <button onclick="closeAiChat()" style="
+                background:none; border:none; color:#999; font-size:1.5rem;
+                cursor:pointer; transition:color 0.2s; line-height:1;
+                padding:4px 8px; border-radius:8px;
+            " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">✕</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="ai-chat-messages" style="
+            flex:1; overflow-y:auto; padding:16px 20px;
+            display:flex; flex-direction:column; gap:12px;
+            scrollbar-width:thin; scrollbar-color:#70C4F7 transparent;
+        "></div>
+
+        <!-- Input -->
+        <div style="
+            padding:14px 16px; border-top:1px solid rgba(112,196,247,0.2);
+            display:flex; gap:10px; align-items:center;
+            background: rgba(0,0,0,0.2);
+        ">
+            <input id="ai-chat-input" type="text" placeholder="Stell eine Folgefrage..." style="
+                flex:1; background:rgba(255,255,255,0.08);
+                border:1px solid rgba(112,196,247,0.3); border-radius:20px;
+                padding:11px 18px; font-size:0.9rem; outline:none;
+                color:white; transition:border-color 0.3s;
+            " onfocus="this.style.borderColor='#70C4F7'" onblur="this.style.borderColor='rgba(112,196,247,0.3)'">
+            <button id="ai-chat-send" style="
+                background: linear-gradient(135deg, #70C4F7, #2E94D1);
+                color:white; border:none; border-radius:20px;
+                padding:11px 20px; font-weight:bold; cursor:pointer;
+                font-size:0.9rem; white-space:nowrap;
+                transition:transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 4px 12px rgba(112,196,247,0.3);
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Senden ↗
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Glaggle Voice Assistant -->
+<button id="voice-btn" onclick="toggleVoiceAssistant()" title="Glaggle Assistant">
+    <span id="voice-icon">🎙️</span>
+</button>
+
+<div id="voice-popup" style="display:none;">
+    <div id="voice-header">
+        <span>✨ Glaggle Assistant</span>
+        <button onclick="closeVoiceAssistant()" id="voice-close">✕</button>
+    </div>
+    <div id="voice-status">Tippe auf das Mikrofon zum Sprechen</div>
+    <div id="voice-wave">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div>
+    </div>
+    <div id="voice-transcript"></div>
+    <div id="voice-response"></div>
+    <button id="voice-mic-btn" onclick="startListening()">🎙️</button>
+</div>
+
+<style>
+#voice-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 9998;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #70C4F7, #2E94D1);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(112,196,247,0.5);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#voice-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(112,196,247,0.7);
+}
+#voice-btn.listening {
+    animation: pulse-mic 1.5s infinite;
+    background: linear-gradient(135deg, #EA4335, #c0392b);
+}
+@keyframes pulse-mic {
+    0%   { box-shadow: 0 0 0 0 rgba(234,67,53,0.5); }
+    70%  { box-shadow: 0 0 0 15px rgba(234,67,53,0); }
+    100% { box-shadow: 0 0 0 0 rgba(234,67,53,0); }
+}
+
+#voice-popup {
+    position: fixed;
+    bottom: 100px;
+    left: 20px;
+    width: min(340px, 90vw);
+    background: rgba(15,15,25,0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(112,196,247,0.3);
+    border-radius: 24px;
+    padding: 20px;
+    z-index: 9997;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp {
+    from { opacity:0; transform: translateY(20px) scale(0.95); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+}
+#voice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #70C4F7;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+#voice-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.2s;
+}
+#voice-close:hover { color: white; }
+
+#voice-status {
+    text-align: center;
+    color: #888;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+    min-height: 18px;
+}
+
+/* Wellen-Animation */
+#voice-wave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 40px;
+    margin-bottom: 14px;
+}
+.bar {
+    width: 4px;
+    height: 6px;
+    background: #70C4F7;
+    border-radius: 4px;
+    transition: height 0.2s;
+}
+#voice-wave.active .bar:nth-child(1) { animation: wave 1s infinite 0.0s; }
+#voice-wave.active .bar:nth-child(2) { animation: wave 1s infinite 0.15s; }
+#voice-wave.active .bar:nth-child(3) { animation: wave 1s infinite 0.3s; }
+#voice-wave.active .bar:nth-child(4) { animation: wave 1s infinite 0.15s; }
+#voice-wave.active .bar:nth-child(5) { animation: wave 1s infinite 0.0s; }
+@keyframes wave {
+    0%, 100% { height: 6px; }
+    50%       { height: 30px; }
+}
+
+#voice-transcript {
+    background: rgba(112,196,247,0.08);
+    border: 1px solid rgba(112,196,247,0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #ccc;
+    font-size: 0.88rem;
+    min-height: 38px;
+    margin-bottom: 12px;
+    font-style: italic;
+    display: none;
+}
+#voice-response {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #eee;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    min-height: 38px;
+    margin-bottom: 14px;
+    display: none;
+}
+#voice-mic-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #70C4F7, #2E94D1);
+    font-size: 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(112,196,247,0.4);
+    transition: transform 0.2s, background 0.3s;
+}
+#voice-mic-btn:hover { transform: scale(1.08); }
+#voice-mic-btn.listening {
+    background: linear-gradient(135deg, #EA4335, #c0392b);
+    animation: pulse-mic 1.5s infinite;
+}
+</style>
+
+<script>
+let recognition = null;
+let isListening = false;
+let voiceOpen = false;
+let preDuckVolume = null;
+
+// HIER: fadeVolume nach draußen gezogen, damit duckMusic() darauf zugreifen kann!
+function fadeVolume(target) {
+    if (typeof glaggleAudio === 'undefined' || !glaggleAudio) return;
+    const steps = 25;
+    const diff = (target - glaggleAudio.volume) / steps;
+    let i = 0;
+    const fade = setInterval(() => {
+        i++;
+        if (typeof glaggleAudio === 'undefined' || !glaggleAudio) { clearInterval(fade); return; }
+        glaggleAudio.volume = Math.max(0, Math.min(1, glaggleAudio.volume + diff));
+        if (i >= steps) {
+            glaggleAudio.volume = target;
+            clearInterval(fade);
+        }
+    }, 25);
+}
+
+function toggleVoiceAssistant() {
+    const popup = document.getElementById('voice-popup');
+    voiceOpen = !voiceOpen;
+    popup.style.display = voiceOpen ? 'block' : 'none';
+}
+
+function closeVoiceAssistant() {
+    document.getElementById('voice-popup').style.display = 'none';
+    voiceOpen = false;
+    stopListening();
+}
+
+function startListening() {
+    if (isListening) { stopListening(); return; }
+    duckMusic(true);
+
+    // Browser-Unterstützung prüfen
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        setVoiceStatus('❌ Dein Browser unterstützt keine Spracheingabe');
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'de-DE';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        isListening = true;
+        setVoiceStatus('🎙️ Ich höre zu...');
+        document.getElementById('voice-wave').classList.add('active');
+        document.getElementById('voice-mic-btn').classList.add('listening');
+        document.getElementById('voice-btn').classList.add('listening');
+        document.getElementById('voice-transcript').style.display = 'block';
+        document.getElementById('voice-transcript').innerText = '...';
+    };
+
+    recognition.onresult = (e) => {
+        const transcript = Array.from(e.results)
+            .map(r => r[0].transcript).join('');
+        document.getElementById('voice-transcript').innerText = '🗣️ ' + transcript;
+
+        if (e.results[e.results.length - 1].isFinal) {
+            stopListening();
+            askGroqVoice(transcript);
+        }
+    };
+
+    recognition.onerror = (e) => {
+        stopListening();
+        setVoiceStatus('❌ Fehler: ' + e.error);
+    };
+
+    recognition.onend = () => {
+        if (isListening) stopListening();
+    };
+
+    recognition.start();
+}
+
+function stopListening() {
+    isListening = false;
+    if (recognition) { recognition.stop(); recognition = null; }
+    document.getElementById('voice-wave').classList.remove('active');
+    document.getElementById('voice-mic-btn').classList.remove('listening');
+    document.getElementById('voice-btn').classList.remove('listening');
+}
+
+async function askGroqVoice(text) {
+    setVoiceStatus('✨ Glaggle denkt nach...');
+    const responseBox = document.getElementById('voice-response');
+    responseBox.style.display = 'block';
+    responseBox.innerText = '...';
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + getGKey(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    {
+                        role: "system",
+                        content: "Du bist Glaggle Assistant, ein freundlicher KI-Sprachassistent von Glaggle AI. Antworte KURZ (max. 2-3 Sätze), präzise und natürlich auf Deutsch — wie Siri oder Google Assistant. Kein Markdown, nur normaler Text."
+                    },
+                    { role: "user", content: text }
+                ],
+                max_tokens: 200
+            })
+        });
+
+        const data = await res.json();
+        const answer = data.choices[0].message.content;
+
+        responseBox.innerText = answer;
+        setVoiceStatus('✅ Fertig — tippe erneut zum Sprechen');
+
+        speakResponse(answer);
+
+    } catch(e) {
+        responseBox.innerText = 'Fehler beim Verbinden mit Glaggle AI.';
+        setVoiceStatus('❌ Verbindungsfehler');
+    }
+}
+
+function duckMusic(duck = true) {
+    if (typeof glaggleAudio === 'undefined' || !glaggleAudio || glaggleAudio.paused) return;
+    
+    const volEl = document.getElementById('music-vol');
+    const currentVol = volEl ? parseFloat(volEl.value) / 100 : 0.4;
+    if (currentVol <= 0) return;
+
+    if (duck) {
+        preDuckVolume = glaggleAudio.volume;
+        fadeVolume(Math.min(0.06, currentVol * 0.15));
+    } else {
+        fadeVolume(preDuckVolume !== null ? preDuckVolume : currentVol);
+        preDuckVolume = null;
+    }
+}
+
+function speakResponse(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'de-DE';
+    utter.rate = 0.82;
+    utter.pitch = 0.6;
+    utter.volume = 1;
+
+    function chooseVoice() {
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = [
+            'Microsoft Stefan', 'Microsoft Markus', 'Google Deutsch',
+            'Markus', 'Yannick', 'Google German', 'Anna'
+        ];
+
+        let chosen = null;
+        for (const name of preferred) {
+            chosen = voices.find(v => v.name.includes(name));
+            if (chosen) break;
+        }
+        if (!chosen) {
+            chosen = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('male'));
+        }
+        if (!chosen) {
+            chosen = voices.find(v => v.lang.startsWith('de'));
+        }
+
+        if (chosen) utter.voice = chosen;
+
+        utter.onstart = () => {
+            setVoiceStatus('🔊 Glaggle spricht...');
+        };
+
+        utter.onend = () => {
+            setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
+            duckMusic(false);
+        };
+
+        utter.onerror = () => {
+            duckMusic(false);
+        };
+
+        window.speechSynthesis.speak(utter);
+    }
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+        chooseVoice();
+    } else {
+        window.speechSynthesis.onvoiceschanged = chooseVoice;
+    }
+}
+
+function setVoiceStatus(msg) {
+    document.getElementById('voice-status').innerText = msg;
+}
+
+// HIER: Autoplay-Lösung für das Neuladen der Seite
+function tryAutoplayMusic() {
+    // Falls deine Musik-Logik einen State speichert (z. B. im LocalStorage oder einer Checkbox)
+    // Ersetze 'true' ggf. mit deiner eigenen Abfrage, ob Musik laufen SOLLTE
+    const musicShouldPlay = true; 
+
+    if (musicShouldPlay && typeof glaggleAudio !== 'undefined' && glaggleAudio) {
+        const playPromise = glaggleAudio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log("Autoplay erfolgreich gestartet!");
+            }).catch(error => {
+                console.log("Browser blockiert Autoplay. Warte auf ersten Klick des Nutzers...");
+                
+                // Sobald der Nutzer das erste Mal klickt, spielen wir die Musik ab
+                const startOnInteraction = () => {
+                    glaggleAudio.play().then(() => {
+                        document.removeEventListener('click', startOnInteraction);
+                    }).catch(e => console.error("Klick-Play fehlgeschlagen:", e));
+                };
+                document.addEventListener('click', startOnInteraction);
+            });
+        }
+    }
+}
+
+// Führt den Autoplay-Versuch aus, sobald die Seite geladen ist
+window.addEventListener('DOMContentLoaded', () => {
+    // Kurze Verzögerung, um sicherzugehen, dass dein 'glaggleAudio'-Objekt bereits existiert
+    setTimeout(tryAutoplayMusic, 500); 
+});
+</script>
+
+<div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
+    <div class="welcome-popup">
+        <div class="welcome-gradient-border"></div>
+        <div class="welcome-content">
+            
+            <div class="welcome-slide active" data-slide="1">
+                <span class="welcome-emoji">✨</span>
+                <h2>Willkommen auf Glaggle.ch | The AI-Powered Searchmachine</h2>
+                <p>Schön, dass du da bist! Wir freuen uns, dich auf Glaggle.ch zu sehen.</p>
+            </div>
+
+            <div class="welcome-slide" data-slide="2">
+                <span class="welcome-emoji">🤝</span>
+                <h2>Unsere Versprechen</h2>
+                <ul class="welcome-promises">
+                    <li><span class="promise-icon">🔒</span> <strong>100% Privatsphäre:</strong> Wir geben deine Daten niemals für Werbung oder kommerzielle Zwecke weiter. </li>
+                    <li><span class="promise-icon">👤</span> <strong>Kein LogIn zwang:</strong> Du kannst alle Glaggle Dienste ohne LogIn nutzen.</li>
+                    <li><span class="promise-icon">✅</span> <strong>100% Kostenlos:</strong> Alle Dienste von Glaggle.ch sind zu 100% Kostenlos. Egal ob du Bilder generieren willst oder Games gamen.</li>
+                </ul>
+            </div>
+
+            <div class="welcome-slide" data-slide="3">
+                <span class="welcome-emoji">🚀</span>
+                <h2>Kurzanleitung</h2>
+                <div class="welcome-guide">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <p><strong>Suchen:</strong> Tippe deine Frage ins Suchfeld ein und drücke die Enter-Taste oder klicke auf die blaue Lupe.</p>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <p><strong>Mehr von Glaggle:</strong> Klicke auf die drei Striche oben rechts, um auf weitere Glaggle-Tools zu kommen.</p>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <p><strong>Glaggle Assistant:</strong> Drücke auf das Mikrofon um mit Glaggle Assistant zu sprechen.</p>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">4</span>
+                        <p><strong>Design Anpassen:</strong> Klicke auf die drei Striche oben rechts, und öffne das Design Menu. Personalisiere die Startseite nun nach deinem Geschmack!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="welcome-footer">
+                <div class="welcome-dots">
+                    <span class="welcome-dot active" onclick="goToSlide(1)"></span>
+                    <span class="welcome-dot" onclick="goToSlide(2)"></span>
+                    <span class="welcome-dot" onclick="goToSlide(3)"></span>
+                </div>
+                <button id="welcome-action-btn" class="welcome-btn" onclick="nextSlide()">Weiter</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
