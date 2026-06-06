@@ -1834,6 +1834,356 @@ const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ================================================================
+// GLAGGLE SMART SEARCH — Intelligente Suche mit Tippfehler-Toleranz
+// Einfügen direkt nach: function getGKey() { return p1 + p2 + p3; }
+// ================================================================
+
+
+// ── 1. TIPPFEHLER-TOLERANZ (Levenshtein-Distanz) ────────────────
+// Berechnet wie "ähnlich" zwei Wörter sind
+// "yuotube" vs "youtube" → Distanz 2 → trotzdem Treffer
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, (_, i) =>
+        Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0)
+    );
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i-1] === b[j-1]
+                ? dp[i-1][j-1]
+                : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+        }
+    }
+    return dp[m][n];
+}
+
+// Prüft ob zwei Wörter "ähnlich genug" sind (Tippfehler-tolerant)
+function fuzzyMatch(word, target) {
+    const w = word.toLowerCase();
+    const t = target.toLowerCase();
+    if (t.includes(w)) return true;          // Exakter Teilstring
+    if (w.length <= 3) return t === w;       // Kurze Wörter: nur exakt
+    const maxDist = w.length <= 5 ? 1 : 2;  // Kurze Wörter: 1 Fehler erlaubt, lange: 2
+    return levenshtein(w, t) <= maxDist;
+}
+
+
+// ── 2. SEMANTISCHE SYNONYME ──────────────────────────────────────
+// Erweiterbar: einfach neue Einträge hinzufügen
+const SYNONYME = {
+    // Video / Medien
+    'video':      ['youtube', 'avideo', 'schauen', 'film', 'clips'],
+    'musik':      ['audio', 'sound', 'song', 'lied'],
+    'film':       ['youtube', 'video', 'schauen'],
+
+    // KI / Chat
+    'ki':         ['glame', 'chatbot', 'ai', 'assistent', 'künstliche intelligenz'],
+    'ai':         ['glame', 'chatbot', 'ki', 'assistent'],
+    'chatbot':    ['glame', 'ki', 'ai', 'chat'],
+    'chat':       ['glame', 'ki', 'ai'],
+    'fragen':     ['glame', 'ki', 'chatbot'],
+    'antworten':  ['glame', 'ki', 'chatbot'],
+
+    // Bild / Design
+    'bild':       ['aimage', 'image', 'foto', 'design', 'generieren'],
+    'bilder':     ['aimage', 'image', 'foto', 'design'],
+    'foto':       ['aimage', 'bild', 'image'],
+    'image':      ['aimage', 'bild', 'foto'],
+    'generieren': ['aimage', 'erstellen', 'zeichnen'],
+    'design':     ['designstudio', 'aimage', 'erstellen', 'gestalten'],
+    'gestalten':  ['designstudio', 'design'],
+
+    // Spiele / Gaming
+    'spiel':      ['gamecenter', 'game', 'spielen', 'coins'],
+    'spiele':     ['gamecenter', 'game', 'spielen'],
+    'game':       ['gamecenter', 'spiel', 'spielen', 'coins'],
+    'gaming':     ['gamecenter', 'game', 'spielen'],
+    'spielen':    ['gamecenter', 'game'],
+    'coins':      ['gamecenter', 'punkte', 'sammeln'],
+
+    // Quiz / Lernen
+    'quiz':       ['quizai', 'quiz studio', 'fragen', 'lernen'],
+    'lernen':     ['quizai', 'quiz', 'fragen'],
+    'frage':      ['quizai', 'quiz', 'chatbot'],
+
+    // Suche / Glaggle
+    'suche':      ['glaggle', 'suchmaschine', 'google'],
+    'suchen':     ['glaggle', 'suchmaschine'],
+    'suchmaschine':['glaggle'],
+
+    // Code / Entwicklung
+    'code':       ['codemaker', 'programmieren', 'entwicklung'],
+    'programmieren':['codemaker', 'code'],
+
+    // Geschichte / Info
+    'geschichte': ['history', 'glaggle history', 'historysites'],
+    'verlauf':    ['history', 'glaggle history'],
+};
+
+// Gibt alle relevanten Suchbegriffe für einen Query zurück
+function expandQuery(rawQuery) {
+    const q = rawQuery.toLowerCase().trim();
+    const tokens = q.split(/\s+/).filter(t => t.length > 1);
+    const expanded = new Set(tokens);
+
+    tokens.forEach(token => {
+        // Direkte Synonyme
+        if (SYNONYME[token]) {
+            SYNONYME[token].forEach(s => expanded.add(s));
+        }
+        // Fuzzy: Prüfe ob token einem Synonym-Schlüssel ähnelt
+        Object.keys(SYNONYME).forEach(key => {
+            if (fuzzyMatch(token, key)) {
+                SYNONYME[key].forEach(s => expanded.add(s));
+                expanded.add(key);
+            }
+        });
+    });
+
+    return [...expanded];
+}
+
+
+// ── 3. SMART SCORING FÜR FAVORITEN ──────────────────────────────
+// Bewertet jeden Favoriten-Eintrag intelligent
+function scoreEntry(entry, queryTokens, expandedTokens) {
+    const title = entry.title.toLowerCase();
+    const desc  = entry.desc.toLowerCase();
+    const url   = entry.url.toLowerCase();
+    let score   = 0;
+
+    for (const token of queryTokens) {
+        // ── EXAKTER TREFFER ──
+        if (title === token)                    score += 20; // "YouTube" sucht "YouTube"
+        if (title.startsWith(token))            score += 10; // "Glaggle" sucht "Glaggle Design"
+        if (title.includes(token))              score += 7;  // Teilstring im Titel
+        if (desc.includes(token))               score += 3;  // In Beschreibung
+        if (url.includes(token))                score += 2;  // In URL
+
+        // ── FUZZY TREFFER (Tippfehler) ──
+        const titleWords = title.split(/\s+/);
+        for (const tw of titleWords) {
+            if (fuzzyMatch(token, tw)) score += 5;
+        }
+        const descWords = desc.split(/\s+/);
+        for (const dw of descWords) {
+            if (fuzzyMatch(token, dw)) score += 2;
+        }
+    }
+
+    // ── SEMANTISCHE TREFFER (Synonyme) ──
+    for (const expanded of expandedTokens) {
+        if (title.includes(expanded)) score += 4;
+        if (desc.includes(expanded))  score += 2;
+        if (url.includes(expanded))   score += 1;
+    }
+
+    return score;
+}
+
+// Haupt-Funktion: Ersetzt getAiProcessedFavs()
+async function getAiProcessedFavs(rawQuery) {
+    if (!rawQuery || rawQuery.trim().length < 2) return [];
+
+    const queryTokens   = rawQuery.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+    const expandedTokens = expandQuery(rawQuery);
+
+    // ── LOKALES SCORING (blitzschnell) ──────────────────────
+    const scored = meineLieblingsSeiten
+        .map(entry => ({
+            ...entry,
+            _score: scoreEntry(entry, queryTokens, expandedTokens)
+        }))
+        .filter(e => e._score > 0)
+        .sort((a, b) => b._score - a._score);
+
+    // Duplikate entfernen (gleiche URL)
+    const seen = new Set();
+    const unique = scored.filter(e => {
+        if (seen.has(e.url)) return false;
+        seen.add(e.url);
+        return true;
+    });
+
+    const topLocal = unique.slice(0, 5);
+
+    // ── KI ALS ERGÄNZUNG (nur wenn wenig lokale Treffer) ────
+    if (topLocal.length >= 3) {
+        // Reicht — KI-Call sparen
+        return topLocal;
+    }
+
+    // Wenn weniger als 3 Treffer: Groq fragen
+    try {
+        const context = meineLieblingsSeiten
+            .map(s => `"${s.title}": ${s.desc}`)
+            .join(', ');
+
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + getGKey(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                temperature: 0.1,
+                messages: [
+                    {
+                        role: "system",
+                        content: `Du bist ein App-Finder. Verfügbare Apps: [${context}].
+Aufgabe: Finde Apps die zur Suchanfrage passen (semantisch, auch Synonyme).
+Antworte NUR mit einem JSON-Array der passenden App-Objekte im Format:
+[{"title":"...","desc":"...","url":"..."}]
+Kein Text drumherum, nur reines JSON.`
+                    },
+                    { role: "user", content: rawQuery }
+                ]
+            })
+        });
+
+        const data    = await res.json();
+        const content = data.choices[0].message.content;
+        const start   = content.indexOf('[');
+        const end     = content.lastIndexOf(']') + 1;
+        if (start === -1 || end <= 0) return topLocal;
+
+        const aiFavs  = JSON.parse(content.substring(start, end));
+
+        // Kombinieren & Duplikate entfernen
+        const allResults = [...topLocal];
+        const seenUrls   = new Set(topLocal.map(e => e.url));
+        aiFavs.forEach(af => {
+            if (af.url && !seenUrls.has(af.url)) {
+                allResults.push(af);
+                seenUrls.add(af.url);
+            }
+        });
+
+        return allResults.slice(0, 5);
+
+    } catch(e) {
+        console.error('KI-Favs Fehler:', e);
+        return topLocal;
+    }
+}
+
+
+// ── 4. SMART WEBSEARCH SCORING ───────────────────────────────────
+// Ersetzt searchSupabase() — mit Tippfehler + semantischem Scoring
+
+async function searchSupabase(rawQuery) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const navWebBtn  = document.getElementById('nav-web');
+    const oldWebBox  = document.getElementById('glaggle-web-search-box');
+    if (oldWebBox) oldWebBox.remove();
+
+    const queryTokens    = rawQuery.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+    const expandedTokens = expandQuery(rawQuery);
+
+    try {
+        // Supabase: alle möglichen Kandidaten holen (großzügig)
+        const orConditions = [...new Set([...queryTokens, ...expandedTokens])]
+            .slice(0, 5) // Max 5 Begriffe für die DB-Query
+            .map(t => `title.ilike.%${t}%,description.ilike.%${t}%`)
+            .join(',');
+
+        let dbQuery = supabaseClient.from('search_index').select('*').limit(30);
+        if (orConditions) dbQuery = dbQuery.or(orConditions);
+
+        const { data, error } = await dbQuery;
+
+        if (error || !data || data.length === 0) {
+            if (navWebBtn) navWebBtn.style.display = 'none';
+            return;
+        }
+
+        // ── CLIENTSEITIGES SMART-SCORING ────────────────────
+        const scored = data
+            .map(res => ({
+                ...res,
+                _score: scoreEntry(
+                    { title: res.title, desc: res.description || '', url: res.url },
+                    queryTokens,
+                    expandedTokens
+                ) + Math.log((res.clicks || 0) + 1) * 1.5  // Click-Boost
+            }))
+            .filter(r => r._score > 0)
+            .sort((a, b) => b._score - a._score);
+
+        // Max 2 Ergebnisse pro Domain
+        const domainCount = new Map();
+        const deduped = scored.filter(r => {
+            let domain = '';
+            try { domain = new URL(r.url).hostname; } catch(e) { return true; }
+            const count = domainCount.get(domain) || 0;
+            if (count < 2) { domainCount.set(domain, count + 1); return true; }
+            return false;
+        }).slice(0, 8);
+
+        if (deduped.length === 0) {
+            if (navWebBtn) navWebBtn.style.display = 'none';
+            return;
+        }
+
+        if (navWebBtn) navWebBtn.style.display = 'block';
+
+        // ── BOX BAUEN ────────────────────────────────────────
+        const webBox = document.createElement('div');
+        webBox.id    = 'glaggle-web-search-box';
+        webBox.className = 'glaggle-entry fav-project';
+        webBox.style.borderLeft = '5px solid #34A853';
+        webBox.style.scrollMarginTop = '100px';
+        webBox.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:1.2rem;">🌐</span>
+                <strong style="color:#34A853;letter-spacing:0.5px;">GLAGGLE WEBSEARCH</strong>
+                <span style="font-size:0.75rem;color:#888;margin-left:auto;">${deduped.length} Ergebnisse</span>
+            </div>
+            <div id="supabase-results-list"></div>
+        `;
+
+        const imgBox = document.getElementById('glaggle-image-container');
+        if (imgBox) imgBox.before(webBox);
+        else resultsDiv.appendChild(webBox);
+
+        const list = webBox.querySelector('#supabase-results-list');
+
+        deduped.forEach(res => {
+            const item = document.createElement('div');
+            item.style.cssText = 'margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid var(--card-border);';
+
+            let domain = 'Link';
+            try { domain = new URL(res.url).hostname.replace('www.',''); } catch(e) {}
+
+            const topBadge = res._score > 15
+                ? `<span style="font-size:0.65rem;background:#34A85322;color:#34A853;padding:1px 6px;border-radius:4px;margin-left:4px;">★ Top</span>`
+                : '';
+
+            item.innerHTML = `
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16"
+                         style="width:16px;height:16px;" onerror="this.style.display='none'">
+                    <small style="color:var(--desc-color);font-size:0.75rem;">${domain}</small>
+                    ${topBadge}
+                </div>
+                <a href="${res.url}" target="_blank" onclick="registerClick('${res.id}')"
+                   style="color:var(--link-color);text-decoration:none;font-weight:bold;font-size:1.1rem;display:block;margin-bottom:4px;">
+                    ${res.title}
+                </a>
+                <p style="margin:0;font-size:0.9rem;color:var(--text-color);line-height:1.4;">
+                    ${res.description || 'Keine Beschreibung verfügbar.'}
+                </p>
+            `;
+            list.appendChild(item);
+        });
+
+    } catch(e) {
+        console.error('WebSearch Fehler:', e);
+    }
+}
+
 // ============================================================
 // GLAGGLE SUCHALGORITHMEN — Komplette Implementierung
 // Einfach in deine index.html einbauen (Anleitung unten)
@@ -2034,82 +2384,7 @@ function deduplicateDomains(results, maxPerDomain = 1) {
 // Nutzt jetzt BM25 statt einfachem .includes()
 // ════════════════════════════════════════════════════════════
 
-async function getAiProcessedFavs(rawQuery) {
-    const queryObj = preprocessQuery(rawQuery);
-    const q = queryObj.normalized;
 
-    if (q.length < 2) return [];
-
-    // SCHRITT 1: Lokales BM25-Scoring (blitzschnell, kein API-Call)
-    const localResults = meineLieblingsSeiten
-        .map(s => ({ ...s, _score: bm25Score(queryObj, s) }))
-        .filter(s => s._score > 0.3)
-        .sort((a, b) => b._score - a._score)
-        .slice(0, 6);
-
-    // Wenn bereits gute lokale Treffer: KI nur als optionale Erweiterung
-    if (localResults.length >= 3) {
-        // Im Hintergrund trotzdem KI versuchen für semantische Erweiterungen
-        try {
-            const aiExtras = await getAiFavsOnly(queryObj.original, localResults);
-            const combined = [...localResults, ...aiExtras];
-            return deduplicateDomains(combined.slice(0, 6));
-        } catch(e) {
-            return deduplicateDomains(localResults);
-        }
-    }
-
-    // Wenn wenig lokale Treffer: Vollständiger KI-Call
-    try {
-        const context = meineLieblingsSeiten
-            .map(s => `App: ${s.title} | Info: ${s.desc}`)
-            .join(' | ');
-
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + getGKey(),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages: [
-                    {
-                        role: "system",
-                        content: `Du bist ein App-Finder für Glaggle.
-Liste: [${context}]
-Regeln:
-1. Finde semantisch passende Apps (z.B. "Designtool" → Canva, Figma)
-2. Verstehe Synonyme und verwandte Begriffe
-3. Antworte NUR mit einem JSON-Array der gefundenen Objekte
-4. Kein Text, keine Erklärung, nur JSON`
-                    },
-                    { role: "user", content: queryObj.original }
-                ],
-                temperature: 0.1
-            })
-        });
-
-        const data = await res.json();
-        const content = data.choices[0].message.content;
-
-        let aiFavs = [];
-        const start = content.indexOf('[');
-        const end   = content.lastIndexOf(']') + 1;
-        if (start !== -1 && end > 0) {
-            aiFavs = JSON.parse(content.substring(start, end));
-        }
-
-        // Kombinieren: lokale BM25-Treffer + KI-Treffer, dann deduplizieren
-        const combined = [...localResults, ...aiFavs];
-        const unique   = deduplicateDomains(combined);
-        return unique.slice(0, 6);
-
-    } catch(e) {
-        console.error('Favs-Fehler:', e);
-        return localResults; // Fallback auf lokale Ergebnisse
-    }
-}
 
 // Hilfsfunktion: Nur KI-Extras holen (keine Duplikate zu vorhandenen)
 async function getAiFavsOnly(originalQuery, alreadyFound) {
@@ -2238,128 +2513,7 @@ async function glaggleSearch() {
 // Nutzt jetzt clientseitiges BM25-Nachscoring
 // ════════════════════════════════════════════════════════════
 
-async function searchSupabaseWithScoring(queryObj) {
-    const resultsDiv  = document.getElementById('glaggleResults');
-    const navWebBtn   = document.getElementById('nav-web');
-    const oldWebBox   = document.getElementById('glaggle-web-search-box');
-    if (oldWebBox) oldWebBox.remove();
 
-    try {
-        // Supabase-Abfrage mit mehreren Suchbegriffen (OR-verknüpft)
-        const mainToken   = queryObj.tokens[0] || queryObj.original;
-        const secondToken = queryObj.tokens[1] || '';
-
-        let query = supabaseClient
-            .from('search_index')
-            .select('*')
-            .limit(20); // Mehr holen, dann clientseitig sortieren
-
-        // Dynamische OR-Bedingung für alle Tokens
-        const orConditions = queryObj.tokens
-            .slice(0, 3) // Max 3 Tokens für die DB-Anfrage
-            .map(t => `title.ilike.%${t}%,description.ilike.%${t}%`)
-            .join(',');
-
-        if (orConditions) {
-            query = query.or(orConditions);
-        }
-
-        const { data, error } = await query;
-
-        if (error || !data || data.length === 0) {
-            if (navWebBtn) navWebBtn.style.display = 'none';
-            return [];
-        }
-
-        // ── CLIENTSEITIGES BM25-NACHSCORING ──────────────────
-        // Supabase gibt uns die Kandidaten, wir sortieren sie besser
-        const scored = data
-            .map(res => ({
-                ...res,
-                _score: bm25Score(queryObj, {
-                    title:      res.title,
-                    desc:       res.description,
-                    url:        res.url,
-                    clicks:     res.clicks,
-                    updated_at: res.updated_at
-                })
-            }))
-            .filter(res => res._score > 0)
-            .sort((a, b) => b._score - a._score);
-
-        // Domain-Deduplizierung: max 2 Ergebnisse pro Domain
-        const deduped = deduplicateDomains(
-            scored.map(r => ({ ...r, url: r.url })),
-            2
-        ).slice(0, 8);
-
-        if (deduped.length === 0) {
-            if (navWebBtn) navWebBtn.style.display = 'none';
-            return [];
-        }
-
-        if (navWebBtn) navWebBtn.style.display = 'block';
-
-        // ── ERGEBNIS-BOX BAUEN ───────────────────────────────
-        const webBox = document.createElement('div');
-        webBox.id    = 'glaggle-web-search-box';
-        webBox.className = 'glaggle-entry fav-project';
-        webBox.style.borderLeft    = '5px solid #34A853';
-        webBox.style.scrollMarginTop = '100px';
-
-        webBox.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                <span style="font-size:1.2rem;">🌐</span>
-                <strong style="color:#34A853; letter-spacing:0.5px;">GLAGGLE WEBSEARCH</strong>
-                <span style="font-size:0.75rem; color:#888; margin-left:auto;">${deduped.length} Ergebnisse</span>
-            </div>
-            <div id="supabase-results-list"></div>
-        `;
-
-        const imgBox = document.getElementById('glaggle-image-container');
-        if (imgBox) imgBox.before(webBox);
-        else resultsDiv.appendChild(webBox);
-
-        const list = webBox.querySelector('#supabase-results-list');
-
-        deduped.forEach(res => {
-            const item = document.createElement('div');
-            item.className = 'supabase-result-item';
-            item.style.cssText = 'margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--card-border);';
-
-            let domain = 'Link';
-            try { domain = new URL(res.url).hostname.replace('www.', ''); } catch(e) {}
-
-            // Score-Badge (optional, für Debugging ausblendbar)
-            const scoreBadge = res._score > 5
-                ? `<span style="font-size:0.65rem; background:#34A85322; color:#34A853; padding:1px 5px; border-radius:4px; margin-left:4px;">★ Top</span>`
-                : '';
-
-            item.innerHTML = `
-                <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
-                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16"
-                         style="width:16px; height:16px;" onerror="this.style.display='none'">
-                    <small style="color:var(--desc-color); font-size:0.75rem;">${domain}</small>
-                    ${scoreBadge}
-                </div>
-                <a href="${res.url}" target="_blank" onclick="registerClick('${res.id}')"
-                   style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
-                    ${res.title}
-                </a>
-                <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;">
-                    ${res.description || 'Keine Beschreibung verfügbar.'}
-                </p>
-            `;
-            list.appendChild(item);
-        });
-
-        return deduped;
-
-    } catch(e) {
-        console.error('Supabase Scoring Fehler:', e);
-        return [];
-    }
-}
 
 // Ende der Datei
 
