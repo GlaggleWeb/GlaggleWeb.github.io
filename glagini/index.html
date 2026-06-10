@@ -6,6 +6,7 @@
 <title>Glaggle Glagini</title>
 <meta name="description" content="Sammle, tausche und zocker mit Glaggle Glaginis – den fiktiven Wesen im Glaggle Universum!">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
 
 <style>
 /* ============================================================
@@ -829,8 +830,8 @@ body::before {
       Sammle fiktive Glagini-Wesen, tausche sie mit anderen und zocker in epischen Duellen!
     </p>
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <button class="btn btn-primary" id="loginWithAccountBtn" style="width:100%; font-size:1rem; padding:14px;">
-        🔑 Mit Glaggle Account fortfahren
+      <button class="btn btn-primary" id="loginWithAccountBt" style="width:100%; font-size:1rem; padding:14px;">
+        🔑 Bitte drücke ohne Account fortfahren
       </button>
       <button class="btn btn-secondary" id="loginWithoutAccountBtn" style="width:100%; font-size:1rem; padding:14px;">
         👤 Ohne Account loslegen
@@ -1111,19 +1112,34 @@ body::before {
 /* ==============================================================
    SUPABASE CONFIG
    ============================================================== */
-const SB_URL = "https://khainlzhocznvhysnabu.supabase.co";
+const SB_URL = "https://khainlzhocznvhysnabu.supabase.co/rest/v1/";
 const SB_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22";
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
 /* Groq API key (split for safety) */
-const _g1="gsk_", _g2="DhmV9OW7Z0hYFfuFuDWAW", _g3="Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
+const _g1="gsk_", _g2="wPx3km1erP8Zm6GoQ6P0WGdyb", _g3="3FYZM1tXuw8J5GPnDNB3bv4y0nm";
 const GROQ_KEY = () => _g1+_g2+_g3;
 
+const client = new Appwrite.Client();
+
 /* ==============================================================
-   APPWRITE CONFIG (Glaggle Accounts)
+   APPWRITE CONFIG
    ============================================================== */
+
 const AW_ENDPOINT = "https://cloud.appwrite.io/v1";
-const AW_PROJECT  = "glaggleweb"; // Adjust to your project ID
+const AW_PROJECT  = "glaggleweb";
+
+const client = new Appwrite.Client();
+
+client
+  .setEndpoint(AW_ENDPOINT)
+  .setProject(AW_PROJECT);
+
+const account = new Appwrite.Account(client);
+const databases = new Appwrite.Databases(client);
+
+const DATABASE_ID = "DEINE_DATABASE_ID";
+const COLLECTION_ID = "DEINE_COLLECTION_ID";
 
 /* ==============================================================
    GLAGINI DATA – 30 Karten
@@ -1168,8 +1184,8 @@ const ALL_GLAGINIS = [
   { id:26, name:'Omnivox',        rarity:'epic',   metal:'none',   power:95, speed:88, magic:90, defense:85, luck:80, desc:'Die Stimme des gesamten Glaggle-Universums.' },
   { id:27, name:'Solarius Rex',   rarity:'epic',   metal:'gold',   power:92, speed:78, magic:96, defense:88, luck:88, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
   { id:28, name:'Voidwalker',     rarity:'epic',   metal:'none',   power:88, speed:96, magic:85, defense:75, luck:75, desc:'Wandert zwischen Welten als wären es Zimmer.' },
-  { id:29, name:'Chronomundi',    rarity:'epic',   metal:'silver', power:82, speed:85, magic:98, defense:80, luck:92, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
-  { id:30, name:'Glaggle Supreme',rarity:'epic',   metal:'gold',   power:99, speed:99, magic:99, defense:99, luck:99, desc:'Das mächtigste Wesen im gesamten Glaggle-Universum. Einer Legende zufolge erschuf er alles.' },
+  { id:29, name:'Chronomundi',    rarity:'epic',   metal:'silver', power:82, speed:85, magic:90, defense:80, luck:92, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
+  { id:30, name:'Glaggle Supreme',rarity:'epic',   metal:'gold',   power:99, speed:99, magic:99, defense:1, luck:99, desc:'Das mächtigste Wesen im gesamten Glaggle-Universum. Einer Legende zufolge erschuf er alles.' },
 ];
 
 /* Add new Glaginis here – the system picks them up automatically */
