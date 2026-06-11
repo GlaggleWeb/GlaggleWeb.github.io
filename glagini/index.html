@@ -6,6 +6,7 @@
 <title>Glaggle Glagini</title>
 <meta name="description" content="Sammle, tausche und zocker mit Glaggle Glaginis – den fiktiven Wesen im Glaggle Universum!">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@16"></script>
 
 <style>
 /* ============================================================
@@ -810,6 +811,32 @@ body::before {
   opacity: 0; transition: opacity 0.2s;
 }
 .glagini-card:hover .stick-btn { opacity: 1; }
+
+/* ============================================================ LUCKY WHEEL */
+.wheel-container {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.wheel-wrap {
+  position: relative; width: 280px; height: 280px;
+}
+#luckyWheelCanvas {
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(123,108,246,0.4), 0 0 0 4px var(--border);
+}
+.wheel-pointer {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  z-index: 10;
+}
+.wheel-spin-btn {
+  font-size: 1.1rem; padding: 14px 36px;
+}
+.wheel-result-box {
+  min-height: 48px; text-align: center;
+  font-size: 1rem; font-weight: 800;
+  color: var(--gold);
+  animation: resultPop 0.4s cubic-bezier(.34,1.56,.64,1);
+}
 </style>
 </head>
 <body>
@@ -925,6 +952,7 @@ body::before {
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="scrollToSection('album')">📖 Album</button>
     <button class="nav-tab" onclick="scrollToSection('collect')">🎁 Sammeln</button>
+    <button class="nav-tab" onclick="scrollToSection('wheel')">🎡 Glücksrad</button>
     <button class="nav-tab" onclick="scrollToSection('myglaginis')">🃏 Meine</button>
     <button class="nav-tab" onclick="scrollToSection('trade')">🔄 Tauschen</button>
     <button class="nav-tab" onclick="scrollToSection('battle')">⚔️ Zocken</button>
@@ -1004,9 +1032,30 @@ body::before {
     </div>
   </section>
 
+  <!-- ================================================================ GLÜCKSRAD -->
+  <section class="section-anchor" id="wheel">
+    <div class="section-label">🎡 Bereich 3</div>
+    <div class="section-title">Glagini Glücksrad</div>
+    <div class="section-desc">Drehe einmal täglich – gewinne einen Glagini oder Coins!</div>
+
+    <div class="card" style="max-width:520px; margin:0 auto;">
+      <div class="wheel-container">
+        <div class="wheel-wrap">
+          <div class="wheel-pointer">▼</div>
+          <canvas id="luckyWheelCanvas" width="280" height="280"></canvas>
+        </div>
+        <div id="wheelResultBox" class="wheel-result-box"></div>
+        <div id="wheelBtnWrap">
+          <button class="btn btn-gold wheel-spin-btn" id="spinWheelBtn">🎡 Rad drehen!</button>
+        </div>
+        <div id="wheelCountdown" style="display:none; color:var(--muted); font-size:0.9rem; font-weight:700;"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================================================================ MEINE GLAGINIS -->
   <section class="section-anchor" id="myglaginis">
-    <div class="section-label">🃏 Bereich 3</div>
+    <div class="section-label">🃏 Bereich 4</div>
     <div class="section-title">Meine Glaginis</div>
     <div class="section-desc">Alle deine gesammelten Glaginis – klebe sie ins Album oder setze sie ein.</div>
 
@@ -1109,70 +1158,151 @@ body::before {
 'use strict';
 
 /* ==============================================================
-   SUPABASE CONFIG
+   SUPABASE CONFIG  (Trades · Battle · Chat)
    ============================================================== */
-const SB_URL = "https://khainlzhocznvhysnabu.supabase.co";
+const SB_URL = "https://khainlzhocznvhysnabu.supabase.co/rest/v1/";
 const SB_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22";
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* ==============================================================
+   APPWRITE CONFIG  (Accounts · Glagini-Daten)
+   ► Trage hier deine Werte ein:
+     AW_PROJECT  = deine Project-ID (Appwrite Console → Settings)
+     AW_DB_ID    = Database-ID (z.B. "glaggle")
+     AW_COLL_ID  = Collection-ID "glagini_saves"
+   ============================================================== */
+const AW_ENDPOINT = "https://cloud.appwrite.io/v1";
+const AW_PROJECT  = "DEINE_PROJECT_ID";   // ← HIER EINTRAGEN
+const AW_DB_ID    = "glaggle";            // ← HIER EINTRAGEN
+const AW_COLL_ID  = "glagini_saves";      // ← HIER EINTRAGEN
+
+const { Client, Databases, Query, ID } = Appwrite;
+const awClient = new Client().setEndpoint(AW_ENDPOINT).setProject(AW_PROJECT);
+const awDB     = new Databases(awClient);
 
 /* Groq API key (split for safety) */
 const _g1="gsk_", _g2="DhmV9OW7Z0hYFfuFuDWAW", _g3="Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
 const GROQ_KEY = () => _g1+_g2+_g3;
 
 /* ==============================================================
-   APPWRITE CONFIG (Glaggle Accounts)
-   ============================================================== */
-const AW_ENDPOINT = "https://cloud.appwrite.io/v1";
-const AW_PROJECT  = "glaggleweb"; // Adjust to your project ID
-
-/* ==============================================================
-   GLAGINI DATA – 30 Karten
-   Seltenheit: normal, rare, super, epic
-   Metall:     none, bronze, silver, gold (nur bei vereinzelten)
-   Stats:      power, speed, magic, defense, luck  (1–99)
+   GLAGINI DATA – 100 Karten
+   Seltenheit: normal (40), rare (30), super (20), epic (10)
+   Metall:     none, bronze, silver, gold (bei vereinzelten)
+   Stats:      power, speed, magic, defense, luck  (1–95)
    ============================================================== */
 const STATS_KEYS = ['power','speed','magic','defense','luck'];
 const STATS_LABELS = { power:'⚡ Power', speed:'💨 Speed', magic:'🔮 Magie', defense:'🛡 Defense', luck:'🍀 Glück' };
 const STATS_COLORS = { power:'#ff6b8a', speed:'#4ecdc4', magic:'#a855f7', defense:'#7b6cf6', luck:'#ffd85a' };
 
 const ALL_GLAGINIS = [
-  // --- NORMAL (1-10) ---
-  { id:1,  name:'Jelly Jelly',    rarity:'normal', metal:'none',   power:22, speed:35, magic:18, defense:25, luck:40, desc:'Ein glibberiges Wesen, das überall klebt.' },
-  { id:2,  name:'Wurmi',          rarity:'normal', metal:'none',   power:15, speed:28, magic:12, defense:18, luck:55, desc:'Der freundlichste Wurm im Glaggle-Universum.' },
-  { id:3,  name:'Puffi',          rarity:'normal', metal:'none',   power:30, speed:20, magic:25, defense:35, luck:22, desc:'Rund wie eine Seifenblase, hart wie Stahl.' },
-  { id:4,  name:'Blubby',         rarity:'normal', metal:'none',   power:18, speed:45, magic:20, defense:12, luck:48, desc:'Bewegt sich schnell wie ein Blitz im Wasser.' },
-  { id:5,  name:'Schnecki',       rarity:'normal', metal:'none',   power:12, speed:10, magic:38, defense:55, luck:32, desc:'Langsam aber unaufhörlich – das Haus ist sein Schloss.' },
-  { id:6,  name:'Fungi',          rarity:'normal', metal:'bronze', power:28, speed:22, magic:45, defense:30, luck:35, desc:'Ein weiser Pilz aus den Tiefen des Glaggle-Waldes.' },
-  { id:7,  name:'Zappi',          rarity:'normal', metal:'none',   power:40, speed:50, magic:15, defense:20, luck:28, desc:'Elektrisch geladen und immer bereit für Action.' },
-  { id:8,  name:'Glitzi',         rarity:'normal', metal:'none',   power:20, speed:32, magic:30, defense:22, luck:50, desc:'Glitzert wie tausend Sterne auf einmal.' },
-  { id:9,  name:'Fluppi',         rarity:'normal', metal:'none',   power:16, speed:55, magic:22, defense:15, luck:38, desc:'Fliegt so schnell, dass er manchmal sich selbst überholt.' },
-  { id:10, name:'Bubbi',          rarity:'normal', metal:'none',   power:25, speed:25, magic:25, defense:25, luck:45, desc:'Perfekt ausbalanciert – das ist seine Stärke.' },
-  // --- RARE (11-18) ---
-  { id:11, name:'Krakowi',        rarity:'rare',   metal:'none',   power:55, speed:30, magic:40, defense:48, luck:35, desc:'Acht Tentakel, ein Ziel – gewinnen.' },
-  { id:12, name:'Volcanix',       rarity:'rare',   metal:'bronze', power:70, speed:25, magic:55, defense:60, luck:20, desc:'Ein Mini-Vulkan, der wandert und alles erwärmt.' },
-  { id:13, name:'Frostini',       rarity:'rare',   metal:'none',   power:45, speed:60, magic:65, defense:40, luck:38, desc:'Lässt überall Eiskristalle entstehen.' },
-  { id:14, name:'Shadowbun',      rarity:'rare',   metal:'none',   power:50, speed:70, magic:35, defense:35, luck:52, desc:'Springt aus Schatten zu Schatten.' },
-  { id:15, name:'Crystallo',      rarity:'rare',   metal:'silver', power:42, speed:38, magic:72, defense:55, luck:44, desc:'Sein Körper ist ein einziger riesiger Edelstein.' },
-  { id:16, name:'Glubschi',       rarity:'rare',   metal:'none',   power:38, speed:55, magic:60, defense:38, luck:60, desc:'Kann gleichzeitig in 12 Richtungen schauen.' },
-  { id:17, name:'Rumblox',        rarity:'rare',   metal:'none',   power:75, speed:18, magic:30, defense:72, luck:25, desc:'Schwer wie ein Fels, stark wie ein Berg.' },
-  { id:18, name:'Wirblo',         rarity:'rare',   metal:'none',   power:48, speed:78, magic:42, defense:28, luck:55, desc:'Ein ewiger Wirbel, der nie aufhört sich zu drehen.' },
-  // --- SUPER RARE (19-25) ---
-  { id:19, name:'Nexoris',        rarity:'super',  metal:'none',   power:80, speed:65, magic:75, defense:60, luck:50, desc:'Eine antike Entität aus den Ursprüngen des Glaggle-Kosmos.' },
-  { id:20, name:'Prismatica',     rarity:'super',  metal:'silver', power:65, speed:72, magic:88, defense:55, luck:65, desc:'Bricht Licht in tausend Farben und bleibt dabei unsichtbar.' },
-  { id:21, name:'Thunderclap',    rarity:'super',  metal:'none',   power:90, speed:80, magic:55, defense:65, luck:42, desc:'Sein Brüllen erschüttert ganze Kontinente.' },
-  { id:22, name:'Miragello',      rarity:'super',  metal:'none',   power:60, speed:85, magic:80, defense:45, luck:72, desc:'Niemand weiß genau, ob er wirklich existiert.' },
-  { id:23, name:'Abyssini',       rarity:'super',  metal:'gold',   power:72, speed:55, magic:92, defense:70, luck:58, desc:'Aus den tiefsten Tiefen des Glaggle-Ozeans aufgestiegen.' },
-  { id:24, name:'Terramorph',     rarity:'super',  metal:'none',   power:85, speed:40, magic:68, defense:88, luck:45, desc:'Kann sich in jeden Stein verwandeln, den er berührt.' },
-  { id:25, name:'Zephyrax',       rarity:'super',  metal:'none',   power:62, speed:95, magic:70, defense:42, luck:68, desc:'Schneller als der Wind – sogar schneller als sein Schatten.' },
-  // --- EPIC (26-30) ---
-  { id:26, name:'Omnivox',        rarity:'epic',   metal:'none',   power:95, speed:88, magic:90, defense:85, luck:80, desc:'Die Stimme des gesamten Glaggle-Universums.' },
-  { id:27, name:'Solarius Rex',   rarity:'epic',   metal:'gold',   power:92, speed:78, magic:96, defense:88, luck:88, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
-  { id:28, name:'Voidwalker',     rarity:'epic',   metal:'none',   power:88, speed:96, magic:85, defense:75, luck:75, desc:'Wandert zwischen Welten als wären es Zimmer.' },
-  { id:29, name:'Chronomundi',    rarity:'epic',   metal:'silver', power:82, speed:85, magic:98, defense:80, luck:92, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
-  { id:30, name:'Glaggle Supreme',rarity:'epic',   metal:'gold',   power:99, speed:99, magic:99, defense:99, luck:99, desc:'Das mächtigste Wesen im gesamten Glaggle-Universum. Einer Legende zufolge erschuf er alles.' },
-];
+  // ── NORMAL (1–40) ──────────────────────────────────────────
+  { id:1,  name:'Jelly Jelly',   rarity:'normal', metal:'none',   power:22, speed:35, magic:18, defense:25, luck:40, desc:'Ein glibberiges Wesen, das überall klebt.' },
+  { id:2,  name:'Wurmi',         rarity:'normal', metal:'none',   power:15, speed:28, magic:12, defense:18, luck:55, desc:'Der freundlichste Wurm im Glaggle-Universum.' },
+  { id:3,  name:'Puffi',         rarity:'normal', metal:'none',   power:30, speed:20, magic:25, defense:35, luck:22, desc:'Rund wie eine Seifenblase, hart wie Stahl.' },
+  { id:4,  name:'Blubby',        rarity:'normal', metal:'none',   power:18, speed:45, magic:20, defense:12, luck:48, desc:'Bewegt sich schnell wie ein Blitz im Wasser.' },
+  { id:5,  name:'Schnecki',      rarity:'normal', metal:'none',   power:12, speed:10, magic:38, defense:55, luck:32, desc:'Langsam aber unaufhörlich – das Haus ist sein Schloss.' },
+  { id:6,  name:'Fungi',         rarity:'normal', metal:'bronze', power:28, speed:22, magic:45, defense:30, luck:35, desc:'Ein weiser Pilz aus den Tiefen des Glaggle-Waldes.' },
+  { id:7,  name:'Zappi',         rarity:'normal', metal:'none',   power:40, speed:50, magic:15, defense:20, luck:28, desc:'Elektrisch geladen und immer bereit für Action.' },
+  { id:8,  name:'Glitzi',        rarity:'normal', metal:'none',   power:20, speed:32, magic:30, defense:22, luck:50, desc:'Glitzert wie tausend Sterne auf einmal.' },
+  { id:9,  name:'Fluppi',        rarity:'normal', metal:'none',   power:16, speed:55, magic:22, defense:15, luck:38, desc:'Fliegt so schnell, dass er manchmal sich selbst überholt.' },
+  { id:10, name:'Bubbi',         rarity:'normal', metal:'none',   power:25, speed:25, magic:25, defense:25, luck:45, desc:'Perfekt ausbalanciert – das ist seine Stärke.' },
+  { id:11, name:'Schlummi',      rarity:'normal', metal:'none',   power:10, speed:8,  magic:20, defense:42, luck:60, desc:'Schläft fast immer, bringt dabei aber Glück.' },
+  { id:12, name:'Knubbel',       rarity:'normal', metal:'none',   power:35, speed:15, magic:10, defense:50, luck:25, desc:'Klein, rund und unglaublich hartnäckig.' },
+  { id:13, name:'Blinki',        rarity:'normal', metal:'none',   power:18, speed:40, magic:35, defense:15, luck:42, desc:'Blinzelt so schnell, dass er Funken erzeugt.' },
+  { id:14, name:'Wabbel',        rarity:'normal', metal:'none',   power:20, speed:18, magic:15, defense:38, luck:55, desc:'Wackelt ständig, aber fällt nie um.' },
+  { id:15, name:'Tropfi',        rarity:'normal', metal:'none',   power:14, speed:30, magic:40, defense:20, luck:35, desc:'Tropft magische Flüssigkeit wo immer er geht.' },
+  { id:16, name:'Stachli',       rarity:'normal', metal:'none',   power:42, speed:22, magic:12, defense:45, luck:18, desc:'Vorsicht! Seine Stacheln sind schärfer als sie aussehen.' },
+  { id:17, name:'Wuseli',        rarity:'normal', metal:'none',   power:12, speed:58, magic:18, defense:10, luck:48, desc:'Huscht so flink herum, dass man ihn kaum sieht.' },
+  { id:18, name:'Glummi',        rarity:'normal', metal:'none',   power:25, speed:20, magic:32, defense:28, luck:38, desc:'Brummt leise vor sich hin und strahlt Wärme aus.' },
+  { id:19, name:'Knirpsi',       rarity:'normal', metal:'none',   power:15, speed:35, magic:28, defense:20, luck:52, desc:'Winzig aber mutig – der Kleinste im Glaggle-Kosmos.' },
+  { id:20, name:'Quatschi',      rarity:'normal', metal:'none',   power:20, speed:25, magic:22, defense:30, luck:42, desc:'Redet ohne Pause und bringt jeden zum Lachen.' },
+  { id:21, name:'Moosbart',      rarity:'normal', metal:'none',   power:32, speed:12, magic:38, defense:40, luck:28, desc:'Alter Waldgeist mit einem Bart aus Moos.' },
+  { id:22, name:'Nubbelchen',    rarity:'normal', metal:'bronze', power:28, speed:18, magic:15, defense:48, luck:32, desc:'Winziger Klumpen, der alles beobachtet.' },
+  { id:23, name:'Flausi',        rarity:'normal', metal:'none',   power:18, speed:42, magic:30, defense:15, luck:45, desc:'Flauschig wie eine Wolke und genauso leicht.' },
+  { id:24, name:'Schlippi',      rarity:'normal', metal:'none',   power:10, speed:50, magic:25, defense:12, luck:55, desc:'Glatt wie Eis – kein Angriff bleibt hängen.' },
+  { id:25, name:'Tolpel',        rarity:'normal', metal:'none',   power:30, speed:15, magic:10, defense:35, luck:60, desc:'Stolpert durch das Leben und findet immer Gold.' },
+  { id:26, name:'Brumbo',        rarity:'normal', metal:'none',   power:38, speed:20, magic:8,  defense:50, luck:22, desc:'Brummt wie ein Motor und ist genauso ausdauernd.' },
+  { id:27, name:'Zippel',        rarity:'normal', metal:'none',   power:15, speed:60, magic:20, defense:10, luck:40, desc:'Schnell wie ein Reißverschluss – zip, weg!' },
+  { id:28, name:'Matschling',    rarity:'normal', metal:'none',   power:25, speed:10, magic:42, defense:32, luck:35, desc:'Formt sich um jedes Hindernis herum.' },
+  { id:29, name:'Glubschi',      rarity:'normal', metal:'none',   power:22, speed:28, magic:35, defense:20, luck:48, desc:'Riesige Augen, die alles auf einmal sehen.' },
+  { id:30, name:'Runkelchen',    rarity:'normal', metal:'none',   power:28, speed:22, magic:18, defense:45, luck:30, desc:'Klein und faltig, aber voller Energie.' },
+  { id:31, name:'Plitsch',       rarity:'normal', metal:'none',   power:12, speed:38, magic:45, defense:15, luck:42, desc:'Platschend und plitschernd durch jeden Bach.' },
+  { id:32, name:'Muffi',         rarity:'normal', metal:'none',   power:20, speed:15, magic:30, defense:40, luck:50, desc:'Mürrisch, aber im Herzen ein Weichling.' },
+  { id:33, name:'Zirpsel',       rarity:'normal', metal:'none',   power:16, speed:48, magic:28, defense:12, luck:55, desc:'Zirpt melodisch und lockt damit Freunde an.' },
+  { id:34, name:'Klumpi',        rarity:'normal', metal:'none',   power:35, speed:12, magic:15, defense:52, luck:25, desc:'Massig und stabil wie ein Felsblock.' },
+  { id:35, name:'Schleimi',      rarity:'normal', metal:'none',   power:14, speed:22, magic:50, defense:18, luck:38, desc:'Hinterlässt eine magische Spur überall.' },
+  { id:36, name:'Tüpfeli',       rarity:'normal', metal:'bronze', power:20, speed:30, magic:32, defense:22, luck:52, desc:'Überall bunt gepunktet – jeder Punkt ein Wunsch.' },
+  { id:37, name:'Hoppeli',       rarity:'normal', metal:'none',   power:18, speed:55, magic:20, defense:15, luck:45, desc:'Hüpft unermüdlich von Stein zu Stein.' },
+  { id:38, name:'Grummelchen',   rarity:'normal', metal:'none',   power:32, speed:15, magic:12, defense:48, luck:28, desc:'Grummelt vor sich hin, aber hilft immer.' },
+  { id:39, name:'Neonöhrchen',   rarity:'normal', metal:'none',   power:15, speed:40, magic:38, defense:18, luck:48, desc:'Leuchtend grüne Ohren, die Signale empfangen.' },
+  { id:40, name:'Quibbel',       rarity:'normal', metal:'none',   power:22, speed:32, magic:28, defense:25, luck:42, desc:'Quietscht bei jeder Bewegung und liebt es.' },
 
-/* Add new Glaginis here – the system picks them up automatically */
+  // ── RARE (41–70) ────────────────────────────────────────────
+  { id:41, name:'Krakowi',       rarity:'rare',   metal:'none',   power:55, speed:30, magic:40, defense:48, luck:35, desc:'Acht Tentakel, ein Ziel – gewinnen.' },
+  { id:42, name:'Volcanix',      rarity:'rare',   metal:'bronze', power:68, speed:25, magic:55, defense:58, luck:20, desc:'Ein Mini-Vulkan, der wandert und alles erwärmt.' },
+  { id:43, name:'Frostini',      rarity:'rare',   metal:'none',   power:42, speed:62, magic:65, defense:38, luck:38, desc:'Lässt überall Eiskristalle entstehen.' },
+  { id:44, name:'Shadowbun',     rarity:'rare',   metal:'none',   power:48, speed:72, magic:35, defense:32, luck:52, desc:'Springt aus Schatten zu Schatten.' },
+  { id:45, name:'Crystallo',     rarity:'rare',   metal:'silver', power:40, speed:36, magic:72, defense:52, luck:44, desc:'Sein Körper ist ein einziger riesiger Edelstein.' },
+  { id:46, name:'Rumblox',       rarity:'rare',   metal:'none',   power:74, speed:16, magic:28, defense:70, luck:22, desc:'Schwer wie ein Fels, stark wie ein Berg.' },
+  { id:47, name:'Wirblo',        rarity:'rare',   metal:'none',   power:45, speed:78, magic:40, defense:25, luck:55, desc:'Ein ewiger Wirbel, der nie aufhört sich zu drehen.' },
+  { id:48, name:'Flametto',      rarity:'rare',   metal:'none',   power:65, speed:45, magic:58, defense:30, luck:30, desc:'Eine lebende Flamme – berührt ihn, verbrennt ihr.' },
+  { id:49, name:'Aquarini',      rarity:'rare',   metal:'none',   power:38, speed:65, magic:60, defense:42, luck:45, desc:'Surft auf Wellen, die er selbst erzeugt.' },
+  { id:50, name:'Steingeist',    rarity:'rare',   metal:'bronze', power:72, speed:10, magic:35, defense:78, luck:18, desc:'Jahrtausende alter Geist, gefangen in einem Stein.' },
+  { id:51, name:'Blitzpfeil',    rarity:'rare',   metal:'none',   power:58, speed:82, magic:30, defense:20, luck:35, desc:'Schiesst wie ein Pfeil durch die Luft.' },
+  { id:52, name:'Nebelgeist',    rarity:'rare',   metal:'none',   power:35, speed:55, magic:68, defense:38, luck:50, desc:'Hüllt sich in Nebel und verwirrt alle.' },
+  { id:53, name:'Sumpfkönig',    rarity:'rare',   metal:'none',   power:62, speed:20, magic:45, defense:65, luck:30, desc:'Herrscher über den magischen Sumpf.' },
+  { id:54, name:'Windläufer',    rarity:'rare',   metal:'none',   power:40, speed:80, magic:38, defense:22, luck:48, desc:'Rennt schneller als der Wind selbst.' },
+  { id:55, name:'Glutherz',      rarity:'rare',   metal:'bronze', power:60, speed:35, magic:62, defense:40, luck:28, desc:'Sein Herz ist aus reiner Glut.' },
+  { id:56, name:'Eisenflügel',   rarity:'rare',   metal:'none',   power:55, speed:60, magic:25, defense:62, luck:32, desc:'Flügel aus Eisen, stark wie ein Panzer.' },
+  { id:57, name:'Drachenkind',   rarity:'rare',   metal:'none',   power:70, speed:40, magic:50, defense:45, luck:25, desc:'Kleines Drachenwesen mit grossem Feuer.' },
+  { id:58, name:'Mondflüsterer', rarity:'rare',   metal:'silver', power:32, speed:50, magic:75, defense:30, luck:55, desc:'Flüstert mit dem Mond und hört dessen Geheimnisse.' },
+  { id:59, name:'Sandsturm',     rarity:'rare',   metal:'none',   power:60, speed:68, magic:35, defense:35, luck:30, desc:'Ein wandernder Sandsturm in Miniformat.' },
+  { id:60, name:'Traumwandler',  rarity:'rare',   metal:'none',   power:30, speed:45, magic:72, defense:28, luck:58, desc:'Bewegt sich durch Träume wie andere durch Räume.' },
+  { id:61, name:'Donnerball',    rarity:'rare',   metal:'none',   power:75, speed:30, magic:45, defense:50, luck:20, desc:'Rollt donnernd über alles, was ihm in den Weg kommt.' },
+  { id:62, name:'Glitzerhai',    rarity:'rare',   metal:'none',   power:65, speed:55, magic:30, defense:55, luck:28, desc:'Schwimmt durch die Luft wie durch Wasser.' },
+  { id:63, name:'Blütengeist',   rarity:'rare',   metal:'none',   power:25, speed:40, magic:70, defense:32, luck:60, desc:'Entfaltet sich wie eine Blüte und heilt alles.' },
+  { id:64, name:'Knochenkralle', rarity:'rare',   metal:'bronze', power:72, speed:38, magic:20, defense:68, luck:15, desc:'Uralt und knochentrocken, aber unaufhaltsam.' },
+  { id:65, name:'Sternenraupe',  rarity:'rare',   metal:'none',   power:28, speed:35, magic:65, defense:40, luck:55, desc:'Eine Raupe aus reinem Sternenlicht.' },
+  { id:66, name:'Irrlicht',      rarity:'rare',   metal:'none',   power:32, speed:70, magic:60, defense:20, luck:50, desc:'Führt andere in die Irre – oder zum Glück.' },
+  { id:67, name:'Schlammtroll',  rarity:'rare',   metal:'none',   power:68, speed:15, magic:30, defense:72, luck:22, desc:'Langsam, massiv, unaufhaltsam.' },
+  { id:68, name:'Lichtspringer', rarity:'rare',   metal:'silver', power:45, speed:75, magic:55, defense:25, luck:42, desc:'Springt von Lichtstrahl zu Lichtstrahl.' },
+  { id:69, name:'Magnetkugel',   rarity:'rare',   metal:'none',   power:50, speed:30, magic:50, defense:60, luck:35, desc:'Zieht alles magisch an – Freund und Feind.' },
+  { id:70, name:'Polarnebel',    rarity:'rare',   metal:'none',   power:38, speed:52, magic:68, defense:35, luck:45, desc:'Eiskalter Nebel mit einem warmen Kern.' },
+
+  // ── SUPER RARE (71–90) ──────────────────────────────────────
+  { id:71, name:'Nexoris',       rarity:'super',  metal:'none',   power:78, speed:62, magic:74, defense:58, luck:50, desc:'Eine antike Entität aus den Ursprüngen des Glaggle-Kosmos.' },
+  { id:72, name:'Prismatica',    rarity:'super',  metal:'silver', power:62, speed:70, magic:86, defense:52, luck:64, desc:'Bricht Licht in tausend Farben und bleibt dabei unsichtbar.' },
+  { id:73, name:'Thunderclap',   rarity:'super',  metal:'none',   power:88, speed:75, magic:52, defense:62, luck:38, desc:'Sein Brüllen erschüttert ganze Kontinente.' },
+  { id:74, name:'Miragello',     rarity:'super',  metal:'none',   power:58, speed:82, magic:78, defense:42, luck:70, desc:'Niemand weiß genau, ob er wirklich existiert.' },
+  { id:75, name:'Abyssini',      rarity:'super',  metal:'gold',   power:70, speed:52, magic:90, defense:68, luck:56, desc:'Aus den tiefsten Tiefen des Glaggle-Ozeans aufgestiegen.' },
+  { id:76, name:'Terramorph',    rarity:'super',  metal:'none',   power:82, speed:38, magic:65, defense:85, luck:42, desc:'Kann sich in jeden Stein verwandeln, den er berührt.' },
+  { id:77, name:'Zephyrax',      rarity:'super',  metal:'none',   power:60, speed:92, magic:68, defense:40, luck:65, desc:'Schneller als der Wind – sogar schneller als sein Schatten.' },
+  { id:78, name:'Vulkangeist',   rarity:'super',  metal:'bronze', power:85, speed:40, magic:72, defense:70, luck:30, desc:'Jahrtausend alter Geist eines schlafenden Vulkans.' },
+  { id:79, name:'Tiefseejäger',  rarity:'super',  metal:'none',   power:75, speed:58, magic:65, defense:72, luck:35, desc:'Jagt in Tiefen, die kein Licht je erreicht.' },
+  { id:80, name:'Sternenreiter', rarity:'super',  metal:'silver', power:65, speed:78, magic:80, defense:45, luck:58, desc:'Reitet auf Sternschnuppen durch die Galaxie.' },
+  { id:81, name:'Glutkönig',     rarity:'super',  metal:'none',   power:88, speed:45, magic:68, defense:75, luck:28, desc:'Herrscher aller Feuer-Glaginis.' },
+  { id:82, name:'Zeitwanderer',  rarity:'super',  metal:'none',   power:55, speed:70, magic:88, defense:50, luck:72, desc:'Wandert durch Epochen und beobachtet alles.' },
+  { id:83, name:'Schattenkönigin',rarity:'super', metal:'none',   power:68, speed:80, magic:75, defense:48, luck:60, desc:'Herrscherin aller Schatten im Glaggle-Reich.' },
+  { id:84, name:'Donnerlord',    rarity:'super',  metal:'bronze', power:90, speed:50, magic:58, defense:78, luck:25, desc:'Lord des Donners – sein Schrei ist ein Gewitter.' },
+  { id:85, name:'Eisphönix',     rarity:'super',  metal:'silver', power:70, speed:82, magic:78, defense:55, luck:45, desc:'Stirbt und ersteht aus Eis immer wieder auf.' },
+  { id:86, name:'Nebeldrache',   rarity:'super',  metal:'none',   power:80, speed:65, magic:82, defense:60, luck:40, desc:'Ein Drache aus purem Nebel – greifbar und nicht.' },
+  { id:87, name:'Lichtgott',     rarity:'super',  metal:'gold',   power:72, speed:72, magic:92, defense:65, luck:62, desc:'Ein Wesen aus reinem Licht.' },
+  { id:88, name:'Urwaldwächter', rarity:'super',  metal:'none',   power:78, speed:42, magic:70, defense:88, luck:38, desc:'Uralter Hüter des ersten Glaggle-Waldes.' },
+  { id:89, name:'Kristalldrache',rarity:'super',  metal:'silver', power:82, speed:62, magic:85, defense:72, luck:48, desc:'Ein Drache, dessen Schuppen aus reinem Kristall bestehen.' },
+  { id:90, name:'Kosmosläufer',  rarity:'super',  metal:'none',   power:65, speed:88, magic:78, defense:50, luck:68, desc:'Läuft durch den gesamten Kosmos ohne Pause.' },
+
+  // ── EPIC (91–100) ───────────────────────────────────────────
+  { id:91, name:'Omnivox',       rarity:'epic',   metal:'none',   power:92, speed:82, magic:88, defense:80, luck:75, desc:'Die Stimme des gesamten Glaggle-Universums.' },
+  { id:92, name:'Solarius Rex',  rarity:'epic',   metal:'gold',   power:88, speed:72, magic:94, defense:85, luck:82, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
+  { id:93, name:'Voidwalker',    rarity:'epic',   metal:'none',   power:85, speed:94, magic:80, defense:70, luck:72, desc:'Wandert zwischen Welten als wären es Zimmer.' },
+  { id:94, name:'Chronomundi',   rarity:'epic',   metal:'silver', power:78, speed:80, magic:95, defense:75, luck:88, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
+  { id:95, name:'Urgeist',       rarity:'epic',   metal:'none',   power:94, speed:65, magic:85, defense:90, luck:65, desc:'Der erste Geist, der je im Glaggle-Universum erwachte.' },
+  { id:96, name:'Sternenbrecher',rarity:'epic',   metal:'gold',   power:90, speed:88, magic:78, defense:82, luck:70, desc:'Kann Sterne mit blossen Händen zertrümmern.' },
+  { id:97, name:'Abgrundherrscher',rarity:'epic', metal:'none',   power:86, speed:70, magic:90, defense:88, luck:60, desc:'Regiert die tiefsten Abgründe des Glaggle-Ozeans.' },
+  { id:98, name:'Zeitlord',      rarity:'epic',   metal:'silver', power:80, speed:85, magic:92, defense:78, luck:85, desc:'Herrscht über alle Zeitalter und Epochen.' },
+  { id:99, name:'Galaxienwächter',rarity:'epic',  metal:'gold',   power:88, speed:78, magic:88, defense:85, luck:78, desc:'Bewacht die Grenzen der gesamten Glaggle-Galaxie.' },
+  { id:100,name:'Glaggle Supreme',rarity:'epic',  metal:'gold',   power:95, speed:85, magic:90, defense:88, luck:82, desc:'Das legendärste Wesen – entstanden beim Urknall des Glaggle-Universums. Einzigartig.' },
+];
 
 /* ==============================================================
    SVG GENERATORS – jeder Glagini bekommt seine eigene SVG
