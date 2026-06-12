@@ -6,7 +6,6 @@
 <title>Glaggle Glagini</title>
 <meta name="description" content="Sammle, tausche und zocker mit Glaggle Glaginis – den fiktiven Wesen im Glaggle Universum!">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/appwrite@16"></script>
 
 <style>
 /* ============================================================
@@ -852,33 +851,17 @@ body::before {
       Willkommen bei<br>
       <span style="background: linear-gradient(135deg, var(--accent), var(--accent2), var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Glaggle Glagini!</span>
     </h2>
-    <p style="color:var(--muted); margin-bottom:28px; font-size:0.92rem; line-height:1.6;">
+    <p style="color:var(--muted); margin-bottom:14px; font-size:0.92rem; line-height:1.6;">
       Sammle fiktive Glagini-Wesen, tausche sie mit anderen und zocker in epischen Duellen!
     </p>
+    <div class="info-box warn" style="text-align:left; margin-bottom:20px; font-size:0.82rem;">
+      💾 Dein Fortschritt wird lokal auf diesem Gerät gespeichert.
+    </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <button class="btn btn-primary" id="loginWithAccountBtn" style="width:100%; font-size:1rem; padding:14px;">
-        🔑 Mit Glaggle Account fortfahren
-      </button>
-      <button class="btn btn-secondary" id="loginWithoutAccountBtn" style="width:100%; font-size:1rem; padding:14px;">
-        👤 Ohne Account loslegen
+      <button class="btn btn-primary" id="startBtn" style="width:100%; font-size:1rem; padding:14px;">
+        🚀 Loslegen!
       </button>
     </div>
-    <p style="font-size:0.72rem; color:var(--muted); margin-top:16px;">Du kannst dich jederzeit auch später anmelden.</p>
-  </div>
-</div>
-
-<!-- No-Account Info -->
-<div class="overlay" id="noAccountInfoOverlay">
-  <div class="modal" style="max-width:420px; text-align:center;">
-    <button class="modal-close" id="closeNoAccountInfo">✕</button>
-    <div style="font-size:2.5rem; margin-bottom:14px;">⚠️</div>
-    <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:12px;">Kein Account – Kein Cloud-Speicher</h3>
-    <div class="info-box warn" style="text-align:left; margin-bottom:20px;">
-      Ohne Glaggle Account wird dein Fortschritt nur lokal auf diesem Gerät gespeichert.<br><br>
-      <strong>Achtung:</strong> Wenn du den Browser-Cache löschst oder das Gerät wechselst, ist dein Fortschritt verloren!<br><br>
-      Du kannst dich jederzeit mit deinem Glaggle Account anmelden und deinen Fortschritt sichern.
-    </div>
-    <button class="btn btn-primary" id="confirmNoAccount" style="width:100%;">Verstanden – Trotzdem loslegen!</button>
   </div>
 </div>
 
@@ -977,20 +960,19 @@ body::before {
   <section class="section-anchor" id="album">
     <div class="section-label">📖 Bereich 1</div>
     <div class="section-title">Virtuelles Sammelalbum</div>
-    <div class="section-desc">Klebe deine Glaginis an ihre fixen Plätze im Album. Jeder Glagini hat seinen eigenen Slot!</div>
+    <div class="section-desc">Klebe deine Glaginis ein. Klappe die Kategorien auf oder zu!</div>
 
     <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
       <div style="font-size:0.88rem; color:var(--muted);">
-        Eingeklebt: <strong id="albumProgress" style="color:var(--text);">0 / 30</strong>
+        Eingeklebt: <strong id="albumProgress" style="color:var(--text);">0 / 100</strong>
       </div>
       <div style="flex:1; background:var(--border); border-radius:20px; height:8px; min-width:120px;">
         <div id="albumProgressBar" style="height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:20px; width:0%; transition:width 0.4s;"></div>
       </div>
     </div>
 
-    <div class="album-grid" id="albumGrid">
-      <!-- filled by JS -->
-    </div>
+    <!-- Accordion groups -->
+    <div id="albumAccordion" style="display:flex;flex-direction:column;gap:10px;"></div>
   </section>
 
   <!-- ================================================================ SAMMELN / DAILY -->
@@ -1109,6 +1091,17 @@ body::before {
     <div style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;">
       <button class="btn btn-danger btn-sm" id="battleRandomBtn">🎲 vs. Zufalls-Gegner</button>
       <button class="btn btn-secondary btn-sm" id="battleFriendBtn">🔗 Freund einladen</button>
+      <button class="btn btn-secondary btn-sm" id="battleJoinFriendBtn">🎮 Code eingeben &amp; joinen</button>
+    </div>
+
+    <!-- Friend code join input -->
+    <div id="battleJoinBox" style="display:none; margin-bottom:16px;">
+      <div class="card" style="max-width:360px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:16px;">
+        <input id="friendCodeInput" type="text" placeholder="Code z.B. AB12CD" maxlength="6"
+          style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:50px; padding:10px 16px; color:var(--text); font-family:inherit; font-size:1rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; outline:none; min-width:120px;"
+          oninput="this.value=this.value.toUpperCase()">
+        <button class="btn btn-primary btn-sm" id="joinFriendBtn">Beitreten</button>
+      </div>
     </div>
 
     <div id="battleStatus" style="text-align:center; padding:40px; color:var(--muted); font-size:0.9rem;">
@@ -1164,23 +1157,7 @@ const SB_URL = "https://khainlzhocznvhysnabu.supabase.co";
 const SB_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22";
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-/* ==============================================================
-   APPWRITE CONFIG  (Accounts · Glagini-Daten)
-   ► Trage hier deine Werte ein:
-     AW_PROJECT  = deine Project-ID (Appwrite Console → Settings)
-     AW_DB_ID    = Database-ID (z.B. "glaggle")
-     AW_COLL_ID  = Collection-ID "glagini_saves"
-   ============================================================== */
-const AW_ENDPOINT = "https://cloud.appwrite.io/v1";
-const AW_PROJECT  = "DEINE_PROJECT_ID";   // ← HIER EINTRAGEN
-const AW_DB_ID    = "glaggle";            // ← HIER EINTRAGEN
-const AW_COLL_ID  = "glagini_saves";      // ← HIER EINTRAGEN
-
-const { Client, Databases, Query, ID } = Appwrite;
-const awClient = new Client().setEndpoint(AW_ENDPOINT).setProject(AW_PROJECT);
-const awDB     = new Databases(awClient);
-
-/* Groq API key (split for safety) */
+/* Groq API key */
 const _g1="gsk_", _g2="DhmV9OW7Z0hYFfuFuDWAW", _g3="Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
 const GROQ_KEY = () => _g1+_g2+_g3;
 
@@ -1428,16 +1405,15 @@ function generateSVG(g, size=100) {
 let userName = '';
 let userId   = '';
 let coins    = 0;
-let hasAccount = false;
 
 // myCollection: array of { glId, instanceId, stuck:bool }
 let myCollection = [];
-// albumStuck: { glId: true } — which glagini ID is stuck in album
+// albumStuck: { glId: true }
 let albumStuck   = {};
 
-let currentBattleRoom = null;
-let battleChannel     = null;
-let myBattleCard      = null;
+let currentBattleRoom  = null;
+let battleChannel      = null;
+let myBattleCard       = null;
 let currentTradeFilter = 'active';
 
 /* ==============================================================
@@ -1446,8 +1422,12 @@ let currentTradeFilter = 'active';
 document.addEventListener('DOMContentLoaded', () => {
   generateParticles();
   showOverlay('welcomeOverlay');
-  renderAlbumSlots();
-  initDailyTimer();
+  document.getElementById('startBtn').onclick = () => {
+    hideOverlay('welcomeOverlay');
+    initLocal();
+  };
+  initWheelCanvas();
+  checkWheelState();
 });
 
 function generateParticles() {
@@ -1462,31 +1442,8 @@ function generateParticles() {
   }
 }
 
-/* ==============================================================
-   POPUP / OVERLAY HELPERS
-   ============================================================== */
-function showOverlay(id) {
-  document.getElementById(id).classList.add('open');
-}
-function hideOverlay(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-document.getElementById('loginWithAccountBtn').onclick = () => {
-  hideOverlay('welcomeOverlay');
-  initWithAccount();
-};
-
-document.getElementById('loginWithoutAccountBtn').onclick = () => {
-  hideOverlay('welcomeOverlay');
-  showOverlay('noAccountInfoOverlay');
-};
-
-document.getElementById('closeNoAccountInfo').onclick = () => hideOverlay('noAccountInfoOverlay');
-document.getElementById('confirmNoAccount').onclick   = () => {
-  hideOverlay('noAccountInfoOverlay');
-  initWithoutAccount();
-};
+function showOverlay(id) { document.getElementById(id).classList.add('open'); }
+function hideOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
 ['closeGlaginiDetail','closePackOpen','closeTradeCreate','closeBattlePick','closeBattleResult'].forEach(id => {
   const el = document.getElementById(id);
@@ -1494,51 +1451,29 @@ document.getElementById('confirmNoAccount').onclick   = () => {
 });
 
 /* ==============================================================
-   ACCOUNT INIT
+   LOCAL-ONLY INIT
    ============================================================== */
-async function initWithAccount() {
-  // Try Supabase glaggle_accounts first (same as Gamecenter)
-  const storedId = localStorage.getItem('glaggleID');
-  if (storedId) {
-    try {
-      const { data } = await sb.from('glaggle_accounts')
-        .select('total_coins, game_center_name, glaggle_id')
-        .eq('glaggle_id', storedId).single();
-      if (data) {
-        hasAccount = true;
-        coins    = data.total_coins || 0;
-        userName = data.game_center_name || 'Glaggle-User';
-        userId   = String(data.glaggle_id);
-      }
-    } catch(e) { console.warn('Account fetch failed'); }
-  }
-  if (!userId) {
-    userName = localStorage.getItem('glaggleUserName') || generateName();
-    userId   = localStorage.getItem('glaggleUID') || generateUID();
-    localStorage.setItem('glaggleUserName', userName);
-    localStorage.setItem('glaggleUID', userId);
-  }
-  loadLocalData();
-  finishInit();
-}
-
-function initWithoutAccount() {
-  hasAccount = false;
+function initLocal() {
   userName = localStorage.getItem('glaggleUserName') || generateName();
-  userId   = localStorage.getItem('glaggleUID') || generateUID();
+  userId   = localStorage.getItem('glaggleUID')      || generateUID();
   coins    = parseInt(localStorage.getItem('glaggleCoins')) || 0;
   localStorage.setItem('glaggleUserName', userName);
   localStorage.setItem('glaggleUID', userId);
-  loadLocalData();
-  finishInit();
-}
 
-function finishInit() {
+  try {
+    const col   = localStorage.getItem('glaginiCollection');
+    myCollection = col ? JSON.parse(col) : [];
+    const stuck  = localStorage.getItem('albumStuck');
+    albumStuck   = stuck ? JSON.parse(stuck) : {};
+  } catch(e) { myCollection = []; albumStuck = {}; }
+
   updateCoinDisplay();
   document.getElementById('userGreeting').textContent =
     `👋 Hey ${userName}! ${myCollection.length === 0 ? 'Hole deinen ersten Glagini ab!' : `Du hast ${myCollection.length} Glaginis.`}`;
   renderMyGlaginis();
-  renderAlbumSlots();
+  renderAlbumAccordion();
+  initDailyCheck();
+  checkWheelState();
   loadTrades();
   initChat();
   initTradeButtons();
@@ -1557,27 +1492,10 @@ function generateUID() {
   return uid;
 }
 
-/* ==============================================================
-   LOCAL DATA
-   ============================================================== */
-function loadLocalData() {
-  try {
-    const col = localStorage.getItem('glaginiCollection');
-    myCollection = col ? JSON.parse(col) : [];
-    const stuck = localStorage.getItem('albumStuck');
-    albumStuck = stuck ? JSON.parse(stuck) : {};
-    const localCoins = parseInt(localStorage.getItem('glaggleCoins'));
-    if (!hasAccount && !isNaN(localCoins)) coins = localCoins;
-  } catch(e) {
-    myCollection = [];
-    albumStuck   = {};
-  }
-}
-
 function saveLocalData() {
   localStorage.setItem('glaginiCollection', JSON.stringify(myCollection));
   localStorage.setItem('albumStuck', JSON.stringify(albumStuck));
-  if (!hasAccount) localStorage.setItem('glaggleCoins', coins);
+  localStorage.setItem('glaggleCoins', coins);
 }
 
 /* ==============================================================
@@ -1586,19 +1504,12 @@ function saveLocalData() {
 function updateCoinDisplay() {
   document.getElementById('navCoins').textContent = coins.toLocaleString();
 }
-
 function spendCoins(amount) {
   if (coins < amount) return false;
-  coins -= amount;
-  updateCoinDisplay();
-  saveLocalData();
-  return true;
+  coins -= amount; updateCoinDisplay(); saveLocalData(); return true;
 }
-
 function earnCoins(amount) {
-  coins += amount;
-  updateCoinDisplay();
-  saveLocalData();
+  coins += amount; updateCoinDisplay(); saveLocalData();
 }
 
 /* ==============================================================
@@ -1711,67 +1622,106 @@ function showGlaginiDetail(g, instanceId) {
 /* ==============================================================
    ALBUM
    ============================================================== */
-function renderAlbumSlots() {
-  const grid = document.getElementById('albumGrid');
-  grid.innerHTML = '';
-  let stuckCount = 0;
-  ALL_GLAGINIS.forEach(g => {
-    const slot = document.createElement('div');
-    const isStuck = albumStuck[g.id];
-    if (isStuck) stuckCount++;
-    slot.className = `album-slot${isStuck ? ' filled' : ''}`;
+/* ==============================================================
+   ALBUM – Accordion
+   ============================================================== */
+const RARITY_ORDER = ['normal','rare','super','epic'];
+const RARITY_LABELS = { normal:'🟣 Normal (40)', rare:'🔵 Selten (30)', super:'💜 Supersselten (20)', epic:'🔴 Episch (10)' };
+const RARITY_COLORS = { normal:'var(--r-normal)', rare:'var(--r-rare)', super:'var(--r-super)', epic:'var(--r-epic)' };
+let albumOpenGroups = { normal:false, rare:false, super:false, epic:false };
 
-    if (isStuck) {
-      slot.innerHTML = `
-        <div class="glagini-mini">
-          <div class="mini-svg">${generateSVG(g, 65)}</div>
-          <div class="mini-name">${g.name}</div>
-          <div class="mini-rarity"><span class="tag tag-${g.rarity}" style="font-size:0.5rem;">${g.rarity}</span></div>
-        </div>
-      `;
-      slot.onclick = () => showGlaginiDetail(g, null);
-    } else {
-      const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
-      slot.innerHTML = `
-        <div class="album-slot-empty-text">${g.name}</div>
-        <span class="tag tag-${g.rarity}" style="font-size:0.55rem;">${rarityLabels[g.rarity]}</span>
-      `;
+function renderAlbumAccordion() {
+  const acc = document.getElementById('albumAccordion');
+  acc.innerHTML = '';
+  let totalStuck = 0;
+
+  RARITY_ORDER.forEach(rarity => {
+    const cards = ALL_GLAGINIS.filter(g => g.rarity === rarity);
+    const stuckCount = cards.filter(g => albumStuck[g.id]).length;
+    totalStuck += stuckCount;
+    const isOpen = albumOpenGroups[rarity];
+
+    const group = document.createElement('div');
+    group.style.cssText = `border:1px solid ${RARITY_COLORS[rarity]};border-radius:14px;overflow:hidden;`;
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:rgba(0,0,0,0.2);gap:10px;`;
+    header.innerHTML = `
+      <span style="font-weight:800;font-size:0.95rem;">${RARITY_LABELS[rarity]}</span>
+      <span style="font-size:0.8rem;color:var(--muted);">${stuckCount}/${cards.length} eingeklebt</span>
+      <div style="flex:1;background:var(--border);border-radius:20px;height:6px;max-width:120px;">
+        <div style="height:100%;background:${RARITY_COLORS[rarity]};border-radius:20px;width:${Math.round(stuckCount/cards.length*100)}%;transition:width 0.4s;"></div>
+      </div>
+      <span style="color:var(--muted);font-size:1rem;">${isOpen ? '▲' : '▼'}</span>
+    `;
+    header.onclick = () => {
+      albumOpenGroups[rarity] = !albumOpenGroups[rarity];
+      renderAlbumAccordion();
+    };
+
+    // Body
+    const body = document.createElement('div');
+    body.style.cssText = `display:${isOpen ? 'grid' : 'none'};grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:14px;`;
+
+    if (isOpen) {
+      cards.forEach(g => {
+        const slot = document.createElement('div');
+        const isStuck = albumStuck[g.id];
+        slot.style.cssText = `aspect-ratio:2/3;min-height:160px;border:2px ${isStuck ? 'solid' : 'dashed'} ${isStuck ? RARITY_COLORS[rarity] : 'var(--border)'};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;background:rgba(255,255,255,0.02);cursor:${isStuck ? 'pointer' : 'default'};transition:all 0.2s;`;
+
+        if (isStuck) {
+          slot.innerHTML = `
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;">
+              <div style="width:65px;height:65px;">${generateSVG(g,65)}</div>
+              <div style="font-size:0.6rem;font-weight:800;text-align:center;margin-top:4px;color:var(--text);">${g.name}</div>
+            </div>`;
+          slot.onclick = () => showGlaginiDetail(g, null);
+          slot.onmouseenter = () => slot.style.transform='scale(1.03)';
+          slot.onmouseleave = () => slot.style.transform='';
+        } else {
+          slot.innerHTML = `<div style="font-size:0.65rem;color:var(--border);text-align:center;padding:6px;line-height:1.3;">${g.name}<br><span style="font-size:0.55rem;">#${g.id}</span></div>`;
+        }
+        body.appendChild(slot);
+      });
     }
-    slot.innerHTML += `<span class="album-slot-number">#${g.id}</span>`;
-    grid.appendChild(slot);
+
+    group.appendChild(header);
+    group.appendChild(body);
+    acc.appendChild(group);
   });
 
-  const total = ALL_GLAGINIS.length;
-  document.getElementById('albumProgress').textContent = `${stuckCount} / ${total}`;
-  const pct = Math.round(stuckCount / total * 100);
+  // Update progress
+  document.getElementById('albumProgress').textContent = `${totalStuck} / ${ALL_GLAGINIS.length}`;
+  const pct = Math.round(totalStuck / ALL_GLAGINIS.length * 100);
   document.getElementById('albumProgressBar').style.width = pct + '%';
 }
 
 function stickIntoAlbum(glId, instanceId) {
-  // Check if player owns this card
   const owned = myCollection.find(c => c.glId === glId && !c.stuck);
-  if (!owned) { toast('Du besitzt diese Karte nicht!', 'error'); return; }
+  if (!owned)         { toast('Du besitzt diese Karte nicht!', 'error'); return; }
   if (albumStuck[glId]) { toast('Dieser Slot ist bereits gefüllt!', 'error'); return; }
-
   albumStuck[glId] = true;
-  // Mark instance as stuck
   const idx = myCollection.findIndex(c => c.glId === glId && !c.stuck);
   if (idx >= 0) myCollection[idx].stuck = true;
-
   saveLocalData();
-  renderAlbumSlots();
+  renderAlbumAccordion();
   renderMyGlaginis();
   toast(`✅ ${ALL_GLAGINIS.find(g=>g.id===glId)?.name} ins Album eingeklebt!`, 'success');
 }
 
 /* ==============================================================
-   DAILY GLAGINI
+   DAILY GLAGINI  – 1× pro Kalendertag (Mitternacht-Reset)
    ============================================================== */
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
 function getWeightedRandom() {
-  // Normal 60%, Rare 25%, Super 12%, Epic 3%
   const rand = Math.random() * 100;
   let pool;
-  if (rand < 3)       pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
+  if      (rand < 3)  pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
   else if (rand < 15) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
   else if (rand < 40) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
   else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
@@ -1779,59 +1729,45 @@ function getWeightedRandom() {
 }
 
 function getPackWeightedRandom() {
-  // For packs: slightly better odds
   const rand = Math.random() * 100;
   let pool;
-  if (rand < 6)       pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
+  if      (rand < 6)  pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
   else if (rand < 22) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
   else if (rand < 52) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
   else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function initDailyTimer() {
-  const checkDaily = () => {
-    const last = localStorage.getItem('lastDailyClaim');
-    const now  = Date.now();
-    const btn  = document.getElementById('claimDailyBtn');
-    const countdown = document.getElementById('dailyCountdown');
-    const btnWrap   = document.getElementById('dailyBtnWrap');
-
-    if (!last || now - parseInt(last) > 86400000) {
-      btnWrap.style.display = '';
-      countdown.style.display = 'none';
-      btn.disabled = false;
-      btn.textContent = '🎁 Heute abholen!';
-    } else {
-      btnWrap.style.display = 'none';
-      countdown.style.display = '';
-      const remaining = 86400000 - (now - parseInt(last));
-      const h = Math.floor(remaining / 3600000);
-      const m = Math.floor((remaining % 3600000) / 60000);
-      const s = Math.floor((remaining % 60000) / 1000);
-      countdown.textContent = `⏳ Nächster Glagini in ${h}h ${m}m ${s}s`;
+function initDailyCheck() {
+  const update = () => {
+    const claimed  = localStorage.getItem('lastDailyClaim');
+    const canClaim = claimed !== todayStr();
+    document.getElementById('dailyBtnWrap').style.display  = canClaim ? '' : 'none';
+    document.getElementById('dailyCountdown').style.display = canClaim ? 'none' : '';
+    if (!canClaim) {
+      const now  = new Date();
+      const next = new Date(now); next.setHours(24,0,0,0);
+      const rem  = next - now;
+      const h = Math.floor(rem/3600000), m = Math.floor((rem%3600000)/60000), s = Math.floor((rem%60000)/1000);
+      document.getElementById('dailyCountdown').textContent = `⏳ Morgen wieder verfügbar – noch ${h}h ${m}m ${s}s`;
     }
   };
 
   document.getElementById('claimDailyBtn').onclick = () => {
-    const last = localStorage.getItem('lastDailyClaim');
-    const now  = Date.now();
-    if (last && now - parseInt(last) < 86400000) {
-      toast('Du hast heute schon abgeholt!', 'error'); return;
+    if (localStorage.getItem('lastDailyClaim') === todayStr()) {
+      toast('Heute schon abgeholt!', 'error'); return;
     }
     const g = getWeightedRandom();
     addToCollection(g);
-    localStorage.setItem('lastDailyClaim', String(now));
+    localStorage.setItem('lastDailyClaim', todayStr());
     toast(`🎉 Du hast ${g.name} (${g.rarity}) erhalten!`, 'gold', 4000);
-    checkDaily();
-    renderMyGlaginis();
-    // Coin reward
     earnCoins(2);
-    toast('🪙 +2 Glaggle Coins für tägliches Abholen!', 'info');
+    toast('🪙 +2 Coins für tägliches Abholen!', 'info');
+    update();
+    renderMyGlaginis();
   };
-
-  checkDaily();
-  setInterval(checkDaily, 1000);
+  update();
+  setInterval(update, 1000);
 }
 
 function addToCollection(g, count=1) {
@@ -1839,6 +1775,182 @@ function addToCollection(g, count=1) {
     myCollection.push({ glId: g.id, instanceId: generateUID(), stuck: false });
   }
   saveLocalData();
+}
+
+/* ==============================================================
+   LUCKY WHEEL  – 1× pro Kalendertag
+   Segmente: 6× Coins (1-3), 2× Coins (4-8), 2× Glagini
+   ============================================================== */
+const WHEEL_SEGMENTS = [
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#2e2850' },
+  { label:'Glagini!',   type:'card',  amount:0,  color:'#7b6cf6' },
+  { label:'2 Coins',    type:'coins', amount:2,  color:'#2a2040' },
+  { label:'3 Coins',    type:'coins', amount:3,  color:'#3a3060' },
+  { label:'Glagini!',   type:'card',  amount:0,  color:'#ff6b8a' },
+  { label:'5 Coins',    type:'coins', amount:5,  color:'#2e2850' },
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#1e1a35' },
+  { label:'8 Coins',    type:'coins', amount:8,  color:'#ffd85a', textColor:'#1a1600' },
+  { label:'2 Coins',    type:'coins', amount:2,  color:'#2a2040' },
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#2e2850' },
+];
+
+let wheelAngle  = 0;   // current rotation in degrees
+let wheelSpinning = false;
+
+function initWheelCanvas() {
+  drawWheel(0);
+}
+
+function drawWheel(rotation) {
+  const canvas = document.getElementById('luckyWheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 140, cy = 140, r = 135;
+  const n  = WHEEL_SEGMENTS.length;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, 280, 280);
+
+  WHEEL_SEGMENTS.forEach((seg, i) => {
+    const start = rotation + i * arc - Math.PI / 2;
+    const end   = start + arc;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = '#0d0b1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = seg.textColor || '#e8e4ff';
+    ctx.font = `bold ${seg.type === 'card' ? 11 : 10}px Segoe UI, Arial`;
+    ctx.fillText(seg.label, r - 8, 4);
+    ctx.restore();
+  });
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0d0b1a';
+  ctx.fill();
+  ctx.strokeStyle = '#7b6cf6';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Center star
+  ctx.fillStyle = '#ffd85a';
+  ctx.font = 'bold 18px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('★', cx, cy);
+}
+
+function checkWheelState() {
+  const claimed = localStorage.getItem('lastWheelSpin');
+  const canSpin = claimed !== todayStr();
+  const btn  = document.getElementById('spinWheelBtn');
+  const cdEl = document.getElementById('wheelCountdown');
+  const bwEl = document.getElementById('wheelBtnWrap');
+  if (!btn) return;
+
+  if (canSpin) {
+    bwEl.style.display  = '';
+    cdEl.style.display  = 'none';
+    btn.disabled = false;
+  } else {
+    bwEl.style.display  = 'none';
+    cdEl.style.display  = '';
+    const now  = new Date();
+    const next = new Date(now); next.setHours(24,0,0,0);
+    const rem  = next - now;
+    const h = Math.floor(rem/3600000), m = Math.floor((rem%3600000)/60000), s = Math.floor((rem%60000)/1000);
+    cdEl.textContent = `⏳ Morgen wieder – noch ${h}h ${m}m ${s}s`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // wheel spin button wired up after DOM ready
+  setTimeout(() => {
+    const btn = document.getElementById('spinWheelBtn');
+    if (btn) btn.onclick = spinWheel;
+    setInterval(checkWheelState, 1000);
+  }, 100);
+});
+
+function spinWheel() {
+  if (wheelSpinning) return;
+  if (localStorage.getItem('lastWheelSpin') === todayStr()) {
+    toast('Heute schon gedreht!', 'error'); return;
+  }
+
+  wheelSpinning = true;
+  document.getElementById('spinWheelBtn').disabled = true;
+  document.getElementById('wheelResultBox').textContent = '';
+
+  // Pick result segment index
+  const n = WHEEL_SEGMENTS.length;
+  const resultIdx = Math.floor(Math.random() * n);
+  const arcDeg    = 360 / n;
+
+  // Calculate target angle so that resultIdx lands under the pointer (top = 270°)
+  // Pointer is at top (270deg from 0). We want resultIdx center at top.
+  // segCenter in raw = resultIdx * arcDeg + arcDeg/2
+  // We need to rotate so segCenter aligns with 270deg
+  const targetSegCenter = resultIdx * arcDeg + arcDeg / 2;
+  const extraSpins = 5 * 360; // 5 full rotations
+  const targetDeg  = extraSpins + (270 - targetSegCenter + 360) % 360;
+
+  let start = null;
+  const duration = 4000; // ms
+  const startAngle = wheelAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function animate(ts) {
+    if (!start) start = ts;
+    const elapsed = ts - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const currentDeg = startAngle + targetDeg * easeOut(progress);
+    wheelAngle = currentDeg % 360;
+    drawWheel((currentDeg * Math.PI) / 180);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Done
+      wheelSpinning = false;
+      wheelAngle = (startAngle + targetDeg) % 360;
+      localStorage.setItem('lastWheelSpin', todayStr());
+      const seg = WHEEL_SEGMENTS[resultIdx];
+      applyWheelReward(seg);
+      checkWheelState();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function applyWheelReward(seg) {
+  const box = document.getElementById('wheelResultBox');
+  if (seg.type === 'coins') {
+    earnCoins(seg.amount);
+    box.innerHTML = `🪙 +${seg.amount} Coin${seg.amount > 1 ? 's' : ''} gewonnen!`;
+    toast(`🎡 Glücksrad: +${seg.amount} Coins!`, 'gold', 4000);
+  } else {
+    const g = getWeightedRandom();
+    addToCollection(g);
+    renderMyGlaginis();
+    box.innerHTML = `✨ ${g.name} <span style="font-size:0.75rem;color:var(--muted);">(${g.rarity})</span> gewonnen!`;
+    toast(`🎡 Glücksrad: ${g.name} erhalten!`, 'gold', 4000);
+  }
 }
 
 /* ==============================================================
@@ -2028,50 +2140,55 @@ async function submitTrade() {
   if (!offerGlId || !wantGlId) { toast('Bitte beide Karten wählen!', 'error'); return; }
   if (offerGlId === wantGlId)  { toast('Du kannst nicht dieselbe Karte tauschen!', 'error'); return; }
 
-  const owns = myCollection.some(c => c.glId === offerGlId && !c.stuck);
-  if (!owns) { toast('Du besitzt diese Karte nicht!', 'error'); return; }
+  const ownIdx = myCollection.findIndex(c => c.glId === offerGlId && !c.stuck);
+  if (ownIdx < 0) { toast('Du besitzt diese Karte nicht!', 'error'); return; }
 
   const btn = document.getElementById('submitTradeBtn');
-  btn.disabled = true;
-  btn.textContent = 'Wird erstellt…';
+  btn.disabled = true; btn.textContent = 'Wird erstellt…';
 
   try {
     const { error } = await sb.from('glagini_trades').insert([{
-      offer_user_id: userId,
-      offer_user_name: userName,
-      offer_gl_id: offerGlId,
-      want_gl_id: wantGlId,
-      status: 'open'
+      offer_user_id: userId, offer_user_name: userName,
+      offer_gl_id: offerGlId, want_gl_id: wantGlId, status: 'open'
     }]);
     if (error) throw error;
-    toast('✅ Tausch-Angebot erstellt!', 'success');
+
+    // Remove offered card from local collection (it's "in trade escrow")
+    myCollection.splice(ownIdx, 1);
+    saveLocalData();
+    renderMyGlaginis();
+    toast('✅ Tausch-Angebot erstellt! Karte ist jetzt im Angebot.', 'success');
     hideOverlay('tradeCreateOverlay');
     loadTrades();
   } catch(e) {
     toast('Fehler beim Erstellen. Bitte erneut versuchen.', 'error');
   }
-  btn.disabled = false;
-  btn.textContent = 'Tausch anbieten 🔄';
+  btn.disabled = false; btn.textContent = 'Tausch anbieten 🔄';
 }
 
 async function acceptTrade(el) {
   const tid       = el.dataset.tid;
-  const offerGlId = parseInt(el.dataset.offergl);
-  const wantGlId  = parseInt(el.dataset.wantgl);
+  const offerGlId = parseInt(el.dataset.offergl);   // card the offerer offered
+  const wantGlId  = parseInt(el.dataset.wantgl);    // card the offerer wants (= what I give)
 
-  // I give wantGlId, I receive offerGlId
-  const iHave = myCollection.findIndex(c => c.glId === wantGlId && !c.stuck);
-  if (iHave < 0) { toast('Du besitzt diese Karte nicht mehr!', 'error'); return; }
+  // I must own the card the offerer wants
+  const myGiveIdx = myCollection.findIndex(c => c.glId === wantGlId && !c.stuck);
+  if (myGiveIdx < 0) { toast('Du besitzt diese Karte nicht mehr!', 'error'); return; }
 
   el.disabled = true;
   try {
-    // Mark trade as accepted
-    const { error } = await sb.from('glagini_trades').update({ status:'accepted', accept_user_id: userId, accept_user_name: userName }).eq('id', tid);
+    // Mark trade as accepted in Supabase
+    const { error } = await sb.from('glagini_trades').update({
+      status: 'accepted',
+      accept_user_id: userId,
+      accept_user_name: userName
+    }).eq('id', tid);
     if (error) throw error;
 
-    // Remove given card from my collection
-    myCollection.splice(iHave, 1);
-    // Add received card
+    // Remove MY card (the one I give away) from local collection
+    myCollection.splice(myGiveIdx, 1);
+
+    // Add the offerer's card to MY collection
     const received = ALL_GLAGINIS.find(g => g.id === offerGlId);
     if (received) addToCollection(received);
 
@@ -2099,175 +2216,203 @@ async function cancelTrade(el) {
 }
 
 /* ==============================================================
-   BATTLE – Supabase Table: glagini_battles
-   Columns: id, created_at, player1_id, player1_name, player1_gl_id,
-            player2_id, player2_name, player2_gl_id,
-            chosen_stat, winner_id, status (waiting/active/done),
-            room_code
+   BATTLE – Fixed matchmaking + friend code join
    ============================================================== */
 function initBattleButtons() {
-  document.getElementById('battleRandomBtn').onclick = startRandomBattle;
-  document.getElementById('battleFriendBtn').onclick = createFriendBattle;
+  document.getElementById('battleRandomBtn').onclick   = startRandomBattle;
+  document.getElementById('battleFriendBtn').onclick   = createFriendBattle;
+  document.getElementById('battleJoinFriendBtn').onclick = () => {
+    const box = document.getElementById('battleJoinBox');
+    box.style.display = box.style.display === 'none' ? '' : 'none';
+  };
+  document.getElementById('joinFriendBtn').onclick = joinByCode;
 }
 
 function openBattlePick(callback) {
   const grid = document.getElementById('battlePickGrid');
   grid.innerHTML = '';
-  const unstuck = myCollection.filter(c=>!c.stuck);
-  if (unstuck.length === 0) {
-    toast('Du hast keine Karten zum Einsetzen!', 'error'); return;
-  }
+  const unstuck = myCollection.filter(c => !c.stuck);
+  if (unstuck.length === 0) { toast('Du hast keine Karten!', 'error'); return; }
+  const seen = new Set();
   unstuck.forEach(c => {
-    const g = ALL_GLAGINIS.find(gi=>gi.id===c.glId);
+    if (seen.has(c.glId)) return; seen.add(c.glId);
+    const g = ALL_GLAGINIS.find(gi => gi.id === c.glId);
     if (!g) return;
-    const card = buildGlaginiCard(g, { clickable:false });
+    const card = buildGlaginiCard(g, { clickable: false });
     card.style.cursor = 'pointer';
-    card.onclick = () => {
-      hideOverlay('battlePickOverlay');
-      callback(g, c.instanceId);
-    };
+    card.onclick = () => { hideOverlay('battlePickOverlay'); callback(g, c.instanceId); };
     grid.appendChild(card);
   });
   showOverlay('battlePickOverlay');
 }
 
 async function startRandomBattle() {
-  if (myCollection.filter(c=>!c.stuck).length === 0) {
-    toast('Du brauchst mindestens eine Karte!', 'error'); return;
-  }
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    showBattleWaiting();
 
-  openBattlePick(async (g, instanceId) => {
-    myBattleCard = { g, instanceId };
-    document.getElementById('battleStatus').style.display = 'none';
-    document.getElementById('battleArena').style.display = '';
-    document.getElementById('battleWaiting').style.display = 'flex';
-    document.getElementById('battleActive').style.display = 'none';
+    // First: clean up stale rooms (waiting > 2 min) to avoid getting stuck
+    const cutoff = new Date(Date.now() - 120000).toISOString();
+    await sb.from('glagini_battles').update({ status:'cancelled' }).eq('status','waiting').lt('created_at', cutoff);
 
-    // Check if there's an open waiting room
-    const { data: waiting } = await sb.from('glagini_battles')
-      .select('*').eq('status','waiting').neq('player1_id', userId).limit(1);
+    // Look for an open room from another player
+    const { data: rooms } = await sb.from('glagini_battles')
+      .select('*').eq('status','waiting').neq('player1_id', userId).limit(5);
 
-    if (waiting && waiting.length > 0) {
-      // Join existing battle
-      const room = waiting[0];
+    if (rooms && rooms.length > 0) {
+      // Join the first available room
+      const room = rooms[0];
       const { error } = await sb.from('glagini_battles').update({
         player2_id: userId, player2_name: userName,
-        player2_gl_id: g.id,
-        status: 'active'
-      }).eq('id', room.id);
+        player2_gl_id: g.id, status: 'active'
+      }).eq('id', room.id).eq('status','waiting'); // guard against race
       if (!error) {
         currentBattleRoom = room.id;
         subscribeToBattle(room.id, 2);
-      }
-    } else {
-      // Create new battle room
-      const roomCode = Math.random().toString(36).substr(2,6).toUpperCase();
-      const { data, error } = await sb.from('glagini_battles').insert([{
-        player1_id: userId, player1_name: userName,
-        player1_gl_id: g.id,
-        status: 'waiting', room_code: roomCode
-      }]).select().single();
-      if (!error && data) {
-        currentBattleRoom = data.id;
-        subscribeToBattle(data.id, 1);
+        return;
       }
     }
-  });
-}
 
-async function createFriendBattle() {
-  if (myCollection.filter(c=>!c.stuck).length === 0) {
-    toast('Du brauchst mindestens eine Karte!', 'error'); return;
-  }
-
-  openBattlePick(async (g, instanceId) => {
-    myBattleCard = { g, instanceId };
+    // No room found – create one
     const roomCode = Math.random().toString(36).substr(2,6).toUpperCase();
     const { data, error } = await sb.from('glagini_battles').insert([{
       player1_id: userId, player1_name: userName,
-      player1_gl_id: g.id,
-      status: 'waiting', room_code: roomCode
+      player1_gl_id: g.id, status: 'waiting', room_code: roomCode
     }]).select().single();
-
     if (!error && data) {
       currentBattleRoom = data.id;
-      const link = `${location.origin}${location.pathname}?battle=${roomCode}`;
-      document.getElementById('battleStatus').style.display = '';
-      document.getElementById('battleStatus').innerHTML = `
-        <div class="info-box" style="margin:0 auto;max-width:400px;text-align:center;">
-          <div style="font-size:1.1rem;font-weight:800;margin-bottom:10px;">🔗 Freundes-Einladung</div>
-          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">Teile diesen Code mit deinem Freund:</div>
-          <div style="font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:0.2em;margin-bottom:12px;">${roomCode}</div>
-          <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link kopiert!','success'))">📋 Link kopieren</button>
-        </div>
-      `;
-      document.getElementById('battleArena').style.display = '';
-      document.getElementById('battleWaiting').style.display = 'flex';
-      document.getElementById('battleActive').style.display = 'none';
       subscribeToBattle(data.id, 1);
     }
   });
 }
 
-function subscribeToBattle(roomId, playerNum) {
-  if (battleChannel) sb.removeChannel(battleChannel);
+async function createFriendBattle() {
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    const roomCode = Math.random().toString(36).substr(2,6).toUpperCase();
+    const { data, error } = await sb.from('glagini_battles').insert([{
+      player1_id: userId, player1_name: userName,
+      player1_gl_id: g.id, status: 'waiting', room_code: roomCode
+    }]).select().single();
+    if (!error && data) {
+      currentBattleRoom = data.id;
+      showBattleWaiting();
+      document.getElementById('battleStatus').innerHTML = `
+        <div class="info-box" style="margin:0 auto;max-width:420px;text-align:center;">
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:8px;">🔗 Freundes-Einladung</div>
+          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:10px;">Teile diesen Code mit deinem Freund:</div>
+          <div style="font-size:2.2rem;font-weight:900;color:var(--gold);letter-spacing:0.25em;margin-bottom:14px;">${roomCode}</div>
+          <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${roomCode}').then(()=>toast('Code kopiert!','success'))">📋 Code kopieren</button>
+        </div>
+      `;
+      subscribeToBattle(data.id, 1);
+    }
+  });
+}
 
-  battleChannel = sb.channel(`battle:${roomId}`)
+async function joinByCode() {
+  const code = document.getElementById('friendCodeInput').value.trim().toUpperCase();
+  if (code.length < 4) { toast('Bitte Code eingeben!', 'error'); return; }
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+
+  const { data: rooms } = await sb.from('glagini_battles')
+    .select('*').eq('room_code', code).eq('status','waiting').limit(1);
+
+  if (!rooms || rooms.length === 0) { toast('Kein offenes Duell mit diesem Code gefunden.', 'error'); return; }
+  const room = rooms[0];
+  if (room.player1_id === userId) { toast('Das ist dein eigenes Duell!', 'error'); return; }
+
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    const { error } = await sb.from('glagini_battles').update({
+      player2_id: userId, player2_name: userName,
+      player2_gl_id: g.id, status: 'active'
+    }).eq('id', room.id);
+    if (!error) {
+      currentBattleRoom = room.id;
+      document.getElementById('battleJoinBox').style.display = 'none';
+      showBattleWaiting();
+      subscribeToBattle(room.id, 2);
+    } else {
+      toast('Beitreten fehlgeschlagen.', 'error');
+    }
+  });
+}
+
+function showBattleWaiting() {
+  document.getElementById('battleStatus').style.display = '';
+  document.getElementById('battleArena').style.display  = '';
+  document.getElementById('battleWaiting').style.display = 'flex';
+  document.getElementById('battleActive').style.display  = 'none';
+}
+
+function subscribeToBattle(roomId, playerNum) {
+  if (battleChannel) { try { sb.removeChannel(battleChannel); } catch(e){} }
+
+  battleChannel = sb.channel(`battle_room_${roomId}`)
     .on('postgres_changes', {
-      event:'UPDATE', schema:'public', table:'glagini_battles', filter:`id=eq.${roomId}`
+      event: 'UPDATE', schema: 'public', table: 'glagini_battles',
+      filter: `id=eq.${roomId}`
     }, payload => {
       handleBattleUpdate(payload.new, playerNum);
     })
     .subscribe();
 
-  // Also do immediate check if joining as player 2
+  // Immediate poll for player 2 (the room was already active when they joined)
   if (playerNum === 2) {
-    sb.from('glagini_battles').select('*').eq('id',roomId).single().then(({data}) => {
-      if (data && data.status === 'active') handleBattleUpdate(data, playerNum);
-    });
+    setTimeout(async () => {
+      const { data } = await sb.from('glagini_battles').select('*').eq('id',roomId).single();
+      if (data && (data.status === 'active' || data.status === 'done')) handleBattleUpdate(data, playerNum);
+    }, 500);
   }
+
+  // Fallback poll every 3s so Realtime delay doesn't block the game
+  const poll = setInterval(async () => {
+    if (!currentBattleRoom) { clearInterval(poll); return; }
+    const { data } = await sb.from('glagini_battles').select('*').eq('id',roomId).single();
+    if (!data) { clearInterval(poll); return; }
+    if (data.status === 'active' || data.status === 'done') {
+      clearInterval(poll);
+      handleBattleUpdate(data, playerNum);
+    }
+  }, 3000);
 }
 
 async function handleBattleUpdate(room, playerNum) {
   if (room.status === 'active' && room.player1_id && room.player2_id) {
-    // Both players present — show battle UI
     document.getElementById('battleWaiting').style.display = 'none';
     document.getElementById('battleActive').style.display  = '';
 
-    const p1G = ALL_GLAGINIS.find(g=>g.id===room.player1_gl_id);
-    const p2G = ALL_GLAGINIS.find(g=>g.id===room.player2_gl_id);
+    const p1G = ALL_GLAGINIS.find(g => g.id === room.player1_gl_id);
+    const p2G = ALL_GLAGINIS.find(g => g.id === room.player2_gl_id);
 
-    const vsDiv = document.getElementById('battleVsDisplay');
-    vsDiv.innerHTML = `
+    document.getElementById('battleVsDisplay').innerHTML = `
       <div class="battle-side">
         <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">${room.player1_name}</div>
-        ${p1G ? buildGlaginiCard(p1G,{clickable:false}).outerHTML : ''}
+        ${p1G ? buildGlaginiCard(p1G,{clickable:false}).outerHTML : '?'}
       </div>
       <div class="battle-divider">VS</div>
       <div class="battle-side">
         <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">${room.player2_name}</div>
-        ${p2G ? buildGlaginiCard(p2G,{clickable:false}).outerHTML : ''}
+        ${p2G ? buildGlaginiCard(p2G,{clickable:false}).outerHTML : '?'}
       </div>
     `;
 
     const actionArea = document.getElementById('battleActionArea');
+    if (room.chosen_stat) return; // already resolved
 
-    // Player 1 triggers the stat draw
-    if (playerNum === 1 && room.status === 'active' && !room.chosen_stat) {
+    if (playerNum === 1) {
       actionArea.innerHTML = `<button class="btn btn-danger" id="drawStatBtn">🎲 Attribut ziehen!</button>`;
       document.getElementById('drawStatBtn').onclick = async () => {
         document.getElementById('drawStatBtn').disabled = true;
-        const stat = STATS_KEYS[Math.floor(Math.random()*STATS_KEYS.length)];
-        const p1v  = p1G[stat];
-        const p2v  = p2G[stat];
-        let winnerId = '';
-        if (p1v > p2v)      winnerId = room.player1_id;
-        else if (p2v > p1v) winnerId = room.player2_id;
-        else                winnerId = 'draw';
-
-        await sb.from('glagini_battles').update({ chosen_stat:stat, winner_id:winnerId, status:'done' }).eq('id',room.id);
+        const stat = STATS_KEYS[Math.floor(Math.random() * STATS_KEYS.length)];
+        const p1v  = p1G[stat], p2v = p2G[stat];
+        const winnerId = p1v > p2v ? room.player1_id : p2v > p1v ? room.player2_id : 'draw';
+        await sb.from('glagini_battles').update({ chosen_stat: stat, winner_id: winnerId, status: 'done' }).eq('id', room.id);
       };
-    } else if (playerNum === 2 && !room.chosen_stat) {
+    } else {
       actionArea.innerHTML = `<div class="battle-waiting"><div class="loading-spin"></div><span>Warte auf Gegner…</span></div>`;
     }
   }
@@ -2278,10 +2423,11 @@ async function handleBattleUpdate(room, playerNum) {
 }
 
 async function handleBattleResult(room, playerNum) {
-  if (battleChannel) { sb.removeChannel(battleChannel); battleChannel = null; }
+  if (battleChannel) { try { sb.removeChannel(battleChannel); } catch(e){} battleChannel = null; }
+  currentBattleRoom = null;
 
-  const p1G    = ALL_GLAGINIS.find(g=>g.id===room.player1_gl_id);
-  const p2G    = ALL_GLAGINIS.find(g=>g.id===room.player2_gl_id);
+  const p1G    = ALL_GLAGINIS.find(g => g.id === room.player1_gl_id);
+  const p2G    = ALL_GLAGINIS.find(g => g.id === room.player2_gl_id);
   const stat   = room.chosen_stat;
   const isMe1  = room.player1_id === userId;
   const myCard = isMe1 ? p1G : p2G;
@@ -2290,80 +2436,63 @@ async function handleBattleResult(room, playerNum) {
   const isDraw = room.winner_id === 'draw';
 
   const content = document.getElementById('battleResultContent');
+
   if (isDraw) {
     content.innerHTML = `
       <div style="font-size:3rem;margin-bottom:12px;">🤝</div>
       <div style="font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:10px;">Unentschieden!</div>
-      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Gezogenes Attribut: <strong>${STATS_LABELS[stat]}</strong> – beide ${myCard[stat]}</div>
-      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">OK</button>
-    `;
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">${STATS_LABELS[stat]} – beide ${myCard?.[stat]}</div>
+      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">OK</button>`;
   } else if (iWon) {
-    // Add opponent's card to my collection
-    addToCollection(oppCard);
-    // Remove my staked card from opponent's "perspective" (real removal)
-    renderMyGlaginis();
+    // Remove my staked card (I risked it)
+    const myIdx = myCollection.findIndex(c => c.glId === myCard?.id && !c.stuck);
+    if (myIdx >= 0) myCollection.splice(myIdx, 1);
+    // Add opponent's card
+    if (oppCard) addToCollection(oppCard);
+    saveLocalData(); renderMyGlaginis();
     content.innerHTML = `
       <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
       <div style="font-size:1.8rem;font-weight:900;color:var(--green);margin-bottom:10px;">Du hast gewonnen!</div>
-      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">Attribut <strong>${STATS_LABELS[stat]}</strong> – Du: ${myCard[stat]} vs. ${oppCard[stat]}</div>
-      <div style="color:var(--gold);font-weight:800;margin-bottom:18px;">+1 ${oppCard.name} in deine Sammlung!</div>
-      <button class="btn btn-primary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter spielen</button>
-    `;
-    earnCoins(5);
-    toast('🪙 +5 Glaggle Coins für Sieg!', 'gold');
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">${STATS_LABELS[stat]} – Du: ${myCard?.[stat]} vs. ${oppCard?.[stat]}</div>
+      <div style="color:var(--gold);font-weight:800;margin-bottom:18px;">+1 ${oppCard?.name}!</div>
+      <button class="btn btn-primary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter spielen</button>`;
+    earnCoins(5); toast('🪙 +5 Coins für Sieg!', 'gold');
   } else {
     // Remove my staked card
-    const idx = myCollection.findIndex(c => c.glId === (isMe1 ? p1G.id : p2G.id) && !c.stuck);
-    if (idx >= 0) { myCollection.splice(idx, 1); saveLocalData(); renderMyGlaginis(); }
+    const myIdx = myCollection.findIndex(c => c.glId === myCard?.id && !c.stuck);
+    if (myIdx >= 0) myCollection.splice(myIdx, 1);
+    saveLocalData(); renderMyGlaginis();
     content.innerHTML = `
       <div style="font-size:3rem;margin-bottom:12px;">😢</div>
       <div style="font-size:1.8rem;font-weight:900;color:var(--accent2);margin-bottom:10px;">Du hast verloren!</div>
-      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">Attribut <strong>${STATS_LABELS[stat]}</strong> – Du: ${myCard[stat]} vs. ${oppCard[stat]}</div>
-      <div style="color:var(--accent2);margin-bottom:18px;">${myCard.name} ist weg…</div>
-      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter</button>
-    `;
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">${STATS_LABELS[stat]} – Du: ${myCard?.[stat]} vs. ${oppCard?.[stat]}</div>
+      <div style="color:var(--accent2);margin-bottom:18px;">${myCard?.name} ist weg…</div>
+      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter</button>`;
   }
 
   hideOverlay('battlePickOverlay');
   showOverlay('battleResultOverlay');
   document.getElementById('battleArena').style.display = 'none';
-  document.getElementById('battleStatus').style.display = '';
-  document.getElementById('battleStatus').textContent = 'Wähle einen Modus um ein Duell zu starten!';
 }
 
 function resetBattle() {
-  currentBattleRoom = null;
-  myBattleCard = null;
-  document.getElementById('battleArena').style.display = 'none';
+  currentBattleRoom = null; myBattleCard = null;
+  document.getElementById('battleArena').style.display  = 'none';
   document.getElementById('battleStatus').style.display = '';
-  document.getElementById('battleStatus').textContent = 'Wähle einen Modus um ein Duell zu starten!';
+  document.getElementById('battleStatus').textContent   = 'Wähle einen Modus um ein Duell zu starten!';
 }
 
-// Check for friend battle invite in URL
+// Auto-join from URL param (legacy support)
 (function() {
-  const urlParams = new URLSearchParams(location.search);
-  const battleCode = urlParams.get('battle');
-  if (battleCode) {
-    // Wait for init, then auto-join
-    const tryJoin = setInterval(async () => {
+  const code = new URLSearchParams(location.search).get('battle');
+  if (code) {
+    const tryJoin = setInterval(() => {
       if (!userId) return;
       clearInterval(tryJoin);
-      const { data } = await sb.from('glagini_battles').select('*').eq('room_code', battleCode).eq('status','waiting').single();
-      if (data) {
-        toast(`🎮 Freundes-Duell gefunden! Code: ${battleCode}`, 'gold', 4000);
-        openBattlePick(async (g, instanceId) => {
-          myBattleCard = { g, instanceId };
-          await sb.from('glagini_battles').update({
-            player2_id: userId, player2_name: userName,
-            player2_gl_id: g.id, status:'active'
-          }).eq('id', data.id);
-          currentBattleRoom = data.id;
-          document.getElementById('battleArena').style.display = '';
-          document.getElementById('battleStatus').style.display = 'none';
-          subscribeToBattle(data.id, 2);
-        });
-      }
-    }, 500);
+      document.getElementById('friendCodeInput').value = code;
+      document.getElementById('battleJoinBox').style.display = '';
+      toast(`🎮 Duell-Code ${code} erkannt – wähle eine Karte und tritt bei!`, 'gold', 5000);
+    }, 400);
   }
 })();
 
