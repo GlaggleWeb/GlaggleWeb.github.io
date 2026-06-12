@@ -2077,10 +2077,10 @@ function renderTrades(trades) {
     const item = document.createElement('div');
     item.className = 'trade-item';
 
-    const isOwn    = t.offer_user_id === userId;
+    const isOwn     = t.offer_user_id === userId;
     const canAccept = !isOwn && t.status === 'open';
-    const iWantThis = myCollection.some(c => !c.stuck && c.glId === t.want_gl_id);
-    const iHaveOffer = myCollection.some(c => !c.stuck && c.glId === t.offer_gl_id);
+    const iWantThis  = myCollection.some(c => !c.stuck && c.glId === t.offer_gl_id); // ich will die angebotene Karte
+    const iCanGive   = myCollection.some(c => !c.stuck && c.glId === t.want_gl_id);  // ich besitze was er sucht
 
     item.innerHTML = `
       <div class="trade-avatar">${t.offer_user_name?.[0]?.toUpperCase() || '?'}</div>
@@ -2095,13 +2095,13 @@ function renderTrades(trades) {
           <span class="tag tag-${offerG.rarity}" style="font-size:0.6rem;">${offerG.rarity}</span>
           <span style="font-size:0.7rem;color:var(--muted);">↔</span>
           <span class="tag tag-${wantG.rarity}" style="font-size:0.6rem;">${wantG.rarity}</span>
-          ${iWantThis ? '<span class="offer-badge">Du suchst das!</span>' : ''}
+          ${iWantThis ? '<span class="offer-badge">Du willst das!</span>' : ''}
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
-        ${canAccept && iHaveOffer ? `<button class="btn btn-primary btn-xs" data-tid="${t.id}" data-offergl="${t.offer_gl_id}" data-wantgl="${t.want_gl_id}" data-offeruid="${t.offer_user_id}" data-offername="${t.offer_user_name}" onclick="acceptTrade(this)">Annehmen ✅</button>` : ''}
+        ${canAccept && iCanGive ? `<button class="btn btn-primary btn-xs" data-tid="${t.id}" data-offergl="${t.offer_gl_id}" data-wantgl="${t.want_gl_id}" onclick="acceptTrade(this)">Annehmen ✅</button>` : ''}
         ${isOwn ? `<button class="btn btn-secondary btn-xs" data-tid="${t.id}" onclick="cancelTrade(this)">Stornieren ✕</button>` : ''}
-        ${canAccept && !iHaveOffer ? `<span style="font-size:0.72rem;color:var(--muted);">Du besitzt ${offerG.name} nicht</span>` : ''}
+        ${canAccept && !iCanGive ? `<span style="font-size:0.72rem;color:var(--muted);">Du hast ${wantG.name} nicht</span>` : ''}
       </div>
     `;
     list.appendChild(item);
