@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glaggle Glagini</title>
+<meta name="description" content="Sammle, tausche und zocker mit Glaggle Glaginis – den fiktiven Wesen im Glaggle Universum!">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ============================================================
+   DESIGN SYSTEM – Glaggle Glagini
+   Palette: Deep Cosmic Purple + Neon Coral + Starlight Gold
+   Vibe: Playful collectible game, bubbly but modern
+   ============================================================ */
+:root {
+  --bg:        #0d0b1a;
+  --surface:   #16132a;
+  --card:      #1e1a35;
+  --border:    #2e2850;
+  --text:      #e8e4ff;
+  --muted:     #8a83b8;
+  --accent:    #7b6cf6;
+  --accent2:   #ff6b8a;
+  --gold:      #ffd85a;
+  --teal:      #4ecdc4;
+  --green:     #51cf66;
+
+  /* Rarity Colors */
+  --r-normal:  #8a83b8;
+  --r-rare:    #4ecdc4;
+  --r-super:   #a855f7;
+  --r-epic:    #ff6b8a;
+
+  /* Metal Colors */
+  --m-bronze:  #cd7f32;
+  --m-silver:  #c0c0c0;
+  --m-gold:    #ffd700;
+
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated starfield background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(123,108,246,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(255,107,138,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(78,205,196,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================ HERO HEADER */
+.site-header {
+  text-align: center;
+  padding: 60px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.site-title {
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 40%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  animation: titleShimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes titleShimmer {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.2) drop-shadow(0 0 30px rgba(123,108,246,0.5)); }
+}
+
+.site-subtitle {
+  margin-top: 12px;
+  font-size: 1.1rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* Floating particles */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  from { transform: translateY(110vh) rotate(0deg); opacity: 0.15; }
+  to   { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* ============================================================ LAYOUT */
+.main-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+/* Section Titles */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.section-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 30px;
+  max-width: 600px;
+}
+
+/* ============================================================ CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow);
+}
+
+/* ============================================================ GLAGINI CARD */
+.glagini-card {
+  width: 160px;
+  min-height: 220px;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.glagini-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+}
+
+.glagini-card.rarity-normal  { border-color: var(--r-normal); }
+.glagini-card.rarity-rare    { border-color: var(--r-rare); box-shadow: 0 0 15px rgba(78,205,196,0.2); }
+.glagini-card.rarity-super   { border-color: var(--r-super); box-shadow: 0 0 20px rgba(168,85,247,0.25); }
+.glagini-card.rarity-epic    { border-color: var(--r-epic); box-shadow: 0 0 25px rgba(255,107,138,0.3); animation: epicPulse 2s ease-in-out infinite; }
+
+@keyframes epicPulse {
+  0%,100% { box-shadow: 0 0 20px rgba(255,107,138,0.3); }
+  50%      { box-shadow: 0 0 40px rgba(255,107,138,0.6); }
+}
+
+.glagini-card.metal-bronze { background: linear-gradient(145deg, #1e1a35, #2a1f10); border-color: var(--m-bronze); }
+.glagini-card.metal-silver { background: linear-gradient(145deg, #1e1a35, #1a1d22); border-color: var(--m-silver); }
+.glagini-card.metal-gold   { background: linear-gradient(145deg, #1e1a35, #2a2510); border-color: var(--m-gold); animation: goldShine 3s ease-in-out infinite; }
+
+@keyframes goldShine {
+  0%,100% { box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+  50%      { box-shadow: 0 0 35px rgba(255,215,0,0.6); }
+}
+
+.glagini-card .rarity-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rarity-badge.normal { background: rgba(138,131,184,0.3); color: var(--r-normal); }
+.rarity-badge.rare   { background: rgba(78,205,196,0.2); color: var(--r-rare); }
+.rarity-badge.super  { background: rgba(168,85,247,0.2); color: var(--r-super); }
+.rarity-badge.epic   { background: rgba(255,107,138,0.2); color: var(--r-epic); }
+
+.metal-badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.metal-badge.bronze { background: rgba(205,127,50,0.3); color: var(--m-bronze); }
+.metal-badge.silver { background: rgba(192,192,192,0.2); color: var(--m-silver); }
+.metal-badge.gold   { background: rgba(255,215,0,0.2); color: var(--m-gold); }
+
+.glagini-svg-wrap {
+  width: 110px; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 14px 0 10px;
+  flex-shrink: 0;
+}
+
+.glagini-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.glagini-stats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.65rem;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.stat-bar-wrap {
+  flex: 1;
+  margin: 0 6px;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.stat-val {
+  font-weight: 800;
+  min-width: 20px;
+  text-align: right;
+  font-size: 0.65rem;
+}
+
+/* ============================================================ POPUP / MODAL */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px;
+  max-width: 500px;
+  width: 100%;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+}
+.overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal-close {
+  position: absolute; top: 16px; right: 18px;
+  background: none; border: none;
+  font-size: 1.5rem; cursor: pointer; color: var(--muted);
+  line-height: 1;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--text); }
+
+/* ============================================================ BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #9b8df8; box-shadow: 0 0 20px rgba(123,108,246,0.4); }
+
+.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-danger { background: var(--accent2); color: white; }
+.btn-danger:hover { background: #ff8fa3; box-shadow: 0 0 20px rgba(255,107,138,0.4); }
+
+.btn-gold { background: var(--gold); color: #1a1600; }
+.btn-gold:hover { background: #ffe17a; box-shadow: 0 0 20px rgba(255,216,90,0.5); }
+
+.btn-sm { padding: 7px 16px; font-size: 0.78rem; }
+.btn-xs { padding: 5px 12px; font-size: 0.72rem; }
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ============================================================ COIN BADGE */
+.coin-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,216,90,0.12);
+  border: 1px solid rgba(255,216,90,0.3);
+  border-radius: 50px;
+  padding: 5px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+/* ============================================================ NAV */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,11,26,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px;
+}
+
+.nav-logo {
+  font-size: 1.1rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-tabs {
+  display: flex; gap: 4px;
+  overflow-x: auto; padding: 4px 0;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.nav-tab:hover { color: var(--text); background: var(--border); }
+.nav-tab.active { background: var(--accent); color: white; }
+
+.nav-right { display: flex; align-items: center; gap: 10px; }
+
+/* ============================================================ ALBUM SECTION */
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 200px;
+}
+
+.album-slot {
+  aspect-ratio: 2/3;
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: default;
+  transition: all 0.2s;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.02);
+}
+
+.album-slot.filled {
+  border-style: solid;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+.album-slot.filled:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+.album-slot-number {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; color: var(--muted); font-weight: 700;
+}
+
+.album-slot-empty-text {
+  font-size: 0.75rem; color: var(--border); text-align: center; padding: 8px;
+  line-height: 1.3;
+}
+
+/* ============================================================ MY GLAGINIS */
+.my-glaginis-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-height: 80px;
+}
+
+/* ============================================================ DAILY SECTION */
+.daily-card {
+  background: linear-gradient(135deg, rgba(123,108,246,0.1), rgba(255,107,138,0.08));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.daily-mystery {
+  width: 130px; height: 170px;
+  background: linear-gradient(135deg, var(--surface), var(--card));
+  border: 2px dashed var(--accent);
+  border-radius: 16px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  animation: mysteryFloat 3s ease-in-out infinite;
+}
+
+@keyframes mysteryFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.mystery-icon { font-size: 3.5rem; }
+
+.daily-info { flex: 1; min-width: 200px; }
+.daily-info h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+.daily-info p  { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; line-height: 1.5; }
+
+.countdown { font-size: 1.1rem; font-weight: 800; color: var(--gold); letter-spacing: 0.05em; }
+
+/* ============================================================ PACK SHOP */
+.pack-card {
+  background: linear-gradient(145deg, rgba(255,216,90,0.08), rgba(255,107,138,0.06));
+  border: 2px solid rgba(255,216,90,0.3);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.pack-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(255,216,90,0.2);
+  transform: translateY(-2px);
+}
+
+.pack-img {
+  font-size: 3.5rem;
+  animation: packBounce 2s ease-in-out infinite;
+}
+
+@keyframes packBounce {
+  0%,100% { transform: rotate(-5deg); }
+  50%      { transform: rotate(5deg); }
+}
+
+/* ============================================================ TRADE */
+.trade-list { display: flex; flex-direction: column; gap: 14px; }
+
+.trade-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  transition: border-color 0.2s;
+}
+
+.trade-item:hover { border-color: var(--accent); }
+
+.trade-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: 800; flex-shrink: 0;
+}
+
+/* ============================================================ BATTLE */
+.battle-arena {
+  background: linear-gradient(135deg, rgba(255,107,138,0.08), rgba(123,108,246,0.08));
+  border: 1px solid var(--accent2);
+  border-radius: var(--radius);
+  padding: 30px;
+}
+
+.battle-vs {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.battle-side {
+  flex: 1; min-width: 200px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+
+.battle-divider {
+  font-size: 2rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent2), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex-shrink: 0;
+}
+
+/* ============================================================ CHAT */
+.chat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  height: 440px;
+}
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.chat-msg {
+  max-width: 75%; word-break: break-word;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  animation: msgSlide 0.25s ease;
+}
+
+@keyframes msgSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.chat-msg.own { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+.chat-msg.other { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.chat-msg .msg-user { font-size: 0.7rem; font-weight: 800; margin-bottom: 3px; opacity: 0.8; }
+
+.chat-input-row {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+
+.chat-input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 50px; padding: 10px 18px;
+  color: var(--text); font-family: inherit; font-size: 0.88rem;
+  outline: none; transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-input::placeholder { color: var(--muted); }
+
+/* ============================================================ TABS (within sections) */
+.inner-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+}
+
+.inner-tab {
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 0.82rem; font-weight: 700;
+  background: var(--surface); color: var(--muted);
+  border: 1px solid var(--border); cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.inner-tab:hover { color: var(--text); border-color: var(--muted); }
+.inner-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ============================================================ UTILITY */
+.divider {
+  height: 1px; background: var(--border);
+  margin: 30px 0;
+}
+
+.tag {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+}
+
+.tag-normal { background: rgba(138,131,184,0.2); color: var(--r-normal); }
+.tag-rare   { background: rgba(78,205,196,0.2); color: var(--r-rare); }
+.tag-super  { background: rgba(168,85,247,0.2); color: var(--r-super); }
+.tag-epic   { background: rgba(255,107,138,0.2); color: var(--r-epic); }
+
+.flex-gap { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* ============================================================ TOAST */
+.toast-container {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  animation: toastIn 0.3s cubic-bezier(.34,1.56,.64,1) forwards;
+  max-width: 360px; text-align: center;
+}
+
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error   { border-color: var(--accent2); color: var(--accent2); }
+.toast.info    { border-color: var(--accent); color: var(--accent); }
+.toast.gold    { border-color: var(--gold); color: var(--gold); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================================ SECTION ANCHORS */
+.section-anchor { scroll-margin-top: 70px; }
+
+/* ============================================================ LOADING */
+.loading-spin {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================ BATTLE RESULT */
+.battle-result {
+  text-align: center;
+  padding: 30px;
+  animation: resultPop 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes resultPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================ GLAGINI MINI (for album slots) */
+.glagini-mini { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 6px; }
+.glagini-mini .mini-svg { width: 70px; height: 70px; }
+.glagini-mini .mini-name { font-size: 0.62rem; font-weight: 800; text-align: center; margin-top: 4px; color: var(--text); }
+.glagini-mini .mini-rarity { font-size: 0.55rem; margin-top: 2px; }
+
+/* ============================================================ HIGHLIGHT BOX */
+.info-box {
+  background: rgba(123,108,246,0.1);
+  border: 1px solid rgba(123,108,246,0.3);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.info-box.warn {
+  background: rgba(255,216,90,0.08);
+  border-color: rgba(255,216,90,0.3);
+  color: var(--gold);
+}
+
+/* ============================================================ SELECT */
+.styled-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 10px 18px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.styled-select:focus { border-color: var(--accent); }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width: 700px) {
+  .site-header { padding: 40px 16px 30px; }
+  .main-wrapper { padding: 0 14px 60px; gap: 44px; }
+  .album-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .daily-card { flex-direction: column; align-items: flex-start; }
+  .battle-vs { flex-direction: column; }
+  .nav-tabs { gap: 2px; }
+  .modal { padding: 24px; }
+}
+
+/* ============================================================ EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 50px 20px; color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-text { font-size: 0.9rem; line-height: 1.5; }
+
+/* Trade offer indicator */
+.offer-badge {
+  background: var(--accent2);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* Card detail in modal */
+.card-detail-modal {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+
+/* Battle waiting animation */
+.battle-waiting {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 20px; color: var(--muted); font-size: 0.9rem;
+}
+
+/* Glagini sticker button */
+.stick-btn {
+  position: absolute;
+  bottom: 8px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; font-weight: 700;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: white; border: none; border-radius: 20px;
+  cursor: pointer; white-space: nowrap;
+  opacity: 0; transition: opacity 0.2s;
+}
+.glagini-card:hover .stick-btn { opacity: 1; }
+
+/* ============================================================ LUCKY WHEEL */
+.wheel-container {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.wheel-wrap {
+  position: relative; width: 280px; height: 280px;
+}
+#luckyWheelCanvas {
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(123,108,246,0.4), 0 0 0 4px var(--border);
+}
+.wheel-pointer {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  z-index: 10;
+}
+.wheel-spin-btn {
+  font-size: 1.1rem; padding: 14px 36px;
+}
+.wheel-result-box {
+  min-height: 48px; text-align: center;
+  font-size: 1rem; font-weight: 800;
+  color: var(--gold);
+  animation: resultPop 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+</style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div class="particles" id="particles"></div>
+
+<!-- ============================================================ WELCOME POPUP -->
+<div class="overlay" id="welcomeOverlay">
+  <div class="modal" style="max-width:460px; text-align:center;">
+    <div style="font-size:3.5rem; margin-bottom:16px;">✨</div>
+    <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:10px;">
+      Willkommen bei<br>
+      <span style="background: linear-gradient(135deg, var(--accent), var(--accent2), var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Glaggle Glagini!</span>
+    </h2>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:0.92rem; line-height:1.6;">
+      Sammle fiktive Glagini-Wesen, tausche sie mit anderen und zocker in epischen Duellen!
+    </p>
+    <div class="info-box warn" style="text-align:left; margin-bottom:20px; font-size:0.82rem;">
+      💾 Dein Fortschritt wird lokal auf diesem Gerät gespeichert.
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <button class="btn btn-primary" id="startBtn" style="width:100%; font-size:1rem; padding:14px;">
+        🚀 Loslegen!
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Glagini Detail Modal -->
+<div class="overlay" id="glaginiDetailOverlay">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" id="closeGlaginiDetail">✕</button>
+    <div class="card-detail-modal" id="glaginiDetailContent"></div>
+  </div>
+</div>
+
+<!-- Pack Opening Modal -->
+<div class="overlay" id="packOpenOverlay">
+  <div class="modal" style="text-align:center; max-width:460px;">
+    <button class="modal-close" id="closePackOpen">✕</button>
+    <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:20px;">📦 Glagini Pack öffnen!</h3>
+    <div id="packReveal" style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; min-height:200px; align-items:center;">
+      <div class="loading-spin"></div>
+    </div>
+    <div id="packStickAll" style="margin-top:20px; display:none;">
+      <button class="btn btn-primary" id="addAllToCollection">✨ Alle zu meinen Glaginis hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trade Create Modal -->
+<div class="overlay" id="tradeCreateOverlay">
+  <div class="modal">
+    <button class="modal-close" id="closeTradeCreate">✕</button>
+    <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:6px;">🔄 Tausch anbieten</h3>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:20px;">Wähle welche Karte du anbietest und welche du haben möchtest.</p>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">Ich biete:</label>
+        <select class="styled-select" id="tradeOfferSelect" style="width:100%; border-radius:10px; padding:12px;">
+          <option value="">– Karte wählen –</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">Ich möchte haben:</label>
+        <select class="styled-select" id="tradeWantSelect" style="width:100%; border-radius:10px; padding:12px;">
+          <option value="">– Karte wählen –</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="submitTradeBtn" style="margin-top:8px;">Tausch anbieten 🔄</button>
+    </div>
+  </div>
+</div>
+
+<!-- Battle Card Pick Modal -->
+<div class="overlay" id="battlePickOverlay">
+  <div class="modal">
+    <button class="modal-close" id="closeBattlePick">✕</button>
+    <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:6px;">⚔️ Karte für Duell wählen</h3>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:20px;">Diese Karte setzt du ein – bei Verlust ist sie weg!</p>
+    <div id="battlePickGrid" class="my-glaginis-grid" style="max-height:320px; overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- Battle Result Modal -->
+<div class="overlay" id="battleResultOverlay">
+  <div class="modal" style="text-align:center;">
+    <button class="modal-close" id="closeBattleResult">✕</button>
+    <div id="battleResultContent" class="battle-result"></div>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">🌟 Glagini</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="scrollToSection('album')">📖 Album</button>
+    <button class="nav-tab" onclick="scrollToSection('collect')">🎁 Sammeln</button>
+    <button class="nav-tab" onclick="scrollToSection('wheel')">🎡 Glücksrad</button>
+    <button class="nav-tab" onclick="scrollToSection('myglaginis')">🃏 Meine</button>
+    <button class="nav-tab" onclick="scrollToSection('trade')">🔄 Tauschen</button>
+    <button class="nav-tab" onclick="scrollToSection('battle')">⚔️ Zocken</button>
+    <button class="nav-tab" onclick="scrollToSection('community')">💬 Community</button>
+  </div>
+  <div class="nav-right">
+    <div class="coin-pill" id="navCoinPill">🪙 <span id="navCoins">0</span></div>
+  </div>
+</nav>
+
+<!-- HERO HEADER -->
+<header class="site-header">
+  <div class="site-title">Glaggle Glagini</div>
+  <div class="site-subtitle">Sammle · Tausche · Zocker · Entdecke</div>
+  <p style="color:var(--muted); font-size:0.85rem; margin-top:10px;" id="userGreeting">Lade…</p>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="main-wrapper">
+
+  <!-- ================================================================ SAMMELALBUM -->
+  <section class="section-anchor" id="album">
+    <div class="section-label">📖 Bereich 1</div>
+    <div class="section-title">Virtuelles Sammelalbum</div>
+    <div class="section-desc">Klebe deine Glaginis ein. Klappe die Kategorien auf oder zu!</div>
+
+    <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+      <div style="font-size:0.88rem; color:var(--muted);">
+        Eingeklebt: <strong id="albumProgress" style="color:var(--text);">0 / 100</strong>
+      </div>
+      <div style="flex:1; background:var(--border); border-radius:20px; height:8px; min-width:120px;">
+        <div id="albumProgressBar" style="height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:20px; width:0%; transition:width 0.4s;"></div>
+      </div>
+    </div>
+
+    <!-- Accordion groups -->
+    <div id="albumAccordion" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </section>
+
+  <!-- ================================================================ SAMMELN / DAILY -->
+  <section class="section-anchor" id="collect">
+    <div class="section-label">🎁 Bereich 2</div>
+    <div class="section-title">Glaginis sammeln</div>
+    <div class="section-desc">Hole täglich deinen gratis Glagini ab oder kaufe ein 3er-Pack für 8 Coins!</div>
+
+    <div class="daily-card">
+      <div class="daily-mystery">
+        <div class="mystery-icon">❓</div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--muted);">TÄGLICH GRATIS</div>
+      </div>
+      <div class="daily-info">
+        <h3>Dein täglicher Glagini!</h3>
+        <p>Jeden Tag ein zufälliger Glagini gratis – von Normal bis Episch! Komm täglich wieder für neue Chancen.</p>
+        <div id="dailyBtnWrap">
+          <button class="btn btn-primary" id="claimDailyBtn">🎁 Heute abholen!</button>
+        </div>
+        <div class="countdown" id="dailyCountdown" style="display:none; margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;">
+      <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:14px; color:var(--text);">🛒 Glagini Pack kaufen</h3>
+      <div class="pack-card" id="buyPackBtn">
+        <div class="pack-img">📦</div>
+        <div style="flex:1;">
+          <div style="font-size:1.15rem; font-weight:800; margin-bottom:6px;">Glagini 3er-Pack</div>
+          <div style="color:var(--muted); font-size:0.88rem; margin-bottom:12px; line-height:1.5;">
+            3 zufällige Glaginis auf einmal! Erhöhte Chance auf seltene Karten.
+          </div>
+          <div class="flex-gap">
+            <div class="coin-pill">🪙 8 Coins</div>
+            <div class="tag tag-rare">Erhöhte Seltenheit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ GLÜCKSRAD -->
+  <section class="section-anchor" id="wheel">
+    <div class="section-label">🎡 Bereich 3</div>
+    <div class="section-title">Glagini Glücksrad</div>
+    <div class="section-desc">Drehe einmal täglich – gewinne einen Glagini oder Coins!</div>
+
+    <div class="card" style="max-width:520px; margin:0 auto;">
+      <div class="wheel-container">
+        <div class="wheel-wrap">
+          <div class="wheel-pointer">▼</div>
+          <canvas id="luckyWheelCanvas" width="280" height="280"></canvas>
+        </div>
+        <div id="wheelResultBox" class="wheel-result-box"></div>
+        <div id="wheelBtnWrap">
+          <button class="btn btn-gold wheel-spin-btn" id="spinWheelBtn">🎡 Rad drehen!</button>
+        </div>
+        <div id="wheelCountdown" style="display:none; color:var(--muted); font-size:0.9rem; font-weight:700;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ MEINE GLAGINIS -->
+  <section class="section-anchor" id="myglaginis">
+    <div class="section-label">🃏 Bereich 4</div>
+    <div class="section-title">Meine Glaginis</div>
+    <div class="section-desc">Alle deine gesammelten Glaginis – klebe sie ins Album oder setze sie ein.</div>
+
+    <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
+      <button class="inner-tab active" onclick="filterMyGlaginis('all', this)">Alle</button>
+      <button class="inner-tab" onclick="filterMyGlaginis('normal', this)">Normal</button>
+      <button class="inner-tab" onclick="filterMyGlaginis('rare', this)">Selten</button>
+      <button class="inner-tab" onclick="filterMyGlaginis('super', this)">Supersselten</button>
+      <button class="inner-tab" onclick="filterMyGlaginis('epic', this)">Episch</button>
+    </div>
+
+    <div class="my-glaginis-grid" id="myGlaginiGrid">
+      <div class="empty-state" style="width:100%;">
+        <div class="empty-icon">🃏</div>
+        <div class="empty-text">Noch keine Glaginis! Hole deinen täglichen Gratis-Sticker ab.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ TAUSCHEN -->
+  <section class="section-anchor" id="trade">
+    <div class="section-label">🔄 Bereich 4</div>
+    <div class="section-title">Glagini Tauschbörse</div>
+    <div class="section-desc">Tausche Duplikate mit anderen Sammlern – per Zufall, per Gesuch oder per Freundeslink.</div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" id="tradeTab1" onclick="switchTradeTab('active', this)">Aktive Angebote</button>
+      <button class="inner-tab" id="tradeTab2" onclick="switchTradeTab('myoffers', this)">Meine Angebote</button>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" id="openTradeCreateBtn">➕ Tausch anbieten</button>
+      <button class="btn btn-secondary btn-sm" id="refreshTradesBtn">🔄 Aktualisieren</button>
+    </div>
+
+    <div class="trade-list" id="tradeList">
+      <div style="color:var(--muted); font-size:0.88rem; text-align:center; padding:20px;">Lade Tausch-Angebote…</div>
+    </div>
+  </section>
+
+  <!-- ================================================================ ZOCKEN / BATTLE -->
+  <section class="section-anchor" id="battle">
+    <div class="section-label">⚔️ Bereich 5</div>
+    <div class="section-title">Glagini Duell</div>
+    <div class="section-desc">Setze eine Karte ein – ein Attribut wird gezogen. Wer höher ist, gewinnt beide Karten!</div>
+
+    <div class="info-box" style="margin-bottom:20px;">
+      <strong>Wie's funktioniert:</strong> Du wählst eine Karte. Das System zieht zufällig ein Attribut (z.B. Power). Wer bei dem Attribut mehr hat, bekommt beide Karten. Bei Gleichstand ist es ein Unentschieden!
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;">
+      <button class="btn btn-danger btn-sm" id="battleRandomBtn">🎲 vs. Zufalls-Gegner</button>
+      <button class="btn btn-secondary btn-sm" id="battleFriendBtn">🔗 Freund einladen</button>
+      <button class="btn btn-secondary btn-sm" id="battleJoinFriendBtn">🎮 Code eingeben &amp; joinen</button>
+    </div>
+
+    <!-- Friend code join input -->
+    <div id="battleJoinBox" style="display:none; margin-bottom:16px;">
+      <div class="card" style="max-width:360px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:16px;">
+        <input id="friendCodeInput" type="text" placeholder="Code z.B. AB12CD" maxlength="6"
+          style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:50px; padding:10px 16px; color:var(--text); font-family:inherit; font-size:1rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; outline:none; min-width:120px;"
+          oninput="this.value=this.value.toUpperCase()">
+        <button class="btn btn-primary btn-sm" id="joinFriendBtn">Beitreten</button>
+      </div>
+    </div>
+
+    <div id="battleStatus" style="text-align:center; padding:40px; color:var(--muted); font-size:0.9rem;">
+      Wähle einen Modus um ein Duell zu starten!
+    </div>
+
+    <div id="battleArena" style="display:none;">
+      <div class="battle-arena">
+        <div id="battleWaiting" class="battle-waiting">
+          <div class="loading-spin"></div>
+          <span>Warte auf Gegner…</span>
+        </div>
+        <div id="battleActive" style="display:none;">
+          <div class="battle-vs" id="battleVsDisplay"></div>
+          <div style="text-align:center; margin-top:20px;" id="battleActionArea"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ COMMUNITY CHAT -->
+  <section class="section-anchor" id="community">
+    <div class="section-label">💬 Bereich 6</div>
+    <div class="section-title">Glagini Community</div>
+    <div class="section-desc">Chatte mit anderen Sammlern, verabrede Tausche und diskutiere über Glaginis!</div>
+
+    <div class="chat-box">
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center; color:var(--muted); font-size:0.8rem; padding:10px; font-style:italic;">
+          Willkommen im Glagini Chat! 👋
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" type="text" placeholder="Nachricht schreiben…" maxlength="300">
+        <button class="btn btn-primary btn-sm" id="chatSendBtn">Senden</button>
+      </div>
+    </div>
+    <p id="chatStatusMsg" style="font-size:0.75rem; color:var(--accent2); margin-top:8px; min-height:18px;"></p>
+  </section>
+
+</div><!-- /main-wrapper -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================ JAVASCRIPT -->
+<script>
+'use strict';
+
+/* ==============================================================
+   SUPABASE CONFIG  (Trades · Battle · Chat)
+   ============================================================== */
+const SB_URL = "https://khainlzhocznvhysnabu.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYWlubHpob2N6bnZoeXNuYWJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MDQzMjMsImV4cCI6MjA4ODk4MDMyM30.let9ptBDwv7VaXGpdb9u03SznRKqFyu4cQyBfFFNB0A";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* Groq API key */
+const _g1="gsk_", _g2="DhmV9OW7Z0hYFfuFuDWAW", _g3="Gdyb3FYQ4lohujYXZhZr0kC0CQrYcB8";
+const GROQ_KEY = () => _g1+_g2+_g3;
+
+/* ==============================================================
+   GLAGINI DATA – 100 Karten
+   Seltenheit: normal (40), rare (30), super (20), epic (10)
+   Metall:     none, bronze, silver, gold (bei vereinzelten)
+   Stats:      power, speed, magic, defense, luck  (1–95)
+   ============================================================== */
+const STATS_KEYS = ['power','speed','magic','defense','luck'];
+const STATS_LABELS = { power:'⚡ Power', speed:'💨 Speed', magic:'🔮 Magie', defense:'🛡 Defense', luck:'🍀 Glück' };
+const STATS_COLORS = { power:'#ff6b8a', speed:'#4ecdc4', magic:'#a855f7', defense:'#7b6cf6', luck:'#ffd85a' };
+
+const ALL_GLAGINIS = [
+  // ── NORMAL (1–40) ──────────────────────────────────────────
+  { id:1,  name:'Jelly Jelly',   rarity:'normal', metal:'none',   power:22, speed:35, magic:18, defense:25, luck:40, desc:'Ein glibberiges Wesen, das überall klebt.' },
+  { id:2,  name:'Wurmi',         rarity:'normal', metal:'none',   power:15, speed:28, magic:12, defense:18, luck:55, desc:'Der freundlichste Wurm im Glaggle-Universum.' },
+  { id:3,  name:'Puffi',         rarity:'normal', metal:'none',   power:30, speed:20, magic:25, defense:35, luck:22, desc:'Rund wie eine Seifenblase, hart wie Stahl.' },
+  { id:4,  name:'Blubby',        rarity:'normal', metal:'none',   power:18, speed:45, magic:20, defense:12, luck:48, desc:'Bewegt sich schnell wie ein Blitz im Wasser.' },
+  { id:5,  name:'Schnecki',      rarity:'normal', metal:'none',   power:12, speed:10, magic:38, defense:55, luck:32, desc:'Langsam aber unaufhörlich – das Haus ist sein Schloss.' },
+  { id:6,  name:'Fungi',         rarity:'normal', metal:'bronze', power:28, speed:22, magic:45, defense:30, luck:35, desc:'Ein weiser Pilz aus den Tiefen des Glaggle-Waldes.' },
+  { id:7,  name:'Zappi',         rarity:'normal', metal:'none',   power:40, speed:50, magic:15, defense:20, luck:28, desc:'Elektrisch geladen und immer bereit für Action.' },
+  { id:8,  name:'Glitzi',        rarity:'normal', metal:'none',   power:20, speed:32, magic:30, defense:22, luck:50, desc:'Glitzert wie tausend Sterne auf einmal.' },
+  { id:9,  name:'Fluppi',        rarity:'normal', metal:'none',   power:16, speed:55, magic:22, defense:15, luck:38, desc:'Fliegt so schnell, dass er manchmal sich selbst überholt.' },
+  { id:10, name:'Bubbi',         rarity:'normal', metal:'none',   power:25, speed:25, magic:25, defense:25, luck:45, desc:'Perfekt ausbalanciert – das ist seine Stärke.' },
+  { id:11, name:'Schlummi',      rarity:'normal', metal:'none',   power:10, speed:8,  magic:20, defense:42, luck:60, desc:'Schläft fast immer, bringt dabei aber Glück.' },
+  { id:12, name:'Knubbel',       rarity:'normal', metal:'none',   power:35, speed:15, magic:10, defense:50, luck:25, desc:'Klein, rund und unglaublich hartnäckig.' },
+  { id:13, name:'Blinki',        rarity:'normal', metal:'none',   power:18, speed:40, magic:35, defense:15, luck:42, desc:'Blinzelt so schnell, dass er Funken erzeugt.' },
+  { id:14, name:'Wabbel',        rarity:'normal', metal:'none',   power:20, speed:18, magic:15, defense:38, luck:55, desc:'Wackelt ständig, aber fällt nie um.' },
+  { id:15, name:'Tropfi',        rarity:'normal', metal:'none',   power:14, speed:30, magic:40, defense:20, luck:35, desc:'Tropft magische Flüssigkeit wo immer er geht.' },
+  { id:16, name:'Stachli',       rarity:'normal', metal:'none',   power:42, speed:22, magic:12, defense:45, luck:18, desc:'Vorsicht! Seine Stacheln sind schärfer als sie aussehen.' },
+  { id:17, name:'Wuseli',        rarity:'normal', metal:'none',   power:12, speed:58, magic:18, defense:10, luck:48, desc:'Huscht so flink herum, dass man ihn kaum sieht.' },
+  { id:18, name:'Glummi',        rarity:'normal', metal:'none',   power:25, speed:20, magic:32, defense:28, luck:38, desc:'Brummt leise vor sich hin und strahlt Wärme aus.' },
+  { id:19, name:'Knirpsi',       rarity:'normal', metal:'none',   power:15, speed:35, magic:28, defense:20, luck:52, desc:'Winzig aber mutig – der Kleinste im Glaggle-Kosmos.' },
+  { id:20, name:'Quatschi',      rarity:'normal', metal:'none',   power:20, speed:25, magic:22, defense:30, luck:42, desc:'Redet ohne Pause und bringt jeden zum Lachen.' },
+  { id:21, name:'Moosbart',      rarity:'normal', metal:'none',   power:32, speed:12, magic:38, defense:40, luck:28, desc:'Alter Waldgeist mit einem Bart aus Moos.' },
+  { id:22, name:'Nubbelchen',    rarity:'normal', metal:'bronze', power:28, speed:18, magic:15, defense:48, luck:32, desc:'Winziger Klumpen, der alles beobachtet.' },
+  { id:23, name:'Flausi',        rarity:'normal', metal:'none',   power:18, speed:42, magic:30, defense:15, luck:45, desc:'Flauschig wie eine Wolke und genauso leicht.' },
+  { id:24, name:'Schlippi',      rarity:'normal', metal:'none',   power:10, speed:50, magic:25, defense:12, luck:55, desc:'Glatt wie Eis – kein Angriff bleibt hängen.' },
+  { id:25, name:'Tolpel',        rarity:'normal', metal:'none',   power:30, speed:15, magic:10, defense:35, luck:60, desc:'Stolpert durch das Leben und findet immer Gold.' },
+  { id:26, name:'Brumbo',        rarity:'normal', metal:'none',   power:38, speed:20, magic:8,  defense:50, luck:22, desc:'Brummt wie ein Motor und ist genauso ausdauernd.' },
+  { id:27, name:'Zippel',        rarity:'normal', metal:'none',   power:15, speed:60, magic:20, defense:10, luck:40, desc:'Schnell wie ein Reißverschluss – zip, weg!' },
+  { id:28, name:'Matschling',    rarity:'normal', metal:'none',   power:25, speed:10, magic:42, defense:32, luck:35, desc:'Formt sich um jedes Hindernis herum.' },
+  { id:29, name:'Glubschi',      rarity:'normal', metal:'none',   power:22, speed:28, magic:35, defense:20, luck:48, desc:'Riesige Augen, die alles auf einmal sehen.' },
+  { id:30, name:'Runkelchen',    rarity:'normal', metal:'none',   power:28, speed:22, magic:18, defense:45, luck:30, desc:'Klein und faltig, aber voller Energie.' },
+  { id:31, name:'Plitsch',       rarity:'normal', metal:'none',   power:12, speed:38, magic:45, defense:15, luck:42, desc:'Platschend und plitschernd durch jeden Bach.' },
+  { id:32, name:'Muffi',         rarity:'normal', metal:'none',   power:20, speed:15, magic:30, defense:40, luck:50, desc:'Mürrisch, aber im Herzen ein Weichling.' },
+  { id:33, name:'Zirpsel',       rarity:'normal', metal:'none',   power:16, speed:48, magic:28, defense:12, luck:55, desc:'Zirpt melodisch und lockt damit Freunde an.' },
+  { id:34, name:'Klumpi',        rarity:'normal', metal:'none',   power:35, speed:12, magic:15, defense:52, luck:25, desc:'Massig und stabil wie ein Felsblock.' },
+  { id:35, name:'Schleimi',      rarity:'normal', metal:'none',   power:14, speed:22, magic:50, defense:18, luck:38, desc:'Hinterlässt eine magische Spur überall.' },
+  { id:36, name:'Tüpfeli',       rarity:'normal', metal:'bronze', power:20, speed:30, magic:32, defense:22, luck:52, desc:'Überall bunt gepunktet – jeder Punkt ein Wunsch.' },
+  { id:37, name:'Hoppeli',       rarity:'normal', metal:'none',   power:18, speed:55, magic:20, defense:15, luck:45, desc:'Hüpft unermüdlich von Stein zu Stein.' },
+  { id:38, name:'Grummelchen',   rarity:'normal', metal:'none',   power:32, speed:15, magic:12, defense:48, luck:28, desc:'Grummelt vor sich hin, aber hilft immer.' },
+  { id:39, name:'Neonöhrchen',   rarity:'normal', metal:'none',   power:15, speed:40, magic:38, defense:18, luck:48, desc:'Leuchtend grüne Ohren, die Signale empfangen.' },
+  { id:40, name:'Quibbel',       rarity:'normal', metal:'none',   power:22, speed:32, magic:28, defense:25, luck:42, desc:'Quietscht bei jeder Bewegung und liebt es.' },
+
+  // ── RARE (41–70) ────────────────────────────────────────────
+  { id:41, name:'Krakowi',       rarity:'rare',   metal:'none',   power:55, speed:30, magic:40, defense:48, luck:35, desc:'Acht Tentakel, ein Ziel – gewinnen.' },
+  { id:42, name:'Volcanix',      rarity:'rare',   metal:'bronze', power:68, speed:25, magic:55, defense:58, luck:20, desc:'Ein Mini-Vulkan, der wandert und alles erwärmt.' },
+  { id:43, name:'Frostini',      rarity:'rare',   metal:'none',   power:42, speed:62, magic:65, defense:38, luck:38, desc:'Lässt überall Eiskristalle entstehen.' },
+  { id:44, name:'Shadowbun',     rarity:'rare',   metal:'none',   power:48, speed:72, magic:35, defense:32, luck:52, desc:'Springt aus Schatten zu Schatten.' },
+  { id:45, name:'Crystallo',     rarity:'rare',   metal:'silver', power:40, speed:36, magic:72, defense:52, luck:44, desc:'Sein Körper ist ein einziger riesiger Edelstein.' },
+  { id:46, name:'Rumblox',       rarity:'rare',   metal:'none',   power:74, speed:16, magic:28, defense:70, luck:22, desc:'Schwer wie ein Fels, stark wie ein Berg.' },
+  { id:47, name:'Wirblo',        rarity:'rare',   metal:'none',   power:45, speed:78, magic:40, defense:25, luck:55, desc:'Ein ewiger Wirbel, der nie aufhört sich zu drehen.' },
+  { id:48, name:'Flametto',      rarity:'rare',   metal:'none',   power:65, speed:45, magic:58, defense:30, luck:30, desc:'Eine lebende Flamme – berührt ihn, verbrennt ihr.' },
+  { id:49, name:'Aquarini',      rarity:'rare',   metal:'none',   power:38, speed:65, magic:60, defense:42, luck:45, desc:'Surft auf Wellen, die er selbst erzeugt.' },
+  { id:50, name:'Steingeist',    rarity:'rare',   metal:'bronze', power:72, speed:10, magic:35, defense:78, luck:18, desc:'Jahrtausende alter Geist, gefangen in einem Stein.' },
+  { id:51, name:'Blitzpfeil',    rarity:'rare',   metal:'none',   power:58, speed:82, magic:30, defense:20, luck:35, desc:'Schiesst wie ein Pfeil durch die Luft.' },
+  { id:52, name:'Nebelgeist',    rarity:'rare',   metal:'none',   power:35, speed:55, magic:68, defense:38, luck:50, desc:'Hüllt sich in Nebel und verwirrt alle.' },
+  { id:53, name:'Sumpfkönig',    rarity:'rare',   metal:'none',   power:62, speed:20, magic:45, defense:65, luck:30, desc:'Herrscher über den magischen Sumpf.' },
+  { id:54, name:'Windläufer',    rarity:'rare',   metal:'none',   power:40, speed:80, magic:38, defense:22, luck:48, desc:'Rennt schneller als der Wind selbst.' },
+  { id:55, name:'Glutherz',      rarity:'rare',   metal:'bronze', power:60, speed:35, magic:62, defense:40, luck:28, desc:'Sein Herz ist aus reiner Glut.' },
+  { id:56, name:'Eisenflügel',   rarity:'rare',   metal:'none',   power:55, speed:60, magic:25, defense:62, luck:32, desc:'Flügel aus Eisen, stark wie ein Panzer.' },
+  { id:57, name:'Drachenkind',   rarity:'rare',   metal:'none',   power:70, speed:40, magic:50, defense:45, luck:25, desc:'Kleines Drachenwesen mit grossem Feuer.' },
+  { id:58, name:'Mondflüsterer', rarity:'rare',   metal:'silver', power:32, speed:50, magic:75, defense:30, luck:55, desc:'Flüstert mit dem Mond und hört dessen Geheimnisse.' },
+  { id:59, name:'Sandsturm',     rarity:'rare',   metal:'none',   power:60, speed:68, magic:35, defense:35, luck:30, desc:'Ein wandernder Sandsturm in Miniformat.' },
+  { id:60, name:'Traumwandler',  rarity:'rare',   metal:'none',   power:30, speed:45, magic:72, defense:28, luck:58, desc:'Bewegt sich durch Träume wie andere durch Räume.' },
+  { id:61, name:'Donnerball',    rarity:'rare',   metal:'none',   power:75, speed:30, magic:45, defense:50, luck:20, desc:'Rollt donnernd über alles, was ihm in den Weg kommt.' },
+  { id:62, name:'Glitzerhai',    rarity:'rare',   metal:'none',   power:65, speed:55, magic:30, defense:55, luck:28, desc:'Schwimmt durch die Luft wie durch Wasser.' },
+  { id:63, name:'Blütengeist',   rarity:'rare',   metal:'none',   power:25, speed:40, magic:70, defense:32, luck:60, desc:'Entfaltet sich wie eine Blüte und heilt alles.' },
+  { id:64, name:'Knochenkralle', rarity:'rare',   metal:'bronze', power:72, speed:38, magic:20, defense:68, luck:15, desc:'Uralt und knochentrocken, aber unaufhaltsam.' },
+  { id:65, name:'Sternenraupe',  rarity:'rare',   metal:'none',   power:28, speed:35, magic:65, defense:40, luck:55, desc:'Eine Raupe aus reinem Sternenlicht.' },
+  { id:66, name:'Irrlicht',      rarity:'rare',   metal:'none',   power:32, speed:70, magic:60, defense:20, luck:50, desc:'Führt andere in die Irre – oder zum Glück.' },
+  { id:67, name:'Schlammtroll',  rarity:'rare',   metal:'none',   power:68, speed:15, magic:30, defense:72, luck:22, desc:'Langsam, massiv, unaufhaltsam.' },
+  { id:68, name:'Lichtspringer', rarity:'rare',   metal:'silver', power:45, speed:75, magic:55, defense:25, luck:42, desc:'Springt von Lichtstrahl zu Lichtstrahl.' },
+  { id:69, name:'Magnetkugel',   rarity:'rare',   metal:'none',   power:50, speed:30, magic:50, defense:60, luck:35, desc:'Zieht alles magisch an – Freund und Feind.' },
+  { id:70, name:'Polarnebel',    rarity:'rare',   metal:'none',   power:38, speed:52, magic:68, defense:35, luck:45, desc:'Eiskalter Nebel mit einem warmen Kern.' },
+
+  // ── SUPER RARE (71–90) ──────────────────────────────────────
+  { id:71, name:'Nexoris',       rarity:'super',  metal:'none',   power:78, speed:62, magic:74, defense:58, luck:50, desc:'Eine antike Entität aus den Ursprüngen des Glaggle-Kosmos.' },
+  { id:72, name:'Prismatica',    rarity:'super',  metal:'silver', power:62, speed:70, magic:86, defense:52, luck:64, desc:'Bricht Licht in tausend Farben und bleibt dabei unsichtbar.' },
+  { id:73, name:'Thunderclap',   rarity:'super',  metal:'none',   power:88, speed:75, magic:52, defense:62, luck:38, desc:'Sein Brüllen erschüttert ganze Kontinente.' },
+  { id:74, name:'Miragello',     rarity:'super',  metal:'none',   power:58, speed:82, magic:78, defense:42, luck:70, desc:'Niemand weiß genau, ob er wirklich existiert.' },
+  { id:75, name:'Abyssini',      rarity:'super',  metal:'gold',   power:70, speed:52, magic:90, defense:68, luck:56, desc:'Aus den tiefsten Tiefen des Glaggle-Ozeans aufgestiegen.' },
+  { id:76, name:'Terramorph',    rarity:'super',  metal:'none',   power:82, speed:38, magic:65, defense:85, luck:42, desc:'Kann sich in jeden Stein verwandeln, den er berührt.' },
+  { id:77, name:'Zephyrax',      rarity:'super',  metal:'none',   power:60, speed:92, magic:68, defense:40, luck:65, desc:'Schneller als der Wind – sogar schneller als sein Schatten.' },
+  { id:78, name:'Vulkangeist',   rarity:'super',  metal:'bronze', power:85, speed:40, magic:72, defense:70, luck:30, desc:'Jahrtausend alter Geist eines schlafenden Vulkans.' },
+  { id:79, name:'Tiefseejäger',  rarity:'super',  metal:'none',   power:75, speed:58, magic:65, defense:72, luck:35, desc:'Jagt in Tiefen, die kein Licht je erreicht.' },
+  { id:80, name:'Sternenreiter', rarity:'super',  metal:'silver', power:65, speed:78, magic:80, defense:45, luck:58, desc:'Reitet auf Sternschnuppen durch die Galaxie.' },
+  { id:81, name:'Glutkönig',     rarity:'super',  metal:'none',   power:88, speed:45, magic:68, defense:75, luck:28, desc:'Herrscher aller Feuer-Glaginis.' },
+  { id:82, name:'Zeitwanderer',  rarity:'super',  metal:'none',   power:55, speed:70, magic:88, defense:50, luck:72, desc:'Wandert durch Epochen und beobachtet alles.' },
+  { id:83, name:'Schattenkönigin',rarity:'super', metal:'none',   power:68, speed:80, magic:75, defense:48, luck:60, desc:'Herrscherin aller Schatten im Glaggle-Reich.' },
+  { id:84, name:'Donnerlord',    rarity:'super',  metal:'bronze', power:90, speed:50, magic:58, defense:78, luck:25, desc:'Lord des Donners – sein Schrei ist ein Gewitter.' },
+  { id:85, name:'Eisphönix',     rarity:'super',  metal:'silver', power:70, speed:82, magic:78, defense:55, luck:45, desc:'Stirbt und ersteht aus Eis immer wieder auf.' },
+  { id:86, name:'Nebeldrache',   rarity:'super',  metal:'none',   power:80, speed:65, magic:82, defense:60, luck:40, desc:'Ein Drache aus purem Nebel – greifbar und nicht.' },
+  { id:87, name:'Lichtgott',     rarity:'super',  metal:'gold',   power:72, speed:72, magic:92, defense:65, luck:62, desc:'Ein Wesen aus reinem Licht.' },
+  { id:88, name:'Urwaldwächter', rarity:'super',  metal:'none',   power:78, speed:42, magic:70, defense:88, luck:38, desc:'Uralter Hüter des ersten Glaggle-Waldes.' },
+  { id:89, name:'Kristalldrache',rarity:'super',  metal:'silver', power:82, speed:62, magic:85, defense:72, luck:48, desc:'Ein Drache, dessen Schuppen aus reinem Kristall bestehen.' },
+  { id:90, name:'Kosmosläufer',  rarity:'super',  metal:'none',   power:65, speed:88, magic:78, defense:50, luck:68, desc:'Läuft durch den gesamten Kosmos ohne Pause.' },
+
+  // ── EPIC (91–100) ───────────────────────────────────────────
+  { id:91, name:'Omnivox',       rarity:'epic',   metal:'none',   power:92, speed:82, magic:88, defense:80, luck:75, desc:'Die Stimme des gesamten Glaggle-Universums.' },
+  { id:92, name:'Solarius Rex',  rarity:'epic',   metal:'gold',   power:88, speed:72, magic:94, defense:85, luck:82, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
+  { id:93, name:'Voidwalker',    rarity:'epic',   metal:'none',   power:85, speed:94, magic:80, defense:70, luck:72, desc:'Wandert zwischen Welten als wären es Zimmer.' },
+  { id:94, name:'Chronomundi',   rarity:'epic',   metal:'silver', power:78, speed:80, magic:95, defense:75, luck:88, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
+  { id:95, name:'Urgeist',       rarity:'epic',   metal:'none',   power:94, speed:65, magic:85, defense:90, luck:65, desc:'Der erste Geist, der je im Glaggle-Universum erwachte.' },
+  { id:96, name:'Sternenbrecher',rarity:'epic',   metal:'gold',   power:90, speed:88, magic:78, defense:82, luck:70, desc:'Kann Sterne mit blossen Händen zertrümmern.' },
+  { id:97, name:'Abgrundherrscher',rarity:'epic', metal:'none',   power:86, speed:70, magic:90, defense:88, luck:60, desc:'Regiert die tiefsten Abgründe des Glaggle-Ozeans.' },
+  { id:98, name:'Zeitlord',      rarity:'epic',   metal:'silver', power:80, speed:85, magic:92, defense:78, luck:85, desc:'Herrscht über alle Zeitalter und Epochen.' },
+  { id:99, name:'Galaxienwächter',rarity:'epic',  metal:'gold',   power:88, speed:78, magic:88, defense:85, luck:78, desc:'Bewacht die Grenzen der gesamten Glaggle-Galaxie.' },
+  { id:100,name:'Glaggle Supreme',rarity:'epic',  metal:'gold',   power:95, speed:85, magic:90, defense:88, luck:82, desc:'Das legendärste Wesen – entstanden beim Urknall des Glaggle-Universums. Einzigartig.' },
+];
+
+/* ==============================================================
+   SVG GENERATORS – jeder Glagini bekommt seine eigene SVG
+   ============================================================== */
+function getGlaginiColor(g) {
+  const cols = { normal:'#8a83b8', rare:'#4ecdc4', super:'#a855f7', epic:'#ff6b8a' };
+  const metalCols = { bronze:'#cd7f32', silver:'#c0c0c0', gold:'#ffd700' };
+  return g.metal !== 'none' ? metalCols[g.metal] : cols[g.rarity];
+}
+
+function generateSVG(g, size=100) {
+  const c = getGlaginiColor(g);
+  const id = g.id;
+  // Unique seed-based appearance
+  const shapes = [
+    // 0: blob jellyfish
+    `<ellipse cx="50" cy="52" rx="28" ry="22" fill="${c}" opacity="0.9"/>
+     <ellipse cx="50" cy="42" rx="22" ry="18" fill="${c}"/>
+     <circle cx="43" cy="40" r="4" fill="white"/><circle cx="43" cy="41" r="2" fill="#222"/>
+     <circle cx="57" cy="40" r="4" fill="white"/><circle cx="57" cy="41" r="2" fill="#222"/>
+     <path d="M34 62 Q36 72 38 62" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
+     <path d="M42 65 Q44 78 46 65" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
+     <path d="M54 65 Q56 78 58 65" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
+     <path d="M62 62 Q64 72 66 62" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
+     <path d="M44 48 Q50 52 56 48" stroke="white" stroke-width="1.5" fill="none" opacity="0.6"/>`,
+    // 1: worm
+    `<path d="M25 70 Q30 40 50 35 Q70 30 72 55 Q74 70 60 72 Q50 74 40 68 Q30 62 25 70" fill="${c}"/>
+     <circle cx="65" cy="45" r="5" fill="white"/><circle cx="65" cy="46" r="2.5" fill="#222"/>
+     <circle cx="74" cy="40" r="5" fill="white"/><circle cx="74" cy="41" r="2.5" fill="#222"/>
+     <path d="M62 52 Q68 55 74 52" stroke="white" stroke-width="1.5" fill="none"/>
+     <ellipse cx="35" cy="62" rx="6" ry="4" fill="${c}" opacity="0.6"/>`,
+    // 2: round puff
+    `<circle cx="50" cy="50" r="30" fill="${c}" opacity="0.85"/>
+     <circle cx="50" cy="50" r="24" fill="${c}"/>
+     <circle cx="42" cy="45" r="5" fill="white"/><circle cx="42" cy="46" r="2.5" fill="#222"/>
+     <circle cx="58" cy="45" r="5" fill="white"/><circle cx="58" cy="46" r="2.5" fill="#222"/>
+     <path d="M44 56 Q50 62 56 56" stroke="white" stroke-width="2" fill="none"/>
+     <circle cx="26" cy="38" r="6" fill="${c}" opacity="0.7"/>
+     <circle cx="74" cy="38" r="6" fill="${c}" opacity="0.7"/>
+     <circle cx="20" cy="55" r="5" fill="${c}" opacity="0.6"/>
+     <circle cx="80" cy="55" r="5" fill="${c}" opacity="0.6"/>`,
+    // 3: fast blur creature
+    `<ellipse cx="50" cy="55" rx="22" ry="16" fill="${c}" opacity="0.85"/>
+     <ellipse cx="50" cy="46" rx="18" ry="20" fill="${c}"/>
+     <ellipse cx="35" cy="50" rx="10" ry="6" fill="${c}" opacity="0.7"/>
+     <ellipse cx="65" cy="50" rx="10" ry="6" fill="${c}" opacity="0.7"/>
+     <circle cx="44" cy="43" r="4" fill="white"/><circle cx="44" cy="44" r="2" fill="#222"/>
+     <circle cx="56" cy="43" r="4" fill="white"/><circle cx="56" cy="44" r="2" fill="#222"/>
+     <path d="M44 52 Q50 57 56 52" stroke="white" stroke-width="1.5" fill="none"/>
+     <path d="M22 48 L35 50" stroke="${c}" stroke-width="4" opacity="0.5"/>
+     <path d="M65 50 L78 48" stroke="${c}" stroke-width="4" opacity="0.5"/>`,
+    // 4: snail
+    `<ellipse cx="55" cy="62" rx="28" ry="12" fill="${c}" opacity="0.85"/>
+     <path d="M35 62 Q32 45 45 40 Q58 35 65 45 Q72 55 62 60" fill="${c}"/>
+     <circle cx="48" cy="43" r="8" fill="${c}" opacity="0.7"/>
+     <circle cx="50" cy="41" r="10" fill="${c}" opacity="0.5"/>
+     <circle cx="28" cy="54" r="4" fill="white"/><circle cx="28" cy="55" r="2" fill="#222"/>
+     <circle cx="28" cy="46" r="3" fill="${c}" opacity="0.9"/>
+     <line x1="28" y1="54" x2="28" y2="46" stroke="${c}" stroke-width="2"/>
+     <circle cx="35" cy="54" r="4" fill="white"/><circle cx="35" cy="55" r="2" fill="#222"/>
+     <line x1="35" y1="54" x2="35" y2="47" stroke="${c}" stroke-width="2"/>
+     <circle cx="35" cy="47" r="3" fill="${c}" opacity="0.9"/>`,
+    // 5: mushroom
+    `<ellipse cx="50" cy="65" rx="16" ry="8" fill="${c}" opacity="0.8"/>
+     <rect x="44" y="50" width="12" height="18" rx="4" fill="${c}" opacity="0.9"/>
+     <path d="M20 52 Q35 20 50 18 Q65 20 80 52 Z" fill="${c}"/>
+     <circle cx="35" cy="42" r="5" fill="white" opacity="0.7"/>
+     <circle cx="52" cy="32" r="7" fill="white" opacity="0.7"/>
+     <circle cx="66" cy="44" r="5" fill="white" opacity="0.7"/>
+     <circle cx="46" cy="60" r="3" fill="white"/><circle cx="46" cy="61" r="1.5" fill="#222"/>
+     <circle cx="54" cy="60" r="3" fill="white"/><circle cx="54" cy="61" r="1.5" fill="#222"/>`,
+    // 6: lightning bolt creature
+    `<polygon points="50,15 62,42 55,42 68,85 38,55 48,55 35,15" fill="${c}" opacity="0.9"/>
+     <circle cx="44" cy="30" r="4" fill="white"/><circle cx="44" cy="31" r="2" fill="#222"/>
+     <circle cx="54" cy="28" r="4" fill="white"/><circle cx="54" cy="29" r="2" fill="#222"/>
+     <circle cx="50" cy="18" r="8" fill="${c}"/>
+     <path d="M44 35 Q50 40 56 35" stroke="white" stroke-width="1.5" fill="none"/>`,
+    // 7: sparkle glitter
+    `<circle cx="50" cy="50" r="22" fill="${c}"/>
+     <path d="M50 20 L53 44 L76 42 L55 52 L72 70 L50 58 L28 70 L45 52 L24 42 L47 44 Z" fill="${c}" opacity="0.6"/>
+     <circle cx="43" cy="47" r="4" fill="white"/><circle cx="43" cy="48" r="2" fill="#222"/>
+     <circle cx="57" cy="47" r="4" fill="white"/><circle cx="57" cy="48" r="2" fill="#222"/>
+     <circle cx="50" cy="55" r="3" fill="white" opacity="0.8"/>`,
+    // 8: wings flyer
+    `<ellipse cx="50" cy="55" rx="16" ry="20" fill="${c}"/>
+     <path d="M34 48 Q18 30 22 55 Q26 68 34 60" fill="${c}" opacity="0.75"/>
+     <path d="M66 48 Q82 30 78 55 Q74 68 66 60" fill="${c}" opacity="0.75"/>
+     <circle cx="44" cy="50" r="4" fill="white"/><circle cx="44" cy="51" r="2" fill="#222"/>
+     <circle cx="56" cy="50" r="4" fill="white"/><circle cx="56" cy="51" r="2" fill="#222"/>
+     <path d="M44 58 Q50 63 56 58" stroke="white" stroke-width="1.5" fill="none"/>
+     <ellipse cx="50" cy="40" rx="10" ry="8" fill="${c}"/>`,
+    // 9: balanced sphere
+    `<circle cx="50" cy="50" r="26" fill="${c}" opacity="0.8"/>
+     <circle cx="50" cy="50" r="20" fill="${c}"/>
+     <circle cx="50" cy="50" r="14" fill="${c}" opacity="0.5"/>
+     <circle cx="44" cy="47" r="4" fill="white"/><circle cx="44" cy="48" r="2" fill="#222"/>
+     <circle cx="56" cy="47" r="4" fill="white"/><circle cx="56" cy="48" r="2" fill="#222"/>
+     <path d="M44 55 Q50 60 56 55" stroke="white" stroke-width="1.5" fill="none"/>
+     <ellipse cx="50" cy="76" rx="20" ry="4" fill="${c}" opacity="0.3"/>`,
+  ];
+
+  // Pick a shape based on id
+  const shapeIdx = (id - 1) % shapes.length;
+  const inner = shapes[shapeIdx];
+
+  // Rarity glow filter
+  const glowColor = getGlaginiColor(g);
+
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+    <defs>
+      <filter id="glow${id}">
+        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#glow${id})">${inner}</g>
+  </svg>`;
+}
+
+/* ==============================================================
+   STATE
+   ============================================================== */
+let userName = '';
+let userId   = '';
+let coins    = 0;
+
+// myCollection: array of { glId, instanceId, stuck:bool }
+let myCollection = [];
+// albumStuck: { glId: true }
+let albumStuck   = {};
+
+let currentBattleRoom  = null;
+let battleChannel      = null;
+let myBattleCard       = null;
+let currentTradeFilter = 'active';
+
+/* ==============================================================
+   INIT
+   ============================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  generateParticles();
+  showOverlay('welcomeOverlay');
+  document.getElementById('startBtn').onclick = () => {
+    hideOverlay('welcomeOverlay');
+    initLocal();
+  };
+  initWheelCanvas();
+  checkWheelState();
+});
+
+function generateParticles() {
+  const container = document.getElementById('particles');
+  const colors = ['#7b6cf6','#ff6b8a','#4ecdc4','#ffd85a','#a855f7'];
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 8 + 4;
+    p.style.cssText = `width:${size}px;height:${size}px;background:${colors[i%colors.length]};left:${Math.random()*100}%;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*15}s;`;
+    container.appendChild(p);
+  }
+}
+
+function showOverlay(id) { document.getElementById(id).classList.add('open'); }
+function hideOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+['closeGlaginiDetail','closePackOpen','closeTradeCreate','closeBattlePick','closeBattleResult'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.onclick = () => el.closest('.overlay').classList.remove('open');
+});
+
+/* ==============================================================
+   LOCAL-ONLY INIT
+   ============================================================== */
+function initLocal() {
+  userName = localStorage.getItem('glaggleUserName') || generateName();
+  userId   = localStorage.getItem('glaggleUID')      || generateUID();
+  coins    = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+  localStorage.setItem('glaggleUserName', userName);
+  localStorage.setItem('glaggleUID', userId);
+
+  try {
+    const col   = localStorage.getItem('glaginiCollection');
+    myCollection = col ? JSON.parse(col) : [];
+    const stuck  = localStorage.getItem('albumStuck');
+    albumStuck   = stuck ? JSON.parse(stuck) : {};
+  } catch(e) { myCollection = []; albumStuck = {}; }
+
+  updateCoinDisplay();
+  document.getElementById('userGreeting').textContent =
+    `👋 Hey ${userName}! ${myCollection.length === 0 ? 'Hole deinen ersten Glagini ab!' : `Du hast ${myCollection.length} Glaginis.`}`;
+  renderMyGlaginis();
+  renderAlbumAccordion();
+  initDailyCheck();
+  checkWheelState();
+  loadTrades();
+  initChat();
+  initTradeButtons();
+  initBattleButtons();
+}
+
+function generateName() {
+  const adj = ['Munterer','Leuchtender','Schleimiger','Fliegender','Springender','Glänzender','Flinker'];
+  const n   = ['Jelly-Fan','Glagini-Sammler','Wurmi-Freund','Coin-Jäger','Karten-König','Glaggle-Nerd'];
+  return `${adj[Math.floor(Math.random()*adj.length)]} ${n[Math.floor(Math.random()*n.length)]}-${Math.floor(Math.random()*999)}`;
+}
+
+function generateUID() {
+  const uid = 'gl_' + Math.random().toString(36).substr(2,12);
+  localStorage.setItem('glaggleUID', uid);
+  return uid;
+}
+
+function saveLocalData() {
+  localStorage.setItem('glaginiCollection', JSON.stringify(myCollection));
+  localStorage.setItem('albumStuck', JSON.stringify(albumStuck));
+  localStorage.setItem('glaggleCoins', coins);
+}
+
+/* ==============================================================
+   COINS
+   ============================================================== */
+function updateCoinDisplay() {
+  document.getElementById('navCoins').textContent = coins.toLocaleString();
+}
+function spendCoins(amount) {
+  if (coins < amount) return false;
+  coins -= amount; updateCoinDisplay(); saveLocalData(); return true;
+}
+function earnCoins(amount) {
+  coins += amount; updateCoinDisplay(); saveLocalData();
+}
+
+/* ==============================================================
+   TOAST
+   ============================================================== */
+function toast(msg, type='info', duration=3000) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'none';
+    t.style.opacity   = '0';
+    t.style.transform = 'translateY(20px)';
+    t.style.transition = 'all 0.3s';
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+/* ==============================================================
+   SCROLL SECTION
+   ============================================================== */
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior:'smooth' });
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  // Set active on current tab
+}
+
+/* ==============================================================
+   RENDER GLAGINI CARD (full)
+   ============================================================== */
+function buildGlaginiCard(g, opts={}) {
+  const { clickable=true, showStickBtn=false, instanceId=null, selected=false } = opts;
+  const div = document.createElement('div');
+  div.className = `glagini-card rarity-${g.rarity}${g.metal !== 'none' ? ` metal-${g.metal}` : ''}${selected ? ' selected' : ''}`;
+
+  const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold' };
+
+  div.innerHTML = `
+    <span class="rarity-badge ${g.rarity}">${rarityLabels[g.rarity]}</span>
+    ${g.metal !== 'none' ? `<span class="metal-badge ${g.metal}">${metalLabels[g.metal]}</span>` : ''}
+    <div class="glagini-svg-wrap">${generateSVG(g, 100)}</div>
+    <div class="glagini-name">${g.name}</div>
+    <div class="glagini-stats">
+      ${STATS_KEYS.map(k => `
+        <div class="stat-row">
+          <span class="stat-label">${STATS_LABELS[k].split(' ')[1]}</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:${g[k]}%;background:${STATS_COLORS[k]};"></div></div>
+          <span class="stat-val" style="color:${STATS_COLORS[k]};">${g[k]}</span>
+        </div>
+      `).join('')}
+    </div>
+    ${showStickBtn ? `<button class="stick-btn" data-iid="${instanceId || ''}" data-glid="${g.id}">Einkleben</button>` : ''}
+  `;
+
+  if (clickable) {
+    div.onclick = (e) => {
+      if (e.target.classList.contains('stick-btn')) return;
+      showGlaginiDetail(g, instanceId);
+    };
+  }
+
+  if (showStickBtn) {
+    div.querySelector('.stick-btn').onclick = (e) => {
+      e.stopPropagation();
+      stickIntoAlbum(g.id, instanceId || e.target.dataset.iid);
+    };
+  }
+
+  return div;
+}
+
+/* ==============================================================
+   GLAGINI DETAIL MODAL
+   ============================================================== */
+function showGlaginiDetail(g, instanceId) {
+  const content = document.getElementById('glaginiDetailContent');
+  const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', none:'' };
+  content.innerHTML = `
+    <div class="glagini-svg-wrap" style="width:130px;height:130px;">${generateSVG(g, 130)}</div>
+    <div>
+      <div style="font-size:1.4rem;font-weight:900;text-align:center;margin-bottom:6px;">${g.name}</div>
+      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
+        <span class="tag tag-${g.rarity}">${rarityLabels[g.rarity]}</span>
+        ${g.metal !== 'none' ? `<span class="tag" style="background:rgba(255,215,0,0.15);color:var(--gold);">${metalLabels[g.metal]}</span>` : ''}
+      </div>
+      <p style="color:var(--muted);font-size:0.85rem;text-align:center;margin-bottom:18px;">${g.desc}</p>
+    </div>
+    <div style="width:100%;">
+      ${STATS_KEYS.map(k => `
+        <div class="stat-row" style="margin-bottom:8px;">
+          <span class="stat-label" style="font-size:0.75rem;min-width:70px;">${STATS_LABELS[k]}</span>
+          <div class="stat-bar-wrap" style="height:8px;"><div class="stat-bar" style="width:${g[k]}%;background:${STATS_COLORS[k]};"></div></div>
+          <span class="stat-val" style="color:${STATS_COLORS[k]};font-size:0.8rem;">${g[k]}</span>
+        </div>
+      `).join('')}
+    </div>
+    ${instanceId && !albumStuck[g.id] ? `
+      <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="stickIntoAlbum(${g.id},'${instanceId}');hideOverlay('glaginiDetailOverlay');">
+        📌 Ins Album einkleben
+      </button>
+    ` : albumStuck[g.id] ? '<div class="info-box" style="width:100%;text-align:center;">✅ Im Album eingeklebt</div>' : ''}
+  `;
+  showOverlay('glaginiDetailOverlay');
+}
+
+/* ==============================================================
+   ALBUM
+   ============================================================== */
+/* ==============================================================
+   ALBUM – Accordion
+   ============================================================== */
+const RARITY_ORDER = ['normal','rare','super','epic'];
+const RARITY_LABELS = { normal:'🟣 Normal (40)', rare:'🔵 Selten (30)', super:'💜 Supersselten (20)', epic:'🔴 Episch (10)' };
+const RARITY_COLORS = { normal:'var(--r-normal)', rare:'var(--r-rare)', super:'var(--r-super)', epic:'var(--r-epic)' };
+let albumOpenGroups = { normal:false, rare:false, super:false, epic:false };
+
+function renderAlbumAccordion() {
+  const acc = document.getElementById('albumAccordion');
+  acc.innerHTML = '';
+  let totalStuck = 0;
+
+  RARITY_ORDER.forEach(rarity => {
+    const cards = ALL_GLAGINIS.filter(g => g.rarity === rarity);
+    const stuckCount = cards.filter(g => albumStuck[g.id]).length;
+    totalStuck += stuckCount;
+    const isOpen = albumOpenGroups[rarity];
+
+    const group = document.createElement('div');
+    group.style.cssText = `border:1px solid ${RARITY_COLORS[rarity]};border-radius:14px;overflow:hidden;`;
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:rgba(0,0,0,0.2);gap:10px;`;
+    header.innerHTML = `
+      <span style="font-weight:800;font-size:0.95rem;">${RARITY_LABELS[rarity]}</span>
+      <span style="font-size:0.8rem;color:var(--muted);">${stuckCount}/${cards.length} eingeklebt</span>
+      <div style="flex:1;background:var(--border);border-radius:20px;height:6px;max-width:120px;">
+        <div style="height:100%;background:${RARITY_COLORS[rarity]};border-radius:20px;width:${Math.round(stuckCount/cards.length*100)}%;transition:width 0.4s;"></div>
+      </div>
+      <span style="color:var(--muted);font-size:1rem;">${isOpen ? '▲' : '▼'}</span>
+    `;
+    header.onclick = () => {
+      albumOpenGroups[rarity] = !albumOpenGroups[rarity];
+      renderAlbumAccordion();
+    };
+
+    // Body
+    const body = document.createElement('div');
+    body.style.cssText = `display:${isOpen ? 'grid' : 'none'};grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:14px;`;
+
+    if (isOpen) {
+      cards.forEach(g => {
+        const slot = document.createElement('div');
+        const isStuck = albumStuck[g.id];
+        slot.style.cssText = `aspect-ratio:2/3;min-height:160px;border:2px ${isStuck ? 'solid' : 'dashed'} ${isStuck ? RARITY_COLORS[rarity] : 'var(--border)'};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;background:rgba(255,255,255,0.02);cursor:${isStuck ? 'pointer' : 'default'};transition:all 0.2s;`;
+
+        if (isStuck) {
+          slot.innerHTML = `
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;">
+              <div style="width:65px;height:65px;">${generateSVG(g,65)}</div>
+              <div style="font-size:0.6rem;font-weight:800;text-align:center;margin-top:4px;color:var(--text);">${g.name}</div>
+            </div>`;
+          slot.onclick = () => showGlaginiDetail(g, null);
+          slot.onmouseenter = () => slot.style.transform='scale(1.03)';
+          slot.onmouseleave = () => slot.style.transform='';
+        } else {
+          slot.innerHTML = `<div style="font-size:0.65rem;color:var(--border);text-align:center;padding:6px;line-height:1.3;">${g.name}<br><span style="font-size:0.55rem;">#${g.id}</span></div>`;
+        }
+        body.appendChild(slot);
+      });
+    }
+
+    group.appendChild(header);
+    group.appendChild(body);
+    acc.appendChild(group);
+  });
+
+  // Update progress
+  document.getElementById('albumProgress').textContent = `${totalStuck} / ${ALL_GLAGINIS.length}`;
+  const pct = Math.round(totalStuck / ALL_GLAGINIS.length * 100);
+  document.getElementById('albumProgressBar').style.width = pct + '%';
+}
+
+function stickIntoAlbum(glId, instanceId) {
+  const owned = myCollection.find(c => c.glId === glId && !c.stuck);
+  if (!owned)         { toast('Du besitzt diese Karte nicht!', 'error'); return; }
+  if (albumStuck[glId]) { toast('Dieser Slot ist bereits gefüllt!', 'error'); return; }
+  albumStuck[glId] = true;
+  const idx = myCollection.findIndex(c => c.glId === glId && !c.stuck);
+  if (idx >= 0) myCollection[idx].stuck = true;
+  saveLocalData();
+  renderAlbumAccordion();
+  renderMyGlaginis();
+  toast(`✅ ${ALL_GLAGINIS.find(g=>g.id===glId)?.name} ins Album eingeklebt!`, 'success');
+}
+
+/* ==============================================================
+   DAILY GLAGINI  – 1× pro Kalendertag (Mitternacht-Reset)
+   ============================================================== */
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function getWeightedRandom() {
+  const rand = Math.random() * 100;
+  let pool;
+  if      (rand < 3)  pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
+  else if (rand < 15) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
+  else if (rand < 40) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
+  else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function getPackWeightedRandom() {
+  const rand = Math.random() * 100;
+  let pool;
+  if      (rand < 6)  pool = ALL_GLAGINIS.filter(g => g.rarity === 'epic');
+  else if (rand < 22) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
+  else if (rand < 52) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
+  else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function initDailyCheck() {
+  const update = () => {
+    const claimed  = localStorage.getItem('lastDailyClaim');
+    const canClaim = claimed !== todayStr();
+    document.getElementById('dailyBtnWrap').style.display  = canClaim ? '' : 'none';
+    document.getElementById('dailyCountdown').style.display = canClaim ? 'none' : '';
+    if (!canClaim) {
+      const now  = new Date();
+      const next = new Date(now); next.setHours(24,0,0,0);
+      const rem  = next - now;
+      const h = Math.floor(rem/3600000), m = Math.floor((rem%3600000)/60000), s = Math.floor((rem%60000)/1000);
+      document.getElementById('dailyCountdown').textContent = `⏳ Morgen wieder verfügbar – noch ${h}h ${m}m ${s}s`;
+    }
+  };
+
+  document.getElementById('claimDailyBtn').onclick = () => {
+    if (localStorage.getItem('lastDailyClaim') === todayStr()) {
+      toast('Heute schon abgeholt!', 'error'); return;
+    }
+    const g = getWeightedRandom();
+    addToCollection(g);
+    localStorage.setItem('lastDailyClaim', todayStr());
+    toast(`🎉 Du hast ${g.name} (${g.rarity}) erhalten!`, 'gold', 4000);
+    earnCoins(2);
+    toast('🪙 +2 Coins für tägliches Abholen!', 'info');
+    update();
+    renderMyGlaginis();
+  };
+  update();
+  setInterval(update, 1000);
+}
+
+function addToCollection(g, count=1) {
+  for (let i=0; i<count; i++) {
+    myCollection.push({ glId: g.id, instanceId: generateUID(), stuck: false });
+  }
+  saveLocalData();
+}
+
+/* ==============================================================
+   LUCKY WHEEL  – 1× pro Kalendertag
+   Segmente: 6× Coins (1-3), 2× Coins (4-8), 2× Glagini
+   ============================================================== */
+const WHEEL_SEGMENTS = [
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#2e2850' },
+  { label:'Glagini!',   type:'card',  amount:0,  color:'#7b6cf6' },
+  { label:'2 Coins',    type:'coins', amount:2,  color:'#2a2040' },
+  { label:'3 Coins',    type:'coins', amount:3,  color:'#3a3060' },
+  { label:'Glagini!',   type:'card',  amount:0,  color:'#ff6b8a' },
+  { label:'5 Coins',    type:'coins', amount:5,  color:'#2e2850' },
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#1e1a35' },
+  { label:'8 Coins',    type:'coins', amount:8,  color:'#ffd85a', textColor:'#1a1600' },
+  { label:'2 Coins',    type:'coins', amount:2,  color:'#2a2040' },
+  { label:'1 Coin',     type:'coins', amount:1,  color:'#2e2850' },
+];
+
+let wheelAngle  = 0;   // current rotation in degrees
+let wheelSpinning = false;
+
+function initWheelCanvas() {
+  drawWheel(0);
+}
+
+function drawWheel(rotation) {
+  const canvas = document.getElementById('luckyWheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 140, cy = 140, r = 135;
+  const n  = WHEEL_SEGMENTS.length;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, 280, 280);
+
+  WHEEL_SEGMENTS.forEach((seg, i) => {
+    const start = rotation + i * arc - Math.PI / 2;
+    const end   = start + arc;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = '#0d0b1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = seg.textColor || '#e8e4ff';
+    ctx.font = `bold ${seg.type === 'card' ? 11 : 10}px Segoe UI, Arial`;
+    ctx.fillText(seg.label, r - 8, 4);
+    ctx.restore();
+  });
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0d0b1a';
+  ctx.fill();
+  ctx.strokeStyle = '#7b6cf6';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Center star
+  ctx.fillStyle = '#ffd85a';
+  ctx.font = 'bold 18px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('★', cx, cy);
+}
+
+function checkWheelState() {
+  const claimed = localStorage.getItem('lastWheelSpin');
+  const canSpin = claimed !== todayStr();
+  const btn  = document.getElementById('spinWheelBtn');
+  const cdEl = document.getElementById('wheelCountdown');
+  const bwEl = document.getElementById('wheelBtnWrap');
+  if (!btn) return;
+
+  if (canSpin) {
+    bwEl.style.display  = '';
+    cdEl.style.display  = 'none';
+    btn.disabled = false;
+  } else {
+    bwEl.style.display  = 'none';
+    cdEl.style.display  = '';
+    const now  = new Date();
+    const next = new Date(now); next.setHours(24,0,0,0);
+    const rem  = next - now;
+    const h = Math.floor(rem/3600000), m = Math.floor((rem%3600000)/60000), s = Math.floor((rem%60000)/1000);
+    cdEl.textContent = `⏳ Morgen wieder – noch ${h}h ${m}m ${s}s`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // wheel spin button wired up after DOM ready
+  setTimeout(() => {
+    const btn = document.getElementById('spinWheelBtn');
+    if (btn) btn.onclick = spinWheel;
+    setInterval(checkWheelState, 1000);
+  }, 100);
+});
+
+function spinWheel() {
+  if (wheelSpinning) return;
+  if (localStorage.getItem('lastWheelSpin') === todayStr()) {
+    toast('Heute schon gedreht!', 'error'); return;
+  }
+
+  wheelSpinning = true;
+  document.getElementById('spinWheelBtn').disabled = true;
+  document.getElementById('wheelResultBox').textContent = '';
+
+  // Pick result segment index
+  const n = WHEEL_SEGMENTS.length;
+  const resultIdx = Math.floor(Math.random() * n);
+  const arcDeg    = 360 / n;
+
+  // Calculate target angle so that resultIdx lands under the pointer (top = 270°)
+  // Pointer is at top (270deg from 0). We want resultIdx center at top.
+  // segCenter in raw = resultIdx * arcDeg + arcDeg/2
+  // We need to rotate so segCenter aligns with 270deg
+  const targetSegCenter = resultIdx * arcDeg + arcDeg / 2;
+  const extraSpins = 5 * 360; // 5 full rotations
+  const targetDeg  = extraSpins + (270 - targetSegCenter + 360) % 360;
+
+  let start = null;
+  const duration = 4000; // ms
+  const startAngle = wheelAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function animate(ts) {
+    if (!start) start = ts;
+    const elapsed = ts - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const currentDeg = startAngle + targetDeg * easeOut(progress);
+    wheelAngle = currentDeg % 360;
+    drawWheel((currentDeg * Math.PI) / 180);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Done
+      wheelSpinning = false;
+      wheelAngle = (startAngle + targetDeg) % 360;
+      localStorage.setItem('lastWheelSpin', todayStr());
+      const seg = WHEEL_SEGMENTS[resultIdx];
+      applyWheelReward(seg);
+      checkWheelState();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function applyWheelReward(seg) {
+  const box = document.getElementById('wheelResultBox');
+  if (seg.type === 'coins') {
+    earnCoins(seg.amount);
+    box.innerHTML = `🪙 +${seg.amount} Coin${seg.amount > 1 ? 's' : ''} gewonnen!`;
+    toast(`🎡 Glücksrad: +${seg.amount} Coins!`, 'gold', 4000);
+  } else {
+    const g = getWeightedRandom();
+    addToCollection(g);
+    renderMyGlaginis();
+    box.innerHTML = `✨ ${g.name} <span style="font-size:0.75rem;color:var(--muted);">(${g.rarity})</span> gewonnen!`;
+    toast(`🎡 Glücksrad: ${g.name} erhalten!`, 'gold', 4000);
+  }
+}
+
+/* ==============================================================
+   PACK BUYING
+   ============================================================== */
+document.getElementById('buyPackBtn').onclick = openPackModal;
+
+function openPackModal() {
+  if (!spendCoins(8)) {
+    toast('Nicht genug Glaggle Coins! Du brauchst 8.', 'error');
+    return;
+  }
+  showOverlay('packOpenOverlay');
+  const reveal = document.getElementById('packReveal');
+  const addAllBtn = document.getElementById('packStickAll');
+  reveal.innerHTML = '<div class="loading-spin"></div>';
+  addAllBtn.style.display = 'none';
+
+  const drawn = [getPackWeightedRandom(), getPackWeightedRandom(), getPackWeightedRandom()];
+
+  setTimeout(() => {
+    reveal.innerHTML = '';
+    drawn.forEach(g => {
+      const card = buildGlaginiCard(g, { clickable:true, showStickBtn:false });
+      card.style.animation = 'resultPop 0.4s cubic-bezier(.34,1.56,.64,1)';
+      reveal.appendChild(card);
+    });
+    addAllBtn.style.display = '';
+    document.getElementById('addAllToCollection').onclick = () => {
+      drawn.forEach(g => addToCollection(g));
+      toast(`✅ ${drawn.length} Glaginis zu deiner Sammlung hinzugefügt!`, 'success');
+      renderMyGlaginis();
+      hideOverlay('packOpenOverlay');
+      document.getElementById('userGreeting').textContent = `👋 Hey ${userName}! Du hast ${myCollection.length} Glaginis.`;
+    };
+  }, 1200);
+}
+
+/* ==============================================================
+   MY GLAGINIS
+   ============================================================== */
+let myGlaginiFilter = 'all';
+
+function filterMyGlaginis(filter, btn) {
+  myGlaginiFilter = filter;
+  document.querySelectorAll('#myglaginis .inner-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMyGlaginis();
+}
+
+function renderMyGlaginis() {
+  const grid = document.getElementById('myGlaginiGrid');
+  grid.innerHTML = '';
+
+  const unstuck = myCollection.filter(c => !c.stuck);
+  const filtered = myGlaginiFilter === 'all'
+    ? unstuck
+    : unstuck.filter(c => ALL_GLAGINIS.find(g=>g.id===c.glId)?.rarity === myGlaginiFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="width:100%;"><div class="empty-icon">🃏</div><div class="empty-text">${myCollection.length === 0 ? 'Noch keine Glaginis! Hole deinen täglichen Gratis-Sticker ab.' : 'Keine Karten in dieser Kategorie.'}</div></div>`;
+    document.getElementById('userGreeting').textContent = `👋 Hey ${userName}! Du hast ${myCollection.length} Glaginis gesamt.`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const g = ALL_GLAGINIS.find(gi => gi.id === c.glId);
+    if (!g) return;
+    const card = buildGlaginiCard(g, { clickable:true, showStickBtn:!albumStuck[g.id], instanceId:c.instanceId });
+    grid.appendChild(card);
+  });
+  document.getElementById('userGreeting').textContent = `👋 Hey ${userName}! Du hast ${myCollection.filter(c=>!c.stuck).length} Glaginis (${myCollection.filter(c=>c.stuck).length} eingeklebt).`;
+}
+
+/* ==============================================================
+   TRADE – Supabase Table: glagini_trades
+   Columns: id, created_at, offer_user_id, offer_user_name,
+            offer_gl_id, want_gl_id, status (open/accepted/cancelled)
+   ============================================================== */
+function initTradeButtons() {
+  document.getElementById('openTradeCreateBtn').onclick = openTradeCreate;
+  document.getElementById('refreshTradesBtn').onclick   = loadTrades;
+  document.getElementById('submitTradeBtn').onclick     = submitTrade;
+}
+
+function switchTradeTab(tab, btn) {
+  document.querySelectorAll('#trade .inner-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentTradeFilter = tab;
+  loadTrades();
+}
+
+async function loadTrades() {
+  const list = document.getElementById('tradeList');
+  list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;">Lade…</div>';
+
+  // Zuerst: prüfen ob eigene Angebote angenommen wurden -> Gegenkarte gutschreiben
+  await settleAcceptedTrades();
+
+  try {
+    let query = sb.from('glagini_trades').select('*').eq('status','open').order('created_at',{ascending:false}).limit(30);
+    if (currentTradeFilter === 'myoffers') {
+      query = sb.from('glagini_trades').select('*').eq('offer_user_id', userId)
+        .in('status', ['open','accepted','completed']).order('created_at',{ascending:false}).limit(30);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    renderTrades(data || []);
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--accent2);text-align:center;padding:20px;">Fehler beim Laden. Bitte erneut versuchen.</div>';
+  }
+}
+
+// Settle trades where I was the offerer and someone accepted -> I receive their card
+async function settleAcceptedTrades() {
+  try {
+    const { data, error } = await sb.from('glagini_trades')
+      .select('*').eq('offer_user_id', userId).eq('status','accepted');
+    if (error || !data || data.length === 0) return;
+
+    for (const t of data) {
+      // I get the want_gl_id card (the one the accepter gave me)
+      const received = ALL_GLAGINIS.find(g => g.id === t.want_gl_id);
+      if (received) addToCollection(received);
+      // Mark as fully completed so it's not settled twice
+      await sb.from('glagini_trades').update({ status:'completed' }).eq('id', t.id);
+    }
+    saveLocalData();
+    renderMyGlaginis();
+    toast(`🎉 ${data.length} Tausch${data.length>1?'e':''} abgeschlossen – Karte${data.length>1?'n':''} erhalten!`, 'gold', 4000);
+  } catch(e) { /* silent */ }
+}
+
+function renderTrades(trades) {
+  const list = document.getElementById('tradeList');
+  list.innerHTML = '';
+
+  if (trades.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔄</div><div class="empty-text">Keine aktiven Angebote. Biete als Erster einen Tausch an!</div></div>`;
+    return;
+  }
+
+  trades.forEach(t => {
+    const offerG = ALL_GLAGINIS.find(g => g.id === t.offer_gl_id);
+    const wantG  = ALL_GLAGINIS.find(g => g.id === t.want_gl_id);
+    if (!offerG || !wantG) return;
+
+    const item = document.createElement('div');
+    item.className = 'trade-item';
+
+    const isOwn     = t.offer_user_id === userId;
+    const canAccept = !isOwn && t.status === 'open';
+    const iWantThis  = myCollection.some(c => !c.stuck && c.glId === t.offer_gl_id); // ich will die angebotene Karte
+    const iCanGive   = myCollection.some(c => !c.stuck && c.glId === t.want_gl_id);  // ich besitze was er sucht
+
+    let statusBadge = '';
+    if (t.status === 'accepted')  statusBadge = '<span class="offer-badge" style="background:var(--accent);">Angenommen – wird abgewickelt…</span>';
+    if (t.status === 'completed') statusBadge = '<span class="offer-badge" style="background:var(--green);">✅ Abgeschlossen</span>';
+
+    item.innerHTML = `
+      <div class="trade-avatar">${t.offer_user_name?.[0]?.toUpperCase() || '?'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.82rem;font-weight:800;color:var(--text);margin-bottom:4px;">${t.offer_user_name}</div>
+        <div style="font-size:0.78rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <span>Bietet: <strong style="color:${getRarityColor(offerG.rarity)};">${offerG.name}</strong></span>
+          <span style="color:var(--border);">→</span>
+          <span>Sucht: <strong style="color:${getRarityColor(wantG.rarity)};">${wantG.name}</strong></span>
+        </div>
+        <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;">
+          <span class="tag tag-${offerG.rarity}" style="font-size:0.6rem;">${offerG.rarity}</span>
+          <span style="font-size:0.7rem;color:var(--muted);">↔</span>
+          <span class="tag tag-${wantG.rarity}" style="font-size:0.6rem;">${wantG.rarity}</span>
+          ${iWantThis ? '<span class="offer-badge">Du willst das!</span>' : ''}
+          ${statusBadge}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+        ${canAccept && iCanGive ? `<button class="btn btn-primary btn-xs" data-tid="${t.id}" data-offergl="${t.offer_gl_id}" data-wantgl="${t.want_gl_id}" onclick="acceptTrade(this)">Annehmen ✅</button>` : ''}
+        ${isOwn && t.status === 'open' ? `<button class="btn btn-secondary btn-xs" data-tid="${t.id}" onclick="cancelTrade(this)">Stornieren ✕</button>` : ''}
+        ${canAccept && !iCanGive ? `<span style="font-size:0.72rem;color:var(--muted);">Du hast ${wantG.name} nicht</span>` : ''}
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function getRarityColor(r) {
+  return { normal:'var(--r-normal)', rare:'var(--r-rare)', super:'var(--r-super)', epic:'var(--r-epic)' }[r] || 'var(--text)';
+}
+
+function openTradeCreate() {
+  const offerSel = document.getElementById('tradeOfferSelect');
+  const wantSel  = document.getElementById('tradeWantSelect');
+
+  // Populate my cards (unstuck)
+  offerSel.innerHTML = '<option value="">– Karte wählen –</option>';
+  const unstuck = [...new Set(myCollection.filter(c=>!c.stuck).map(c=>c.glId))];
+  unstuck.forEach(id => {
+    const g = ALL_GLAGINIS.find(x=>x.id===id);
+    if (g) offerSel.innerHTML += `<option value="${g.id}">${g.name} (${g.rarity})</option>`;
+  });
+
+  // Populate all cards for want
+  wantSel.innerHTML = '<option value="">– Karte wählen –</option>';
+  ALL_GLAGINIS.forEach(g => {
+    wantSel.innerHTML += `<option value="${g.id}">${g.name} (${g.rarity})</option>`;
+  });
+
+  showOverlay('tradeCreateOverlay');
+}
+
+async function submitTrade() {
+  const offerGlId = parseInt(document.getElementById('tradeOfferSelect').value);
+  const wantGlId  = parseInt(document.getElementById('tradeWantSelect').value);
+
+  if (!offerGlId || !wantGlId) { toast('Bitte beide Karten wählen!', 'error'); return; }
+  if (offerGlId === wantGlId)  { toast('Du kannst nicht dieselbe Karte tauschen!', 'error'); return; }
+
+  const ownIdx = myCollection.findIndex(c => c.glId === offerGlId && !c.stuck);
+  if (ownIdx < 0) { toast('Du besitzt diese Karte nicht!', 'error'); return; }
+
+  const btn = document.getElementById('submitTradeBtn');
+  btn.disabled = true; btn.textContent = 'Wird erstellt…';
+
+  try {
+    const { error } = await sb.from('glagini_trades').insert([{
+      offer_user_id: userId, offer_user_name: userName,
+      offer_gl_id: offerGlId, want_gl_id: wantGlId, status: 'open'
+    }]);
+    if (error) throw error;
+
+    // Remove offered card from local collection (it's "in trade escrow")
+    myCollection.splice(ownIdx, 1);
+    saveLocalData();
+    renderMyGlaginis();
+    toast('✅ Tausch-Angebot erstellt! Karte ist jetzt im Angebot.', 'success');
+    hideOverlay('tradeCreateOverlay');
+    loadTrades();
+  } catch(e) {
+    toast('Fehler beim Erstellen. Bitte erneut versuchen.', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Tausch anbieten 🔄';
+}
+
+async function acceptTrade(el) {
+  const tid       = el.dataset.tid;
+  const offerGlId = parseInt(el.dataset.offergl);   // card the offerer offered
+  const wantGlId  = parseInt(el.dataset.wantgl);    // card the offerer wants (= what I give)
+
+  // I must own the card the offerer wants
+  const myGiveIdx = myCollection.findIndex(c => c.glId === wantGlId && !c.stuck);
+  if (myGiveIdx < 0) { toast('Du besitzt diese Karte nicht mehr!', 'error'); return; }
+
+  el.disabled = true;
+  try {
+    // Mark trade as accepted in Supabase
+    const { error } = await sb.from('glagini_trades').update({
+      status: 'accepted',
+      accept_user_id: userId,
+      accept_user_name: userName
+    }).eq('id', tid);
+    if (error) throw error;
+
+    // Remove MY card (the one I give away) from local collection
+    myCollection.splice(myGiveIdx, 1);
+
+    // Add the offerer's card to MY collection
+    const received = ALL_GLAGINIS.find(g => g.id === offerGlId);
+    if (received) addToCollection(received);
+
+    saveLocalData();
+    renderMyGlaginis();
+    toast(`🎉 Tausch erfolgreich! Du erhältst ${received?.name}!`, 'gold', 4000);
+    loadTrades();
+  } catch(e) {
+    toast('Tausch fehlgeschlagen. Vielleicht zu spät?', 'error');
+    el.disabled = false;
+  }
+}
+
+async function cancelTrade(el) {
+  const tid = el.dataset.tid;
+  el.disabled = true;
+  try {
+    await sb.from('glagini_trades').update({ status:'cancelled' }).eq('id', tid);
+    toast('Angebot storniert.', 'info');
+    loadTrades();
+  } catch(e) {
+    toast('Fehler beim Stornieren.', 'error');
+    el.disabled = false;
+  }
+}
+
+/* ==============================================================
+   BATTLE – Fixed matchmaking + friend code join
+   ============================================================== */
+function initBattleButtons() {
+  document.getElementById('battleRandomBtn').onclick   = startRandomBattle;
+  document.getElementById('battleFriendBtn').onclick   = createFriendBattle;
+  document.getElementById('battleJoinFriendBtn').onclick = () => {
+    const box = document.getElementById('battleJoinBox');
+    box.style.display = box.style.display === 'none' ? '' : 'none';
+  };
+  document.getElementById('joinFriendBtn').onclick = joinByCode;
+}
+
+function openBattlePick(callback) {
+  const grid = document.getElementById('battlePickGrid');
+  grid.innerHTML = '';
+  const unstuck = myCollection.filter(c => !c.stuck);
+  if (unstuck.length === 0) { toast('Du hast keine Karten!', 'error'); return; }
+  const seen = new Set();
+  unstuck.forEach(c => {
+    if (seen.has(c.glId)) return; seen.add(c.glId);
+    const g = ALL_GLAGINIS.find(gi => gi.id === c.glId);
+    if (!g) return;
+    const card = buildGlaginiCard(g, { clickable: false });
+    card.style.cursor = 'pointer';
+    card.onclick = () => { hideOverlay('battlePickOverlay'); callback(g, c.instanceId); };
+    grid.appendChild(card);
+  });
+  showOverlay('battlePickOverlay');
+}
+
+async function startRandomBattle() {
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    showBattleWaiting();
+
+    // First: clean up stale rooms (waiting > 2 min) to avoid getting stuck
+    const cutoff = new Date(Date.now() - 120000).toISOString();
+    await sb.from('glagini_battles').update({ status:'cancelled' }).eq('status','waiting').lt('created_at', cutoff);
+
+    // Look for an open room from another player
+    const { data: rooms } = await sb.from('glagini_battles')
+      .select('*').eq('status','waiting').neq('player1_id', userId).limit(5);
+
+    if (rooms && rooms.length > 0) {
+      // Join the first available room
+      const room = rooms[0];
+      const { error } = await sb.from('glagini_battles').update({
+        player2_id: userId, player2_name: userName,
+        player2_gl_id: g.id, status: 'active'
+      }).eq('id', room.id).eq('status','waiting'); // guard against race
+      if (!error) {
+        currentBattleRoom = room.id;
+        subscribeToBattle(room.id, 2);
+        return;
+      }
+    }
+
+    // No room found – create one
+    const roomCode = Math.random().toString(36).substr(2,6).toUpperCase();
+    const { data, error } = await sb.from('glagini_battles').insert([{
+      player1_id: userId, player1_name: userName,
+      player1_gl_id: g.id, status: 'waiting', room_code: roomCode
+    }]).select().single();
+    if (!error && data) {
+      currentBattleRoom = data.id;
+      subscribeToBattle(data.id, 1);
+    }
+  });
+}
+
+async function createFriendBattle() {
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    const roomCode = Math.random().toString(36).substr(2,6).toUpperCase();
+    const { data, error } = await sb.from('glagini_battles').insert([{
+      player1_id: userId, player1_name: userName,
+      player1_gl_id: g.id, status: 'waiting', room_code: roomCode
+    }]).select().single();
+    if (!error && data) {
+      currentBattleRoom = data.id;
+      showBattleWaiting();
+      document.getElementById('battleStatus').innerHTML = `
+        <div class="info-box" style="margin:0 auto;max-width:420px;text-align:center;">
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:8px;">🔗 Freundes-Einladung</div>
+          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:10px;">Teile diesen Code mit deinem Freund:</div>
+          <div style="font-size:2.2rem;font-weight:900;color:var(--gold);letter-spacing:0.25em;margin-bottom:14px;">${roomCode}</div>
+          <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${roomCode}').then(()=>toast('Code kopiert!','success'))">📋 Code kopieren</button>
+        </div>
+      `;
+      subscribeToBattle(data.id, 1);
+    }
+  });
+}
+
+async function joinByCode() {
+  const code = document.getElementById('friendCodeInput').value.trim().toUpperCase();
+  if (code.length < 4) { toast('Bitte Code eingeben!', 'error'); return; }
+  if (myCollection.filter(c=>!c.stuck).length === 0) { toast('Du brauchst mindestens eine Karte!', 'error'); return; }
+
+  const { data: rooms } = await sb.from('glagini_battles')
+    .select('*').eq('room_code', code).eq('status','waiting').limit(1);
+
+  if (!rooms || rooms.length === 0) { toast('Kein offenes Duell mit diesem Code gefunden.', 'error'); return; }
+  const room = rooms[0];
+  if (room.player1_id === userId) { toast('Das ist dein eigenes Duell!', 'error'); return; }
+
+  openBattlePick(async (g) => {
+    myBattleCard = g;
+    const { error } = await sb.from('glagini_battles').update({
+      player2_id: userId, player2_name: userName,
+      player2_gl_id: g.id, status: 'active'
+    }).eq('id', room.id);
+    if (!error) {
+      currentBattleRoom = room.id;
+      document.getElementById('battleJoinBox').style.display = 'none';
+      showBattleWaiting();
+      subscribeToBattle(room.id, 2);
+    } else {
+      toast('Beitreten fehlgeschlagen.', 'error');
+    }
+  });
+}
+
+function showBattleWaiting() {
+  document.getElementById('battleStatus').style.display = '';
+  document.getElementById('battleArena').style.display  = '';
+  document.getElementById('battleWaiting').style.display = 'flex';
+  document.getElementById('battleActive').style.display  = 'none';
+}
+
+function subscribeToBattle(roomId, playerNum) {
+  if (battleChannel) { try { sb.removeChannel(battleChannel); } catch(e){} }
+
+  battleChannel = sb.channel(`battle_room_${roomId}`)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'glagini_battles',
+      filter: `id=eq.${roomId}`
+    }, payload => {
+      handleBattleUpdate(payload.new, playerNum);
+    })
+    .subscribe();
+
+  // Immediate poll for player 2 (the room was already active when they joined)
+  if (playerNum === 2) {
+    setTimeout(async () => {
+      const { data } = await sb.from('glagini_battles').select('*').eq('id',roomId).single();
+      if (data && (data.status === 'active' || data.status === 'done')) handleBattleUpdate(data, playerNum);
+    }, 500);
+  }
+
+  // Fallback poll every 3s so Realtime delay doesn't block the game
+  const poll = setInterval(async () => {
+    if (!currentBattleRoom) { clearInterval(poll); return; }
+    const { data } = await sb.from('glagini_battles').select('*').eq('id',roomId).single();
+    if (!data) { clearInterval(poll); return; }
+    if (data.status === 'active' || data.status === 'done') {
+      clearInterval(poll);
+      handleBattleUpdate(data, playerNum);
+    }
+  }, 3000);
+}
+
+async function handleBattleUpdate(room, playerNum) {
+  if (room.status === 'active' && room.player1_id && room.player2_id) {
+    document.getElementById('battleWaiting').style.display = 'none';
+    document.getElementById('battleActive').style.display  = '';
+
+    const p1G = ALL_GLAGINIS.find(g => g.id === room.player1_gl_id);
+    const p2G = ALL_GLAGINIS.find(g => g.id === room.player2_gl_id);
+
+    document.getElementById('battleVsDisplay').innerHTML = `
+      <div class="battle-side">
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">${room.player1_name}</div>
+        ${p1G ? buildGlaginiCard(p1G,{clickable:false}).outerHTML : '?'}
+      </div>
+      <div class="battle-divider">VS</div>
+      <div class="battle-side">
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">${room.player2_name}</div>
+        ${p2G ? buildGlaginiCard(p2G,{clickable:false}).outerHTML : '?'}
+      </div>
+    `;
+
+    const actionArea = document.getElementById('battleActionArea');
+    if (room.chosen_stat) return; // already resolved
+
+    if (playerNum === 1) {
+      actionArea.innerHTML = `<button class="btn btn-danger" id="drawStatBtn">🎲 Attribut ziehen!</button>`;
+      document.getElementById('drawStatBtn').onclick = async () => {
+        document.getElementById('drawStatBtn').disabled = true;
+        const stat = STATS_KEYS[Math.floor(Math.random() * STATS_KEYS.length)];
+        const p1v  = p1G[stat], p2v = p2G[stat];
+        const winnerId = p1v > p2v ? room.player1_id : p2v > p1v ? room.player2_id : 'draw';
+        await sb.from('glagini_battles').update({ chosen_stat: stat, winner_id: winnerId, status: 'done' }).eq('id', room.id);
+      };
+    } else {
+      actionArea.innerHTML = `<div class="battle-waiting"><div class="loading-spin"></div><span>Warte auf Gegner…</span></div>`;
+    }
+  }
+
+  if (room.status === 'done' && room.winner_id) {
+    handleBattleResult(room, playerNum);
+  }
+}
+
+async function handleBattleResult(room, playerNum) {
+  if (battleChannel) { try { sb.removeChannel(battleChannel); } catch(e){} battleChannel = null; }
+  currentBattleRoom = null;
+
+  const p1G    = ALL_GLAGINIS.find(g => g.id === room.player1_gl_id);
+  const p2G    = ALL_GLAGINIS.find(g => g.id === room.player2_gl_id);
+  const stat   = room.chosen_stat;
+  const isMe1  = room.player1_id === userId;
+  const myCard = isMe1 ? p1G : p2G;
+  const oppCard= isMe1 ? p2G : p1G;
+  const iWon   = room.winner_id === userId;
+  const isDraw = room.winner_id === 'draw';
+
+  const content = document.getElementById('battleResultContent');
+
+  if (isDraw) {
+    content.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:12px;">🤝</div>
+      <div style="font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:10px;">Unentschieden!</div>
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">${STATS_LABELS[stat]} – beide ${myCard?.[stat]}</div>
+      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">OK</button>`;
+  } else if (iWon) {
+    // Eigene Karte bleibt! Nur die Karte des Gegners wird hinzugefügt
+    if (oppCard) addToCollection(oppCard);
+    saveLocalData(); renderMyGlaginis();
+    content.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+      <div style="font-size:1.8rem;font-weight:900;color:var(--green);margin-bottom:10px;">Du hast gewonnen!</div>
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">${STATS_LABELS[stat]} – Du: ${myCard?.[stat]} vs. ${oppCard?.[stat]}</div>
+      <div style="color:var(--gold);font-weight:800;margin-bottom:18px;">+1 ${oppCard?.name}!</div>
+      <button class="btn btn-primary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter spielen</button>`;
+    earnCoins(5); toast('🪙 +5 Coins für Sieg!', 'gold');
+  } else {
+    // Remove my staked card
+    const myIdx = myCollection.findIndex(c => c.glId === myCard?.id && !c.stuck);
+    if (myIdx >= 0) myCollection.splice(myIdx, 1);
+    saveLocalData(); renderMyGlaginis();
+    content.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:12px;">😢</div>
+      <div style="font-size:1.8rem;font-weight:900;color:var(--accent2);margin-bottom:10px;">Du hast verloren!</div>
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:6px;">${STATS_LABELS[stat]} – Du: ${myCard?.[stat]} vs. ${oppCard?.[stat]}</div>
+      <div style="color:var(--accent2);margin-bottom:18px;">${myCard?.name} ist weg…</div>
+      <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">Weiter</button>`;
+  }
+
+  hideOverlay('battlePickOverlay');
+  showOverlay('battleResultOverlay');
+  document.getElementById('battleArena').style.display = 'none';
+}
+
+function resetBattle() {
+  currentBattleRoom = null; myBattleCard = null;
+  document.getElementById('battleArena').style.display  = 'none';
+  document.getElementById('battleStatus').style.display = '';
+  document.getElementById('battleStatus').textContent   = 'Wähle einen Modus um ein Duell zu starten!';
+}
+
+// Auto-join from URL param (legacy support)
+(function() {
+  const code = new URLSearchParams(location.search).get('battle');
+  if (code) {
+    const tryJoin = setInterval(() => {
+      if (!userId) return;
+      clearInterval(tryJoin);
+      document.getElementById('friendCodeInput').value = code;
+      document.getElementById('battleJoinBox').style.display = '';
+      toast(`🎮 Duell-Code ${code} erkannt – wähle eine Karte und tritt bei!`, 'gold', 5000);
+    }, 400);
+  }
+})();
+
+/* ==============================================================
+   CHAT – Supabase Table: glagini_chat
+   Columns: id, created_at, user_id, user_name, content
+   ============================================================== */
+async function initChat() {
+  document.getElementById('chatSendBtn').onclick = sendChatMessage;
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendChatMessage();
+  });
+
+  // Load last 80 messages
+  const { data } = await sb.from('glagini_chat').select('*').order('created_at',{ascending:false}).limit(80);
+  if (data) {
+    const msgs = document.getElementById('chatMessages');
+    msgs.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:10px;font-style:italic;">Willkommen im Glagini Chat! 👋</div>';
+    data.reverse().forEach(m => renderChatMsg(m));
+  }
+
+  // Subscribe to new messages
+  sb.channel('public:glagini_chat')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'glagini_chat' }, payload => {
+      renderChatMsg(payload.new);
+    })
+    .subscribe();
+}
+
+function renderChatMsg(m) {
+  const msgs   = document.getElementById('chatMessages');
+  const isOwn  = m.user_id === userId;
+  const div = document.createElement('div');
+  div.className = `chat-msg ${isOwn ? 'own' : 'other'}`;
+  div.innerHTML = `<div class="msg-user">${m.user_name}</div>${escapeHtml(m.content)}`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function moderateMessage(text) {
+  const status = document.getElementById('chatStatusMsg');
+  status.textContent = '🔍 Prüfe Nachricht…';
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'Authorization':`Bearer ${GROQ_KEY()}`, 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'llama-3.1-8b-instant',
+        messages:[
+          { role:'system', content:'Du bist ein Chat-Moderator für ein Kinder- und Familienspiel (Glaggle Glagini). Antworte NUR mit OK wenn die Nachricht harmlos, freundlich oder neutral ist. Antworte NUR mit BLOCK wenn die Nachricht Beleidigungen, Hass, Gewalt, unangemessene Inhalte oder Spam enthält. Kein weiterer Text.' },
+          { role:'user', content:text }
+        ],
+        temperature:0.1, max_tokens:5
+      })
+    });
+    const data = await resp.json();
+    status.textContent = '';
+    return data.choices[0].message.content.trim().toUpperCase().startsWith('BLOCK') ? 'BLOCK' : 'OK';
+  } catch(e) {
+    status.textContent = '';
+    return 'OK';
+  }
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('chatSendBtn');
+  btn.disabled = true;
+
+  const result = await moderateMessage(text);
+  if (result === 'BLOCK') {
+    document.getElementById('chatStatusMsg').textContent = '⚠️ Bitte bleib freundlich!';
+    setTimeout(() => document.getElementById('chatStatusMsg').textContent = '', 3000);
+    btn.disabled = false;
+    return;
+  }
+
+  // Cleanup old messages via RPC (optional – only if you have delete_old_glagini_chat RPC)
+  try { await sb.rpc('delete_old_glagini_messages'); } catch(e) {}
+
+  const { error } = await sb.from('glagini_chat').insert([{
+    user_id: userId, user_name: userName, content: text
+  }]);
+
+  if (!error) { input.value = ''; }
+  else { toast('Nachricht konnte nicht gesendet werden.', 'error'); }
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
