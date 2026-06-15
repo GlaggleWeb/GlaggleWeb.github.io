@@ -1060,7 +1060,7 @@ body::before {
   <!-- ================================================================ TAUSCHEN -->
   <section class="section-anchor" id="trade">
     <div class="section-label">🔄 Bereich 4</div>
-    <div class="section-title">Glagini Tauschbörs, !Achtung bitte noch nicht tauschen!</div>
+    <div class="section-title">Glagini Tauschbörse</div>
     <div class="section-desc">Tausche Duplikate mit anderen Sammlern – per Zufall, per Gesuch oder per Freundeslink.</div>
 
     <div class="inner-tabs">
@@ -1081,7 +1081,7 @@ body::before {
   <!-- ================================================================ ZOCKEN / BATTLE -->
   <section class="section-anchor" id="battle">
     <div class="section-label">⚔️ Bereich 5</div>
-    <div class="section-title">Glagini Duell, !Achtung bitte noch nicht zocken!</div>
+    <div class="section-title">Glagini Duell</div>
     <div class="section-desc">Setze eine Karte ein – ein Attribut wird gezogen. Wer höher ist, gewinnt beide Karten!</div>
 
     <div class="info-box" style="margin-bottom:20px;">
@@ -2047,10 +2047,14 @@ async function loadTrades() {
   const list = document.getElementById('tradeList');
   list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;">Lade…</div>';
 
+  // Zuerst: prüfen ob eigene Angebote angenommen wurden -> Gegenkarte gutschreiben
+  await settleAcceptedTrades();
+
   try {
     let query = sb.from('glagini_trades').select('*').eq('status','open').order('created_at',{ascending:false}).limit(30);
     if (currentTradeFilter === 'myoffers') {
-      query = sb.from('glagini_trades').select('*').eq('offer_user_id', userId).order('created_at',{ascending:false}).limit(30);
+      query = sb.from('glagini_trades').select('*').eq('offer_user_id', userId)
+        .in('status', ['open','accepted','completed']).order('created_at',{ascending:false}).limit(30);
     }
     const { data, error } = await query;
     if (error) throw error;
@@ -2058,6 +2062,26 @@ async function loadTrades() {
   } catch(e) {
     list.innerHTML = '<div style="color:var(--accent2);text-align:center;padding:20px;">Fehler beim Laden. Bitte erneut versuchen.</div>';
   }
+}
+
+// Settle trades where I was the offerer and someone accepted -> I receive their card
+async function settleAcceptedTrades() {
+  try {
+    const { data, error } = await sb.from('glagini_trades')
+      .select('*').eq('offer_user_id', userId).eq('status','accepted');
+    if (error || !data || data.length === 0) return;
+
+    for (const t of data) {
+      // I get the want_gl_id card (the one the accepter gave me)
+      const received = ALL_GLAGINIS.find(g => g.id === t.want_gl_id);
+      if (received) addToCollection(received);
+      // Mark as fully completed so it's not settled twice
+      await sb.from('glagini_trades').update({ status:'completed' }).eq('id', t.id);
+    }
+    saveLocalData();
+    renderMyGlaginis();
+    toast(`🎉 ${data.length} Tausch${data.length>1?'e':''} abgeschlossen – Karte${data.length>1?'n':''} erhalten!`, 'gold', 4000);
+  } catch(e) { /* silent */ }
 }
 
 function renderTrades(trades) {
@@ -2082,6 +2106,10 @@ function renderTrades(trades) {
     const iWantThis  = myCollection.some(c => !c.stuck && c.glId === t.offer_gl_id); // ich will die angebotene Karte
     const iCanGive   = myCollection.some(c => !c.stuck && c.glId === t.want_gl_id);  // ich besitze was er sucht
 
+    let statusBadge = '';
+    if (t.status === 'accepted')  statusBadge = '<span class="offer-badge" style="background:var(--accent);">Angenommen – wird abgewickelt…</span>';
+    if (t.status === 'completed') statusBadge = '<span class="offer-badge" style="background:var(--green);">✅ Abgeschlossen</span>';
+
     item.innerHTML = `
       <div class="trade-avatar">${t.offer_user_name?.[0]?.toUpperCase() || '?'}</div>
       <div style="flex:1;min-width:0;">
@@ -2096,11 +2124,12 @@ function renderTrades(trades) {
           <span style="font-size:0.7rem;color:var(--muted);">↔</span>
           <span class="tag tag-${wantG.rarity}" style="font-size:0.6rem;">${wantG.rarity}</span>
           ${iWantThis ? '<span class="offer-badge">Du willst das!</span>' : ''}
+          ${statusBadge}
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
         ${canAccept && iCanGive ? `<button class="btn btn-primary btn-xs" data-tid="${t.id}" data-offergl="${t.offer_gl_id}" data-wantgl="${t.want_gl_id}" onclick="acceptTrade(this)">Annehmen ✅</button>` : ''}
-        ${isOwn ? `<button class="btn btn-secondary btn-xs" data-tid="${t.id}" onclick="cancelTrade(this)">Stornieren ✕</button>` : ''}
+        ${isOwn && t.status === 'open' ? `<button class="btn btn-secondary btn-xs" data-tid="${t.id}" onclick="cancelTrade(this)">Stornieren ✕</button>` : ''}
         ${canAccept && !iCanGive ? `<span style="font-size:0.72rem;color:var(--muted);">Du hast ${wantG.name} nicht</span>` : ''}
       </div>
     `;
@@ -2444,10 +2473,7 @@ async function handleBattleResult(room, playerNum) {
       <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">${STATS_LABELS[stat]} – beide ${myCard?.[stat]}</div>
       <button class="btn btn-secondary" onclick="hideOverlay('battleResultOverlay');resetBattle();">OK</button>`;
   } else if (iWon) {
-    // Remove my staked card (I risked it)
-    const myIdx = myCollection.findIndex(c => c.glId === myCard?.id && !c.stuck);
-    if (myIdx >= 0) myCollection.splice(myIdx, 1);
-    // Add opponent's card
+    // Eigene Karte bleibt! Nur die Karte des Gegners wird hinzugefügt
     if (oppCard) addToCollection(oppCard);
     saveLocalData(); renderMyGlaginis();
     content.innerHTML = `
