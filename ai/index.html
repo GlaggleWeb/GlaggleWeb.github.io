@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle AI - Gleneration</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandDark: '#000000',
+                        brandBlueDark: '#030712',
+                        brandBlueMedium: '#0b1329',
+                        brandBlueLight: '#1c2541',
+                        brandCyan: '#64dfdf',
+                        brandPurple: '#7209b7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Lenis for Smooth Scrolling -->
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.39/dist/lenis.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c2541;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64dfdf;
+        }
+        /* Gradient transitions for sections */
+        .gradient-bg {
+            background: linear-gradient(to bottom, #000000 0%, #030712 15%, #0b1329 45%, #030712 80%, #000000 100%);
+        }
+        /* Glow effects */
+        .glow-card {
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glow-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            padding: 1.5px;
+            background: linear-gradient(to bottom right, rgba(100, 223, 223, 0.35), rgba(114, 9, 183, 0.35));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+        }
+        .glow-card:hover::after {
+            opacity: 1;
+        }
+        /* Vertical line glow for timeline */
+        .timeline-glow {
+            box-shadow: 0 0 20px rgba(100, 223, 223, 0.15);
+        }
+    </style>
+</head>
+<body class="text-gray-100 antialiased selection:bg-brandCyan selection:text-black">
+
+    <!-- Header / Navbar -->
+    <header id="main-nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 bg-black/0 backdrop-blur-0 py-6 border-b border-white/0">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-brandCyan to-brandPurple flex items-center justify-center overflow-hidden">
+                    <span class="text-black font-extrabold text-sm tracking-tighter">G</span>
+                </div>
+                <!-- NEUES STANDBILD-LOGO (Hier einfügen) -->
+<div class="relative w-10 h-10 rounded-xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(100,223,223,0.1)] group-hover:border-brandCyan/40 transition-all duration-300">
+    <img 
+        src="https://res.cloudinary.com/dcvdvvbnj/image/upload/Design_ohne_Titel-7_x4xtiq.png" 
+        alt="Glaggle AI Logo" 
+        class="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500"
+    />
+</div>
+            </a>
+            
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+                <a href="#gleneration" class="hover:text-brandCyan transition-colors duration-300">Gleneration</a>
+                <a href="#interface" class="hover:text-brandCyan transition-colors duration-300">Das Interface</a>
+                <a href="#usecases" class="hover:text-brandCyan transition-colors duration-300">Einsatzgebiete</a>
+                <a href="#evolution" class="hover:text-brandCyan transition-colors duration-300">Evolution</a>
+                <a href="#about" class="hover:text-brandCyan transition-colors duration-300">Philosophie</a>
+            </nav>
+
+            <div>
+                <a href="https://glaggle.ch" target="_blank" class="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-xs font-semibold text-white rounded-full group bg-gradient-to-br from-brandCyan to-brandPurple hover:text-black transition-all duration-300">
+                    <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-black rounded-full group-hover:bg-opacity-0">
+                        glaggle.ch besuchen
+                    </span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN SCROLL CONTAINER FOR LENIS -->
+    <main id="scroll-container">
+
+        <!-- CINEMATIC ULTRA-DARK INTRO (Top is 100% Black) -->
+        <section id="hero-intro" class="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-black z-40">
+            
+            <!-- Video background (Immer vollständig sichtbar durch object-contain) -->
+            <!-- Hardware-beschleunigt durch transform-gpu, will-change und backface-visibility um Flimmern zu eliminieren -->
+            <div id="video-container" class="absolute inset-0 w-full h-full flex items-center justify-center z-10 bg-black will-change-transform transform-gpu" style="backface-visibility: hidden;">
+                <video id="intro-video" class="w-full h-full object-contain" muted playsinline preload="auto">
+                    <!-- Epic Brand Video -->
+                    <source src="https://res.cloudinary.com/dcvdvvbnj/video/upload/logo_gp683l.mp4" type="video/mp4">
+                </video>
+                <!-- Deep pure black gradient vignetting -->
+                <div class="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none"></div>
+            </div>
+
+            <!-- Scroll Down Indicator (WEIT UNTEN PLATZIERT) -->
+            <div id="scroll-indicator" class="absolute bottom-8 left-0 right-0 z-30 flex flex-col items-center gap-3 text-center pointer-events-none">
+                <p class="text-sm text-gray-400 font-light tracking-widest uppercase">
+                    Scrolle, um die Evolution zu entfalten.
+                </p>
+                <div class="w-6 h-10 border-2 border-gray-600 rounded-full flex justify-center p-1">
+                    <div class="w-1.5 h-3 bg-brandCyan rounded-full animate-bounce"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- CONTENT WRAPPER: Dunkelbläulicher Überlauf (Gradient) -->
+        <div class="gradient-bg relative z-30 -mt-[1px]">
+
+            <!-- GLENERATION DETAIL SECTION -->
+            <section id="gleneration" class="py-32 px-6 max-w-7xl mx-auto relative">
+                <!-- Glowing background accents -->
+                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brandCyan/10 rounded-full blur-[150px] pointer-events-none"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-brandPurple/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+                <div class="text-center mb-24 relative z-10 reveal-item">
+                    <span class="text-xs font-bold tracking-widest text-brandCyan uppercase border border-brandCyan/30 px-4 py-1.5 rounded-full bg-brandCyan/5">Das Premieren-Modell</span>
+                    <h2 class="text-4xl md:text-7xl font-black mt-6 tracking-tighter text-white">
+                        GLENERATION
+                    </h2>
+                    <p class="text-gray-400 mt-6 text-lg md:text-xl max-w-3xl mx-auto font-light leading-relaxed">
+                        Das erste offizielle Modell von Glaggle AI. Ein empathischer, zutiefst menschlicher Chatbot, der entwickelt wurde, um natürliche Konversationen auf ein neues emotionales Niveau zu heben.
+                    </p>
+                </div>
+
+                <!-- Features Grid focused entirely on Gleneration's human qualities -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                    
+                    <!-- Feature 1: Empathy -->
+                    <div class="glow-card bg-black/40 backdrop-blur-md p-10 rounded-3xl border border-white/5 flex flex-col justify-between h-[380px] group hover:translate-y-[-6px] transition-all duration-500 reveal-item">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-brandCyan/10 flex items-center justify-center text-brandCyan mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <i data-lucide="heart" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-3xl font-extrabold text-white tracking-tight">Empathischer Kern</h3>
+                            <p class="text-gray-400 mt-4 text-base leading-relaxed">
+                                Gleneration versteht nicht nur Wörter, sondern interpretiert Nuancen, Stimmungen und den Kontext deiner Nachrichten. Es antwortet einfühlsam, unterstützend und bemerkenswert menschlich.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Simplicity -->
+                    <div class="glow-card bg-black/40 backdrop-blur-md p-10 rounded-3xl border border-white/5 flex flex-col justify-between h-[380px] group hover:translate-y-[-6px] transition-all duration-500 reveal-item">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-brandPurple/10 flex items-center justify-center text-brandPurple mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <i data-lucide="smile" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-3xl font-extrabold text-white tracking-tight">Einfachheit im Dialog</h3>
+                            <p class="text-gray-400 mt-4 text-base leading-relaxed">
+                                Keine komplexen Prompts nötig. Sprich mit Gleneration so, wie du mit einem guten Freund sprechen würdest. Die Barriere zwischen Mensch und Maschine löst sich vollkommen auf.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Deep Context -->
+                    <div class="glow-card bg-black/40 backdrop-blur-md p-10 rounded-3xl border border-white/5 flex flex-col justify-between h-[380px] group hover:translate-y-[-6px] transition-all duration-500 col-span-1 md:col-span-2 reveal-item">
+                        <div class="flex flex-col md:flex-row md:items-center gap-8">
+                            <div class="w-14 h-14 rounded-2xl bg-cyan-400/10 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
+                                <i data-lucide="brain" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-extrabold text-white tracking-tight">Langzeit-Verständnis</h3>
+                                <p class="text-gray-400 mt-3 text-base leading-relaxed">
+                                    Gleneration erinnert sich an den Verlauf eures Gesprächs. Es baut eine kontinuierliche, logische Brücke über alle Themen hinweg, sodass sich jeder Austausch wie eine fortlaufende, organische Konversation anfühlt.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- SECTION: THE ORGANIC INTERFACE (NEW BEREICH 1) -->
+            <section id="interface" class="py-32 px-6 max-w-7xl mx-auto relative border-t border-white/5 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    
+                    <div class="reveal-item">
+                        <span class="text-xs font-bold tracking-widest text-brandPurple uppercase border border-brandPurple/30 px-4 py-1.5 rounded-full bg-brandPurple/5">Die Interaktion</span>
+                        <h2 class="text-4xl md:text-6xl font-black mt-6 tracking-tighter text-white leading-none">
+                            Ein Interface, das atmet.
+                        </h2>
+                        <p class="text-gray-400 mt-6 text-lg font-light leading-relaxed">
+                            Gleneration bricht mit starren Tabellen und herkömmlichen Chat-Blasen. Das Modell lernt deine visuelle Dynamik und passt seine Gesprächskurven an deine Lesegeschwindigkeit und emotionale Verfassung an. 
+                        </p>
+                        <p class="text-gray-400 mt-4 text-lg font-light leading-relaxed">
+                            Es antwortet nicht im sterilen Takt eines Computers, sondern im Rhythmus eines echten Gegenübers. Ein lebendiges Zusammenspiel aus Geist und Technologie.
+                        </p>
+                    </div>
+
+                    <!-- Immersive Interactive Visual Frame -->
+                    <!-- GSAP animiert diese Blasen beim Reinscrollen von links und rechts -->
+                    <div class="relative w-full aspect-square md:aspect-[4/3] rounded-3xl bg-black/50 border border-white/10 overflow-hidden flex items-center justify-center reveal-item">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-brandPurple/10 via-transparent to-brandCyan/10"></div>
+                        
+                        <!-- Pulse Ring Animation mimicking emotional heart rate of chatbot -->
+                        <div class="absolute w-72 h-72 rounded-full border border-brandCyan/20 animate-ping opacity-25"></div>
+                        <div class="absolute w-56 h-56 rounded-full border border-brandPurple/20 animate-pulse opacity-40"></div>
+                        
+                        <!-- Mockup Chat interface bubble elements -->
+                        <div class="relative z-10 w-4/5 flex flex-col gap-6">
+                            <!-- Linke Blase (Fährt von links hinein beim Scrollen) -->
+                            <div class="chat-bubble-left bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl rounded-bl-none self-start max-w-[85%] transform-gpu will-change-transform">
+                                <span class="text-[10px] font-bold text-brandCyan uppercase tracking-widest block mb-1">Gleneration</span>
+                                <p class="text-sm text-gray-300 leading-relaxed font-light">"Ich verstehe, dass manche Tage schwerer sind. Lass uns in deinem eigenen Tempo durchgehen, was dich beschäftigt."</p>
+                            </div>
+                            <!-- Rechte Blase (Fährt von rechts hinein beim Scrollen) -->
+                            <div class="chat-bubble-right bg-gradient-to-r from-brandCyan/20 to-brandPurple/20 backdrop-blur-md border border-white/10 p-5 rounded-2xl rounded-br-none self-end max-w-[85%] text-right transform-gpu will-change-transform">
+                                <span class="text-[10px] font-bold text-white uppercase tracking-widest block mb-1">Du</span>
+                                <p class="text-sm text-gray-200 leading-relaxed font-light">"Danke. Es tut gut, nicht einfach nur fertige Antworten hingeklatscht zu bekommen."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- SECTION: HUMAN USE CASES (NEW BEREICH 2) -->
+            <section id="usecases" class="py-32 px-6 max-w-7xl mx-auto relative border-t border-white/5">
+                <div class="text-center mb-24 reveal-item">
+                    <span class="text-xs font-bold tracking-widest text-brandCyan uppercase border border-brandCyan/30 px-4 py-1.5 rounded-full bg-brandCyan/5">Anwendungsfelder</span>
+                    <h2 class="text-4xl md:text-6xl font-black mt-6 tracking-tighter text-white">
+                        Wann Gleneration glänzt.
+                    </h2>
+                    <p class="text-gray-400 mt-6 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+                        Das Modell wurde für die sensiblen, kreativen und komplexen Aspekte unseres Alltags geschaffen, in denen herkömmliche KI an ihre logischen Grenzen stößt.
+                    </p>
+                </div>
+
+                <!-- Cards Grid with Asymmetric Parallax Scroll movement controlled by GSAP -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Case 1: Creative Companion -->
+                    <div class="parallax-card-1 bg-black/40 border border-white/5 p-8 rounded-3xl flex flex-col justify-between h-[360px] reveal-item hover:border-brandCyan/30 transition-colors duration-500 transform-gpu will-change-transform">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-brandCyan/5 flex items-center justify-center text-brandCyan mb-6">
+                                <i data-lucide="sparkles" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-tight">Kreativer Sparringspartner</h3>
+                            <p class="text-gray-400 mt-4 text-sm leading-relaxed">
+                                Ob beim Verfassen intimer Briefe, dem Entwickeln emotionaler Geschichten oder dem Brainstorming neuer philosophischer Konzepte – Gleneration denkt unvoreingenommen und inspiriert auf Augenhöhe.
+                            </p>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-brandCyan/60">01 / Inspiration</span>
+                    </div>
+
+                    <!-- Case 2: Emotional Guide -->
+                    <div class="parallax-card-2 bg-black/40 border border-white/5 p-8 rounded-3xl flex flex-col justify-between h-[360px] reveal-item hover:border-brandPurple/30 transition-colors duration-500 transform-gpu will-change-transform md:translate-y-6">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-brandPurple/5 flex items-center justify-center text-brandPurple mb-6">
+                                <i data-lucide="compass" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-tight">Täglicher Wegbegleiter</h3>
+                            <p class="text-gray-400 mt-4 text-sm leading-relaxed">
+                                Gleneration ist da, wenn du einfach nur einen klaren Kopf bekommen oder Gedanken ordnen möchtest. Es bewertet dich nicht, sondern stellt die richtigen Fragen, um deine Perspektive zu erweitern.
+                            </p>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-brandPurple/60">02 / Reflexion</span>
+                    </div>
+
+                    <!-- Case 3: Deep Simplification -->
+                    <div class="parallax-card-3 bg-black/40 border border-white/5 p-8 rounded-3xl flex flex-col justify-between h-[360px] reveal-item hover:border-cyan-400/30 transition-colors duration-500 transform-gpu will-change-transform">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-400/5 flex items-center justify-center text-cyan-400 mb-6">
+                                <i data-lucide="feather" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-tight">Komplexität entschärfen</h3>
+                            <p class="text-gray-400 mt-4 text-sm leading-relaxed">
+                                Große, verwirrende Lebensentscheidungen oder dichte Sachtexte bricht Gleneration für dich verständlich, respektvoll und logisch klar herunter, ohne dabei den emotionalen Kern aus den Augen zu verlieren.
+                            </p>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-cyan-400/60">03 / Klarheit</span>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION: THE EVOLUTION TIMELINE (NEW BEREICH 3) -->
+            <section id="evolution" class="py-32 px-6 max-w-5xl mx-auto relative border-t border-white/5">
+                <div class="text-center mb-24 reveal-item">
+                    <span class="text-xs font-bold tracking-widest text-brandPurple uppercase border border-brandPurple/30 px-3 py-1 rounded-full bg-brandPurple/5">Der Werdegang</span>
+                    <h2 class="text-4xl md:text-6xl font-black mt-6 tracking-tighter">Die Evolution des Verstehens</h2>
+                    <p class="text-lg text-gray-400 mt-6 font-light max-w-2xl mx-auto">
+                        Wir haben uns von starren Algorithmen verabschiedet. So entstand Gleneration.
+                    </p>
+                </div>
+
+                <!-- Vertical Timeline Container -->
+                <div class="relative ml-4 md:ml-32 py-8">
+                    <!-- Static track line background -->
+                    <div class="absolute left-[7px] top-0 bottom-0 w-[2px] bg-white/10"></div>
+                    
+                    <!-- Dynamic scroll-drawn active gradient line -->
+                    <div id="timeline-active-line" class="absolute left-[7px] top-0 w-[2px] bg-gradient-to-b from-brandCyan via-brandPurple to-white origin-top scale-y-0 transform-gpu will-change-transform"></div>
+                    
+                    <!-- Milestone 1 -->
+                    <div class="timeline-node relative pl-10 md:pl-16 mb-20 reveal-item">
+                        <!-- Dot -->
+                        <div class="timeline-dot absolute left-0 top-1.5 w-4 h-4 rounded-full bg-gray-800 border-4 border-black timeline-glow transform-gpu transition-all duration-500"></div>
+                        <span class="text-xs font-bold text-brandCyan tracking-widest uppercase font-mono block mb-2">Phase I • Das Konzept</span>
+                        <h3 class="text-2xl font-bold text-white">Aufbrechen der Logik-Schale</h3>
+                        <p class="text-gray-400 mt-2 text-base leading-relaxed max-w-2xl">
+                            Die erste Entwicklungsstufe konzentrierte sich darauf, klassische Chat-Daten mit Mustern menschlicher Intonation und Empathie-Modellen zu kreuzen. Wir erkannten, dass pure Faktentreue ohne Gefühl unvollständig ist.
+                        </p>
+                    </div>
+
+                    <!-- Milestone 2 -->
+                    <div class="timeline-node relative pl-10 md:pl-16 mb-20 reveal-item">
+                        <!-- Dot -->
+                        <div class="timeline-dot absolute left-0 top-1.5 w-4 h-4 rounded-full bg-gray-800 border-4 border-black timeline-glow transform-gpu transition-all duration-500"></div>
+                        <span class="text-xs font-bold text-brandPurple tracking-widest uppercase font-mono block mb-2">Phase II • Das Training</span>
+                        <h3 class="text-2xl font-bold text-white">Lernen von echten Nuancen</h3>
+                        <p class="text-gray-400 mt-2 text-base leading-relaxed max-w-2xl">
+                            Monatelanges, feinfühliges Training an literarischen Meisterwerken, philosophischen Abhandlungen und echten Dialogen. Gleneration lernte das Interpretieren von Humor, Trost und Metaphern.
+                        </p>
+                    </div>
+
+                    <!-- Milestone 3 -->
+                    <div class="timeline-node relative pl-10 md:pl-16 reveal-item">
+                        <!-- Dot -->
+                        <div class="timeline-dot absolute left-0 top-1.5 w-4 h-4 rounded-full bg-gray-800 border-4 border-black timeline-glow transform-gpu transition-all duration-500"></div>
+                        <span class="text-xs font-bold text-white tracking-widest uppercase font-mono block mb-2">Phase III • Gleneration</span>
+                        <h3 class="text-2xl font-bold text-white">Das vollendete Premieren-Modell</h3>
+                        <p class="text-gray-400 mt-2 text-base leading-relaxed max-w-2xl">
+                            Heute steht Gleneration bereit. Eine Brücke zum menschlichen Erleben, die die kühle KI-Welt für immer mit Wärme und natürlicher Zugänglichkeit füllt.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- PHILOSOPHY / ABOUT SECTION -->
+            <section id="about" class="py-32 px-6 max-w-5xl mx-auto text-center relative border-t border-white/5">
+                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-82 h-82 bg-brandPurple/20 rounded-full blur-[120px] pointer-events-none"></div>
+                <span class="text-xs font-bold tracking-widest text-brandPurple uppercase border border-brandPurple/30 px-3 py-1 rounded-full bg-brandPurple/5">Die Philosophie von Glaggle AI</span>
+                <h2 class="text-4xl md:text-6xl font-black mt-6 tracking-tighter">Technologie mit Seele.</h2>
+                <p class="text-lg md:text-xl text-gray-300 mt-6 font-light leading-relaxed">
+                    Wir glauben nicht an kalte, rein logische Algorithmen. Die Zukunft gehört Systemen, die eine Brücke zum menschlichen Erleben schlagen. Mit dem Modell <span class="text-brandCyan font-semibold">Gleneration</span> haben wir den ersten Schritt in eine Ära getan, in der künstliche Intelligenz uns wirklich versteht.
+                </p>
+            </section>
+
+            <!-- FOOTER WITH ONLY ONE CLEAN LINK TO GLAGGLE.CH -->
+            <footer class="border-t border-white/5 bg-black py-16 px-6">
+                <div class="max-w-7xl mx-auto flex flex-col items-center justify-center gap-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brandCyan to-brandPurple flex items-center justify-center">
+                            <span class="text-black font-extrabold text-xs">G</span>
+                        </div>
+                        <span class="font-extrabold tracking-wider text-white">GLAGGLE AI</span>
+                    </div>
+                    
+                    <!-- Der gewünschte einfache, edle Link zu glaggle.ch -->
+                    <a href="https://glaggle.ch" target="_blank" class="text-gray-400 hover:text-brandCyan text-lg font-semibold tracking-wide transition-all duration-300 underline underline-offset-8 decoration-brandCyan/40 hover:decoration-brandCyan">
+                        glaggle.ch
+                    </a>
+                    
+                    <p class="text-xs text-gray-600 mt-4">&copy; 2026 Glaggle AI. Alle Rechte vorbehalten.</p>
+                </div>
+            </footer>
+
+        </div>
+    </main>
+
+    <!-- JS Scripts for Lenis, GSAP, and Interaction -->
+    <script>
+        // Ensure scripts execute flawlessly on fully loaded document
+        window.addEventListener('load', () => {
+
+            // 1. Initialize Lenis (Maximal optimiertes, luxuriöses Smooth Scroll)
+            const lenis = new Lenis({
+                duration: 2.4, // Noch längere Dauer für einen majestätischen Gleiteffekt
+                easing: (t) => 1 - Math.pow(1 - t, 5), // Quintisches Easing für makellos flüssiges Abbremsen
+                direction: 'vertical',
+                gestureDirection: 'vertical',
+                smooth: true,
+                mouseMultiplier: 1.05, // Leicht erhöhte Dynamik für direkte Reaktion
+                smoothTouch: false,
+                touchMultiplier: 2.0,
+                infinite: false,
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Connect Lenis to GSAP ScrollTrigger
+            lenis.on('scroll', ScrollTrigger.update);
+            gsap.ticker.add((time) => {
+                lenis.raf(time * 1000);
+            });
+            gsap.ticker.lagSmoothing(0);
+
+
+            // 2. Register GSAP Plugins
+            gsap.registerPlugin(ScrollTrigger);
+
+
+            // 3. Cinematic Video Scrubbing on Scroll (Scroll to Play)
+            const introVideo = document.getElementById('intro-video');
+
+            function setupVideoScrub() {
+                // Dauer des Videos abrufen (Fallback 5s)
+                const videoDuration = introVideo.duration || 5; 
+
+                const heroTimeline = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: "#hero-intro",
+                        start: "top top",
+                        end: "+=3500", // Gestreckte Scroll-Distanz für butterweiches Spulen
+                        scrub: 1.2, // Erhöhte Verzögerung für extra träges, flüssiges Mitgleiten des Videos
+                        pin: true,
+                        anticipatePin: 1
+                    }
+                });
+
+                // Das Video an die Scroll-Position binden
+                let videoProxy = { currentTime: 0 };
+                heroTimeline.to(videoProxy, {
+                    currentTime: videoDuration,
+                    duration: videoDuration,
+                    ease: "none",
+                    onUpdate: () => {
+                        // Bei jedem Frame das Video zur berechneten Zeit springen lassen
+                        if (introVideo.readyState >= 1) {
+                            introVideo.currentTime = videoProxy.currentTime;
+                        }
+                    }
+                }, 0);
+
+                // Den weiter unten platzierten Scroll-Indikator sanft ausblenden
+                heroTimeline.to("#scroll-indicator", {
+                    opacity: 0,
+                    y: 100,
+                    ease: "power2.inOut",
+                    duration: videoDuration * 0.25
+                }, 0);
+
+                // Container abdunkeln, bevor das Video komplett zu Ende ist
+                heroTimeline.to("#video-container", {
+                    opacity: 0,
+                    ease: "power2.inOut",
+                    duration: videoDuration * 0.2
+                }, videoDuration * 0.8);
+            }
+
+            // Sicherstellen, dass die Videodaten geladen sind
+            if (introVideo.readyState >= 1) {
+                setupVideoScrub();
+            } else {
+                introVideo.addEventListener('loadedmetadata', setupVideoScrub);
+            }
+
+
+            // 4. Smooth Floating Navigation transformation on scroll
+            ScrollTrigger.create({
+                trigger: "#hero-intro",
+                start: "bottom-=120px top",
+                onEnter: () => {
+                    const nav = document.getElementById('main-nav');
+                    nav.classList.remove('bg-black/0', 'backdrop-blur-0', 'border-white/0');
+                    nav.classList.add('bg-black/80', 'backdrop-blur-md', 'border-white/10', 'py-4');
+                },
+                onLeaveBack: () => {
+                    const nav = document.getElementById('main-nav');
+                    nav.classList.remove('bg-black/80', 'backdrop-blur-md', 'border-white/10', 'py-4');
+                    nav.classList.add('bg-black/0', 'backdrop-blur-0', 'border-white/0', 'py-6');
+                }
+            });
+
+
+            // 5. IMMERSIVE CHAT BUBBLE ENTRANCE (Zweiseitiges Hineinfliegen beim Scrollen)
+            gsap.fromTo(".chat-bubble-left", 
+                { 
+                    x: -150, 
+                    opacity: 0, 
+                    scale: 0.9 
+                }, 
+                { 
+                    x: 0, 
+                    opacity: 1, 
+                    scale: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: "#interface",
+                        start: "top 75%", // Beginnt, wenn das Interface-Segment zu 25% sichtbar ist
+                        end: "top 35%",
+                        scrub: 1.5 // Weiche, träge Reaktion auf Scrollgeschwindigkeit
+                    }
+                }
+            );
+
+            gsap.fromTo(".chat-bubble-right", 
+                { 
+                    x: 150, 
+                    opacity: 0, 
+                    scale: 0.9 
+                }, 
+                { 
+                    x: 0, 
+                    opacity: 1, 
+                    scale: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: "#interface",
+                        start: "top 60%", // Kommt leicht versetzt nach der linken Blase
+                        end: "top 20%",
+                        scrub: 1.5
+                    }
+                }
+            );
+
+
+            // 6. ASYMMETRIC USE CASES PARALLAX EFFECT
+            gsap.fromTo(".parallax-card-1", 
+                { y: 80 }, 
+                { 
+                    y: -40, 
+                    scrollTrigger: {
+                        trigger: "#usecases",
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: 1.8
+                    }
+                }
+            );
+
+            gsap.fromTo(".parallax-card-2", 
+                { y: 140 }, 
+                { 
+                    y: -100, 
+                    scrollTrigger: {
+                        trigger: "#usecases",
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: 1.2
+                    }
+                }
+            );
+
+            gsap.fromTo(".parallax-card-3", 
+                { y: 50 }, 
+                { 
+                    y: -20, 
+                    scrollTrigger: {
+                        trigger: "#usecases",
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: 2.2
+                    }
+                }
+            );
+
+
+            // 7. SELF-DRAWING EVOLUTION TIMELINE & LIGHT-UP NODES
+            // Zeichnet die aktive, leuchtende vertikale Linie
+            gsap.fromTo("#timeline-active-line", 
+                { scaleY: 0 }, 
+                { 
+                    scaleY: 1, 
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "#evolution",
+                        start: "top 45%",
+                        end: "bottom 55%",
+                        scrub: true
+                    }
+                }
+            );
+
+            // Zündet die Punkte einzeln mit einem leuchtenden Glühen an
+            document.querySelectorAll(".timeline-node").forEach((node) => {
+                const dot = node.querySelector(".timeline-dot");
+                ScrollTrigger.create({
+                    trigger: node,
+                    start: "top 45%", // Zündet exakt dann, wenn das Element den Trigger-Horizont passiert
+                    onEnter: () => {
+                        dot.classList.add("bg-brandCyan", "scale-125");
+                        dot.classList.remove("bg-gray-800");
+                    },
+                    onLeaveBack: () => {
+                        dot.classList.remove("bg-brandCyan", "scale-125");
+                        dot.classList.add("bg-gray-800");
+                    }
+                });
+            });
+
+
+            // 8. Elegant Fade & Slide Reveals for Sections
+            gsap.utils.toArray('.reveal-item').forEach((element) => {
+                gsap.fromTo(element, 
+                    { 
+                        opacity: 0, 
+                        y: 50 
+                    }, 
+                    { 
+                        opacity: 1, 
+                        y: 0, 
+                        duration: 1.6, // Sanfterer, langsamerer Aufbau der Sektionen
+                        ease: "power4.out", // Traumhaft weiches Ausklingen beim Erscheinen
+                        scrollTrigger: {
+                            trigger: element,
+                            start: "top bottom-=8%", // Startet etwas früher für noch besseren Flow
+                            toggleActions: "play none none none"
+                        }
+                    }
+                );
+            });
+
+            // Initialize Lucide Icons
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
