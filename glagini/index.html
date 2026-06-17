@@ -1554,20 +1554,23 @@ function initLocal() {
   userId = localStorage.getItem('glaggleUID');
 
   userName = localStorage.getItem('glaginiUserName') 
-        || localStorage.getItem('glaggleUserName') 
-        || generateName();
+          || localStorage.getItem('glaggleUserName') 
+          || generateName();
   localStorage.setItem('glaggleUserName', userName);
-  // ... Rest bleibt gleich
-  localStorage.setItem('glaggleUID', userId);
 
+  // ✅ DIESE ZEILE FEHLT BEI DIR:
+  coins = parseInt(localStorage.getItem('glaggleCoins') || '0') || 0;
+
+  localStorage.setItem('glaggleUID', userId);
   try {
-    const col   = localStorage.getItem('glaginiCollection');
+    const col  = localStorage.getItem('glaginiCollection');
     myCollection = col ? JSON.parse(col) : [];
-    const stuck  = localStorage.getItem('albumStuck');
-    albumStuck   = stuck ? JSON.parse(stuck) : {};
+    const stuck = localStorage.getItem('albumStuck');
+    albumStuck  = stuck ? JSON.parse(stuck) : {};
   } catch(e) { myCollection = []; albumStuck = {}; }
 
   updateCoinDisplay();
+  // ... Rest bleibt gleich
   document.getElementById('userGreeting').textContent =
     `👋 Hey ${userName}! ${myCollection.length === 0 ? 'Hole deinen ersten Glagini ab!' : `Du hast ${myCollection.length} Glaginis.`}`;
   renderMyGlaginis();
