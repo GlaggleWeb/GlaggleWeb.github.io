@@ -2770,7 +2770,7 @@ async function createGift() {
 
   try {
     const { error } = await sb.from('glagini_gifts').insert([{
-      sender_id: userId,
+      sender_id: String(userId),
       sender_name: userName,
       recipient_code: code,
       gl_id: glId,
@@ -2816,10 +2816,11 @@ async function redeemGift() {
   msg.textContent = '🔍 Suche Geschenk…';
 
   try {
-      const { error: updateErr } = await sb.from('glagini_gifts')
-      .update({ status: 'claimed', recipient_id: userId, recipient_name: userName })
-      .eq('id', gift.id)
-      .eq('status', 'pending');
+    // 1. Geschenk anhand des Codes suchen
+    const { data: gifts, error } = await sb.from('glagini_gifts')
+      .select('*')
+      .eq('recipient_code', code)
+      .eq('status', 'pending')
       .limit(1);
 
     if (error) throw error;
@@ -2832,21 +2833,25 @@ async function redeemGift() {
 
     const gift = gifts[0];
 
-    if (gift.sender_id === userId) {
+    if (gift.sender_id === String(userId)) {
       msg.style.color = 'var(--accent2)';
       msg.textContent = '⚠️ Das ist dein eigenes Geschenk!';
       return;
     }
 
-    // Als eingelöst markieren
+    // 2. Als eingelöst markieren
     const { error: updateErr } = await sb.from('glagini_gifts')
-      .update({ status: 'claimed', recipient_id: userId, recipient_name: userName })
+      .update({ 
+        status: 'claimed', 
+        recipient_id: String(userId), 
+        recipient_name: userName 
+      })
       .eq('id', gift.id)
       .eq('status', 'pending');
 
     if (updateErr) throw updateErr;
 
-    // Karte gutschreiben
+    // 3. Karte gutschreiben
     const g = ALL_GLAGINIS.find(x => x.id === gift.gl_id);
     if (g) {
       addToCollection(g);
@@ -2870,7 +2875,7 @@ async function loadMyGifts() {
   try {
     const { data, error } = await sb.from('glagini_gifts')
       .select('*')
-      .eq('sender_id', userId)
+      .eq('sender_id', String(userId))
       .in('status', ['pending', 'claimed'])
       .order('created_at', { ascending: false })
       .limit(20);
@@ -2882,7 +2887,7 @@ async function loadMyGifts() {
       return;
     }
 
-    list.innerHTML = '';
+  list.innerHTML = '';
     data.forEach(gift => {
       const g = ALL_GLAGINIS.find(x => x.id === gift.gl_id);
       const isPending = gift.status === 'pending';
@@ -2918,17 +2923,15 @@ async function cancelGift(el) {
   const gid  = el.dataset.gid;
   const glId = parseInt(el.dataset.glid);
   
-  // TEST: Schau in die Browser-Konsole, ob gid wirklich die korrekte UUID ist
   console.log("Storniere ID:", gid, "Typ:", typeof gid); 
 
   el.disabled = true;
-  // ... Rest des Codes
 
   try {
     const { error } = await sb.from('glagini_gifts')
       .update({ status: 'cancelled' })
       .eq('id', gid)
-      .eq('sender_id', userId)
+      .eq('sender_id', String(userId))
       .eq('status', 'pending');
 
     if (error) throw error;
