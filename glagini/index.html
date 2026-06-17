@@ -2816,10 +2816,10 @@ async function redeemGift() {
   msg.textContent = '🔍 Suche Geschenk…';
 
   try {
-    const { data: gifts, error } = await sb.from('glagini_gifts')
-      .select('*')
-      .eq('recipient_code', code)
-      .eq('status', 'pending')
+      const { error: updateErr } = await sb.from('glagini_gifts')
+      .update({ status: 'claimed', recipient_id: userId, recipient_name: userName })
+      .eq('id', gift.id)
+      .eq('status', 'pending');
       .limit(1);
 
     if (error) throw error;
@@ -2917,7 +2917,12 @@ async function loadMyGifts() {
 async function cancelGift(el) {
   const gid  = el.dataset.gid;
   const glId = parseInt(el.dataset.glid);
+  
+  // TEST: Schau in die Browser-Konsole, ob gid wirklich die korrekte UUID ist
+  console.log("Storniere ID:", gid, "Typ:", typeof gid); 
+
   el.disabled = true;
+  // ... Rest des Codes
 
   try {
     const { error } = await sb.from('glagini_gifts')
