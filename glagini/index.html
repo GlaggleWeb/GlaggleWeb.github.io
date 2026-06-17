@@ -2870,7 +2870,15 @@ async function redeemGift() {
 
 async function loadMyGifts() {
   const list = document.getElementById('myGiftsList');
-  if (!list || !userId) return;
+  if (!list) return;
+
+  // 1. SICHERHEITS-CHECK: Was ist userId im Moment?
+  console.log("DEBUG: loadMyGifts sucht nach sender_id =", userId);
+
+  if (!userId || userId === "undefined" || userId === "null") {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Warte auf Benutzer-ID...</div>';
+    return;
+  }
 
   try {
     const { data, error } = await sb.from('glagini_gifts')
@@ -2882,12 +2890,13 @@ async function loadMyGifts() {
 
     if (error) throw error;
 
+    // Falls die DB leer zurückgibt, zeigen wir es an
     if (!data || data.length === 0) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Keine ausstehenden Geschenke.</div>';
+      list.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;">Keine ausstehenden Geschenke für ID: ${userId}</div>`;
       return;
     }
 
-  list.innerHTML = '';
+    list.innerHTML = '';
     data.forEach(gift => {
       const g = ALL_GLAGINIS.find(x => x.id === gift.gl_id);
       const isPending = gift.status === 'pending';
@@ -2915,6 +2924,7 @@ async function loadMyGifts() {
       list.appendChild(item);
     });
   } catch(e) {
+    console.error("Fehler beim Laden der Geschenke:", e);
     list.innerHTML = '<div style="color:var(--accent2);font-size:0.85rem;">Fehler beim Laden.</div>';
   }
 }
