@@ -933,73 +933,7 @@ body::before {
 </div>
 
 <!-- ================================================================ SCHENKEN -->
-<section class="section-anchor" id="gift">
-  <div class="section-label">🎀 Bereich 5b</div>
-  <div class="section-title">Glagini schenken</div>
-  <div class="section-desc">Verschicke eine Karte an einen Freund – er löst sie mit einem Code ein.</div>
 
-  <div class="info-box" style="margin-bottom:24px;">
-    <strong>So funktioniert's:</strong> Du wählst eine Karte → kriegst einen 6-stelligen Code → 
-    dein Freund gibt ihn im "Geschenk einlösen"-Bereich ein und bekommt die Karte sofort!
-  </div>
-
-  <div style="display:flex; gap:20px; flex-wrap:wrap;">
-
-    <!-- Geschenk senden -->
-    <div class="card" style="flex:1; min-width:260px;">
-      <div style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎁 Karte verschicken</div>
-      <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">
-        Welche Karte schenkst du?
-      </label>
-      <select class="styled-select" id="giftCardSelect" style="width:100%; border-radius:10px; padding:12px; margin-bottom:16px;">
-        <option value="">– Karte wählen –</option>
-      </select>
-      <button class="btn btn-primary" style="width:100%;" onclick="createGift()">
-        🎀 Geschenk erstellen
-      </button>
-      <!-- Code-Anzeige nach Erstellung -->
-      <div id="giftCodeDisplay" style="display:none; margin-top:18px; text-align:center;">
-        <div style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Dein Geschenk-Code:</div>
-        <div id="giftCodeValue" style="font-size:2.4rem; font-weight:900; color:var(--gold); 
-             letter-spacing:0.2em; margin-bottom:12px;"></div>
-        <button class="btn btn-secondary btn-sm" onclick="copyGiftCode()">📋 Code kopieren</button>
-        <div style="color:var(--muted); font-size:0.75rem; margin-top:10px;">
-          Schick diesen Code deinem Freund!
-        </div>
-      </div>
-    </div>
-
-    <!-- Geschenk einlösen -->
-    <div class="card" style="flex:1; min-width:260px;">
-      <div style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎀 Geschenk einlösen</div>
-      <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">
-        Hast du einen Code erhalten?
-      </label>
-      <input id="giftRedeemInput" type="text" placeholder="6-stelliger Code" maxlength="6"
-        style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:50px;
-               padding:12px 18px; color:var(--text); font-family:inherit; font-size:1rem; font-weight:800;
-               letter-spacing:0.15em; text-transform:uppercase; outline:none; margin-bottom:16px;
-               box-sizing:border-box; text-align:center;"
-        oninput="this.value=this.value.toUpperCase()">
-      <button class="btn btn-gold" style="width:100%;" onclick="redeemGift()">
-        ✨ Einlösen!
-      </button>
-      <p id="giftRedeemMsg" style="text-align:center; font-size:0.82rem; margin-top:10px; min-height:18px; color:var(--muted);"></p>
-    </div>
-
-  </div>
-
-  <!-- Meine offenen Geschenke -->
-  <div style="margin-top:28px;">
-    <div style="font-size:0.9rem; font-weight:800; margin-bottom:12px; color:var(--text);">
-      Meine ausstehenden Geschenke
-      <button class="btn btn-secondary btn-xs" style="margin-left:10px;" onclick="loadMyGifts()">🔄</button>
-    </div>
-    <div id="myGiftsList" style="display:flex; flex-direction:column; gap:10px;">
-      <div style="color:var(--muted); font-size:0.85rem;">Lade…</div>
-    </div>
-  </div>
-</section>
 
 <!-- Battle Card Pick Modal -->
 <div class="overlay" id="battlePickOverlay">
@@ -1034,8 +968,6 @@ body::before {
   </div>
   <div class="nav-right">
     <div class="coin-pill" id="navCoinPill">🪙 <span id="navCoins">0</span></div>
-    <button class="btn btn-secondary btn-xs" id="usernameEditBtn" onclick="openUsernameModal()" 
-      style="padding:5px 10px; font-size:0.75rem;" title="Username ändern">✏️</button>
   </div>
 </nav>
 
@@ -1170,6 +1102,74 @@ body::before {
       <div style="color:var(--muted); font-size:0.88rem; text-align:center; padding:20px;">Lade Tausch-Angebote…</div>
     </div>
   </section>
+
+   <section class="section-anchor" id="gift">
+  <div class="section-label">🎀 Bereich 5b</div>
+  <div class="section-title">Glagini schenken</div>
+  <div class="section-desc">Verschicke eine Karte an einen Freund – er löst sie mit einem Code ein.</div>
+
+  <div class="info-box" style="margin-bottom:24px;">
+    <strong>So funktioniert's:</strong> Du wählst eine Karte → kriegst einen 6-stelligen Code → 
+    dein Freund gibt ihn im "Geschenk einlösen"-Bereich ein und bekommt die Karte sofort!
+  </div>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+    <!-- Geschenk senden -->
+    <div class="card" style="flex:1; min-width:260px;">
+      <div style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎁 Karte verschicken</div>
+      <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">
+        Welche Karte schenkst du?
+      </label>
+      <select class="styled-select" id="giftCardSelect" style="width:100%; border-radius:10px; padding:12px; margin-bottom:16px;">
+        <option value="">– Karte wählen –</option>
+      </select>
+      <button class="btn btn-primary" style="width:100%;" onclick="createGift()">
+        🎀 Geschenk erstellen
+      </button>
+      <!-- Code-Anzeige nach Erstellung -->
+      <div id="giftCodeDisplay" style="display:none; margin-top:18px; text-align:center;">
+        <div style="color:var(--muted); font-size:0.82rem; margin-bottom:6px;">Dein Geschenk-Code:</div>
+        <div id="giftCodeValue" style="font-size:2.4rem; font-weight:900; color:var(--gold); 
+             letter-spacing:0.2em; margin-bottom:12px;"></div>
+        <button class="btn btn-secondary btn-sm" onclick="copyGiftCode()">📋 Code kopieren</button>
+        <div style="color:var(--muted); font-size:0.75rem; margin-top:10px;">
+          Schick diesen Code deinem Freund!
+        </div>
+      </div>
+    </div>
+
+    <!-- Geschenk einlösen -->
+    <div class="card" style="flex:1; min-width:260px;">
+      <div style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎀 Geschenk einlösen</div>
+      <label style="font-size:0.8rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">
+        Hast du einen Code erhalten?
+      </label>
+      <input id="giftRedeemInput" type="text" placeholder="6-stelliger Code" maxlength="6"
+        style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:50px;
+               padding:12px 18px; color:var(--text); font-family:inherit; font-size:1rem; font-weight:800;
+               letter-spacing:0.15em; text-transform:uppercase; outline:none; margin-bottom:16px;
+               box-sizing:border-box; text-align:center;"
+        oninput="this.value=this.value.toUpperCase()">
+      <button class="btn btn-gold" style="width:100%;" onclick="redeemGift()">
+        ✨ Einlösen!
+      </button>
+      <p id="giftRedeemMsg" style="text-align:center; font-size:0.82rem; margin-top:10px; min-height:18px; color:var(--muted);"></p>
+    </div>
+
+  </div>
+
+  <!-- Meine offenen Geschenke -->
+  <div style="margin-top:28px;">
+    <div style="font-size:0.9rem; font-weight:800; margin-bottom:12px; color:var(--text);">
+      Meine ausstehenden Geschenke
+      <button class="btn btn-secondary btn-xs" style="margin-left:10px;" onclick="loadMyGifts()">🔄</button>
+    </div>
+    <div id="myGiftsList" style="display:flex; flex-direction:column; gap:10px;">
+      <div style="color:var(--muted); font-size:0.85rem;">Lade…</div>
+    </div>
+  </div>
+</section>
 
   <!-- ================================================================ ZOCKEN / BATTLE -->
   <section class="section-anchor" id="battle">
