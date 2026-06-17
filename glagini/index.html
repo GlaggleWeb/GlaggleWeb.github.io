@@ -1547,10 +1547,15 @@ function hideOverlay(id) { document.getElementById(id).classList.remove('open');
    LOCAL-ONLY INIT
    ============================================================== */
 function initLocal() {
+  // UID einmalig setzen, nie überschreiben
+  if (!localStorage.getItem('glaggleUID')) {
+    localStorage.setItem('glaggleUID', 'gl_' + Math.random().toString(36).substr(2, 12));
+  }
+  userId = localStorage.getItem('glaggleUID');
+
   userName = localStorage.getItem('glaggleUserName') || generateName();
-  userId   = localStorage.getItem('glaggleUID')      || generateUID();
-  coins    = parseInt(localStorage.getItem('glaggleCoins')) || 0;
   localStorage.setItem('glaggleUserName', userName);
+  // ... Rest bleibt gleich
   localStorage.setItem('glaggleUID', userId);
 
   try {
@@ -2183,7 +2188,7 @@ function renderTrades(trades) {
     const item = document.createElement('div');
     item.className = 'trade-item';
 
-    const isOwn     = t.offer_user_id === userId;
+    const isOwn = t.offer_user_id === userId || t.offer_user_name === userName;
     const canAccept = !isOwn && t.status === 'open';
     const iWantThis  = myCollection.some(c => !c.stuck && c.glId === t.offer_gl_id); // ich will die angebotene Karte
     const iCanGive   = myCollection.some(c => !c.stuck && c.glId === t.want_gl_id);  // ich besitze was er sucht
@@ -2309,18 +2314,22 @@ async function acceptTrade(el) {
     el.disabled = false;
   }
 }
-
 async function cancelTrade(el) {
   const tid = el.dataset.tid;
   el.disabled = true;
   try {
-    const { error } = await sb.from('glagini_trades')
-      .update({ status: 'cancelled' })
-      .eq('id', tid)
-      .eq('offer_user_id', userId); // Nur eigene stornieren
-    if (error) throw error;
+    // Erst verifizieren dass es wirklich unser Trade ist
+    const { data: t } = await sb.from('glagini_trades')
+      .select('offer_user_id, offer_user_name, offer_gl_id')
+      .eq('id', tid).single();
 
-    // Karte war nie abgezogen → nichts zurückgeben nötig
+    if (!t || (t.offer_user_id !== userId && t.offer_user_name !== userName)) {
+      toast('Das ist nicht dein Angebot!', 'error');
+      el.disabled = false;
+      return;
+    }
+
+    await sb.from('glagini_trades').update({ status: 'cancelled' }).eq('id', tid);
     toast('Angebot storniert.', 'info');
     loadTrades();
   } catch(e) {
