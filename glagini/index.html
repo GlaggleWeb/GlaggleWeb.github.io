@@ -896,14 +896,16 @@ body::before {
 
 <!-- Pack Opening Modal -->
 <div class="overlay" id="packOpenOverlay">
-  <div class="modal" style="text-align:center; max-width:460px;">
+  <div class="modal" style="text-align:center; max-width:460px; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
     <button class="modal-close" id="closePackOpen">✕</button>
     <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:20px;">📦 Glagini Pack öffnen!</h3>
     <div id="packReveal" style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; min-height:200px; align-items:center;">
       <div class="loading-spin"></div>
     </div>
-    <div id="packStickAll" style="margin-top:20px; display:none;">
-      <button class="btn btn-primary" id="addAllToCollection">✨ Alle zu meinen Glaginis hinzufügen</button>
+    <div id="packStickAll" style="margin-top:20px; padding-bottom:10px; display:none;">
+      <button class="btn btn-primary" id="addAllToCollection" style="width:100%; padding:16px; font-size:1rem;">
+        ✨ Alle zu meinen Glaginis hinzufügen
+      </button>
     </div>
   </div>
 </div>
@@ -968,6 +970,8 @@ body::before {
   </div>
   <div class="nav-right">
     <div class="coin-pill" id="navCoinPill">🪙 <span id="navCoins">0</span></div>
+    <button class="btn btn-secondary btn-xs" id="usernameEditBtn" onclick="openUsernameModal()" 
+      style="padding:5px 10px; font-size:0.75rem;" title="Username ändern">✏️</button>
   </div>
 </nav>
 
