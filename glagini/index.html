@@ -1553,7 +1553,9 @@ function initLocal() {
   }
   userId = localStorage.getItem('glaggleUID');
 
-  userName = localStorage.getItem('glaggleUserName') || generateName();
+  userName = localStorage.getItem('glaginiUserName') 
+        || localStorage.getItem('glaggleUserName') 
+        || generateName();
   localStorage.setItem('glaggleUserName', userName);
   // ... Rest bleibt gleich
   localStorage.setItem('glaggleUID', userId);
@@ -2738,13 +2740,12 @@ function saveUsername() {
   }
 
   userName = newName;
-  // Speichern in glaggleUserName (NICHT GlaggleUsername)
-  localStorage.setItem('glaggleUserName', userName);
+  localStorage.setItem('glaginiUserName', userName); // ✅ eigener Key
+  // glaggleUserName bleibt unverändert!
 
   msg.style.color = 'var(--green)';
   msg.textContent = '✅ Gespeichert!';
 
-  // UI sofort updaten
   document.getElementById('userGreeting').textContent =
     `👋 Hey ${userName}! Du hast ${myCollection.length} Glaginis.`;
 
