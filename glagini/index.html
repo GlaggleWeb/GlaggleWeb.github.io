@@ -2151,39 +2151,52 @@ function buildGlaginiCard(g, opts={}) {
 /* ==============================================================
    GLAGINI DETAIL MODAL
    ============================================================== */
+let _pendingStickGlagini = null;
+let _pendingStickInstance = null;
+
 function showGlaginiDetail(g, instanceId) {
+  _pendingStickGlagini  = g;
+  _pendingStickInstance = instanceId;
+
   const content = document.getElementById('glaginiDetailContent');
   const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
-  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin', none:'' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin', none:'Normal' };
 
-  const stuckMetal = albumStuck[g.id]; // z.B. 'gold' oder undefined
+  const stuckMetal = albumStuck[g.id];       // undefined = noch leer
   const myMetal    = g.metal || 'none';
   const myRank     = METAL_TIER_RANK[myMetal];
   const stuckRank  = stuckMetal !== undefined ? METAL_TIER_RANK[stuckMetal] : -1;
   const isStuck    = stuckMetal !== undefined;
-  const isUpgrade  = myRank > stuckRank;
-  const canOverwrite = instanceId && isStuck;
+  const isSameMetal = isStuck && stuckMetal === myMetal;
 
-  let stickBtn = '';
-  if (instanceId) {
-    if (!isStuck) {
-      stickBtn = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" 
-        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
-        📌 Ins Album einkleben
-      </button>`;
-    } else if (canOverwrite && isUpgrade) {
-      stickBtn = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" 
-        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
-        ⬆️ Upgraden (${metalLabels[stuckMetal]||'Normal'} → ${metalLabels[myMetal]||'Normal'})
-      </button>`;
-    } else if (canOverwrite && !isUpgrade) {
-      stickBtn = `<button class="btn btn-danger" style="width:100%;margin-top:8px;" 
-        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
-        ⬇️ Downgraden (${metalLabels[stuckMetal]||'Normal'} → ${metalLabels[myMetal]||'Normal'})
-      </button>`;
+  let stickBtnHtml = '';
+  if (!instanceId) {
+    // Nur Album-Ansicht, keine Action
+    if (isStuck) {
+      stickBtnHtml = `<div class="info-box" style="width:100%;text-align:center;">
+        ✅ Eingeklebt als ${metalLabels[stuckMetal]}
+      </div>`;
     }
-  } else if (isStuck) {
-    stickBtn = `<div class="info-box" style="width:100%;text-align:center;">✅ Eingeklebt als ${metalLabels[stuckMetal]||'Normal'}</div>`;
+  } else if (!isStuck) {
+    // Slot noch leer → einfach einkleben
+    stickBtnHtml = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" id="doStickBtn">
+      📌 Ins Album einkleben
+    </button>`;
+  } else if (isSameMetal) {
+    // Gleiche Variante schon drin
+    stickBtnHtml = `<div class="info-box" style="width:100%;text-align:center;">
+      ✅ Diese Variante (${metalLabels[myMetal]}) ist bereits eingeklebt
+    </div>`;
+  } else if (myRank > stuckRank) {
+    // Upgrade
+    stickBtnHtml = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" id="doStickBtn">
+      ⬆️ Upgraden · ${metalLabels[stuckMetal]} → ${metalLabels[myMetal]}
+    </button>`;
+  } else {
+    // Downgrade → roter Button
+    stickBtnHtml = `<button class="btn btn-danger" style="width:100%;margin-top:8px;" id="doStickBtn">
+      ⬇️ Downgraden · ${metalLabels[stuckMetal]} → ${metalLabels[myMetal]}
+    </button>`;
   }
 
   content.innerHTML = `
@@ -2192,7 +2205,7 @@ function showGlaginiDetail(g, instanceId) {
       <div style="font-size:1.4rem;font-weight:900;text-align:center;margin-bottom:6px;">${g.name}</div>
       <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
         <span class="tag tag-${g.rarity}">${rarityLabels[g.rarity]}</span>
-        ${g.metal && g.metal !== 'none' ? `<span class="tag" style="background:rgba(255,215,0,0.15);color:${METAL_COLORS[g.metal]};">${metalLabels[g.metal]}</span>` : ''}
+        ${myMetal !== 'none' ? `<span class="tag" style="background:rgba(255,215,0,0.15);color:${METAL_COLORS[myMetal]};">${metalLabels[myMetal]}</span>` : ''}
       </div>
       <p style="color:var(--muted);font-size:0.85rem;text-align:center;margin-bottom:18px;">${g.desc}</p>
     </div>
@@ -2200,13 +2213,25 @@ function showGlaginiDetail(g, instanceId) {
       ${STATS_KEYS.map(k => `
         <div class="stat-row" style="margin-bottom:8px;">
           <span class="stat-label" style="font-size:0.75rem;min-width:70px;">${STATS_LABELS[k]}</span>
-          <div class="stat-bar-wrap" style="height:8px;"><div class="stat-bar" style="width:${g[k]}%;background:${STATS_COLORS[k]};"></div></div>
+          <div class="stat-bar-wrap" style="height:8px;">
+            <div class="stat-bar" style="width:${g[k]}%;background:${STATS_COLORS[k]};"></div>
+          </div>
           <span class="stat-val" style="color:${STATS_COLORS[k]};font-size:0.8rem;">${g[k]}</span>
         </div>
       `).join('')}
     </div>
-    ${stickBtn}
+    ${stickBtnHtml}
   `;
+
+  // Event-Listener direkt auf den Button (kein onclick-Attribut nötig)
+  const doBtn = document.getElementById('doStickBtn');
+  if (doBtn) {
+    doBtn.onclick = () => {
+      stickIntoAlbum(_pendingStickGlagini, _pendingStickInstance);
+      hideOverlay('glaginiDetailOverlay');
+    };
+  }
+
   showOverlay('glaginiDetailOverlay');
 }
 
