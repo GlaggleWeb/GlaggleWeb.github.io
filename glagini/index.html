@@ -31,6 +31,7 @@
   --r-rare:    #4ecdc4;
   --r-super:   #a855f7;
   --r-epic:    #ff6b8a;
+  --m-platinum: #e5e4e2;
 
   /* Metal Colors */
   --m-bronze:  #cd7f32;
@@ -234,6 +235,7 @@ body::before {
 .metal-badge.bronze { background: rgba(205,127,50,0.3); color: var(--m-bronze); }
 .metal-badge.silver { background: rgba(192,192,192,0.2); color: var(--m-silver); }
 .metal-badge.gold   { background: rgba(255,215,0,0.2); color: var(--m-gold); }
+.metal-badge.platinum { background: rgba(229,228,226,0.2); color: var(--m-platinum); }
 
 .glagini-svg-wrap {
   width: 110px; height: 110px;
@@ -836,6 +838,18 @@ body::before {
   color: var(--gold);
   animation: resultPop 0.4s cubic-bezier(.34,1.56,.64,1);
 }
+
+.glagini-card.metal-platinum {
+  background: linear-gradient(145deg, #1e1a35, #1a2022);
+  border-color: var(--m-platinum);
+  animation: platinumShine 2.5s ease-in-out infinite;
+}
+
+@keyframes platinumShine {
+  0%,100% { box-shadow: 0 0 20px rgba(229,228,226,0.3); }
+  50%      { box-shadow: 0 0 50px rgba(229,228,226,0.7), 0 0 80px rgba(229,228,226,0.2); }
+}
+   
 </style>
 </head>
 <body>
@@ -1264,135 +1278,263 @@ const GROQ_KEY = () => _g1+_g2+_g3;
    Metall:     none, bronze, silver, gold (bei vereinzelten)
    Stats:      power, speed, magic, defense, luck  (1–95)
    ============================================================== */
-const STATS_KEYS = ['power','speed','magic','defense','luck'];
+const STATS_KEYS   = ['power','speed','magic','defense','luck'];
 const STATS_LABELS = { power:'⚡ Power', speed:'💨 Speed', magic:'🔮 Magie', defense:'🛡 Defense', luck:'🍀 Glück' };
 const STATS_COLORS = { power:'#ff6b8a', speed:'#4ecdc4', magic:'#a855f7', defense:'#7b6cf6', luck:'#ffd85a' };
 
+// Metall-Tiers: Gewichtung in % (muss 100 ergeben)
+const METAL_WEIGHTS = { none:70, bronze:15, silver:8, gold:4, platinum:3 };
+const METAL_TIERS   = ['none','bronze','silver','gold','platinum'];
+const METAL_TIER_RANK = { none:0, bronze:1, silver:2, gold:3, platinum:4 };
+const METAL_LABELS  = { none:'', bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin' };
+const METAL_COLORS  = { none:null, bronze:'#cd7f32', silver:'#c0c0c0', gold:'#ffd700', platinum:'#e5e4e2' };
+
+function rollMetal() {
+  const r = Math.random() * 100;
+  let cumul = 0;
+  for (const tier of METAL_TIERS) {
+    cumul += METAL_WEIGHTS[tier];
+    if (r < cumul) return tier;
+  }
+  return 'none';
+}
+
 const ALL_GLAGINIS = [
   // ── NORMAL (1–40) ──────────────────────────────────────────
-  { id:1,  name:'Jelly Jelly',   rarity:'normal', metal:'none',   power:22, speed:35, magic:18, defense:25, luck:40, desc:'Ein glibberiges Wesen, das überall klebt.' },
-  { id:2,  name:'Wurmi',         rarity:'normal', metal:'none',   power:15, speed:28, magic:12, defense:18, luck:55, desc:'Der freundlichste Wurm im Glaggle-Universum.' },
-  { id:3,  name:'Puffi',         rarity:'normal', metal:'none',   power:30, speed:20, magic:25, defense:35, luck:22, desc:'Rund wie eine Seifenblase, hart wie Stahl.' },
-  { id:4,  name:'Blubby',        rarity:'normal', metal:'none',   power:18, speed:45, magic:20, defense:12, luck:48, desc:'Bewegt sich schnell wie ein Blitz im Wasser.' },
-  { id:5,  name:'Schnecki',      rarity:'normal', metal:'none',   power:12, speed:10, magic:38, defense:55, luck:32, desc:'Langsam aber unaufhörlich – das Haus ist sein Schloss.' },
-  { id:6,  name:'Fungi',         rarity:'normal', metal:'bronze', power:28, speed:22, magic:45, defense:30, luck:35, desc:'Ein weiser Pilz aus den Tiefen des Glaggle-Waldes.' },
-  { id:7,  name:'Zappi',         rarity:'normal', metal:'none',   power:40, speed:50, magic:15, defense:20, luck:28, desc:'Elektrisch geladen und immer bereit für Action.' },
-  { id:8,  name:'Glitzi',        rarity:'normal', metal:'none',   power:20, speed:32, magic:30, defense:22, luck:50, desc:'Glitzert wie tausend Sterne auf einmal.' },
-  { id:9,  name:'Fluppi',        rarity:'normal', metal:'none',   power:16, speed:55, magic:22, defense:15, luck:38, desc:'Fliegt so schnell, dass er manchmal sich selbst überholt.' },
-  { id:10, name:'Bubbi',         rarity:'normal', metal:'none',   power:25, speed:25, magic:25, defense:25, luck:45, desc:'Perfekt ausbalanciert – das ist seine Stärke.' },
-  { id:11, name:'Schlummi',      rarity:'normal', metal:'none',   power:10, speed:8,  magic:20, defense:42, luck:60, desc:'Schläft fast immer, bringt dabei aber Glück.' },
-  { id:12, name:'Knubbel',       rarity:'normal', metal:'none',   power:35, speed:15, magic:10, defense:50, luck:25, desc:'Klein, rund und unglaublich hartnäckig.' },
-  { id:13, name:'Blinki',        rarity:'normal', metal:'none',   power:18, speed:40, magic:35, defense:15, luck:42, desc:'Blinzelt so schnell, dass er Funken erzeugt.' },
-  { id:14, name:'Wabbel',        rarity:'normal', metal:'none',   power:20, speed:18, magic:15, defense:38, luck:55, desc:'Wackelt ständig, aber fällt nie um.' },
-  { id:15, name:'Tropfi',        rarity:'normal', metal:'none',   power:14, speed:30, magic:40, defense:20, luck:35, desc:'Tropft magische Flüssigkeit wo immer er geht.' },
-  { id:16, name:'Stachli',       rarity:'normal', metal:'none',   power:42, speed:22, magic:12, defense:45, luck:18, desc:'Vorsicht! Seine Stacheln sind schärfer als sie aussehen.' },
-  { id:17, name:'Wuseli',        rarity:'normal', metal:'none',   power:12, speed:58, magic:18, defense:10, luck:48, desc:'Huscht so flink herum, dass man ihn kaum sieht.' },
-  { id:18, name:'Glummi',        rarity:'normal', metal:'none',   power:25, speed:20, magic:32, defense:28, luck:38, desc:'Brummt leise vor sich hin und strahlt Wärme aus.' },
-  { id:19, name:'Knirpsi',       rarity:'normal', metal:'none',   power:15, speed:35, magic:28, defense:20, luck:52, desc:'Winzig aber mutig – der Kleinste im Glaggle-Kosmos.' },
-  { id:20, name:'Quatschi',      rarity:'normal', metal:'none',   power:20, speed:25, magic:22, defense:30, luck:42, desc:'Redet ohne Pause und bringt jeden zum Lachen.' },
-  { id:21, name:'Moosbart',      rarity:'normal', metal:'none',   power:32, speed:12, magic:38, defense:40, luck:28, desc:'Alter Waldgeist mit einem Bart aus Moos.' },
-  { id:22, name:'Nubbelchen',    rarity:'normal', metal:'bronze', power:28, speed:18, magic:15, defense:48, luck:32, desc:'Winziger Klumpen, der alles beobachtet.' },
-  { id:23, name:'Flausi',        rarity:'normal', metal:'none',   power:18, speed:42, magic:30, defense:15, luck:45, desc:'Flauschig wie eine Wolke und genauso leicht.' },
-  { id:24, name:'Schlippi',      rarity:'normal', metal:'none',   power:10, speed:50, magic:25, defense:12, luck:55, desc:'Glatt wie Eis – kein Angriff bleibt hängen.' },
-  { id:25, name:'Tolpel',        rarity:'normal', metal:'none',   power:30, speed:15, magic:10, defense:35, luck:60, desc:'Stolpert durch das Leben und findet immer Gold.' },
-  { id:26, name:'Brumbo',        rarity:'normal', metal:'none',   power:38, speed:20, magic:8,  defense:50, luck:22, desc:'Brummt wie ein Motor und ist genauso ausdauernd.' },
-  { id:27, name:'Zippel',        rarity:'normal', metal:'none',   power:15, speed:60, magic:20, defense:10, luck:40, desc:'Schnell wie ein Reißverschluss – zip, weg!' },
-  { id:28, name:'Matschling',    rarity:'normal', metal:'none',   power:25, speed:10, magic:42, defense:32, luck:35, desc:'Formt sich um jedes Hindernis herum.' },
-  { id:29, name:'Glubschi',      rarity:'normal', metal:'none',   power:22, speed:28, magic:35, defense:20, luck:48, desc:'Riesige Augen, die alles auf einmal sehen.' },
-  { id:30, name:'Runkelchen',    rarity:'normal', metal:'none',   power:28, speed:22, magic:18, defense:45, luck:30, desc:'Klein und faltig, aber voller Energie.' },
-  { id:31, name:'Plitsch',       rarity:'normal', metal:'none',   power:12, speed:38, magic:45, defense:15, luck:42, desc:'Platschend und plitschernd durch jeden Bach.' },
-  { id:32, name:'Muffi',         rarity:'normal', metal:'none',   power:20, speed:15, magic:30, defense:40, luck:50, desc:'Mürrisch, aber im Herzen ein Weichling.' },
-  { id:33, name:'Zirpsel',       rarity:'normal', metal:'none',   power:16, speed:48, magic:28, defense:12, luck:55, desc:'Zirpt melodisch und lockt damit Freunde an.' },
-  { id:34, name:'Klumpi',        rarity:'normal', metal:'none',   power:35, speed:12, magic:15, defense:52, luck:25, desc:'Massig und stabil wie ein Felsblock.' },
-  { id:35, name:'Schleimi',      rarity:'normal', metal:'none',   power:14, speed:22, magic:50, defense:18, luck:38, desc:'Hinterlässt eine magische Spur überall.' },
-  { id:36, name:'Tüpfeli',       rarity:'normal', metal:'bronze', power:20, speed:30, magic:32, defense:22, luck:52, desc:'Überall bunt gepunktet – jeder Punkt ein Wunsch.' },
-  { id:37, name:'Hoppeli',       rarity:'normal', metal:'none',   power:18, speed:55, magic:20, defense:15, luck:45, desc:'Hüpft unermüdlich von Stein zu Stein.' },
-  { id:38, name:'Grummelchen',   rarity:'normal', metal:'none',   power:32, speed:15, magic:12, defense:48, luck:28, desc:'Grummelt vor sich hin, aber hilft immer.' },
-  { id:39, name:'Neonöhrchen',   rarity:'normal', metal:'none',   power:15, speed:40, magic:38, defense:18, luck:48, desc:'Leuchtend grüne Ohren, die Signale empfangen.' },
-  { id:40, name:'Quibbel',       rarity:'normal', metal:'none',   power:22, speed:32, magic:28, defense:25, luck:42, desc:'Quietscht bei jeder Bewegung und liebt es.' },
+  { id:1,  name:'Jelly Jelly',   rarity:'normal', power:22, speed:35, magic:18, defense:25, luck:40, desc:'Ein glibberiges Wesen, das überall klebt.' },
+  { id:2,  name:'Wurmi',         rarity:'normal', power:15, speed:28, magic:12, defense:18, luck:55, desc:'Der freundlichste Wurm im Glaggle-Universum.' },
+  { id:3,  name:'Puffi',         rarity:'normal', power:30, speed:20, magic:25, defense:35, luck:22, desc:'Rund wie eine Seifenblase, hart wie Stahl.' },
+  { id:4,  name:'Blubby',        rarity:'normal', power:18, speed:45, magic:20, defense:12, luck:48, desc:'Bewegt sich schnell wie ein Blitz im Wasser.' },
+  { id:5,  name:'Schnecki',      rarity:'normal', power:12, speed:10, magic:38, defense:55, luck:32, desc:'Langsam aber unaufhörlich – das Haus ist sein Schloss.' },
+  { id:6,  name:'Fungi',         rarity:'normal', power:28, speed:22, magic:45, defense:30, luck:35, desc:'Ein weiser Pilz aus den Tiefen des Glaggle-Waldes.' },
+  { id:7,  name:'Zappi',         rarity:'normal', power:40, speed:50, magic:15, defense:20, luck:28, desc:'Elektrisch geladen und immer bereit für Action.' },
+  { id:8,  name:'Glitzi',        rarity:'normal', power:20, speed:32, magic:30, defense:22, luck:50, desc:'Glitzert wie tausend Sterne auf einmal.' },
+  { id:9,  name:'Fluppi',        rarity:'normal', power:16, speed:55, magic:22, defense:15, luck:38, desc:'Fliegt so schnell, dass er manchmal sich selbst überholt.' },
+  { id:10, name:'Bubbi',         rarity:'normal', power:25, speed:25, magic:25, defense:25, luck:45, desc:'Perfekt ausbalanciert – das ist seine Stärke.' },
+  { id:11, name:'Schlummi',      rarity:'normal', power:10, speed:8,  magic:20, defense:42, luck:60, desc:'Schläft fast immer, bringt dabei aber Glück.' },
+  { id:12, name:'Knubbel',       rarity:'normal', power:35, speed:15, magic:10, defense:50, luck:25, desc:'Klein, rund und unglaublich hartnäckig.' },
+  { id:13, name:'Blinki',        rarity:'normal', power:18, speed:40, magic:35, defense:15, luck:42, desc:'Blinzelt so schnell, dass er Funken erzeugt.' },
+  { id:14, name:'Wabbel',        rarity:'normal', power:20, speed:18, magic:15, defense:38, luck:55, desc:'Wackelt ständig, aber fällt nie um.' },
+  { id:15, name:'Tropfi',        rarity:'normal', power:14, speed:30, magic:40, defense:20, luck:35, desc:'Tropft magische Flüssigkeit wo immer er geht.' },
+  { id:16, name:'Stachli',       rarity:'normal', power:42, speed:22, magic:12, defense:45, luck:18, desc:'Vorsicht! Seine Stacheln sind schärfer als sie aussehen.' },
+  { id:17, name:'Wuseli',        rarity:'normal', power:12, speed:58, magic:18, defense:10, luck:48, desc:'Huscht so flink herum, dass man ihn kaum sieht.' },
+  { id:18, name:'Glummi',        rarity:'normal', power:25, speed:20, magic:32, defense:28, luck:38, desc:'Brummt leise vor sich hin und strahlt Wärme aus.' },
+  { id:19, name:'Knirpsi',       rarity:'normal', power:15, speed:35, magic:28, defense:20, luck:52, desc:'Winzig aber mutig – der Kleinste im Glaggle-Kosmos.' },
+  { id:20, name:'Quatschi',      rarity:'normal', power:20, speed:25, magic:22, defense:30, luck:42, desc:'Redet ohne Pause und bringt jeden zum Lachen.' },
+  { id:21, name:'Moosbart',      rarity:'normal', power:32, speed:12, magic:38, defense:40, luck:28, desc:'Alter Waldgeist mit einem Bart aus Moos.' },
+  { id:22, name:'Nubbelchen',    rarity:'normal', power:28, speed:18, magic:15, defense:48, luck:32, desc:'Winziger Klumpen, der alles beobachtet.' },
+  { id:23, name:'Flausi',        rarity:'normal', power:18, speed:42, magic:30, defense:15, luck:45, desc:'Flauschig wie eine Wolke und genauso leicht.' },
+  { id:24, name:'Schlippi',      rarity:'normal', power:10, speed:50, magic:25, defense:12, luck:55, desc:'Glatt wie Eis – kein Angriff bleibt hängen.' },
+  { id:25, name:'Tolpel',        rarity:'normal', power:30, speed:15, magic:10, defense:35, luck:60, desc:'Stolpert durch das Leben und findet immer Gold.' },
+  { id:26, name:'Brumbo',        rarity:'normal', power:38, speed:20, magic:8,  defense:50, luck:22, desc:'Brummt wie ein Motor und ist genauso ausdauernd.' },
+  { id:27, name:'Zippel',        rarity:'normal', power:15, speed:60, magic:20, defense:10, luck:40, desc:'Schnell wie ein Reißverschluss – zip, weg!' },
+  { id:28, name:'Matschling',    rarity:'normal', power:25, speed:10, magic:42, defense:32, luck:35, desc:'Formt sich um jedes Hindernis herum.' },
+  { id:29, name:'Glubschi',      rarity:'normal', power:22, speed:28, magic:35, defense:20, luck:48, desc:'Riesige Augen, die alles auf einmal sehen.' },
+  { id:30, name:'Runkelchen',    rarity:'normal', power:28, speed:22, magic:18, defense:45, luck:30, desc:'Klein und faltig, aber voller Energie.' },
+  { id:31, name:'Plitsch',       rarity:'normal', power:12, speed:38, magic:45, defense:15, luck:42, desc:'Platschend und plitschernd durch jeden Bach.' },
+  { id:32, name:'Muffi',         rarity:'normal', power:20, speed:15, magic:30, defense:40, luck:50, desc:'Mürrisch, aber im Herzen ein Weichling.' },
+  { id:33, name:'Zirpsel',       rarity:'normal', power:16, speed:48, magic:28, defense:12, luck:55, desc:'Zirpt melodisch und lockt damit Freunde an.' },
+  { id:34, name:'Klumpi',        rarity:'normal', power:35, speed:12, magic:15, defense:52, luck:25, desc:'Massig und stabil wie ein Felsblock.' },
+  { id:35, name:'Schleimi',      rarity:'normal', power:14, speed:22, magic:50, defense:18, luck:38, desc:'Hinterlässt eine magische Spur überall.' },
+  { id:36, name:'Tüpfeli',       rarity:'normal', power:20, speed:30, magic:32, defense:22, luck:52, desc:'Überall bunt gepunktet – jeder Punkt ein Wunsch.' },
+  { id:37, name:'Hoppeli',       rarity:'normal', power:18, speed:55, magic:20, defense:15, luck:45, desc:'Hüpft unermüdlich von Stein zu Stein.' },
+  { id:38, name:'Grummelchen',   rarity:'normal', power:32, speed:15, magic:12, defense:48, luck:28, desc:'Grummelt vor sich hin, aber hilft immer.' },
+  { id:39, name:'Neonöhrchen',   rarity:'normal', power:15, speed:40, magic:38, defense:18, luck:48, desc:'Leuchtend grüne Ohren, die Signale empfangen.' },
+  { id:40, name:'Quibbel',       rarity:'normal', power:22, speed:32, magic:28, defense:25, luck:42, desc:'Quietscht bei jeder Bewegung und liebt es.' },
+
+  // ── NORMAL NEU (101–140) ────────────────────────────────────
+  { id:101, name:'Blubbsi',      rarity:'normal', power:18, speed:30, magic:22, defense:28, luck:44, desc:'Blubbert vergnügt durch die Gegend.' },
+  { id:102, name:'Krüseli',      rarity:'normal', power:24, speed:20, magic:18, defense:36, luck:50, desc:'Kraus und wirr, aber zum Knuddeln.' },
+  { id:103, name:'Zottelwicht',  rarity:'normal', power:20, speed:16, magic:28, defense:42, luck:38, desc:'Zottelig und gemütlich wie ein alter Teppich.' },
+  { id:104, name:'Pippel',       rarity:'normal', power:14, speed:44, magic:24, defense:18, luck:52, desc:'Piepst munter und hüpft dabei auf der Stelle.' },
+  { id:105, name:'Murksi',       rarity:'normal', power:28, speed:22, magic:16, defense:40, luck:34, desc:'Macht komische Geräusche, ist aber harmlos.' },
+  { id:106, name:'Schlonzi',     rarity:'normal', power:10, speed:36, magic:38, defense:16, luck:48, desc:'Schlängelt sich durch jeden Spalt.' },
+  { id:107, name:'Wuppdi',       rarity:'normal', power:22, speed:48, magic:20, defense:14, luck:44, desc:'Wuppt hin und her wie ein Gummiball.' },
+  { id:108, name:'Grübsi',       rarity:'normal', power:16, speed:12, magic:42, defense:38, luck:40, desc:'Grübelt viel – weiss aber nie warum.' },
+  { id:109, name:'Tappsi',       rarity:'normal', power:30, speed:18, magic:12, defense:44, luck:36, desc:'Tapst tolpatschig durch die Welt.' },
+  { id:110, name:'Flizzle',      rarity:'normal', power:12, speed:52, magic:26, defense:16, luck:46, desc:'Flitzt wie eine aufgezogene Spielzeugmaus.' },
+  { id:111, name:'Nuschli',      rarity:'normal', power:18, speed:14, magic:34, defense:44, luck:42, desc:'Nuschelt ständig – versteht ihn eh niemand.' },
+  { id:112, name:'Knobbel',      rarity:'normal', power:32, speed:16, magic:14, defense:50, luck:28, desc:'Kompakt und knorrig wie eine alte Wurzel.' },
+  { id:113, name:'Zappelfix',    rarity:'normal', power:16, speed:56, magic:18, defense:12, luck:46, desc:'Kann nicht stillsitzen – niemals.' },
+  { id:114, name:'Plumpsi',      rarity:'normal', power:34, speed:12, magic:10, defense:52, luck:30, desc:'Schwer aber herzlich – man mag ihn sofort.' },
+  { id:115, name:'Schimmeli',    rarity:'normal', power:14, speed:24, magic:48, defense:22, luck:40, desc:'Schimmert leicht in der Dunkelheit.' },
+  { id:116, name:'Wuschel',      rarity:'normal', power:20, speed:28, magic:26, defense:32, luck:48, desc:'Wuscheliger Knäuel aus Fell und guter Laune.' },
+  { id:117, name:'Dröpfli',      rarity:'normal', power:12, speed:32, magic:44, defense:18, luck:42, desc:'Hinterlässt kleine Tropfen überall wo er läuft.' },
+  { id:118, name:'Strubbel',     rarity:'normal', power:26, speed:20, magic:22, defense:38, luck:44, desc:'Strubbelig und chaotisch, aber verlässlich.' },
+  { id:119, name:'Quieksi',      rarity:'normal', power:14, speed:46, magic:28, defense:14, luck:52, desc:'Quietscht aufgeregt wenn es was Neues gibt.' },
+  { id:120, name:'Molchi',       rarity:'normal', power:20, speed:14, magic:36, defense:40, luck:38, desc:'Ruhig wie ein Molch im stillen Tümpel.' },
+  { id:121, name:'Bröcki',       rarity:'normal', power:36, speed:10, magic:12, defense:54, luck:22, desc:'Bröckelig an der Oberfläche, steinhart innen.' },
+  { id:122, name:'Flauschbert',  rarity:'normal', power:16, speed:30, magic:32, defense:26, luck:50, desc:'Extrem flauschig – niemand kann ihm widerstehen.' },
+  { id:123, name:'Krabbelo',     rarity:'normal', power:24, speed:36, magic:16, defense:40, luck:36, desc:'Krabbelt auf acht kleinen Beinen durchs Leben.' },
+  { id:124, name:'Züngli',       rarity:'normal', power:18, speed:26, magic:40, defense:20, luck:44, desc:'Sehr lange Zunge, sehr kurze Geduld.' },
+  { id:125, name:'Moppel',       rarity:'normal', power:28, speed:14, magic:18, defense:48, luck:40, desc:'Rundlich und zufrieden mit sich selbst.' },
+  { id:126, name:'Schwabbel',    rarity:'normal', power:16, speed:20, magic:30, defense:44, luck:46, desc:'Schwabbelt bei jeder Erschütterung.' },
+  { id:127, name:'Zipfelchen',   rarity:'normal', power:22, speed:38, magic:24, defense:22, luck:48, desc:'Hat einen kleinen Zipfel oben – wozu, weiss er nicht.' },
+  { id:128, name:'Nörgeli',      rarity:'normal', power:20, speed:16, magic:28, defense:38, luck:44, desc:'Nörgelt viel, aber meint es gut.' },
+  { id:129, name:'Knuspi',       rarity:'normal', power:30, speed:22, magic:14, defense:46, luck:32, desc:'Knusprig aussen, weich innen.' },
+  { id:130, name:'Wibbelchen',   rarity:'normal', power:14, speed:50, magic:22, defense:14, luck:52, desc:'Wuseliges Energiebündel ohne Pause.' },
+  { id:131, name:'Schlürfli',    rarity:'normal', power:12, speed:18, magic:46, defense:28, luck:48, desc:'Schlürft gerne – das ist seine Sprache.' },
+  { id:132, name:'Trommelchen',  rarity:'normal', power:26, speed:24, magic:30, defense:32, luck:40, desc:'Trommelt auf allem herum was er findet.' },
+  { id:133, name:'Zottelei',     rarity:'normal', power:18, speed:26, magic:34, defense:30, luck:46, desc:'Zottelig und gemütlich, immer dabei.' },
+  { id:134, name:'Puffelchen',   rarity:'normal', power:24, speed:18, magic:28, defense:36, luck:44, desc:'Pufft kleine Wölkchen aus der Nase.' },
+  { id:135, name:'Grumsi',       rarity:'normal', power:30, speed:14, magic:16, defense:50, luck:34, desc:'Grumst nur, sagt aber damit alles.' },
+  { id:136, name:'Wackelzahn',   rarity:'normal', power:22, speed:28, magic:20, defense:36, luck:48, desc:'Hat einen wackelnden Zahn – sein Markenzeichen.' },
+  { id:137, name:'Schnupfi',     rarity:'normal', power:14, speed:32, magic:36, defense:22, luck:50, desc:'Schnuppert überall und weiss alles.' },
+  { id:138, name:'Blöbbi',       rarity:'normal', power:16, speed:24, magic:40, defense:26, luck:46, desc:'Formt sich in jede beliebige Form.' },
+  { id:139, name:'Rumpeli',      rarity:'normal', power:34, speed:16, magic:12, defense:48, luck:30, desc:'Rumpelt durch Wände als wären sie Luft.' },
+  { id:140, name:'Glupsch',      rarity:'normal', power:20, speed:30, magic:32, defense:24, luck:46, desc:'Glupschaugen die alles sehen – wirklich alles.' },
 
   // ── RARE (41–70) ────────────────────────────────────────────
-  { id:41, name:'Krakowi',       rarity:'rare',   metal:'none',   power:55, speed:30, magic:40, defense:48, luck:35, desc:'Acht Tentakel, ein Ziel – gewinnen.' },
-  { id:42, name:'Volcanix',      rarity:'rare',   metal:'bronze', power:68, speed:25, magic:55, defense:58, luck:20, desc:'Ein Mini-Vulkan, der wandert und alles erwärmt.' },
-  { id:43, name:'Frostini',      rarity:'rare',   metal:'none',   power:42, speed:62, magic:65, defense:38, luck:38, desc:'Lässt überall Eiskristalle entstehen.' },
-  { id:44, name:'Shadowbun',     rarity:'rare',   metal:'none',   power:48, speed:72, magic:35, defense:32, luck:52, desc:'Springt aus Schatten zu Schatten.' },
-  { id:45, name:'Crystallo',     rarity:'rare',   metal:'silver', power:40, speed:36, magic:72, defense:52, luck:44, desc:'Sein Körper ist ein einziger riesiger Edelstein.' },
-  { id:46, name:'Rumblox',       rarity:'rare',   metal:'none',   power:74, speed:16, magic:28, defense:70, luck:22, desc:'Schwer wie ein Fels, stark wie ein Berg.' },
-  { id:47, name:'Wirblo',        rarity:'rare',   metal:'none',   power:45, speed:78, magic:40, defense:25, luck:55, desc:'Ein ewiger Wirbel, der nie aufhört sich zu drehen.' },
-  { id:48, name:'Flametto',      rarity:'rare',   metal:'none',   power:65, speed:45, magic:58, defense:30, luck:30, desc:'Eine lebende Flamme – berührt ihn, verbrennt ihr.' },
-  { id:49, name:'Aquarini',      rarity:'rare',   metal:'none',   power:38, speed:65, magic:60, defense:42, luck:45, desc:'Surft auf Wellen, die er selbst erzeugt.' },
-  { id:50, name:'Steingeist',    rarity:'rare',   metal:'bronze', power:72, speed:10, magic:35, defense:78, luck:18, desc:'Jahrtausende alter Geist, gefangen in einem Stein.' },
-  { id:51, name:'Blitzpfeil',    rarity:'rare',   metal:'none',   power:58, speed:82, magic:30, defense:20, luck:35, desc:'Schiesst wie ein Pfeil durch die Luft.' },
-  { id:52, name:'Nebelgeist',    rarity:'rare',   metal:'none',   power:35, speed:55, magic:68, defense:38, luck:50, desc:'Hüllt sich in Nebel und verwirrt alle.' },
-  { id:53, name:'Sumpfkönig',    rarity:'rare',   metal:'none',   power:62, speed:20, magic:45, defense:65, luck:30, desc:'Herrscher über den magischen Sumpf.' },
-  { id:54, name:'Windläufer',    rarity:'rare',   metal:'none',   power:40, speed:80, magic:38, defense:22, luck:48, desc:'Rennt schneller als der Wind selbst.' },
-  { id:55, name:'Glutherz',      rarity:'rare',   metal:'bronze', power:60, speed:35, magic:62, defense:40, luck:28, desc:'Sein Herz ist aus reiner Glut.' },
-  { id:56, name:'Eisenflügel',   rarity:'rare',   metal:'none',   power:55, speed:60, magic:25, defense:62, luck:32, desc:'Flügel aus Eisen, stark wie ein Panzer.' },
-  { id:57, name:'Drachenkind',   rarity:'rare',   metal:'none',   power:70, speed:40, magic:50, defense:45, luck:25, desc:'Kleines Drachenwesen mit grossem Feuer.' },
-  { id:58, name:'Mondflüsterer', rarity:'rare',   metal:'silver', power:32, speed:50, magic:75, defense:30, luck:55, desc:'Flüstert mit dem Mond und hört dessen Geheimnisse.' },
-  { id:59, name:'Sandsturm',     rarity:'rare',   metal:'none',   power:60, speed:68, magic:35, defense:35, luck:30, desc:'Ein wandernder Sandsturm in Miniformat.' },
-  { id:60, name:'Traumwandler',  rarity:'rare',   metal:'none',   power:30, speed:45, magic:72, defense:28, luck:58, desc:'Bewegt sich durch Träume wie andere durch Räume.' },
-  { id:61, name:'Donnerball',    rarity:'rare',   metal:'none',   power:75, speed:30, magic:45, defense:50, luck:20, desc:'Rollt donnernd über alles, was ihm in den Weg kommt.' },
-  { id:62, name:'Glitzerhai',    rarity:'rare',   metal:'none',   power:65, speed:55, magic:30, defense:55, luck:28, desc:'Schwimmt durch die Luft wie durch Wasser.' },
-  { id:63, name:'Blütengeist',   rarity:'rare',   metal:'none',   power:25, speed:40, magic:70, defense:32, luck:60, desc:'Entfaltet sich wie eine Blüte und heilt alles.' },
-  { id:64, name:'Knochenkralle', rarity:'rare',   metal:'bronze', power:72, speed:38, magic:20, defense:68, luck:15, desc:'Uralt und knochentrocken, aber unaufhaltsam.' },
-  { id:65, name:'Sternenraupe',  rarity:'rare',   metal:'none',   power:28, speed:35, magic:65, defense:40, luck:55, desc:'Eine Raupe aus reinem Sternenlicht.' },
-  { id:66, name:'Irrlicht',      rarity:'rare',   metal:'none',   power:32, speed:70, magic:60, defense:20, luck:50, desc:'Führt andere in die Irre – oder zum Glück.' },
-  { id:67, name:'Schlammtroll',  rarity:'rare',   metal:'none',   power:68, speed:15, magic:30, defense:72, luck:22, desc:'Langsam, massiv, unaufhaltsam.' },
-  { id:68, name:'Lichtspringer', rarity:'rare',   metal:'silver', power:45, speed:75, magic:55, defense:25, luck:42, desc:'Springt von Lichtstrahl zu Lichtstrahl.' },
-  { id:69, name:'Magnetkugel',   rarity:'rare',   metal:'none',   power:50, speed:30, magic:50, defense:60, luck:35, desc:'Zieht alles magisch an – Freund und Feind.' },
-  { id:70, name:'Polarnebel',    rarity:'rare',   metal:'none',   power:38, speed:52, magic:68, defense:35, luck:45, desc:'Eiskalter Nebel mit einem warmen Kern.' },
+  { id:41, name:'Krakowi',       rarity:'rare', power:55, speed:30, magic:40, defense:48, luck:35, desc:'Acht Tentakel, ein Ziel – gewinnen.' },
+  { id:42, name:'Volcanix',      rarity:'rare', power:68, speed:25, magic:55, defense:58, luck:20, desc:'Ein Mini-Vulkan, der wandert und alles erwärmt.' },
+  { id:43, name:'Frostini',      rarity:'rare', power:42, speed:62, magic:65, defense:38, luck:38, desc:'Lässt überall Eiskristalle entstehen.' },
+  { id:44, name:'Shadowbun',     rarity:'rare', power:48, speed:72, magic:35, defense:32, luck:52, desc:'Springt aus Schatten zu Schatten.' },
+  { id:45, name:'Crystallo',     rarity:'rare', power:40, speed:36, magic:72, defense:52, luck:44, desc:'Sein Körper ist ein einziger riesiger Edelstein.' },
+  { id:46, name:'Rumblox',       rarity:'rare', power:74, speed:16, magic:28, defense:70, luck:22, desc:'Schwer wie ein Fels, stark wie ein Berg.' },
+  { id:47, name:'Wirblo',        rarity:'rare', power:45, speed:78, magic:40, defense:25, luck:55, desc:'Ein ewiger Wirbel, der nie aufhört sich zu drehen.' },
+  { id:48, name:'Flametto',      rarity:'rare', power:65, speed:45, magic:58, defense:30, luck:30, desc:'Eine lebende Flamme – berührt ihn, verbrennt ihr.' },
+  { id:49, name:'Aquarini',      rarity:'rare', power:38, speed:65, magic:60, defense:42, luck:45, desc:'Surft auf Wellen, die er selbst erzeugt.' },
+  { id:50, name:'Steingeist',    rarity:'rare', power:72, speed:10, magic:35, defense:78, luck:18, desc:'Jahrtausende alter Geist, gefangen in einem Stein.' },
+  { id:51, name:'Blitzpfeil',    rarity:'rare', power:58, speed:82, magic:30, defense:20, luck:35, desc:'Schiesst wie ein Pfeil durch die Luft.' },
+  { id:52, name:'Nebelgeist',    rarity:'rare', power:35, speed:55, magic:68, defense:38, luck:50, desc:'Hüllt sich in Nebel und verwirrt alle.' },
+  { id:53, name:'Sumpfkönig',    rarity:'rare', power:62, speed:20, magic:45, defense:65, luck:30, desc:'Herrscher über den magischen Sumpf.' },
+  { id:54, name:'Windläufer',    rarity:'rare', power:40, speed:80, magic:38, defense:22, luck:48, desc:'Rennt schneller als der Wind selbst.' },
+  { id:55, name:'Glutherz',      rarity:'rare', power:60, speed:35, magic:62, defense:40, luck:28, desc:'Sein Herz ist aus reiner Glut.' },
+  { id:56, name:'Eisenflügel',   rarity:'rare', power:55, speed:60, magic:25, defense:62, luck:32, desc:'Flügel aus Eisen, stark wie ein Panzer.' },
+  { id:57, name:'Drachenkind',   rarity:'rare', power:70, speed:40, magic:50, defense:45, luck:25, desc:'Kleines Drachenwesen mit grossem Feuer.' },
+  { id:58, name:'Mondflüsterer', rarity:'rare', power:32, speed:50, magic:75, defense:30, luck:55, desc:'Flüstert mit dem Mond und hört dessen Geheimnisse.' },
+  { id:59, name:'Sandsturm',     rarity:'rare', power:60, speed:68, magic:35, defense:35, luck:30, desc:'Ein wandernder Sandsturm in Miniformat.' },
+  { id:60, name:'Traumwandler',  rarity:'rare', power:30, speed:45, magic:72, defense:28, luck:58, desc:'Bewegt sich durch Träume wie andere durch Räume.' },
+  { id:61, name:'Donnerball',    rarity:'rare', power:75, speed:30, magic:45, defense:50, luck:20, desc:'Rollt donnernd über alles, was ihm in den Weg kommt.' },
+  { id:62, name:'Glitzerhai',    rarity:'rare', power:65, speed:55, magic:30, defense:55, luck:28, desc:'Schwimmt durch die Luft wie durch Wasser.' },
+  { id:63, name:'Blütengeist',   rarity:'rare', power:25, speed:40, magic:70, defense:32, luck:60, desc:'Entfaltet sich wie eine Blüte und heilt alles.' },
+  { id:64, name:'Knochenkralle', rarity:'rare', power:72, speed:38, magic:20, defense:68, luck:15, desc:'Uralt und knochentrocken, aber unaufhaltsam.' },
+  { id:65, name:'Sternenraupe',  rarity:'rare', power:28, speed:35, magic:65, defense:40, luck:55, desc:'Eine Raupe aus reinem Sternenlicht.' },
+  { id:66, name:'Irrlicht',      rarity:'rare', power:32, speed:70, magic:60, defense:20, luck:50, desc:'Führt andere in die Irre – oder zum Glück.' },
+  { id:67, name:'Schlammtroll',  rarity:'rare', power:68, speed:15, magic:30, defense:72, luck:22, desc:'Langsam, massiv, unaufhaltsam.' },
+  { id:68, name:'Lichtspringer', rarity:'rare', power:45, speed:75, magic:55, defense:25, luck:42, desc:'Springt von Lichtstrahl zu Lichtstrahl.' },
+  { id:69, name:'Magnetkugel',   rarity:'rare', power:50, speed:30, magic:50, defense:60, luck:35, desc:'Zieht alles magisch an – Freund und Feind.' },
+  { id:70, name:'Polarnebel',    rarity:'rare', power:38, speed:52, magic:68, defense:35, luck:45, desc:'Eiskalter Nebel mit einem warmen Kern.' },
+
+  // ── RARE NEU (141–170) ──────────────────────────────────────
+  { id:141, name:'Blitzotter',   rarity:'rare', power:60, speed:75, magic:35, defense:30, luck:40, desc:'Schiesst wie ein Blitz durch Gras und Gestrüpp.' },
+  { id:142, name:'Schaumdrache', rarity:'rare', power:52, speed:42, magic:65, defense:42, luck:35, desc:'Spuckt magischen Schaum der alles verlangsamt.' },
+  { id:143, name:'Gewitterwolke',rarity:'rare', power:58, speed:60, magic:55, defense:28, luck:42, desc:'Eine lebendige Gewitterwolke am Boden.' },
+  { id:144, name:'Tiefseetroll', rarity:'rare', power:70, speed:18, magic:40, defense:72, luck:20, desc:'Lebt in Tiefen wo kein Licht ankommt.' },
+  { id:145, name:'Glutauge',     rarity:'rare', power:62, speed:38, magic:60, defense:38, luck:28, desc:'Seine Augen brennen wie kleine Sonnen.' },
+  { id:146, name:'Moosdrache',   rarity:'rare', power:48, speed:35, magic:62, defense:55, luck:35, desc:'Bedeckt mit lebendem Moos – sein natürlicher Panzer.' },
+  { id:147, name:'Silberschwanz',rarity:'rare', power:42, speed:68, magic:45, defense:40, luck:50, desc:'Sein silbriger Schwanz hypnotisiert jeden.' },
+  { id:148, name:'Wüstengeist',  rarity:'rare', power:55, speed:62, magic:52, defense:30, luck:38, desc:'Erscheint als Fata Morgana – oder ist er real?' },
+  { id:149, name:'Kristallkäfer',rarity:'rare', power:38, speed:44, magic:70, defense:52, luck:42, desc:'Sein Panzer ist aus solidem Bergkristall.' },
+  { id:150, name:'Feuerfuchs',   rarity:'rare', power:65, speed:70, magic:48, defense:30, luck:32, desc:'Flink und feurig – niemand fängt ihn.' },
+  { id:151, name:'Eiswurm',      rarity:'rare', power:44, speed:38, magic:62, defense:58, luck:28, desc:'Bohrt Tunnel durch Gletschereis.' },
+  { id:152, name:'Sturmvogel',   rarity:'rare', power:50, speed:80, magic:40, defense:25, luck:45, desc:'Fliegt nur bei Sturm – je schlimmer desto schneller.' },
+  { id:153, name:'Lavaläufer',   rarity:'rare', power:68, speed:50, magic:45, defense:48, luck:22, desc:'Läuft über glühende Lava ohne zu sinken.' },
+  { id:154, name:'Nebelwächter', rarity:'rare', power:40, speed:45, magic:68, defense:42, luck:48, desc:'Bewacht die Grenze zwischen Realität und Traum.' },
+  { id:155, name:'Donnerkatze',  rarity:'rare', power:65, speed:65, magic:35, defense:45, luck:30, desc:'Jeder Schritt ein kleines Donnergrollen.' },
+  { id:156, name:'Sternfisch',   rarity:'rare', power:30, speed:55, magic:72, defense:30, luck:58, desc:'Schwimmt durch die Luft wie durch Wasser.' },
+  { id:157, name:'Sandkönig',    rarity:'rare', power:62, speed:30, magic:48, defense:62, luck:25, desc:'Herrscht über endlose Sandwüsten.' },
+  { id:158, name:'Blattgeist',   rarity:'rare', power:28, speed:58, magic:65, defense:28, luck:58, desc:'Versteckt sich in Blättern und beobachtet alles.' },
+  { id:159, name:'Urwaldwurm',   rarity:'rare', power:55, speed:25, magic:52, defense:65, luck:32, desc:'Jahrhunderte alt und tief im Urwald verwurzelt.' },
+  { id:160, name:'Funkelkröte',  rarity:'rare', power:35, speed:32, magic:74, defense:48, luck:48, desc:'Jedes Mal wenn sie hüpft gibt es Funken.' },
+  { id:161, name:'Strudelmotte', rarity:'rare', power:42, speed:72, magic:52, defense:22, luck:50, desc:'Dreht sich im Kreis – aber immer in die richtige Richtung.' },
+  { id:162, name:'Kälteschatten',rarity:'rare', power:48, speed:60, magic:58, defense:36, luck:42, desc:'Sein Schatten ist immer kälter als die Umgebung.' },
+  { id:163, name:'Glutskorpion', rarity:'rare', power:72, speed:42, magic:40, defense:55, luck:18, desc:'Scorpio infernalis – selten und gefürchtet.' },
+  { id:164, name:'Frostblume',   rarity:'rare', power:25, speed:42, magic:76, defense:38, luck:55, desc:'Erblüht nur wenn es schneit.' },
+  { id:165, name:'Steinkrabber', rarity:'rare', power:68, speed:20, magic:30, defense:78, luck:20, desc:'Krabbt durch Gestein wie durch Sand.' },
+  { id:166, name:'Windschatten', rarity:'rare', power:45, speed:78, magic:42, defense:25, luck:48, desc:'So schnell dass er seinen eigenen Schatten überholt.' },
+  { id:167, name:'Torfgeist',    rarity:'rare', power:38, speed:28, magic:66, defense:52, luck:40, desc:'Uralt wie das Moor selbst.' },
+  { id:168, name:'Blitzkäfer',   rarity:'rare', power:55, speed:68, magic:40, defense:30, luck:38, desc:'Flieht mit Lichtgeschwindigkeit.' },
+  { id:169, name:'Kristallwolf', rarity:'rare', power:65, speed:60, magic:50, defense:48, luck:28, desc:'Sein Fell glänzt wie frischer Schnee.' },
+  { id:170, name:'Vulkanaffe',   rarity:'rare', power:70, speed:52, magic:38, defense:52, luck:22, desc:'Lebt in Vulkankratern und springt zwischen ihnen.' },
 
   // ── SUPER RARE (71–90) ──────────────────────────────────────
-  { id:71, name:'Nexoris',       rarity:'super',  metal:'none',   power:78, speed:62, magic:74, defense:58, luck:50, desc:'Eine antike Entität aus den Ursprüngen des Glaggle-Kosmos.' },
-  { id:72, name:'Prismatica',    rarity:'super',  metal:'silver', power:62, speed:70, magic:86, defense:52, luck:64, desc:'Bricht Licht in tausend Farben und bleibt dabei unsichtbar.' },
-  { id:73, name:'Thunderclap',   rarity:'super',  metal:'none',   power:88, speed:75, magic:52, defense:62, luck:38, desc:'Sein Brüllen erschüttert ganze Kontinente.' },
-  { id:74, name:'Miragello',     rarity:'super',  metal:'none',   power:58, speed:82, magic:78, defense:42, luck:70, desc:'Niemand weiß genau, ob er wirklich existiert.' },
-  { id:75, name:'Abyssini',      rarity:'super',  metal:'gold',   power:70, speed:52, magic:90, defense:68, luck:56, desc:'Aus den tiefsten Tiefen des Glaggle-Ozeans aufgestiegen.' },
-  { id:76, name:'Terramorph',    rarity:'super',  metal:'none',   power:82, speed:38, magic:65, defense:85, luck:42, desc:'Kann sich in jeden Stein verwandeln, den er berührt.' },
-  { id:77, name:'Zephyrax',      rarity:'super',  metal:'none',   power:60, speed:92, magic:68, defense:40, luck:65, desc:'Schneller als der Wind – sogar schneller als sein Schatten.' },
-  { id:78, name:'Vulkangeist',   rarity:'super',  metal:'bronze', power:85, speed:40, magic:72, defense:70, luck:30, desc:'Jahrtausend alter Geist eines schlafenden Vulkans.' },
-  { id:79, name:'Tiefseejäger',  rarity:'super',  metal:'none',   power:75, speed:58, magic:65, defense:72, luck:35, desc:'Jagt in Tiefen, die kein Licht je erreicht.' },
-  { id:80, name:'Sternenreiter', rarity:'super',  metal:'silver', power:65, speed:78, magic:80, defense:45, luck:58, desc:'Reitet auf Sternschnuppen durch die Galaxie.' },
-  { id:81, name:'Glutkönig',     rarity:'super',  metal:'none',   power:88, speed:45, magic:68, defense:75, luck:28, desc:'Herrscher aller Feuer-Glaginis.' },
-  { id:82, name:'Zeitwanderer',  rarity:'super',  metal:'none',   power:55, speed:70, magic:88, defense:50, luck:72, desc:'Wandert durch Epochen und beobachtet alles.' },
-  { id:83, name:'Schattenkönigin',rarity:'super', metal:'none',   power:68, speed:80, magic:75, defense:48, luck:60, desc:'Herrscherin aller Schatten im Glaggle-Reich.' },
-  { id:84, name:'Donnerlord',    rarity:'super',  metal:'bronze', power:90, speed:50, magic:58, defense:78, luck:25, desc:'Lord des Donners – sein Schrei ist ein Gewitter.' },
-  { id:85, name:'Eisphönix',     rarity:'super',  metal:'silver', power:70, speed:82, magic:78, defense:55, luck:45, desc:'Stirbt und ersteht aus Eis immer wieder auf.' },
-  { id:86, name:'Nebeldrache',   rarity:'super',  metal:'none',   power:80, speed:65, magic:82, defense:60, luck:40, desc:'Ein Drache aus purem Nebel – greifbar und nicht.' },
-  { id:87, name:'Lichtgott',     rarity:'super',  metal:'gold',   power:72, speed:72, magic:92, defense:65, luck:62, desc:'Ein Wesen aus reinem Licht.' },
-  { id:88, name:'Urwaldwächter', rarity:'super',  metal:'none',   power:78, speed:42, magic:70, defense:88, luck:38, desc:'Uralter Hüter des ersten Glaggle-Waldes.' },
-  { id:89, name:'Kristalldrache',rarity:'super',  metal:'silver', power:82, speed:62, magic:85, defense:72, luck:48, desc:'Ein Drache, dessen Schuppen aus reinem Kristall bestehen.' },
-  { id:90, name:'Kosmosläufer',  rarity:'super',  metal:'none',   power:65, speed:88, magic:78, defense:50, luck:68, desc:'Läuft durch den gesamten Kosmos ohne Pause.' },
+  { id:71, name:'Nexoris',        rarity:'super', power:78, speed:62, magic:74, defense:58, luck:50, desc:'Eine antike Entität aus den Ursprüngen des Glaggle-Kosmos.' },
+  { id:72, name:'Prismatica',     rarity:'super', power:62, speed:70, magic:86, defense:52, luck:64, desc:'Bricht Licht in tausend Farben und bleibt dabei unsichtbar.' },
+  { id:73, name:'Thunderclap',    rarity:'super', power:88, speed:75, magic:52, defense:62, luck:38, desc:'Sein Brüllen erschüttert ganze Kontinente.' },
+  { id:74, name:'Miragello',      rarity:'super', power:58, speed:82, magic:78, defense:42, luck:70, desc:'Niemand weiß genau, ob er wirklich existiert.' },
+  { id:75, name:'Abyssini',       rarity:'super', power:70, speed:52, magic:90, defense:68, luck:56, desc:'Aus den tiefsten Tiefen des Glaggle-Ozeans aufgestiegen.' },
+  { id:76, name:'Terramorph',     rarity:'super', power:82, speed:38, magic:65, defense:85, luck:42, desc:'Kann sich in jeden Stein verwandeln, den er berührt.' },
+  { id:77, name:'Zephyrax',       rarity:'super', power:60, speed:92, magic:68, defense:40, luck:65, desc:'Schneller als der Wind – sogar schneller als sein Schatten.' },
+  { id:78, name:'Vulkangeist',    rarity:'super', power:85, speed:40, magic:72, defense:70, luck:30, desc:'Jahrtausend alter Geist eines schlafenden Vulkans.' },
+  { id:79, name:'Tiefseejäger',   rarity:'super', power:75, speed:58, magic:65, defense:72, luck:35, desc:'Jagt in Tiefen, die kein Licht je erreicht.' },
+  { id:80, name:'Sternenreiter',  rarity:'super', power:65, speed:78, magic:80, defense:45, luck:58, desc:'Reitet auf Sternschnuppen durch die Galaxie.' },
+  { id:81, name:'Glutkönig',      rarity:'super', power:88, speed:45, magic:68, defense:75, luck:28, desc:'Herrscher aller Feuer-Glaginis.' },
+  { id:82, name:'Zeitwanderer',   rarity:'super', power:55, speed:70, magic:88, defense:50, luck:72, desc:'Wandert durch Epochen und beobachtet alles.' },
+  { id:83, name:'Schattenkönigin',rarity:'super', power:68, speed:80, magic:75, defense:48, luck:60, desc:'Herrscherin aller Schatten im Glaggle-Reich.' },
+  { id:84, name:'Donnerlord',     rarity:'super', power:90, speed:50, magic:58, defense:78, luck:25, desc:'Lord des Donners – sein Schrei ist ein Gewitter.' },
+  { id:85, name:'Eisphönix',      rarity:'super', power:70, speed:82, magic:78, defense:55, luck:45, desc:'Stirbt und ersteht aus Eis immer wieder auf.' },
+  { id:86, name:'Nebeldrache',    rarity:'super', power:80, speed:65, magic:82, defense:60, luck:40, desc:'Ein Drache aus purem Nebel – greifbar und nicht.' },
+  { id:87, name:'Lichtgott',      rarity:'super', power:72, speed:72, magic:92, defense:65, luck:62, desc:'Ein Wesen aus reinem Licht.' },
+  { id:88, name:'Urwaldwächter',  rarity:'super', power:78, speed:42, magic:70, defense:88, luck:38, desc:'Uralter Hüter des ersten Glaggle-Waldes.' },
+  { id:89, name:'Kristalldrache', rarity:'super', power:82, speed:62, magic:85, defense:72, luck:48, desc:'Ein Drache, dessen Schuppen aus reinem Kristall bestehen.' },
+  { id:90, name:'Kosmosläufer',   rarity:'super', power:65, speed:88, magic:78, defense:50, luck:68, desc:'Läuft durch den gesamten Kosmos ohne Pause.' },
+
+  // ── SUPER RARE NEU (171–190) ────────────────────────────────
+  { id:171, name:'Aetherwolf',    rarity:'super', power:80, speed:70, magic:72, defense:60, luck:52, desc:'Läuft durch den Äther als wäre er Boden.' },
+  { id:172, name:'Quantenhai',    rarity:'super', power:72, speed:80, magic:78, defense:52, luck:56, desc:'Existiert an mehreren Orten gleichzeitig.' },
+  { id:173, name:'Feuerkönig',    rarity:'super', power:90, speed:52, magic:70, defense:72, luck:30, desc:'Regiert über alle Feuerwesen des Glaggle-Universums.' },
+  { id:174, name:'Schattenlord',  rarity:'super', power:75, speed:78, magic:70, defense:55, luck:55, desc:'Herrscht über alle Schatten der Nacht.' },
+  { id:175, name:'Polarsturm',    rarity:'super', power:68, speed:75, magic:80, defense:58, luck:45, desc:'Ein lebender Polarsturm, der alles einfriert.' },
+  { id:176, name:'Magmariese',    rarity:'super', power:92, speed:32, magic:62, defense:88, luck:28, desc:'Riese aus fliessender Lava – langsam aber unaufhaltbar.' },
+  { id:177, name:'Lichtläufer',   rarity:'super', power:58, speed:94, magic:70, defense:40, luck:65, desc:'Bewegt sich mit Lichtgeschwindigkeit.' },
+  { id:178, name:'Traumwächter',  rarity:'super', power:62, speed:60, magic:88, defense:55, luck:65, desc:'Bewacht die Grenze zwischen Traum und Realität.' },
+  { id:179, name:'Sternenwal',    rarity:'super', power:70, speed:55, magic:82, defense:72, luck:50, desc:'Schwimmt durch Sternennebel wie durch Wasser.' },
+  { id:180, name:'Eisritter',     rarity:'super', power:78, speed:60, magic:65, defense:82, luck:38, desc:'Ein Ritter, dessen Rüstung aus ewigem Eis besteht.' },
+  { id:181, name:'Glutphönix',    rarity:'super', power:85, speed:72, magic:75, defense:55, luck:42, desc:'Ersteht aus Asche und Glut immer neu.' },
+  { id:182, name:'Kometenjäger',  rarity:'super', power:65, speed:88, magic:72, defense:45, luck:60, desc:'Jagt Kometen durch das All.' },
+  { id:183, name:'Wellenherr',    rarity:'super', power:70, speed:68, magic:80, defense:58, luck:50, desc:'Beherrscht alle Gewässer des Glaggle-Kosmos.' },
+  { id:184, name:'Donnerfürst',   rarity:'super', power:88, speed:58, magic:65, defense:72, luck:32, desc:'Fürst aller Gewitterwesen.' },
+  { id:185, name:'Nebelkönig',    rarity:'super', power:60, speed:72, magic:85, defense:52, luck:60, desc:'Taucht die Welt in undurchdringlichen Nebel.' },
+  { id:186, name:'Urgestein',     rarity:'super', power:82, speed:30, magic:60, defense:92, luck:35, desc:'So alt wie die Welt selbst – und genauso hart.' },
+  { id:187, name:'Blitzdrache',   rarity:'super', power:85, speed:80, magic:72, defense:50, luck:38, desc:'Drache aus purem Blitz und Donner.' },
+  { id:188, name:'Mondwächter',   rarity:'super', power:65, speed:65, magic:88, defense:58, luck:58, desc:'Wacht über den Mond und seine Geheimnisse.' },
+  { id:189, name:'Tiefseegott',   rarity:'super', power:78, speed:50, magic:85, defense:75, luck:48, desc:'Uralter Gott der Tiefsee – kaum je gesehen.' },
+  { id:190, name:'Zeitgeist',     rarity:'super', power:62, speed:75, magic:90, defense:55, luck:68, desc:'Verkörpert die Zeit selbst.' },
 
   // ── EPIC (91–100) ───────────────────────────────────────────
-  { id:91, name:'Omnivox',       rarity:'epic',   metal:'none',   power:92, speed:82, magic:88, defense:80, luck:75, desc:'Die Stimme des gesamten Glaggle-Universums.' },
-  { id:92, name:'Solarius Rex',  rarity:'epic',   metal:'gold',   power:88, speed:72, magic:94, defense:85, luck:82, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
-  { id:93, name:'Voidwalker',    rarity:'epic',   metal:'none',   power:85, speed:94, magic:80, defense:70, luck:72, desc:'Wandert zwischen Welten als wären es Zimmer.' },
-  { id:94, name:'Chronomundi',   rarity:'epic',   metal:'silver', power:78, speed:80, magic:95, defense:75, luck:88, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
-  { id:95, name:'Urgeist',       rarity:'epic',   metal:'none',   power:94, speed:65, magic:85, defense:90, luck:65, desc:'Der erste Geist, der je im Glaggle-Universum erwachte.' },
-  { id:96, name:'Sternenbrecher',rarity:'epic',   metal:'gold',   power:90, speed:88, magic:78, defense:82, luck:70, desc:'Kann Sterne mit blossen Händen zertrümmern.' },
-  { id:97, name:'Abgrundherrscher',rarity:'epic', metal:'none',   power:86, speed:70, magic:90, defense:88, luck:60, desc:'Regiert die tiefsten Abgründe des Glaggle-Ozeans.' },
-  { id:98, name:'Zeitlord',      rarity:'epic',   metal:'silver', power:80, speed:85, magic:92, defense:78, luck:85, desc:'Herrscht über alle Zeitalter und Epochen.' },
-  { id:99, name:'Galaxienwächter',rarity:'epic',  metal:'gold',   power:88, speed:78, magic:88, defense:85, luck:78, desc:'Bewacht die Grenzen der gesamten Glaggle-Galaxie.' },
-  { id:100,name:'Glaggle Supreme',rarity:'epic',  metal:'gold',   power:95, speed:85, magic:90, defense:88, luck:82, desc:'Das legendärste Wesen – entstanden beim Urknall des Glaggle-Universums. Einzigartig.' },
+  { id:91,  name:'Omnivox',         rarity:'epic', power:92, speed:82, magic:88, defense:80, luck:75, desc:'Die Stimme des gesamten Glaggle-Universums.' },
+  { id:92,  name:'Solarius Rex',    rarity:'epic', power:88, speed:72, magic:94, defense:85, luck:82, desc:'Der König der Sonnenwesen – erhaben und unaufhaltbar.' },
+  { id:93,  name:'Voidwalker',      rarity:'epic', power:85, speed:94, magic:80, defense:70, luck:72, desc:'Wandert zwischen Welten als wären es Zimmer.' },
+  { id:94,  name:'Chronomundi',     rarity:'epic', power:78, speed:80, magic:95, defense:75, luck:88, desc:'Beherrscht die Zeit selbst und dreht sie zurück.' },
+  { id:95,  name:'Urgeist',         rarity:'epic', power:94, speed:65, magic:85, defense:90, luck:65, desc:'Der erste Geist, der je im Glaggle-Universum erwachte.' },
+  { id:96,  name:'Sternenbrecher',  rarity:'epic', power:90, speed:88, magic:78, defense:82, luck:70, desc:'Kann Sterne mit blossen Händen zertrümmern.' },
+  { id:97,  name:'Abgrundherrscher',rarity:'epic', power:86, speed:70, magic:90, defense:88, luck:60, desc:'Regiert die tiefsten Abgründe des Glaggle-Ozeans.' },
+  { id:98,  name:'Zeitlord',        rarity:'epic', power:80, speed:85, magic:92, defense:78, luck:85, desc:'Herrscht über alle Zeitalter und Epochen.' },
+  { id:99,  name:'Galaxienwächter', rarity:'epic', power:88, speed:78, magic:88, defense:85, luck:78, desc:'Bewacht die Grenzen der gesamten Glaggle-Galaxie.' },
+  { id:100, name:'Glaggle Supreme', rarity:'epic', power:95, speed:85, magic:90, defense:88, luck:70, desc:'Das legendärste Wesen – entstanden beim Urknall.' },
+
+  // ── EPIC NEU (191–200) ──────────────────────────────────────
+  { id:191, name:'Aetherlord',      rarity:'epic', power:90, speed:80, magic:92, defense:82, luck:76, desc:'Herrscher des Äthers zwischen den Welten.' },
+  { id:192, name:'Schöpferwesen',   rarity:'epic', power:86, speed:75, magic:95, defense:80, luck:84, desc:'Erschuf Teile des Glaggle-Universums im Schlaf.' },
+  { id:193, name:'Quantengott',     rarity:'epic', power:82, speed:90, magic:88, defense:75, luck:80, desc:'Existiert in allen Realitäten gleichzeitig.' },
+  { id:194, name:'Ewigkeitsdrache', rarity:'epic', power:94, speed:78, magic:85, defense:90, luck:68, desc:'Hat den Anfang der Zeit gesehen – und das Ende.' },
+  { id:195, name:'Sternenmutter',   rarity:'epic', power:80, speed:72, magic:94, defense:82, luck:86, desc:'Gebiert neue Sterne wenn sie schläft.' },
+  { id:196, name:'Chaosfürst',      rarity:'epic', power:92, speed:88, magic:85, defense:78, luck:72, desc:'Verkörpert das pure Chaos des Glaggle-Kosmos.' },
+  { id:197, name:'Unendlichkeit',   rarity:'epic', power:85, speed:82, magic:95, defense:80, luck:88, desc:'Kein Anfang, kein Ende – einfach da.' },
+  { id:198, name:'Weltenseele',     rarity:'epic', power:78, speed:78, magic:92, defense:85, luck:90, desc:'Die Seele aller Welten im Glaggle-Universum.' },
+  { id:199, name:'Urknallkind',     rarity:'epic', power:90, speed:85, magic:88, defense:85, luck:80, desc:'Geboren im Urknall des Glaggle-Universums.' },
+  { id:200, name:'Glaggle Omega',   rarity:'epic', power:99, speed:20, magic:95, defense:92, luck:90, desc:'Das Ende und der Anfang von allem. Einzigartig.' },
 ];
 
 /* ==============================================================
    SVG GENERATORS – jeder Glagini bekommt seine eigene SVG
    ============================================================== */
 function getGlaginiColor(g) {
-  const cols = { normal:'#8a83b8', rare:'#4ecdc4', super:'#a855f7', epic:'#ff6b8a' };
-  const metalCols = { bronze:'#cd7f32', silver:'#c0c0c0', gold:'#ffd700' };
-  return g.metal !== 'none' ? metalCols[g.metal] : cols[g.rarity];
+  const metalCols = { bronze:'#cd7f32', silver:'#c0c0c0', gold:'#ffd700', platinum:'#e5e4e2' };
+  if (g.metal && g.metal !== 'none') return metalCols[g.metal];
+  return { normal:'#8a83b8', rare:'#4ecdc4', super:'#a855f7', epic:'#ff6b8a' }[g.rarity];
 }
 
 function generateSVG(g, size=100) {
-  const c = getGlaginiColor(g);
+  const c  = getGlaginiColor(g);
   const id = g.id;
-  // Unique seed-based appearance
+  const c2 = g.metal && g.metal !== 'none'
+    ? { bronze:'#a0522d', silver:'#909090', gold:'#b8860b', platinum:'#a0a0a0' }[g.metal]
+    : { normal:'#6a63a0', rare:'#2eb8b0', super:'#8833d0', epic:'#d04060' }[g.rarity];
+
   const shapes = [
-    // 0: blob jellyfish
+    // 0: Blob-Qualle
     `<ellipse cx="50" cy="52" rx="28" ry="22" fill="${c}" opacity="0.9"/>
      <ellipse cx="50" cy="42" rx="22" ry="18" fill="${c}"/>
      <circle cx="43" cy="40" r="4" fill="white"/><circle cx="43" cy="41" r="2" fill="#222"/>
@@ -1402,33 +1544,35 @@ function generateSVG(g, size=100) {
      <path d="M54 65 Q56 78 58 65" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
      <path d="M62 62 Q64 72 66 62" stroke="${c}" stroke-width="2.5" fill="none" opacity="0.7"/>
      <path d="M44 48 Q50 52 56 48" stroke="white" stroke-width="1.5" fill="none" opacity="0.6"/>`,
-    // 1: worm
+
+    // 1: Wurm
     `<path d="M25 70 Q30 40 50 35 Q70 30 72 55 Q74 70 60 72 Q50 74 40 68 Q30 62 25 70" fill="${c}"/>
      <circle cx="65" cy="45" r="5" fill="white"/><circle cx="65" cy="46" r="2.5" fill="#222"/>
      <circle cx="74" cy="40" r="5" fill="white"/><circle cx="74" cy="41" r="2.5" fill="#222"/>
      <path d="M62 52 Q68 55 74 52" stroke="white" stroke-width="1.5" fill="none"/>
      <ellipse cx="35" cy="62" rx="6" ry="4" fill="${c}" opacity="0.6"/>`,
-    // 2: round puff
-    `<circle cx="50" cy="50" r="30" fill="${c}" opacity="0.85"/>
-     <circle cx="50" cy="50" r="24" fill="${c}"/>
+
+    // 2: Rundkugel mit Ärmchen
+    `<circle cx="50" cy="50" r="28" fill="${c}" opacity="0.85"/>
+     <circle cx="50" cy="50" r="22" fill="${c}"/>
      <circle cx="42" cy="45" r="5" fill="white"/><circle cx="42" cy="46" r="2.5" fill="#222"/>
      <circle cx="58" cy="45" r="5" fill="white"/><circle cx="58" cy="46" r="2.5" fill="#222"/>
      <path d="M44 56 Q50 62 56 56" stroke="white" stroke-width="2" fill="none"/>
-     <circle cx="26" cy="38" r="6" fill="${c}" opacity="0.7"/>
-     <circle cx="74" cy="38" r="6" fill="${c}" opacity="0.7"/>
-     <circle cx="20" cy="55" r="5" fill="${c}" opacity="0.6"/>
-     <circle cx="80" cy="55" r="5" fill="${c}" opacity="0.6"/>`,
-    // 3: fast blur creature
+     <ellipse cx="24" cy="50" rx="8" ry="5" fill="${c}" opacity="0.7"/>
+     <ellipse cx="76" cy="50" rx="8" ry="5" fill="${c}" opacity="0.7"/>`,
+
+    // 3: Blitz-Geschöpf
     `<ellipse cx="50" cy="55" rx="22" ry="16" fill="${c}" opacity="0.85"/>
      <ellipse cx="50" cy="46" rx="18" ry="20" fill="${c}"/>
-     <ellipse cx="35" cy="50" rx="10" ry="6" fill="${c}" opacity="0.7"/>
-     <ellipse cx="65" cy="50" rx="10" ry="6" fill="${c}" opacity="0.7"/>
+     <ellipse cx="32" cy="50" rx="12" ry="6" fill="${c}" opacity="0.7"/>
+     <ellipse cx="68" cy="50" rx="12" ry="6" fill="${c}" opacity="0.7"/>
      <circle cx="44" cy="43" r="4" fill="white"/><circle cx="44" cy="44" r="2" fill="#222"/>
      <circle cx="56" cy="43" r="4" fill="white"/><circle cx="56" cy="44" r="2" fill="#222"/>
      <path d="M44 52 Q50 57 56 52" stroke="white" stroke-width="1.5" fill="none"/>
-     <path d="M22 48 L35 50" stroke="${c}" stroke-width="4" opacity="0.5"/>
-     <path d="M65 50 L78 48" stroke="${c}" stroke-width="4" opacity="0.5"/>`,
-    // 4: snail
+     <path d="M18 47 L32 50" stroke="${c}" stroke-width="4" opacity="0.5"/>
+     <path d="M68 50 L82 47" stroke="${c}" stroke-width="4" opacity="0.5"/>`,
+
+    // 4: Schnecke
     `<ellipse cx="55" cy="62" rx="28" ry="12" fill="${c}" opacity="0.85"/>
      <path d="M35 62 Q32 45 45 40 Q58 35 65 45 Q72 55 62 60" fill="${c}"/>
      <circle cx="48" cy="43" r="8" fill="${c}" opacity="0.7"/>
@@ -1439,7 +1583,8 @@ function generateSVG(g, size=100) {
      <circle cx="35" cy="54" r="4" fill="white"/><circle cx="35" cy="55" r="2" fill="#222"/>
      <line x1="35" y1="54" x2="35" y2="47" stroke="${c}" stroke-width="2"/>
      <circle cx="35" cy="47" r="3" fill="${c}" opacity="0.9"/>`,
-    // 5: mushroom
+
+    // 5: Pilz
     `<ellipse cx="50" cy="65" rx="16" ry="8" fill="${c}" opacity="0.8"/>
      <rect x="44" y="50" width="12" height="18" rx="4" fill="${c}" opacity="0.9"/>
      <path d="M20 52 Q35 20 50 18 Q65 20 80 52 Z" fill="${c}"/>
@@ -1448,19 +1593,22 @@ function generateSVG(g, size=100) {
      <circle cx="66" cy="44" r="5" fill="white" opacity="0.7"/>
      <circle cx="46" cy="60" r="3" fill="white"/><circle cx="46" cy="61" r="1.5" fill="#222"/>
      <circle cx="54" cy="60" r="3" fill="white"/><circle cx="54" cy="61" r="1.5" fill="#222"/>`,
-    // 6: lightning bolt creature
+
+    // 6: Blitzpfeil-Wesen
     `<polygon points="50,15 62,42 55,42 68,85 38,55 48,55 35,15" fill="${c}" opacity="0.9"/>
-     <circle cx="44" cy="30" r="4" fill="white"/><circle cx="44" cy="31" r="2" fill="#222"/>
-     <circle cx="54" cy="28" r="4" fill="white"/><circle cx="54" cy="29" r="2" fill="#222"/>
      <circle cx="50" cy="18" r="8" fill="${c}"/>
-     <path d="M44 35 Q50 40 56 35" stroke="white" stroke-width="1.5" fill="none"/>`,
-    // 7: sparkle glitter
+     <circle cx="44" cy="22" r="4" fill="white"/><circle cx="44" cy="23" r="2" fill="#222"/>
+     <circle cx="54" cy="20" r="4" fill="white"/><circle cx="54" cy="21" r="2" fill="#222"/>
+     <path d="M44 28 Q50 33 56 28" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 7: Sterne-Wesen
     `<circle cx="50" cy="50" r="22" fill="${c}"/>
      <path d="M50 20 L53 44 L76 42 L55 52 L72 70 L50 58 L28 70 L45 52 L24 42 L47 44 Z" fill="${c}" opacity="0.6"/>
      <circle cx="43" cy="47" r="4" fill="white"/><circle cx="43" cy="48" r="2" fill="#222"/>
      <circle cx="57" cy="47" r="4" fill="white"/><circle cx="57" cy="48" r="2" fill="#222"/>
-     <circle cx="50" cy="55" r="3" fill="white" opacity="0.8"/>`,
-    // 8: wings flyer
+     <path d="M44 55 Q50 60 56 55" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 8: Flügel-Wesen
     `<ellipse cx="50" cy="55" rx="16" ry="20" fill="${c}"/>
      <path d="M34 48 Q18 30 22 55 Q26 68 34 60" fill="${c}" opacity="0.75"/>
      <path d="M66 48 Q82 30 78 55 Q74 68 66 60" fill="${c}" opacity="0.75"/>
@@ -1468,7 +1616,8 @@ function generateSVG(g, size=100) {
      <circle cx="56" cy="50" r="4" fill="white"/><circle cx="56" cy="51" r="2" fill="#222"/>
      <path d="M44 58 Q50 63 56 58" stroke="white" stroke-width="1.5" fill="none"/>
      <ellipse cx="50" cy="40" rx="10" ry="8" fill="${c}"/>`,
-    // 9: balanced sphere
+
+    // 9: Dreifach-Kugel
     `<circle cx="50" cy="50" r="26" fill="${c}" opacity="0.8"/>
      <circle cx="50" cy="50" r="20" fill="${c}"/>
      <circle cx="50" cy="50" r="14" fill="${c}" opacity="0.5"/>
@@ -1476,26 +1625,317 @@ function generateSVG(g, size=100) {
      <circle cx="56" cy="47" r="4" fill="white"/><circle cx="56" cy="48" r="2" fill="#222"/>
      <path d="M44 55 Q50 60 56 55" stroke="white" stroke-width="1.5" fill="none"/>
      <ellipse cx="50" cy="76" rx="20" ry="4" fill="${c}" opacity="0.3"/>`,
+
+    // 10: Krabbe
+    `<ellipse cx="50" cy="55" rx="24" ry="18" fill="${c}"/>
+     <ellipse cx="50" cy="48" rx="18" ry="14" fill="${c}"/>
+     <path d="M26 52 Q15 40 18 55 Q20 62 28 58" fill="${c}" opacity="0.8"/>
+     <path d="M74 52 Q85 40 82 55 Q80 62 72 58" fill="${c}" opacity="0.8"/>
+     <path d="M32 70 Q25 82 22 78" stroke="${c}" stroke-width="4" fill="none"/>
+     <path d="M40 72 Q36 85 32 82" stroke="${c}" stroke-width="4" fill="none"/>
+     <path d="M60 72 Q64 85 68 82" stroke="${c}" stroke-width="4" fill="none"/>
+     <path d="M68 70 Q75 82 78 78" stroke="${c}" stroke-width="4" fill="none"/>
+     <circle cx="43" cy="46" r="4" fill="white"/><circle cx="43" cy="47" r="2" fill="#222"/>
+     <circle cx="57" cy="46" r="4" fill="white"/><circle cx="57" cy="47" r="2" fill="#222"/>`,
+
+    // 11: Geist
+    `<path d="M20 80 Q20 30 50 20 Q80 30 80 80 Q72 72 65 78 Q58 84 50 78 Q42 84 35 78 Q28 72 20 80Z" fill="${c}"/>
+     <circle cx="42" cy="52" r="6" fill="white"/><circle cx="42" cy="53" r="3" fill="#1a1a2e"/>
+     <circle cx="58" cy="52" r="6" fill="white"/><circle cx="58" cy="53" r="3" fill="#1a1a2e"/>
+     <path d="M42 64 Q50 70 58 64" stroke="white" stroke-width="2" fill="none"/>`,
+
+    // 12: Drache klein
+    `<ellipse cx="50" cy="58" rx="22" ry="16" fill="${c}"/>
+     <ellipse cx="50" cy="45" rx="16" ry="18" fill="${c}"/>
+     <path d="M34 38 Q22 20 28 35" fill="${c}" opacity="0.8"/>
+     <path d="M66 38 Q78 20 72 35" fill="${c}" opacity="0.8"/>
+     <circle cx="44" cy="42" r="4" fill="white"/><circle cx="44" cy="43" r="2" fill="#222"/>
+     <circle cx="56" cy="42" r="4" fill="white"/><circle cx="56" cy="43" r="2" fill="#222"/>
+     <path d="M44 52 Q50 57 56 52" stroke="white" stroke-width="1.5" fill="none"/>
+     <path d="M50 74 Q54 82 58 78 Q62 86 66 80" stroke="${c}" stroke-width="3" fill="none"/>`,
+
+    // 13: Roboter
+    `<rect x="30" y="38" width="40" height="36" rx="6" fill="${c}"/>
+     <rect x="34" y="28" width="32" height="14" rx="4" fill="${c}" opacity="0.9"/>
+     <circle cx="43" cy="50" r="5" fill="white"/><circle cx="43" cy="51" r="2.5" fill="#222"/>
+     <circle cx="57" cy="50" r="5" fill="white"/><circle cx="57" cy="51" r="2.5" fill="#222"/>
+     <rect x="42" y="58" width="16" height="5" rx="2" fill="${c2}" opacity="0.8"/>
+     <rect x="22" y="42" width="8" height="18" rx="4" fill="${c}" opacity="0.8"/>
+     <rect x="70" y="42" width="8" height="18" rx="4" fill="${c}" opacity="0.8"/>
+     <circle cx="50" cy="24" r="4" fill="${c2}" opacity="0.9"/>`,
+
+    // 14: Oktopus
+    `<circle cx="50" cy="40" r="22" fill="${c}"/>
+     <circle cx="43" cy="36" r="4" fill="white"/><circle cx="43" cy="37" r="2" fill="#222"/>
+     <circle cx="57" cy="36" r="4" fill="white"/><circle cx="57" cy="37" r="2" fill="#222"/>
+     <path d="M43 45 Q50 50 57 45" stroke="white" stroke-width="1.5" fill="none"/>
+     <path d="M30 58 Q28 70 26 80 Q30 78 32 70 Q34 82 36 72 Q38 80 40 68" stroke="${c}" stroke-width="5" fill="none"/>
+     <path d="M50 60 Q50 72 48 82 Q52 80 52 72 Q54 82 56 72" stroke="${c}" stroke-width="5" fill="none"/>
+     <path d="M70 58 Q72 70 74 80 Q70 78 68 70 Q66 82 64 72 Q62 80 60 68" stroke="${c}" stroke-width="5" fill="none"/>`,
+
+    // 15: Käfer
+    `<ellipse cx="50" cy="55" rx="20" ry="24" fill="${c}"/>
+     <ellipse cx="35" cy="48" rx="14" ry="18" fill="${c}" opacity="0.7"/>
+     <ellipse cx="65" cy="48" rx="14" ry="18" fill="${c}" opacity="0.7"/>
+     <ellipse cx="50" cy="38" rx="12" ry="10" fill="${c}"/>
+     <circle cx="44" cy="35" r="3.5" fill="white"/><circle cx="44" cy="36" r="1.8" fill="#222"/>
+     <circle cx="56" cy="35" r="3.5" fill="white"/><circle cx="56" cy="36" r="1.8" fill="#222"/>
+     <line x1="44" y1="26" x2="40" y2="16" stroke="${c}" stroke-width="2"/>
+     <line x1="56" y1="26" x2="60" y2="16" stroke="${c}" stroke-width="2"/>
+     <circle cx="40" cy="15" r="3" fill="${c}" opacity="0.8"/>
+     <circle cx="60" cy="15" r="3" fill="${c}" opacity="0.8"/>`,
+
+    // 16: Kristall
+    `<polygon points="50,12 68,35 62,70 50,78 38,70 32,35" fill="${c}" opacity="0.8"/>
+     <polygon points="50,12 68,35 50,35" fill="${c2}" opacity="0.5"/>
+     <polygon points="50,12 32,35 50,35" fill="white" opacity="0.2"/>
+     <circle cx="44" cy="48" r="4" fill="white"/><circle cx="44" cy="49" r="2" fill="#222"/>
+     <circle cx="56" cy="48" r="4" fill="white"/><circle cx="56" cy="49" r="2" fill="#222"/>
+     <path d="M44 56 Q50 62 56 56" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 17: Flamme
+    `<path d="M50 85 Q28 70 30 50 Q32 35 40 28 Q38 42 45 45 Q40 30 50 15 Q55 30 52 42 Q60 35 62 25 Q70 38 68 52 Q72 48 70 35 Q80 45 70 65 Q65 75 50 85Z" fill="${c}"/>
+     <circle cx="44" cy="54" r="4" fill="white"/><circle cx="44" cy="55" r="2" fill="#222"/>
+     <circle cx="56" cy="54" r="4" fill="white"/><circle cx="56" cy="55" r="2" fill="#222"/>
+     <path d="M44 62 Q50 67 56 62" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 18: Wolke
+    `<circle cx="50" cy="48" r="18" fill="${c}"/>
+     <circle cx="34" cy="54" r="14" fill="${c}"/>
+     <circle cx="66" cy="54" r="14" fill="${c}"/>
+     <circle cx="42" cy="64" r="12" fill="${c}"/>
+     <circle cx="58" cy="64" r="12" fill="${c}"/>
+     <circle cx="44" cy="46" r="4" fill="white"/><circle cx="44" cy="47" r="2" fill="#222"/>
+     <circle cx="56" cy="46" r="4" fill="white"/><circle cx="56" cy="47" r="2" fill="#222"/>
+     <path d="M44 54 Q50 59 56 54" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 19: Fisch
+    `<ellipse cx="46" cy="50" rx="24" ry="16" fill="${c}"/>
+     <path d="M70 42 L85 32 L82 50 L85 68 L70 58 Z" fill="${c}" opacity="0.8"/>
+     <circle cx="36" cy="46" r="5" fill="white"/><circle cx="36" cy="47" r="2.5" fill="#222"/>
+     <path d="M38 52 Q44 57 50 52" stroke="white" stroke-width="1.5" fill="none"/>
+     <path d="M46 36 Q50 30 54 36" stroke="${c}" stroke-width="3" fill="none"/>
+     <path d="M46 64 Q50 70 54 64" stroke="${c}" stroke-width="3" fill="none"/>`,
+
+    // 20: Bär-Wesen
+    `<circle cx="50" cy="55" r="22" fill="${c}"/>
+     <circle cx="32" cy="38" r="10" fill="${c}"/>
+     <circle cx="68" cy="38" r="10" fill="${c}"/>
+     <circle cx="32" cy="38" r="5" fill="${c2}" opacity="0.6"/>
+     <circle cx="68" cy="38" r="5" fill="${c2}" opacity="0.6"/>
+     <circle cx="43" cy="52" r="5" fill="white"/><circle cx="43" cy="53" r="2.5" fill="#222"/>
+     <circle cx="57" cy="52" r="5" fill="white"/><circle cx="57" cy="53" r="2.5" fill="#222"/>
+     <ellipse cx="50" cy="62" rx="8" ry="5" fill="${c2}" opacity="0.7"/>
+     <path d="M42 64 Q50 70 58 64" stroke="white" stroke-width="2" fill="none"/>`,
+
+    // 21: Schlange
+    `<path d="M20 80 Q15 65 25 55 Q35 45 45 50 Q55 55 60 45 Q65 35 75 30 Q82 28 80 38 Q78 45 70 42 Q62 38 58 50 Q54 62 44 65 Q34 68 30 78Z" fill="${c}" stroke-width="0"/>
+     <circle cx="80" cy="32" r="7" fill="${c}"/>
+     <circle cx="77" cy="29" r="3" fill="white"/><circle cx="77" cy="30" r="1.5" fill="#222"/>
+     <circle cx="84" cy="29" r="3" fill="white"/><circle cx="84" cy="30" r="1.5" fill="#222"/>
+     <path d="M78 36 L76 42 M82 36 L84 42" stroke="${c2}" stroke-width="1.5"/>`,
+
+    // 22: Tintenfisch-Geist
+    `<path d="M25 75 Q26 55 38 45 Q50 38 62 45 Q74 55 75 75 Q68 68 62 74 Q56 80 50 74 Q44 80 38 74 Q32 68 25 75Z" fill="${c}" opacity="0.9"/>
+     <circle cx="42" cy="56" r="5" fill="white"/><circle cx="42" cy="57" r="2.5" fill="#1a1a2e"/>
+     <circle cx="58" cy="56" r="5" fill="white"/><circle cx="58" cy="57" r="2.5" fill="#1a1a2e"/>
+     <path d="M42 66 Q50 72 58 66" stroke="white" stroke-width="2" fill="none"/>
+     <circle cx="50" cy="30" r="6" fill="${c}" opacity="0.5"/>`,
+
+    // 23: Fels-Troll
+    `<rect x="30" y="32" width="40" height="48" rx="10" fill="${c}"/>
+     <circle cx="50" cy="28" r="14" fill="${c}"/>
+     <circle cx="43" cy="25" r="5" fill="white"/><circle cx="43" cy="26" r="2.5" fill="#222"/>
+     <circle cx="57" cy="25" r="5" fill="white"/><circle cx="57" cy="26" r="2.5" fill="#222"/>
+     <path d="M43 35 Q50 40 57 35" stroke="white" stroke-width="2" fill="none"/>
+     <rect x="18" y="44" width="12" height="22" rx="6" fill="${c}" opacity="0.8"/>
+     <rect x="70" y="44" width="12" height="22" rx="6" fill="${c}" opacity="0.8"/>
+     <path d="M38 80 L34 92 M50 80 L50 92 M62 80 L66 92" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`,
+
+    // 24: Libelle
+    `<ellipse cx="50" cy="55" rx="8" ry="24" fill="${c}"/>
+     <ellipse cx="50" cy="38" rx="10" ry="10" fill="${c}"/>
+     <ellipse cx="28" cy="40" rx="18" ry="8" fill="${c}" opacity="0.6"/>
+     <ellipse cx="72" cy="40" rx="18" ry="8" fill="${c}" opacity="0.6"/>
+     <ellipse cx="28" cy="55" rx="15" ry="7" fill="${c}" opacity="0.4"/>
+     <ellipse cx="72" cy="55" rx="15" ry="7" fill="${c}" opacity="0.4"/>
+     <circle cx="45" cy="35" r="4" fill="white"/><circle cx="45" cy="36" r="2" fill="#222"/>
+     <circle cx="55" cy="35" r="4" fill="white"/><circle cx="55" cy="36" r="2" fill="#222"/>`,
+
+    // 25: Spinne
+    `<circle cx="50" cy="50" r="16" fill="${c}"/>
+     <circle cx="50" cy="38" r="10" fill="${c}"/>
+     <circle cx="44" cy="35" r="3.5" fill="white"/><circle cx="44" cy="36" r="1.8" fill="#222"/>
+     <circle cx="56" cy="35" r="3.5" fill="white"/><circle cx="56" cy="36" r="1.8" fill="#222"/>
+     <line x1="34" y1="44" x2="18" y2="34" stroke="${c}" stroke-width="2.5"/>
+     <line x1="32" y1="50" x2="14" y2="48" stroke="${c}" stroke-width="2.5"/>
+     <line x1="34" y1="56" x2="18" y2="66" stroke="${c}" stroke-width="2.5"/>
+     <line x1="66" y1="44" x2="82" y2="34" stroke="${c}" stroke-width="2.5"/>
+     <line x1="68" y1="50" x2="86" y2="48" stroke="${c}" stroke-width="2.5"/>
+     <line x1="66" y1="56" x2="82" y2="66" stroke="${c}" stroke-width="2.5"/>`,
+
+    // 26: Phönix-Küken
+    `<ellipse cx="50" cy="58" rx="18" ry="16" fill="${c}"/>
+     <circle cx="50" cy="40" r="14" fill="${c}"/>
+     <path d="M36 30 Q28 15 32 10 Q38 20 40 28" fill="${c2}" opacity="0.9"/>
+     <path d="M50 26 Q48 12 52 8 Q56 16 50 26" fill="${c}" opacity="0.9"/>
+     <path d="M64 30 Q72 15 68 10 Q62 20 60 28" fill="${c2}" opacity="0.9"/>
+     <circle cx="44" cy="38" r="4" fill="white"/><circle cx="44" cy="39" r="2" fill="#222"/>
+     <circle cx="56" cy="38" r="4" fill="white"/><circle cx="56" cy="39" r="2" fill="#222"/>
+     <path d="M44 47 Q50 52 56 47" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 27: Walross-Wesen
+    `<ellipse cx="50" cy="56" rx="26" ry="20" fill="${c}"/>
+     <circle cx="50" cy="38" r="16" fill="${c}"/>
+     <circle cx="42" cy="35" r="5" fill="white"/><circle cx="42" cy="36" r="2.5" fill="#222"/>
+     <circle cx="58" cy="35" r="5" fill="white"/><circle cx="58" cy="36" r="2.5" fill="#222"/>
+     <path d="M44 44 Q50 48 56 44" stroke="white" stroke-width="2" fill="none"/>
+     <line x1="44" y1="48" x2="42" y2="58" stroke="white" stroke-width="2"/>
+     <line x1="56" y1="48" x2="58" y2="58" stroke="white" stroke-width="2"/>
+     <ellipse cx="22" cy="60" rx="10" ry="6" fill="${c}" opacity="0.7"/>
+     <ellipse cx="78" cy="60" rx="10" ry="6" fill="${c}" opacity="0.7"/>`,
+
+    // 28: Fledermaus
+    `<ellipse cx="50" cy="55" rx="14" ry="18" fill="${c}"/>
+     <circle cx="50" cy="40" r="12" fill="${c}"/>
+     <path d="M36 46 Q20 25 15 40 Q18 55 36 52Z" fill="${c}" opacity="0.85"/>
+     <path d="M64 46 Q80 25 85 40 Q82 55 64 52Z" fill="${c}" opacity="0.85"/>
+     <path d="M36 52 Q28 60 26 70" stroke="${c}" stroke-width="2" fill="none"/>
+     <path d="M64 52 Q72 60 74 70" stroke="${c}" stroke-width="2" fill="none"/>
+     <circle cx="44" cy="38" r="4" fill="white"/><circle cx="44" cy="39" r="2" fill="#1a1a2e"/>
+     <circle cx="56" cy="38" r="4" fill="white"/><circle cx="56" cy="39" r="2" fill="#1a1a2e"/>
+     <path d="M46 46 L44 50 L48 50Z" fill="${c2}" opacity="0.9"/>`,
+
+    // 29: Samurai-Rüstungs-Wesen
+    `<rect x="34" y="40" width="32" height="38" rx="5" fill="${c}"/>
+     <rect x="36" y="26" width="28" height="18" rx="8" fill="${c}"/>
+     <circle cx="43" cy="34" r="5" fill="white"/><circle cx="43" cy="35" r="2.5" fill="#222"/>
+     <circle cx="57" cy="34" r="5" fill="white"/><circle cx="57" cy="35" r="2.5" fill="#222"/>
+     <rect x="26" y="42" width="10" height="24" rx="4" fill="${c}" opacity="0.85"/>
+     <rect x="64" y="42" width="10" height="24" rx="4" fill="${c}" opacity="0.85"/>
+     <rect x="36" y="56" width="28" height="6" rx="2" fill="${c2}" opacity="0.6"/>
+     <path d="M42 26 Q50 18 58 26" fill="${c2}" opacity="0.7"/>`,
+
+    // 30: Eisberg-Wesen
+    `<polygon points="50,15 78,80 22,80" fill="${c}" opacity="0.7"/>
+     <polygon points="50,15 78,80 50,80" fill="${c}" opacity="0.9"/>
+     <polygon points="50,28 68,70 50,70" fill="white" opacity="0.15"/>
+     <circle cx="43" cy="52" r="4" fill="white"/><circle cx="43" cy="53" r="2" fill="#222"/>
+     <circle cx="57" cy="52" r="4" fill="white"/><circle cx="57" cy="53" r="2" fill="#222"/>
+     <path d="M43 60 Q50 65 57 60" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 31: Quallen-König
+    `<ellipse cx="50" cy="40" rx="26" ry="20" fill="${c}"/>
+     <ellipse cx="50" cy="35" rx="20" ry="15" fill="${c2}" opacity="0.3"/>
+     <circle cx="42" cy="38" r="4" fill="white"/><circle cx="42" cy="39" r="2" fill="#222"/>
+     <circle cx="58" cy="38" r="4" fill="white"/><circle cx="58" cy="39" r="2" fill="#222"/>
+     <path d="M42 46 Q50 52 58 46" stroke="white" stroke-width="1.5" fill="none"/>
+     <path d="M32 58 Q30 70 28 80" stroke="${c}" stroke-width="3" opacity="0.7"/>
+     <path d="M38 60 Q36 74 34 84" stroke="${c}" stroke-width="3" opacity="0.7"/>
+     <path d="M44 62 Q44 76 42 86" stroke="${c}" stroke-width="3" opacity="0.7"/>
+     <path d="M56 62 Q56 76 58 86" stroke="${c}" stroke-width="3" opacity="0.7"/>
+     <path d="M62 60 Q64 74 66 84" stroke="${c}" stroke-width="3" opacity="0.7"/>
+     <path d="M68 58 Q70 70 72 80" stroke="${c}" stroke-width="3" opacity="0.7"/>`,
+
+    // 32: Raupe
+    `<circle cx="22" cy="60" r="12" fill="${c}"/>
+     <circle cx="36" cy="55" r="13" fill="${c}"/>
+     <circle cx="50" cy="52" r="14" fill="${c}"/>
+     <circle cx="64" cy="55" r="13" fill="${c}"/>
+     <circle cx="76" cy="60" r="11" fill="${c}"/>
+     <circle cx="22" cy="48" r="8" fill="${c}"/>
+     <circle cx="18" cy="44" r="4" fill="white"/><circle cx="18" cy="45" r="2" fill="#222"/>
+     <circle cx="26" cy="44" r="4" fill="white"/><circle cx="26" cy="45" r="2" fill="#222"/>
+     <path d="M18 51 Q22 55 26 51" stroke="white" stroke-width="1.5" fill="none"/>
+     <line x1="22" y1="48" x2="16" y2="36" stroke="${c}" stroke-width="2"/>
+     <line x1="22" y1="48" x2="28" y2="36" stroke="${c}" stroke-width="2"/>`,
+
+    // 33: Mini-Vulkan
+    `<polygon points="50,20 75,80 25,80" fill="${c}"/>
+     <ellipse cx="50" cy="80" rx="26" ry="8" fill="${c}" opacity="0.5"/>
+     <path d="M42 20 Q38 10 36 6 Q40 12 44 18" fill="${c2}" opacity="0.9"/>
+     <path d="M50 20 Q50 8 52 4 Q54 10 50 20" fill="${c}" opacity="0.8"/>
+     <path d="M58 20 Q62 10 64 6 Q60 12 56 18" fill="${c2}" opacity="0.9"/>
+     <circle cx="43" cy="55" r="4" fill="white"/><circle cx="43" cy="56" r="2" fill="#222"/>
+     <circle cx="57" cy="55" r="4" fill="white"/><circle cx="57" cy="56" r="2" fill="#222"/>`,
+
+    // 34: Neon-Quader
+    `<rect x="28" y="30" width="44" height="44" rx="8" fill="${c}" opacity="0.8"/>
+     <rect x="32" y="34" width="36" height="36" rx="6" fill="${c}"/>
+     <rect x="20" y="40" width="8" height="28" rx="4" fill="${c}" opacity="0.7"/>
+     <rect x="72" y="40" width="8" height="28" rx="4" fill="${c}" opacity="0.7"/>
+     <circle cx="43" cy="48" r="5" fill="white"/><circle cx="43" cy="49" r="2.5" fill="#222"/>
+     <circle cx="57" cy="48" r="5" fill="white"/><circle cx="57" cy="49" r="2.5" fill="#222"/>
+     <rect x="40" y="58" width="20" height="5" rx="2" fill="${c2}" opacity="0.7"/>
+     <circle cx="50" cy="34" r="3" fill="${c2}" opacity="0.9"/>`,
+
+    // 35: Strudel
+    `<path d="M50 20 Q75 20 80 45 Q85 70 60 80 Q35 90 20 65 Q5 40 30 25 Q42 18 50 28 Q62 38 58 55 Q54 68 42 65 Q30 62 32 50 Q34 38 46 40 Q52 42 50 50" stroke="${c}" stroke-width="6" fill="none"/>
+     <circle cx="50" cy="50" r="8" fill="${c}"/>
+     <circle cx="46" cy="48" r="3" fill="white"/><circle cx="46" cy="49" r="1.5" fill="#222"/>
+     <circle cx="54" cy="48" r="3" fill="white"/><circle cx="54" cy="49" r="1.5" fill="#222"/>`,
+
+    // 36: Schildkröte
+    `<ellipse cx="50" cy="55" rx="28" ry="22" fill="${c}"/>
+     <ellipse cx="50" cy="55" rx="22" ry="16" fill="${c2}" opacity="0.4"/>
+     <path d="M32 44 Q22 38 20 48 Q22 56 32 52Z" fill="${c}" opacity="0.85"/>
+     <path d="M68 44 Q78 38 80 48 Q78 56 68 52Z" fill="${c}" opacity="0.85"/>
+     <path d="M36 72 Q28 80 30 86 Q36 82 38 74Z" fill="${c}" opacity="0.85"/>
+     <path d="M64 72 Q72 80 70 86 Q64 82 62 74Z" fill="${c}" opacity="0.85"/>
+     <circle cx="50" cy="38" r="10" fill="${c}"/>
+     <circle cx="44" cy="35" r="4" fill="white"/><circle cx="44" cy="36" r="2" fill="#222"/>
+     <circle cx="56" cy="35" r="4" fill="white"/><circle cx="56" cy="36" r="2" fill="#222"/>`,
+
+    // 37: Stern-Seepferd
+    `<path d="M50 20 Q58 30 56 42 Q60 50 58 60 Q56 70 50 80 Q44 70 42 60 Q40 50 44 42 Q42 30 50 20Z" fill="${c}"/>
+     <circle cx="50" cy="22" r="10" fill="${c}"/>
+     <circle cx="44" cy="19" r="4" fill="white"/><circle cx="44" cy="20" r="2" fill="#222"/>
+     <circle cx="56" cy="19" r="4" fill="white"/><circle cx="56" cy="20" r="2" fill="#222"/>
+     <path d="M56 40 Q68 36 70 44 Q68 52 56 50" fill="${c}" opacity="0.7"/>
+     <path d="M50 80 Q42 88 38 84 Q40 76 50 78Z" fill="${c}" opacity="0.8"/>`,
+
+    // 38: Neon-Hirsch
+    `<ellipse cx="50" cy="60" rx="20" ry="16" fill="${c}"/>
+     <ellipse cx="50" cy="44" rx="14" ry="16" fill="${c}"/>
+     <circle cx="43" cy="40" r="4" fill="white"/><circle cx="43" cy="41" r="2" fill="#222"/>
+     <circle cx="57" cy="40" r="4" fill="white"/><circle cx="57" cy="41" r="2" fill="#222"/>
+     <path d="M38 30 Q30 18 24 14 Q28 22 26 28 Q22 24 18 22 Q22 32 30 34" stroke="${c}" stroke-width="3" fill="none"/>
+     <path d="M62 30 Q70 18 76 14 Q72 22 74 28 Q78 24 82 22 Q78 32 70 34" stroke="${c}" stroke-width="3" fill="none"/>
+     <path d="M43 48 Q50 53 57 48" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 39: Plasma-Ball
+    `<circle cx="50" cy="50" r="24" fill="${c}" opacity="0.3"/>
+     <circle cx="50" cy="50" r="18" fill="${c}" opacity="0.6"/>
+     <circle cx="50" cy="50" r="12" fill="${c}"/>
+     <path d="M50 26 Q58 38 72 38 Q60 46 62 58 Q54 50 50 62 Q46 50 38 58 Q40 46 28 38 Q42 38 50 26Z" fill="${c2}" opacity="0.5"/>
+     <circle cx="44" cy="47" r="4" fill="white"/><circle cx="44" cy="48" r="2" fill="#222"/>
+     <circle cx="56" cy="47" r="4" fill="white"/><circle cx="56" cy="48" r="2" fill="#222"/>
+     <path d="M44 55 Q50 60 56 55" stroke="white" stroke-width="1.5" fill="none"/>`,
+
+    // 40: Mondpilz
+    `<ellipse cx="50" cy="68" rx="18" ry="8" fill="${c}" opacity="0.8"/>
+     <rect x="45" y="52" width="10" height="20" rx="4" fill="${c}" opacity="0.9"/>
+     <path d="M22 54 Q25 28 50 22 Q75 28 78 54 Q68 48 60 56 Q55 62 50 56 Q45 62 40 56 Q32 48 22 54Z" fill="${c}"/>
+     <circle cx="35" cy="40" r="6" fill="${c2}" opacity="0.5"/>
+     <circle cx="55" cy="32" r="8" fill="${c2}" opacity="0.5"/>
+     <circle cx="68" cy="42" r="6" fill="${c2}" opacity="0.5"/>
+     <circle cx="46" cy="62" r="3" fill="white"/><circle cx="46" cy="63" r="1.5" fill="#222"/>
+     <circle cx="54" cy="62" r="3" fill="white"/><circle cx="54" cy="63" r="1.5" fill="#222"/>`,
   ];
 
-  // Pick a shape based on id
   const shapeIdx = (id - 1) % shapes.length;
   const inner = shapes[shapeIdx];
 
-  // Rarity glow filter
-  const glowColor = getGlaginiColor(g);
-
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
     <defs>
-      <filter id="glow${id}">
+      <filter id="glow${id}x">
         <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
         <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <g filter="url(#glow${id})">${inner}</g>
+    <g filter="url(#glow${id}x)">${inner}</g>
   </svg>`;
 }
-
 /* ==============================================================
    STATE
    ============================================================== */
@@ -1657,14 +2097,15 @@ function scrollToSection(id) {
 function buildGlaginiCard(g, opts={}) {
   const { clickable=true, showStickBtn=false, instanceId=null, selected=false } = opts;
   const div = document.createElement('div');
-  div.className = `glagini-card rarity-${g.rarity}${g.metal !== 'none' ? ` metal-${g.metal}` : ''}${selected ? ' selected' : ''}`;
+  const metalClass = (g.metal && g.metal !== 'none') ? ` metal-${g.metal}` : '';
+  div.className = `glagini-card rarity-${g.rarity}${metalClass}${selected ? ' selected' : ''}`;
 
   const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
-  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin' };
 
   div.innerHTML = `
     <span class="rarity-badge ${g.rarity}">${rarityLabels[g.rarity]}</span>
-    ${g.metal !== 'none' ? `<span class="metal-badge ${g.metal}">${metalLabels[g.metal]}</span>` : ''}
+    ${g.metal && g.metal !== 'none' ? `<span class="metal-badge ${g.metal}">${metalLabels[g.metal]}</span>` : ''}
     <div class="glagini-svg-wrap">${generateSVG(g, 100)}</div>
     <div class="glagini-name">${g.name}</div>
     <div class="glagini-stats">
@@ -1689,7 +2130,7 @@ function buildGlaginiCard(g, opts={}) {
   if (showStickBtn) {
     div.querySelector('.stick-btn').onclick = (e) => {
       e.stopPropagation();
-      stickIntoAlbum(g.id, instanceId || e.target.dataset.iid);
+      stickIntoAlbum(g, instanceId || e.target.dataset.iid);
     };
   }
 
@@ -1702,14 +2143,45 @@ function buildGlaginiCard(g, opts={}) {
 function showGlaginiDetail(g, instanceId) {
   const content = document.getElementById('glaginiDetailContent');
   const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
-  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', none:'' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin', none:'' };
+
+  const stuckMetal = albumStuck[g.id]; // z.B. 'gold' oder undefined
+  const myMetal    = g.metal || 'none';
+  const myRank     = METAL_TIER_RANK[myMetal];
+  const stuckRank  = stuckMetal !== undefined ? METAL_TIER_RANK[stuckMetal] : -1;
+  const isStuck    = stuckMetal !== undefined;
+  const isUpgrade  = myRank > stuckRank;
+  const canOverwrite = instanceId && isStuck;
+
+  let stickBtn = '';
+  if (instanceId) {
+    if (!isStuck) {
+      stickBtn = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" 
+        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
+        📌 Ins Album einkleben
+      </button>`;
+    } else if (canOverwrite && isUpgrade) {
+      stickBtn = `<button class="btn btn-primary" style="width:100%;margin-top:8px;" 
+        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
+        ⬆️ Upgraden (${metalLabels[stuckMetal]||'Normal'} → ${metalLabels[myMetal]||'Normal'})
+      </button>`;
+    } else if (canOverwrite && !isUpgrade) {
+      stickBtn = `<button class="btn btn-danger" style="width:100%;margin-top:8px;" 
+        onclick="stickIntoAlbum(${JSON.stringify(g).replace(/"/g,"'")}, '${instanceId}');hideOverlay('glaginiDetailOverlay');">
+        ⬇️ Downgraden (${metalLabels[stuckMetal]||'Normal'} → ${metalLabels[myMetal]||'Normal'})
+      </button>`;
+    }
+  } else if (isStuck) {
+    stickBtn = `<div class="info-box" style="width:100%;text-align:center;">✅ Eingeklebt als ${metalLabels[stuckMetal]||'Normal'}</div>`;
+  }
+
   content.innerHTML = `
     <div class="glagini-svg-wrap" style="width:130px;height:130px;">${generateSVG(g, 130)}</div>
     <div>
       <div style="font-size:1.4rem;font-weight:900;text-align:center;margin-bottom:6px;">${g.name}</div>
       <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
         <span class="tag tag-${g.rarity}">${rarityLabels[g.rarity]}</span>
-        ${g.metal !== 'none' ? `<span class="tag" style="background:rgba(255,215,0,0.15);color:var(--gold);">${metalLabels[g.metal]}</span>` : ''}
+        ${g.metal && g.metal !== 'none' ? `<span class="tag" style="background:rgba(255,215,0,0.15);color:${METAL_COLORS[g.metal]};">${metalLabels[g.metal]}</span>` : ''}
       </div>
       <p style="color:var(--muted);font-size:0.85rem;text-align:center;margin-bottom:18px;">${g.desc}</p>
     </div>
@@ -1722,11 +2194,7 @@ function showGlaginiDetail(g, instanceId) {
         </div>
       `).join('')}
     </div>
-    ${instanceId && !albumStuck[g.id] ? `
-      <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="stickIntoAlbum(${g.id},'${instanceId}');hideOverlay('glaginiDetailOverlay');">
-        📌 Ins Album einkleben
-      </button>
-    ` : albumStuck[g.id] ? '<div class="info-box" style="width:100%;text-align:center;">✅ Im Album eingeklebt</div>' : ''}
+    ${stickBtn}
   `;
   showOverlay('glaginiDetailOverlay');
 }
@@ -1749,14 +2217,13 @@ function renderAlbumAccordion() {
 
   RARITY_ORDER.forEach(rarity => {
     const cards = ALL_GLAGINIS.filter(g => g.rarity === rarity);
-    const stuckCount = cards.filter(g => albumStuck[g.id]).length;
+    const stuckCount = cards.filter(g => albumStuck[g.id] !== undefined).length;
     totalStuck += stuckCount;
     const isOpen = albumOpenGroups[rarity];
 
     const group = document.createElement('div');
     group.style.cssText = `border:1px solid ${RARITY_COLORS[rarity]};border-radius:14px;overflow:hidden;`;
 
-    // Header
     const header = document.createElement('div');
     header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:rgba(0,0,0,0.2);gap:10px;`;
     header.innerHTML = `
@@ -1767,30 +2234,33 @@ function renderAlbumAccordion() {
       </div>
       <span style="color:var(--muted);font-size:1rem;">${isOpen ? '▲' : '▼'}</span>
     `;
-    header.onclick = () => {
-      albumOpenGroups[rarity] = !albumOpenGroups[rarity];
-      renderAlbumAccordion();
-    };
+    header.onclick = () => { albumOpenGroups[rarity] = !albumOpenGroups[rarity]; renderAlbumAccordion(); };
 
-    // Body
     const body = document.createElement('div');
     body.style.cssText = `display:${isOpen ? 'grid' : 'none'};grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:14px;`;
 
     if (isOpen) {
       cards.forEach(g => {
+        const stuckMetal = albumStuck[g.id]; // z.B. 'gold', 'none', oder undefined
+        const isStuck    = stuckMetal !== undefined;
+        const metalColor = isStuck && stuckMetal !== 'none' ? METAL_COLORS[stuckMetal] : null;
+        const borderColor = isStuck ? (metalColor || RARITY_COLORS[rarity]) : 'var(--border)';
+
         const slot = document.createElement('div');
-        const isStuck = albumStuck[g.id];
-        slot.style.cssText = `aspect-ratio:2/3;min-height:160px;border:2px ${isStuck ? 'solid' : 'dashed'} ${isStuck ? RARITY_COLORS[rarity] : 'var(--border)'};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;background:rgba(255,255,255,0.02);cursor:${isStuck ? 'pointer' : 'default'};transition:all 0.2s;`;
+        slot.style.cssText = `aspect-ratio:2/3;min-height:160px;border:2px ${isStuck ? 'solid' : 'dashed'} ${borderColor};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;background:rgba(255,255,255,0.02);cursor:${isStuck ? 'pointer' : 'default'};transition:all 0.2s;`;
 
         if (isStuck) {
+          const displayG = { ...g, metal: stuckMetal };
+          const metalLabel = stuckMetal !== 'none' ? `<div style="font-size:0.55rem;color:${metalColor};font-weight:800;margin-top:2px;">${METAL_LABELS[stuckMetal]}</div>` : '';
           slot.innerHTML = `
             <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;">
-              <div style="width:65px;height:65px;">${generateSVG(g,65)}</div>
+              <div style="width:65px;height:65px;">${generateSVG(displayG, 65)}</div>
               <div style="font-size:0.6rem;font-weight:800;text-align:center;margin-top:4px;color:var(--text);">${g.name}</div>
+              ${metalLabel}
             </div>`;
-          slot.onclick = () => showGlaginiDetail(g, null);
-          slot.onmouseenter = () => slot.style.transform='scale(1.03)';
-          slot.onmouseleave = () => slot.style.transform='';
+          slot.onclick = () => showGlaginiDetail(displayG, null);
+          slot.onmouseenter = () => slot.style.transform = 'scale(1.03)';
+          slot.onmouseleave = () => slot.style.transform = '';
         } else {
           slot.innerHTML = `<div style="font-size:0.65rem;color:var(--border);text-align:center;padding:6px;line-height:1.3;">${g.name}<br><span style="font-size:0.55rem;">#${g.id}</span></div>`;
         }
@@ -1803,23 +2273,42 @@ function renderAlbumAccordion() {
     acc.appendChild(group);
   });
 
-  // Update progress
   document.getElementById('albumProgress').textContent = `${totalStuck} / ${ALL_GLAGINIS.length}`;
   const pct = Math.round(totalStuck / ALL_GLAGINIS.length * 100);
   document.getElementById('albumProgressBar').style.width = pct + '%';
 }
+   
+function stickIntoAlbum(g, instanceId) {
+  // g kann als Objekt oder als glId-Number reinkommen (Rückwärtskompatibilität)
+  if (typeof g === 'number') {
+    g = ALL_GLAGINIS.find(x => x.id === g);
+    if (!g) { toast('Glagini nicht gefunden!', 'error'); return; }
+  }
 
-function stickIntoAlbum(glId, instanceId) {
-  const owned = myCollection.find(c => c.glId === glId && !c.stuck);
-  if (!owned)         { toast('Du besitzt diese Karte nicht!', 'error'); return; }
-  if (albumStuck[glId]) { toast('Dieser Slot ist bereits gefüllt!', 'error'); return; }
-  albumStuck[glId] = true;
-  const idx = myCollection.findIndex(c => c.glId === glId && !c.stuck);
-  if (idx >= 0) myCollection[idx].stuck = true;
+  const glId    = g.id;
+  const myMetal = g.metal || 'none';
+
+  // Prüfen ob Karte in meiner Collection (unstuck)
+  const ownIdx = myCollection.findIndex(c => c.glId === glId && !c.stuck);
+  if (ownIdx < 0) { toast('Du besitzt diese Karte nicht!', 'error'); return; }
+
+  const stuckMetal = albumStuck[glId]; // undefined = noch kein Slot belegt
+
+  if (stuckMetal !== undefined) {
+    // Überkleben: aktuell eingeklebte Karte zurück in Collection
+    myCollection.push({ glId, instanceId: generateUID(), metal: stuckMetal, stuck: false });
+  }
+
+  // Neue Karte einkleben
+  albumStuck[glId] = myMetal;
+  myCollection[ownIdx].stuck = true;
+
   saveLocalData();
   renderAlbumAccordion();
   renderMyGlaginis();
-  toast(`✅ ${ALL_GLAGINIS.find(g=>g.id===glId)?.name} ins Album eingeklebt!`, 'success');
+
+  const metalLabel = METAL_LABELS[myMetal] || '';
+  toast(`✅ ${g.name}${metalLabel ? ' ' + metalLabel : ''} ins Album eingeklebt!`, 'success');
 }
 
 /* ==============================================================
@@ -1837,7 +2326,8 @@ function getWeightedRandom() {
   else if (rand < 15) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
   else if (rand < 40) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
   else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
-  return pool[Math.floor(Math.random() * pool.length)];
+  const base = pool[Math.floor(Math.random() * pool.length)];
+  return { ...base, metal: rollMetal() };
 }
 
 function getPackWeightedRandom() {
@@ -1847,7 +2337,8 @@ function getPackWeightedRandom() {
   else if (rand < 22) pool = ALL_GLAGINIS.filter(g => g.rarity === 'super');
   else if (rand < 52) pool = ALL_GLAGINIS.filter(g => g.rarity === 'rare');
   else                pool = ALL_GLAGINIS.filter(g => g.rarity === 'normal');
-  return pool[Math.floor(Math.random() * pool.length)];
+  const base = pool[Math.floor(Math.random() * pool.length)];
+  return { ...base, metal: rollMetal() };
 }
 
 function initDailyCheck() {
@@ -1883,8 +2374,13 @@ function initDailyCheck() {
 }
 
 function addToCollection(g, count=1) {
-  for (let i=0; i<count; i++) {
-    myCollection.push({ glId: g.id, instanceId: generateUID(), stuck: false });
+  for (let i = 0; i < count; i++) {
+    myCollection.push({
+      glId: g.id,
+      instanceId: generateUID(),
+      metal: g.metal || 'none',
+      stuck: false
+    });
   }
   saveLocalData();
 }
@@ -2120,7 +2616,7 @@ function renderMyGlaginis() {
   const unstuck = myCollection.filter(c => !c.stuck);
   const filtered = myGlaginiFilter === 'all'
     ? unstuck
-    : unstuck.filter(c => ALL_GLAGINIS.find(g=>g.id===c.glId)?.rarity === myGlaginiFilter);
+    : unstuck.filter(c => ALL_GLAGINIS.find(g => g.id === c.glId)?.rarity === myGlaginiFilter);
 
   if (filtered.length === 0) {
     grid.innerHTML = `<div class="empty-state" style="width:100%;"><div class="empty-icon">🃏</div><div class="empty-text">${myCollection.length === 0 ? 'Noch keine Glaginis! Hole deinen täglichen Gratis-Sticker ab.' : 'Keine Karten in dieser Kategorie.'}</div></div>`;
@@ -2129,12 +2625,19 @@ function renderMyGlaginis() {
   }
 
   filtered.forEach(c => {
-    const g = ALL_GLAGINIS.find(gi => gi.id === c.glId);
-    if (!g) return;
-    const card = buildGlaginiCard(g, { clickable:true, showStickBtn:!albumStuck[g.id], instanceId:c.instanceId });
+    const base = ALL_GLAGINIS.find(gi => gi.id === c.glId);
+    if (!base) return;
+    const g = { ...base, metal: c.metal || 'none' };
+    const card = buildGlaginiCard(g, {
+      clickable: true,
+      showStickBtn: true,
+      instanceId: c.instanceId
+    });
     grid.appendChild(card);
   });
-  document.getElementById('userGreeting').textContent = `👋 Hey ${userName}! Du hast ${myCollection.filter(c=>!c.stuck).length} Glaginis (${myCollection.filter(c=>c.stuck).length} eingeklebt).`;
+
+  document.getElementById('userGreeting').textContent =
+    `👋 Hey ${userName}! Du hast ${unstuck.length} Glaginis (${myCollection.filter(c => c.stuck).length} eingeklebt).`;
 }
 
 /* ==============================================================
