@@ -2007,11 +2007,22 @@ function initLocal() {
 
   localStorage.setItem('glaggleUID', userId);
   try {
-    const col  = localStorage.getItem('glaginiCollection');
-    myCollection = col ? JSON.parse(col) : [];
-    const stuck = localStorage.getItem('albumStuck');
-    albumStuck  = stuck ? JSON.parse(stuck) : {};
-  } catch(e) { myCollection = []; albumStuck = {}; }
+  const col  = localStorage.getItem('glaginiCollection');
+  myCollection = col ? JSON.parse(col) : [];
+  // Migration: alte Einträge ohne metal-Feld fixen
+  myCollection = myCollection.map(c => ({
+    ...c,
+    metal: c.metal || 'none'
+  }));
+  const stuck = localStorage.getItem('albumStuck');
+  albumStuck  = stuck ? JSON.parse(stuck) : {};
+  // Migration: alte albumStuck Einträge (waren true/false) → 'none'
+  Object.keys(albumStuck).forEach(k => {
+    if (albumStuck[k] === true || albumStuck[k] === false) {
+      albumStuck[k] = 'none';
+    }
+  });
+} catch(e) { myCollection = []; albumStuck = {}; }
 
   updateCoinDisplay();
   // ... Rest bleibt gleich
