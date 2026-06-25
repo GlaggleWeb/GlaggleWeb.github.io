@@ -2112,7 +2112,28 @@ function buildGlaginiCard(g, opts={}) {
   div.className = `glagini-card rarity-${g.rarity}${metalClass}${selected ? ' selected' : ''}`;
 
   const rarityLabels = { normal:'Normal', rare:'Selten', super:'Supersselten', epic:'Episch' };
-  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin' };
+  const metalLabels  = { bronze:'🥉 Bronze', silver:'🥈 Silber', gold:'🥇 Gold', platinum:'💠 Platin', none:'Normal' };
+
+  // Stick-Button Logik
+  let stickBtnHtml = '';
+  if (showStickBtn) {
+    const stuckMetal  = albumStuck[g.id];
+    const myMetal     = g.metal || 'none';
+    const myRank      = METAL_TIER_RANK[myMetal];
+    const stuckRank   = stuckMetal !== undefined ? METAL_TIER_RANK[stuckMetal] : -1;
+    const isStuck     = stuckMetal !== undefined;
+    const isSameMetal = isStuck && stuckMetal === myMetal;
+
+    if (!isStuck) {
+      stickBtnHtml = `<button class="stick-btn" data-iid="${instanceId||''}" data-glid="${g.id}">Einkleben</button>`;
+    } else if (isSameMetal) {
+      stickBtnHtml = `<button class="stick-btn" style="background:var(--muted);cursor:default;" disabled>✅ Eingeklebt</button>`;
+    } else if (myRank > stuckRank) {
+      stickBtnHtml = `<button class="stick-btn" style="background:var(--green);" data-iid="${instanceId||''}" data-glid="${g.id}">⬆️ Upgraden</button>`;
+    } else {
+      stickBtnHtml = `<button class="stick-btn" style="background:var(--accent2);" data-iid="${instanceId||''}" data-glid="${g.id}">⬇️ Downgraden</button>`;
+    }
+  }
 
   div.innerHTML = `
     <span class="rarity-badge ${g.rarity}">${rarityLabels[g.rarity]}</span>
@@ -2128,7 +2149,7 @@ function buildGlaginiCard(g, opts={}) {
         </div>
       `).join('')}
     </div>
-    ${showStickBtn ? `<button class="stick-btn" data-iid="${instanceId || ''}" data-glid="${g.id}">Einkleben</button>` : ''}
+    ${stickBtnHtml}
   `;
 
   if (clickable) {
@@ -2138,10 +2159,12 @@ function buildGlaginiCard(g, opts={}) {
     };
   }
 
-  if (showStickBtn) {
-    div.querySelector('.stick-btn').onclick = (e) => {
+  // Stick-Button Event (nur wenn nicht disabled)
+  const stickBtn = div.querySelector('.stick-btn:not([disabled])');
+  if (stickBtn) {
+    stickBtn.onclick = (e) => {
       e.stopPropagation();
-      stickIntoAlbum(g, instanceId || e.target.dataset.iid);
+      stickIntoAlbum(g, instanceId || stickBtn.dataset.iid);
     };
   }
 
