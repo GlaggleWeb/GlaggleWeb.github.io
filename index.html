@@ -1456,6 +1456,17 @@ body.smart-mouse-active .nav-button.smart-hover {
     background: #70C4F7 !important;
     color: #ffffff !important;
 }
+
+/* Cursor verschwindet über klickbaren Elementen */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover {
+    opacity: 0 !important;
+}
+
+/* Cursor schrumpft beim Klicken */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+}
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
 </style>
 </head>
@@ -4157,10 +4168,23 @@ function enableSmartMouse() {
     smartMouseActive = true;
     document.body.classList.add('smart-mouse-active');
     smartCursor.style.display = 'block';
+
+    // Akzentfarbe aus dem gespeicherten Theme lesen
+    const savedTheme = localStorage.getItem('glaggle-theme');
+    if (savedTheme) {
+        try {
+            const t = JSON.parse(savedTheme);
+            smartCursor.style.background = t.accent || '#000000';
+        } catch(e) {
+            smartCursor.style.background = '#000000';
+        }
+    } else {
+        smartCursor.style.background = '#000000';
+    }
+
     localStorage.setItem('glaggle-smart-mouse', 'true');
     updateSmartMouseToggleUI();
 }
-
 function disableSmartMouse() {
     smartMouseActive = false;
     document.body.classList.remove('smart-mouse-active');
@@ -4222,20 +4246,14 @@ const SMART_HOVER_SELECTORS = [
     '.search-icon-btn', '.ai-magic-btn'
 ].join(', ');
 
+// Hover-Logik: Cursor verschwindet komplett über klickbaren Elementen
 document.addEventListener('mouseover', (e) => {
     if (!smartMouseActive) return;
     const target = e.target.closest(SMART_HOVER_SELECTORS);
     if (target) {
         target.classList.add('smart-hover');
         smartCursor.classList.add('cursor-hover');
-
-        // Suchfeld: Cursor verschwindet, Feld ist aktiv
-        if (target.classList.contains('search-bar-container') ||
-            target.closest('.search-bar-container')) {
-            smartCursor.style.opacity = '0';
-        } else {
-            smartCursor.style.opacity = '1';
-        }
+        smartCursor.style.opacity = '0'; // immer unsichtbar über klickbarem Element
     }
 });
 
@@ -4245,7 +4263,7 @@ document.addEventListener('mouseout', (e) => {
     if (target) {
         target.classList.remove('smart-hover');
         smartCursor.classList.remove('cursor-hover');
-        smartCursor.style.opacity = '1';
+        smartCursor.style.opacity = '1'; // wieder sichtbar
     }
 });
 
