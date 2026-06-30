@@ -1392,9 +1392,76 @@ footer {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
 }
+
+/* ===== GLAGGLE SMART MOUSE ===== */
+body.smart-mouse-active {
+    cursor: none !important;
+}
+
+body.smart-mouse-active * {
+    cursor: none !important;
+}
+
+#glaggle-smart-cursor {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    background: #000000;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.15s ease;
+    display: none;
+    top: 0;
+    left: 0;
+}
+
+/* Cursor wird grösser + Glaggle-Blau wenn über klickbarem Element */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover {
+    width: 44px;
+    height: 44px;
+    background: #70C4F7;
+    mix-blend-mode: normal;
+}
+
+/* Cursor schrumpft beim Klicken */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+    background: #2E94D1;
+}
+
+/* Suchfeld: Cursor verschwindet, Feld leuchtet auf */
+body.smart-mouse-active .search-bar-container.smart-hover {
+    border-color: #70C4F7 !important;
+    box-shadow: 0 0 25px rgba(112, 196, 247, 0.6) !important;
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+/* Buttons & Links: füllen sich schwarz wie im Beispiel */
+body.smart-mouse-active a.smart-hover,
+body.smart-mouse-active button.smart-hover,
+body.smart-mouse-active .nav-button.smart-hover,
+body.smart-mouse-active .web-button.smart-hover,
+body.smart-mouse-active .sidebar-link.smart-hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+/* Glaggle-Buttons: füllen sich in Glaggle-Blau */
+body.smart-mouse-active .web-button.smart-hover,
+body.smart-mouse-active .nav-button.smart-hover {
+    background: #70C4F7 !important;
+    color: #ffffff !important;
+}
+/* ===== ENDE GLAGGLE SMART MOUSE ===== */
 </style>
 </head>
 <body>
+
+<div id="glaggle-smart-cursor"></div>
 
 <div id="background-layer"></div>
 
@@ -1563,6 +1630,20 @@ footer {
 </div>
 
 <button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
+
+<div style="border-top:1px solid #eee; margin-top:12px; padding-top:12px;">
+    <p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Maus</p>
+    <button id="smart-mouse-toggle" onclick="
+        if(typeof smartMouseActive !== 'undefined' && smartMouseActive) {
+            disableSmartMouse();
+        } else {
+            enableSmartMouse();
+        }
+    " style="width:100%;padding:9px;border-radius:8px;border:1px solid #ddd;font-size:12px;cursor:pointer;font-weight:700;transition:all 0.2s;">
+        Glaggle Smart Mouse aktivieren
+    </button>
+    <p style="font-size:10px;color:#aaa;margin-top:6px;text-align:center;">Eigener Cursor mit Smart-Hover-Effekten</p>
+</div>
 </div>
 </details>
 
@@ -4067,6 +4148,114 @@ window.addEventListener('DOMContentLoaded', () => {
     // Kurze Verzögerung, um sicherzugehen, dass dein 'glaggleAudio'-Objekt bereits existiert
     setTimeout(tryAutoplayMusic, 500); 
 });
+
+/* ===== GLAGGLE SMART MOUSE SYSTEM ===== */
+let smartMouseActive = false;
+const smartCursor = document.getElementById('glaggle-smart-cursor');
+
+function enableSmartMouse() {
+    smartMouseActive = true;
+    document.body.classList.add('smart-mouse-active');
+    smartCursor.style.display = 'block';
+    localStorage.setItem('glaggle-smart-mouse', 'true');
+    updateSmartMouseToggleUI();
+}
+
+function disableSmartMouse() {
+    smartMouseActive = false;
+    document.body.classList.remove('smart-mouse-active');
+    smartCursor.style.display = 'none';
+    document.querySelectorAll('.smart-hover').forEach(el => el.classList.remove('smart-hover'));
+    localStorage.setItem('glaggle-smart-mouse', 'false');
+    updateSmartMouseToggleUI();
+}
+
+function updateSmartMouseToggleUI() {
+    const toggleBtn = document.getElementById('smart-mouse-toggle');
+    if (!toggleBtn) return;
+    if (smartMouseActive) {
+        toggleBtn.style.background = '#70C4F7';
+        toggleBtn.style.color = '#fff';
+        toggleBtn.textContent = '✓ Glaggle Smart Mouse aktiv';
+    } else {
+        toggleBtn.style.background = 'none';
+        toggleBtn.style.color = 'inherit';
+        toggleBtn.textContent = 'Glaggle Smart Mouse aktivieren';
+    }
+}
+
+// Maus bewegen: Cursor folgt
+document.addEventListener('mousemove', (e) => {
+    if (!smartMouseActive) return;
+    smartCursor.style.left = e.clientX + 'px';
+    smartCursor.style.top = e.clientY + 'px';
+});
+
+// Maus verlässt Fenster: Cursor verstecken
+document.addEventListener('mouseleave', () => {
+    if (!smartMouseActive) return;
+    smartCursor.style.opacity = '0';
+});
+document.addEventListener('mouseenter', () => {
+    if (!smartMouseActive) return;
+    smartCursor.style.opacity = '1';
+});
+
+// Klick-Animation
+document.addEventListener('mousedown', () => {
+    if (!smartMouseActive) return;
+    smartCursor.classList.add('cursor-click');
+});
+document.addEventListener('mouseup', () => {
+    if (!smartMouseActive) return;
+    smartCursor.classList.remove('cursor-click');
+});
+
+// Hover-Logik: welche Elemente reagieren
+const SMART_HOVER_SELECTORS = [
+    'a', 'button', 'input[type="submit"]',
+    '.web-button', '.nav-button', '.sidebar-link',
+    '.glaggle-entry', '.t-btn', '.hamburger',
+    '#backToTop', '.search-bar-container',
+    '.quick-btn', '.welcome-btn', '.push-close-btn',
+    '[onclick]', 'summary', '.close-btn',
+    '.search-icon-btn', '.ai-magic-btn'
+].join(', ');
+
+document.addEventListener('mouseover', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.add('smart-hover');
+        smartCursor.classList.add('cursor-hover');
+
+        // Suchfeld: Cursor verschwindet, Feld ist aktiv
+        if (target.classList.contains('search-bar-container') ||
+            target.closest('.search-bar-container')) {
+            smartCursor.style.opacity = '0';
+        } else {
+            smartCursor.style.opacity = '1';
+        }
+    }
+});
+
+document.addEventListener('mouseout', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.remove('smart-hover');
+        smartCursor.classList.remove('cursor-hover');
+        smartCursor.style.opacity = '1';
+    }
+});
+
+// Beim Seitenstart: gespeicherten Zustand wiederherstellen
+(function restoreSmartMouse() {
+    if (localStorage.getItem('glaggle-smart-mouse') === 'true') {
+        enableSmartMouse();
+    }
+})();
+/* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
 </script>
 
 <div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
