@@ -3926,6 +3926,7 @@ let recognition = null;
 let isListening = false;
 let voiceOpen = false;
 let preDuckVolume = null;
+let lastVoiceReply = "";
 
 // HIER: fadeVolume nach draußen gezogen, damit duckMusic() darauf zugreifen kann!
 function fadeVolume(target) {
@@ -4036,6 +4037,17 @@ ERLAUBTE AKTIONEN:
 10. "smart_mouse" — Nutzer will den Smart-Mouse-Cursor an/ausschalten. params: {"state": "<an|aus>"}
 11. "open_menu" — Nutzer will das Seitenmenü öffnen.
 12. "none" — Nichts davon passt, einfach normal inhaltlich antworten (Wissen, Smalltalk).
+12. "image_search" — Nutzer will Bilder suchen ("zeig mir Bilder von...", "suche Bilder..."). params: {"query": "<Suchbegriff>"}
+13. "wiki_search" — Nutzer will explizit auf Wikipedia nachschlagen ("was sagt Wikipedia über...", "wikipedia..."). params: {"query": "<Suchbegriff>"}
+14. "background_random" — Nutzer will den Hintergrund ändern/ein neues Bild ("anderer Hintergrund", "wechsle das Bild").
+15. "background_off" — Nutzer will den Hintergrund ausschalten/entfernen.
+16. "volume" — Nutzer will die Musiklautstärke ändern. params: {"direction": "<hoch|runter>"}
+17. "repeat" — Nutzer will die letzte Antwort nochmal hören ("wiederhole das", "was hast du gesagt").
+18. "help" — Nutzer will eine Kurzanleitung/Hilfe zu Glaggle ("wie funktioniert das hier", "hilfe").
+19. "login" — Nutzer will sich einloggen.
+20. "register" — Nutzer will sich registrieren/ein Konto erstellen.
+21. "close_assistant" — Nutzer will den Assistenten schliessen ("schliesse dich", "tschüss", "das wars").
+22. "none" — Nichts davon passt, einfach normal inhaltlich antworten (Wissen, Smalltalk).
 
 Erkenne Absichten auch bei lockerer Umgangssprache. Bei "none" trotzdem inhaltlich in "reply" antworten.
 `;
@@ -4191,6 +4203,88 @@ function executeVoiceAction(action, params) {
 
         case "open_menu":
             toggleMenu();
+            break;
+
+        case "image_search": {
+            const query = params.query || "";
+            if (!query) break;
+            closeVoiceAssistant();
+            document.getElementById('glaggleQuery').value = query;
+            glaggleSearch();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                document.getElementById('nav-img')?.click();
+            }, 1500);
+            break;
+        }
+
+        case "wiki_search": {
+            const query = params.query || "";
+            if (!query) break;
+            closeVoiceAssistant();
+            document.getElementById('glaggleQuery').value = query;
+            glaggleSearch();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                document.getElementById('nav-wiki')?.click();
+            }, 1500);
+            break;
+        }
+
+        case "background_random": {
+            const randomIndex = Math.floor(Math.random() * spotlightImages.length);
+            stopBgRotation();
+            setBackgroundImage(spotlightImages[randomIndex]);
+            localStorage.setItem('glaggle-bg-mode', 'fixed');
+            localStorage.setItem('glaggle-bg-fixed', randomIndex);
+            break;
+        }
+
+        case "background_off":
+            setBgMode('none');
+            break;
+
+        case "volume": {
+            const volSlider = document.getElementById('music-vol');
+            if (!volSlider) break;
+            let current = parseInt(volSlider.value) || 0;
+            const step = 20;
+            current = (params.direction || "").toLowerCase() === "runter"
+                ? Math.max(0, current - step)
+                : Math.min(100, current + step);
+            volSlider.value = current;
+            volSlider.dispatchEvent(new Event('input'));
+            break;
+        }
+
+        case "repeat":
+            if (lastVoiceReply) {
+                document.getElementById('voice-response').innerText = lastVoiceReply;
+                document.getElementById('voice-response').style.display = 'block';
+                speakResponse(lastVoiceReply);
+            }
+            break;
+
+        case "help": {
+            const overlay = document.getElementById('glaggle-welcome-overlay');
+            currentWelcomeSlide = 1;
+            showSlide(1);
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('show'), 50);
+            closeVoiceAssistant();
+            break;
+        }
+
+        case "login":
+            window.location.href = "login/index.html";
+            break;
+
+        case "register":
+            window.location.href = "account/index.html";
+            break;
+
+        case "close_assistant":
+            closeVoiceAssistant();
             break;
 
         case "none":
