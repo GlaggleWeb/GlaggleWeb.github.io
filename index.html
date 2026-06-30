@@ -4013,6 +4013,33 @@ function stopListening() {
     document.getElementById('voice-btn').classList.remove('listening');
 }
 
+const VOICE_ACTIONS_SYSTEM_PROMPT = `
+Du bist Glaggle Assistant, der Sprachassistent von Glaggle AI.
+Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt, ohne Markdown, ohne Einleitung, ohne Erklärung:
+
+{
+  "action": "<eine der erlaubten Aktionen>",
+  "params": { ... je nach Aktion ... },
+  "reply": "<kurze, natürliche gesprochene Antwort auf Deutsch (wenn der Nutzer dich nicht anders anspricht), max. 2-3 Sätze, wie Siri/Google Assistant>"
+}
+
+ERLAUBTE AKTIONEN:
+1. "timer" — Nutzer will einen Timer/Wecker stellen. params: {"minutes": <Zahl>}
+2. "search" — Nutzer will im Web/auf Glaggle suchen ("suche nach...", "google mal...", "finde mir..."). params: {"query": "<Suchbegriff>"}
+3. "calculator" — Nutzer will etwas berechnen. params: {"expression": "<math. Ausdruck z.B. 5*12+3>"}
+4. "wetter" — Nutzer fragt nach dem Wetter. params: {"city": "<Stadt oder leer>"}
+5. "open_app" — Nutzer will eine Glaggle-App öffnen. params: {"app": "<glame|gamecenter|glagini|designstudio|codemaker|avideo|aimage|quizai>"}
+6. "theme" — Nutzer will das Farbschema wechseln. params: {"theme": "<hell|dunkel|blau|grün|rot|gelb|violett>"}
+7. "music" — Nutzer will Hintergrundmusik an/aus machen. params: {"state": "<an|aus>"}
+8. "scroll_top" — Nutzer will nach oben scrollen / neu anfangen.
+9. "open_chat" — Nutzer will im Chat weiter mit Glaggle AI sprechen/tippen.
+10. "smart_mouse" — Nutzer will den Smart-Mouse-Cursor an/ausschalten. params: {"state": "<an|aus>"}
+11. "open_menu" — Nutzer will das Seitenmenü öffnen.
+12. "none" — Nichts davon passt, einfach normal inhaltlich antworten (Wissen, Smalltalk).
+
+Erkenne Absichten auch bei lockerer Umgangssprache. Bei "none" trotzdem inhaltlich in "reply" antworten.
+`;
+
 async function askGroqVoice(text) {
     setVoiceStatus('✨ Glaggle denkt nach...');
     const responseBox = document.getElementById('voice-response');
@@ -4029,27 +4056,146 @@ async function askGroqVoice(text) {
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
                 messages: [
-                    {
-                        role: "system",
-                        content: "Du bist Glaggle Assistant, ein freundlicher KI-Sprachassistent von Glaggle AI. Antworte KURZ (max. 2-3 Sätze), präzise und natürlich auf Deutsch — wie Siri oder Google Assistant. Kein Markdown, nur normaler Text."
-                    },
+                    { role: "system", content: VOICE_ACTIONS_SYSTEM_PROMPT },
                     { role: "user", content: text }
                 ],
-                max_tokens: 200
+                temperature: 0.2,
+                max_tokens: 300
             })
         });
 
         const data = await res.json();
-        const answer = data.choices[0].message.content;
+        const raw = data.choices[0].message.content;
 
-        responseBox.innerText = answer;
+        let parsed;
+        try {
+            const start = raw.indexOf("{");
+            const end = raw.lastIndexOf("}") + 1;
+            parsed = JSON.parse(raw.substring(start, end));
+        } catch (e) {
+            parsed = { action: "none", params: {}, reply: raw };
+        }
+
+        const reply = parsed.reply || "Alles klar!";
+        responseBox.innerText = reply;
         setVoiceStatus('✅ Fertig — tippe erneut zum Sprechen');
+        speakResponse(reply);
 
-        speakResponse(answer);
+        executeVoiceAction(parsed.action, parsed.params || {});
 
     } catch(e) {
         responseBox.innerText = 'Fehler beim Verbinden mit Glaggle AI.';
         setVoiceStatus('❌ Verbindungsfehler');
+        console.error(e);
+    }
+}
+
+function scrollToWidget(delay = 300) {
+    setTimeout(() => {
+        const firstEntry = document.querySelector('#glaggleResults .glaggle-entry');
+        if (firstEntry) firstEntry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, delay);
+}
+
+function executeVoiceAction(action, params) {
+    switch (action) {
+
+        case "timer": {
+            const minutes = parseFloat(params.minutes) || 5;
+            renderTimerWidget(minutes);
+            scrollToWidget();
+            break;
+        }
+
+        case "search": {
+            const query = params.query || "";
+            if (!query) break;
+            closeVoiceAssistant();
+            document.getElementById('glaggleQuery').value = query;
+            glaggleSearch();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            break;
+        }
+
+        case "calculator": {
+            const expr = (params.expression || "").replace(/x/gi, '*');
+            renderCalculatorWidget(expr);
+            scrollToWidget();
+            break;
+        }
+
+        case "wetter": {
+            const city = params.city || "deinen Standort";
+            checkWidgets("wetter " + city);
+            scrollToWidget();
+            break;
+        }
+
+        case "open_app": {
+            const apps = {
+                glame: "https://glame.glaggle.ch/",
+                gamecenter: "https://glaggle.ch/gamecenter",
+                glagini: "https://glaggle.ch/glagini",
+                designstudio: "https://glaggle.ch/designstudio",
+                codemaker: "https://glaggle.ch/codemaker",
+                avideo: "https://glaggle.ch/avideo",
+                aimage: "https://glaggle.ch/aimage/",
+                quizai: "https://glaggle.ch/quizai"
+            };
+            const url = apps[(params.app || "").toLowerCase()];
+            if (url) window.open(url, "_blank");
+            break;
+        }
+
+        case "theme": {
+            const themeName = (params.theme || "").toLowerCase();
+            if (typeof THEMES !== 'undefined' && THEMES[themeName]) {
+                const btn = document.querySelector(`#theme-grid [data-t="${themeName}"]`);
+                applyTheme(themeName, btn);
+            }
+            break;
+        }
+
+        case "music": {
+            const sel = document.getElementById('music-select');
+            if (!sel) break;
+            if ((params.state || "").toLowerCase() === "aus") {
+                sel.value = "";
+                handleMusicChange(sel);
+            } else {
+                if (!sel.value && sel.options.length > 1) sel.selectedIndex = 1;
+                handleMusicChange(sel);
+            }
+            break;
+        }
+
+        case "scroll_top":
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            break;
+
+        case "open_chat": {
+            const lastAiText = document.getElementById('ai-text-full')?.innerText
+                              || document.getElementById('ai-text')?.innerText
+                              || "";
+            openAiChat(lastAiText);
+            break;
+        }
+
+        case "smart_mouse":
+            if ((params.state || "").toLowerCase() === "aus") {
+                disableSmartMouse();
+            } else {
+                enableSmartMouse();
+            }
+            break;
+
+        case "open_menu":
+            toggleMenu();
+            break;
+
+        case "none":
+        default:
+            break;
     }
 }
 
