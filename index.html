@@ -1468,45 +1468,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     height: 20px;
 }
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
-
-.voice-feature-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: rgba(112, 196, 247, 0.06);
-    border: 1px solid rgba(112, 196, 247, 0.15);
-    border-radius: 14px;
-    padding: 12px 14px;
-}
-.voice-feature-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-.voice-feature-text strong {
-    display: block;
-    color: #70C4F7;
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-}
-.voice-feature-text span {
-    color: #bbb;
-    font-size: 0.82rem;
-    line-height: 1.4;
-}
-
-#voice-help-btn {
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 2px 8px;
-    border-radius: 6px;
-    transition: color 0.2s;
-    margin-right: 4px;
-}
-#voice-help-btn:hover { color: #70C4F7; }
 </style>
 </head>
 <body>
@@ -3794,13 +3755,10 @@ function dismissPushNotice() {
 </button>
 
 <div id="voice-popup" style="display:none;">
-<div id="voice-header">
-    <span>✨ Glaggle Assistant</span>
-    <div>
-        <button onclick="openVoiceFeaturesPopup()" id="voice-help-btn" title="Was kann ich?">?</button>
+    <div id="voice-header">
+        <span>✨ Glaggle Assistant</span>
         <button onclick="closeVoiceAssistant()" id="voice-close">✕</button>
     </div>
-</div>
     <div id="voice-status">Tippe auf das Mikrofon zum Sprechen</div>
     <div id="voice-wave">
         <div class="bar"></div><div class="bar"></div><div class="bar"></div>
@@ -3809,25 +3767,6 @@ function dismissPushNotice() {
     <div id="voice-transcript"></div>
     <div id="voice-response"></div>
     <button id="voice-mic-btn" onclick="startListening()">🎙️</button>
-    <div id="voice-features-overlay" class="welcome-overlay" style="z-index:9500;">
-    <div class="welcome-popup" style="max-height:85vh; overflow-y:auto;">
-        <div class="welcome-gradient-border"></div>
-        <div class="welcome-content" style="text-align:left;">
-            <div style="text-align:center;">
-                <span class="welcome-emoji">🎙️</span>
-                <h2 style="text-align:center;">Was kann Glaggle Assistant?</h2>
-                <p style="text-align:center; margin-bottom:20px;">Sprich einfach drauf los — der Assistent erkennt automatisch, was du möchtest.</p>
-            </div>
-
-            <div id="voice-features-list" style="display:flex; flex-direction:column; gap:10px; max-height:340px; overflow-y:auto; padding-right:4px;">
-                </div>
-
-            <div class="welcome-footer" style="margin-top:24px;">
-                <button class="welcome-btn" onclick="closeVoiceFeaturesPopup()">Verstanden ✓</button>
-            </div>
-        </div>
-    </div>
-</div>
 </div>
 
 <style>
@@ -4067,68 +4006,6 @@ function startListening() {
     recognition.start();
 }
 
-    /* ===== GLAGGLE VOICE FEATURES POPUP ===== */
-const VOICE_FEATURES = [
-    { icon: "⏱️", title: "Timer stellen", desc: "\"Stell einen Timer auf 5 Minuten\"" },
-    { icon: "🔍", title: "Suchen", desc: "\"Suche nach Glaggle Glagini\"" },
-    { icon: "🧮", title: "Rechnen", desc: "\"Was ist 24 mal 17\"" },
-    { icon: "☁️", title: "Wetter", desc: "\"Wie ist das Wetter in Zürich\"" },
-    { icon: "🚀", title: "App öffnen", desc: "\"Öffne das Gamecenter\" / \"Öffne Glame\"" },
-    { icon: "🎨", title: "Design wechseln", desc: "\"Wechsle zum dunklen Theme\"" },
-    { icon: "🎵", title: "Musik steuern", desc: "\"Mach die Musik an / aus\", \"Lauter / Leiser\"" },
-    { icon: "⬆️", title: "Nach oben scrollen", desc: "\"Scroll nach oben\"" },
-    { icon: "💬", title: "Im Chat weiterreden", desc: "\"Öffne den Chat\"" },
-    { icon: "🖱️", title: "Smart Mouse", desc: "\"Aktiviere Smart Mouse\"" },
-    { icon: "📂", title: "Menü öffnen", desc: "\"Öffne das Menü\"" },
-    { icon: "🖼️", title: "Bilder suchen", desc: "\"Zeig mir Bilder von Katzen\"" },
-    { icon: "📖", title: "Wikipedia", desc: "\"Was sagt Wikipedia über den Mond\"" },
-    { icon: "🌄", title: "Hintergrund wechseln", desc: "\"Wechsle den Hintergrund\" / \"Hintergrund aus\"" },
-    { icon: "🔁", title: "Wiederholen", desc: "\"Wiederhole das nochmal\"" },
-    { icon: "❓", title: "Hilfe", desc: "\"Wie funktioniert das hier\"" },
-    { icon: "🔑", title: "Login / Registrieren", desc: "\"Logg mich ein\" / \"Erstell ein Konto\"" },
-    { icon: "👋", title: "Schliessen", desc: "\"Das wars, danke\"" }
-];
-
-function buildVoiceFeaturesList() {
-    const list = document.getElementById('voice-features-list');
-    if (!list || list.children.length > 0) return;
-    VOICE_FEATURES.forEach(f => {
-        const item = document.createElement('div');
-        item.className = 'voice-feature-item';
-        item.innerHTML = `
-            <span class="voice-feature-icon">${f.icon}</span>
-            <div class="voice-feature-text">
-                <strong>${f.title}</strong>
-                <span>${f.desc}</span>
-            </div>
-        `;
-        list.appendChild(item);
-    });
-}
-
-function openVoiceFeaturesPopup() {
-    buildVoiceFeaturesList();
-    const overlay = document.getElementById('voice-features-overlay');
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('show'), 20);
-}
-
-function closeVoiceFeaturesPopup() {
-    const overlay = document.getElementById('voice-features-overlay');
-    overlay.classList.remove('show');
-    localStorage.setItem('glaggle_voice_features_seen', 'true');
-    setTimeout(() => { overlay.style.display = 'none'; }, 400);
-}
-
-// Beim allerersten Öffnen des Assistenten automatisch zeigen
-const originalToggleVoiceAssistant = toggleVoiceAssistant;
-toggleVoiceAssistant = function() {
-    originalToggleVoiceAssistant();
-    if (voiceOpen && !localStorage.getItem('glaggle_voice_features_seen')) {
-        setTimeout(openVoiceFeaturesPopup, 350);
-    }
-};
-/* ===== ENDE GLAGGLE VOICE FEATURES POPUP ===== */
 function stopListening() {
     isListening = false;
     if (recognition) { recognition.stop(); recognition = null; }
