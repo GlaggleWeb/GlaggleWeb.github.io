@@ -3757,9 +3757,12 @@ function dismissPushNotice() {
 <div id="voice-popup" style="display:none;">
     <div id="voice-header">
         <span>✨ Glaggle Assistant</span>
-        <button onclick="closeVoiceAssistant()" id="voice-close">✕</button>
+        <div>
+            <button onclick="openVoiceFeaturesPopup()" id="voice-help-btn" title="Was kann ich?">?</button>
+            <button onclick="closeVoiceAssistant()" id="voice-close">✕</button>
+        </div>
     </div>
-    <div id="voice-status">Tippe auf das Mikrofon zum Sprechen</div>
+    <div id="voice-status">Einen Moment...</div>
     <div id="voice-wave">
         <div class="bar"></div><div class="bar"></div><div class="bar"></div>
         <div class="bar"></div><div class="bar"></div>
@@ -3767,6 +3770,43 @@ function dismissPushNotice() {
     <div id="voice-transcript"></div>
     <div id="voice-response"></div>
     <button id="voice-mic-btn" onclick="startListening()">🎙️</button>
+
+    <!-- Schnellbefehle -->
+    <div id="voice-chips">
+        <button class="voice-chip" onclick="triggerChip('Stell einen Timer auf 5 Minuten')">⏱️ Timer 5min</button>
+        <button class="voice-chip" onclick="triggerChip('Mach die Musik an')">🎵 Musik an</button>
+        <button class="voice-chip" onclick="focusSearchFromVoice()">🔍 Suche...</button>
+        <button class="voice-chip" onclick="triggerChip('Wie ist das Wetter in Zürich')">☁️ Wetter</button>
+        <button class="voice-chip" onclick="triggerChip('Scroll nach oben')">⬆️ Oben</button>
+    </div>
+
+    <!-- Stimme & Sprache einstellen -->
+    <details id="voice-settings-panel" style="margin-top:10px;">
+        <summary style="font-size:0.75rem;color:#888;cursor:pointer;list-style:none;text-align:center;padding:6px 0;">
+            ⚙️ Stimme einstellen
+        </summary>
+        <div style="margin-top:10px;">
+            <div class="voice-setting-label">Geschwindigkeit</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="speed" data-val="0.6"  onclick="setVoiceSetting('speed','0.6',this)">🐢 Langsam</button>
+                <button class="voice-setting-btn" data-type="speed" data-val="0.82" onclick="setVoiceSetting('speed','0.82',this)">▶️ Normal</button>
+                <button class="voice-setting-btn" data-type="speed" data-val="1.15" onclick="setVoiceSetting('speed','1.15',this)">⚡ Schnell</button>
+            </div>
+            <div class="voice-setting-label" style="margin-top:8px;">Stimme</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="gender" data-val="male"   onclick="setVoiceSetting('gender','male',this)">👨 Männlich</button>
+                <button class="voice-setting-btn" data-type="gender" data-val="female" onclick="setVoiceSetting('gender','female',this)">👩 Weiblich</button>
+                <button class="voice-setting-btn" data-type="gender" data-val="auto"   onclick="setVoiceSetting('gender','auto',this)">🔀 Auto</button>
+            </div>
+            <div class="voice-setting-label" style="margin-top:8px;">Sprache</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="lang" data-val="de-DE" onclick="setVoiceSetting('lang','de-DE',this)">🇩🇪 DE</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="en-US" onclick="setVoiceSetting('lang','en-US',this)">🇬🇧 EN</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="fr-FR" onclick="setVoiceSetting('lang','fr-FR',this)">🇫🇷 FR</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="es-ES" onclick="setVoiceSetting('lang','es-ES',this)">🇪🇸 ES</button>
+            </div>
+        </div>
+    </details>
 </div>
 
 <style>
@@ -3919,6 +3959,56 @@ function dismissPushNotice() {
     background: linear-gradient(135deg, #EA4335, #c0392b);
     animation: pulse-mic 1.5s infinite;
 }
+
+#voice-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 14px;
+}
+.voice-chip {
+    background: rgba(112,196,247,0.08);
+    border: 1px solid rgba(112,196,247,0.25);
+    color: #aaa;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.voice-chip:hover {
+    background: rgba(112,196,247,0.2);
+    border-color: #70C4F7;
+    color: #70C4F7;
+    transform: scale(1.05);
+}
+
+.voice-setting-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+.voice-setting-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.voice-setting-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 5px 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(112,196,247,0.25);
+    background: none;
+    color: #888;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#voice-settings-panel summary::-webkit-details-marker { display: none; }
 </style>
 
 <script>
@@ -3927,6 +4017,10 @@ let isListening = false;
 let voiceOpen = false;
 let preDuckVolume = null;
 let lastVoiceReply = "";
+let voiceHistory = [];
+let currentVoiceLang = localStorage.getItem('glaggle-voice-lang') || 'de-DE';
+let voiceSpeed = parseFloat(localStorage.getItem('glaggle-voice-speed') || '0.82');
+let voiceGender = localStorage.getItem('glaggle-voice-gender') || 'auto';
 
 // HIER: fadeVolume nach draußen gezogen, damit duckMusic() darauf zugreifen kann!
 function fadeVolume(target) {
@@ -3945,10 +4039,69 @@ function fadeVolume(target) {
     }, 25);
 }
 
+function getVoiceSystemPrompt() {
+    const langMap = {
+        'de-DE': 'Antworte im "reply"-Feld immer auf Deutsch.',
+        'en-US': 'Always reply in English in the "reply" field.',
+        'fr-FR': 'Réponds toujours en français dans le champ "reply".',
+        'es-ES': 'Responde siempre en español en el campo "reply".'
+    };
+    const langInstruction = langMap[currentVoiceLang] || langMap['de-DE'];
+    
+    return `Du bist Glaggle Assistant, der Sprachassistent von Glaggle AI.
+Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt, ohne Markdown, ohne Einleitung:
+
+{
+  "action": "<eine der erlaubten Aktionen>",
+  "params": { ... je nach Aktion ... },
+  "reply": "<kurze natürliche Antwort, max. 2 Sätze>"
+}
+
+${langInstruction}
+
+ERLAUBTE AKTIONEN:
+1. "timer" — params: {"minutes": <Zahl>}
+2. "search" — params: {"query": "<Suchbegriff>"}
+3. "calculator" — params: {"expression": "<Ausdruck>"}
+4. "wetter" — params: {"city": "<Stadt oder leer>"}
+5. "open_app" — params: {"app": "<glame|gamecenter|glagini|designstudio|codemaker|avideo|aimage|quizai>"}
+6. "theme" — params: {"theme": "<hell|dunkel|blau|grün|rot|gelb|violett>"}
+7. "music" — params: {"state": "<an|aus>"}
+8. "scroll_top"
+9. "open_chat"
+10. "smart_mouse" — params: {"state": "<an|aus>"}
+11. "open_menu"
+12. "image_search" — params: {"query": "<Suchbegriff>"}
+13. "wiki_search" — params: {"query": "<Suchbegriff>"}
+14. "background_random"
+15. "background_off"
+16. "volume" — params: {"direction": "<hoch|runter>"}
+17. "repeat"
+18. "help"
+19. "login"
+20. "register"
+21. "close_assistant"
+22. "clipboard" — params: {"target": "search" | "response"}
+23. "language" — params: {"lang": "<de|en|fr|es>"}
+24. "none"`;
+}
+
 function toggleVoiceAssistant() {
     const popup = document.getElementById('voice-popup');
     voiceOpen = !voiceOpen;
     popup.style.display = voiceOpen ? 'block' : 'none';
+
+    if (voiceOpen) {
+        if (!localStorage.getItem('glaggle_voice_features_seen')) {
+            localStorage.setItem('glaggle_voice_features_seen', 'true');
+            setTimeout(openVoiceFeaturesPopup, 350);
+            // Features Popup offen → kein Auto-Listen
+        } else {
+            setTimeout(startListening, 400); // direkt zuhören
+        }
+    } else {
+        stopListening();
+    }
 }
 
 function closeVoiceAssistant() {
@@ -3969,7 +4122,8 @@ function startListening() {
     }
 
     recognition = new SpeechRecognition();
-    recognition.lang = 'de-DE';
+
+    recognition.lang = currentVoiceLang;
     recognition.continuous = false;
     recognition.interimResults = true;
 
@@ -4028,7 +4182,7 @@ ERLAUBTE AKTIONEN:
 1. "timer" — Nutzer will einen Timer/Wecker stellen. params: {"minutes": <Zahl>}
 2. "search" — Nutzer will im Web/auf Glaggle suchen ("suche nach...", "google mal...", "finde mir..."). params: {"query": "<Suchbegriff>"}
 3. "calculator" — Nutzer will etwas berechnen. params: {"expression": "<math. Ausdruck z.B. 5*12+3>"}
-4. "wetter" — Nutzer fragt nach dem Wetter. params: {"city": "<Stadt oder leer>"}
+4. "wetter" — Nutzer fragt nach dem Wetter. Extrahiere die Stadt aus dem Satz falls genannt ("in Zürich", "in Bern" usw). params: {"city": "<Stadtname oder leer wenn keine Stadt genannt>"}
 5. "open_app" — Nutzer will eine Glaggle-App öffnen. params: {"app": "<glame|gamecenter|glagini|designstudio|codemaker|avideo|aimage|quizai>"}
 6. "theme" — Nutzer will das Farbschema wechseln. params: {"theme": "<hell|dunkel|blau|grün|rot|gelb|violett>"}
 7. "music" — Nutzer will Hintergrundmusik an/aus machen. params: {"state": "<an|aus>"}
@@ -4048,6 +4202,9 @@ ERLAUBTE AKTIONEN:
 20. "register" — Nutzer will sich registrieren/ein Konto erstellen.
 21. "close_assistant" — Nutzer will den Assistenten schliessen ("schliesse dich", "tschüss", "das wars").
 22. "none" — Nichts davon passt, einfach normal inhaltlich antworten (Wissen, Smalltalk).
+22. "clipboard" — Nutzer will etwas kopieren ("kopiere den Suchbegriff", "kopiere die letzte Antwort"). params: {"target": "search" | "response"}
+23. "language" — Nutzer will Sprache wechseln ("speak english", "wechsle auf Englisch"). params: {"lang": "de" | "en" | "fr" | "es"}
+24. "none" — Nichts davon passt, einfach normal inhaltlich antworten.
 
 Erkenne Absichten auch bei lockerer Umgangssprache. Bei "none" trotzdem inhaltlich in "reply" antworten.
 `;
@@ -4058,6 +4215,13 @@ async function askGroqVoice(text) {
     responseBox.style.display = 'block';
     responseBox.innerText = '...';
 
+    // Kontext aus den letzten 3 Exchanges zusammenbauen
+    const historyContext = voiceHistory.length > 0
+        ? `[Bisheriges Gespräch: ${voiceHistory.map(h => 
+            `${h.role === 'user' ? 'Nutzer' : 'Assistent'}: "${h.content}"`
+          ).join(' → ')}]\n\nAktuelle Anfrage: `
+        : '';
+
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -4066,10 +4230,10 @@ async function askGroqVoice(text) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "groq/compound-mini",
+                model: "groq/compound",
                 messages: [
-                    { role: "system", content: VOICE_ACTIONS_SYSTEM_PROMPT },
-                    { role: "user", content: text }
+                    { role: "system", content: getVoiceSystemPrompt() },
+                    { role: "user", content: historyContext + text }
                 ],
                 temperature: 0.2,
                 max_tokens: 300
@@ -4089,19 +4253,23 @@ async function askGroqVoice(text) {
         }
 
         const reply = parsed.reply || "Alles klar!";
+        lastVoiceReply = reply;
+
+        // Kontext-Gedächtnis: max. 6 Einträge (3 Exchanges)
+        voiceHistory.push({ role: "user", content: text });
+        voiceHistory.push({ role: "assistant", content: reply });
+        if (voiceHistory.length > 6) voiceHistory = voiceHistory.slice(-6);
+
         responseBox.innerText = reply;
         setVoiceStatus('✅ Fertig — tippe erneut zum Sprechen');
         speakResponse(reply);
-
         executeVoiceAction(parsed.action, parsed.params || {});
 
     } catch(e) {
         responseBox.innerText = 'Fehler beim Verbinden mit Glaggle AI.';
         setVoiceStatus('❌ Verbindungsfehler');
-        console.error(e);
     }
 }
-
 function scrollToWidget(delay = 300) {
     setTimeout(() => {
         const firstEntry = document.querySelector('#glaggleResults .glaggle-entry');
@@ -4240,6 +4408,44 @@ function executeVoiceAction(action, params) {
             break;
         }
 
+        // WETTER (ersetzt den alten case "wetter")
+        case "wetter": {
+            const city = params.city || "";
+            fetchRealWeather(city);
+            scrollToWidget(800);
+            break;
+        }
+
+        case "clipboard": {
+            const target = (params.target || "search").toLowerCase();
+            let textToCopy = target === "response"
+                ? lastVoiceReply
+                : (document.getElementById('glaggleQuery')?.value || "");
+
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).catch(() => {
+                    // Fallback für ältere Browser
+                    const ta = document.createElement('textarea');
+                    ta.value = textToCopy;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                });
+            }
+            break;
+        }
+
+        case "language": {
+            const langMap = { de: 'de-DE', en: 'en-US', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' };
+            const lang = (params.lang || 'de').toLowerCase();
+            currentVoiceLang = langMap[lang] || 'de-DE';
+            localStorage.setItem('glaggle-voice-lang', currentVoiceLang);
+            // UI updaten
+            restoreVoiceSettings();
+            break;
+        }
+
         case "background_off":
             setBgMode('none');
             break;
@@ -4293,6 +4499,154 @@ function executeVoiceAction(action, params) {
     }
 }
 
+
+/* ===== ECHTES WETTER (Open-Meteo) ===== */
+async function fetchRealWeather(city) {
+    let lat, lon, cityName;
+    try {
+        if (city && city.trim() !== '' && city !== 'deinen Standort') {
+            const geoRes = await fetch(
+                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=de&format=json`
+            );
+            const geoData = await geoRes.json();
+            if (!geoData.results?.length) { checkWidgets("wetter " + city); return; }
+            lat = geoData.results[0].latitude;
+            lon = geoData.results[0].longitude;
+            cityName = geoData.results[0].name;
+        } else {
+            const pos = await new Promise((res, rej) =>
+                navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+            );
+            lat = pos.coords.latitude;
+            lon = pos.coords.longitude;
+            cityName = 'deinem Standort';
+        }
+
+        const wRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+            `&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m,relativehumidity_2m` +
+            `&timezone=auto&forecast_days=1`
+        );
+        const wData = await wRes.json();
+        const c = wData.current;
+        const info = getWeatherInfo(c.weathercode);
+
+        renderWeatherWidget(cityName, c, info);
+    } catch(e) {
+        console.error('Wetter Fehler:', e);
+        checkWidgets("wetter " + (city || ''));
+    }
+}
+
+function getWeatherInfo(code) {
+    const map = {
+        0:  { emoji:'☀️',  desc:'Klarer Himmel' },
+        1:  { emoji:'🌤️', desc:'Überwiegend klar' },
+        2:  { emoji:'⛅',  desc:'Teilweise bewölkt' },
+        3:  { emoji:'☁️',  desc:'Bedeckt' },
+        45: { emoji:'🌫️', desc:'Nebel' },
+        48: { emoji:'🌫️', desc:'Gefrierender Nebel' },
+        51: { emoji:'🌦️', desc:'Leichter Nieselregen' },
+        53: { emoji:'🌦️', desc:'Nieselregen' },
+        55: { emoji:'🌧️', desc:'Starker Nieselregen' },
+        61: { emoji:'🌧️', desc:'Leichter Regen' },
+        63: { emoji:'🌧️', desc:'Regen' },
+        65: { emoji:'🌧️', desc:'Starker Regen' },
+        71: { emoji:'❄️',  desc:'Leichter Schnee' },
+        73: { emoji:'❄️',  desc:'Schneefall' },
+        75: { emoji:'❄️',  desc:'Starker Schnee' },
+        80: { emoji:'🌦️', desc:'Regenschauer' },
+        81: { emoji:'🌧️', desc:'Starke Schauer' },
+        82: { emoji:'⛈️',  desc:'Heftige Schauer' },
+        95: { emoji:'⛈️',  desc:'Gewitter' },
+        99: { emoji:'⛈️',  desc:'Gewitter mit Hagel' },
+    };
+    return map[code] || { emoji:'🌡️', desc:'Unbekannt' };
+}
+
+function renderWeatherWidget(city, c, info) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    document.getElementById('weather-widget')?.remove();
+
+    const div = document.createElement('div');
+    div.id = 'weather-widget';
+    div.className = 'glaggle-entry fav-project';
+    div.style.textAlign = 'center';
+    div.innerHTML = `
+        <div style="font-size:0.75rem;font-weight:bold;letter-spacing:1px;color:var(--link-color);text-transform:uppercase;margin-bottom:8px;">
+            ☁️ Glaggle Wetter · ${city}
+        </div>
+        <div style="font-size:3.5rem;margin:8px 0;">${info.emoji}</div>
+        <div style="font-size:3rem;font-weight:800;margin-bottom:4px;">${Math.round(c.temperature_2m)}°C</div>
+        <div style="color:#888;margin-bottom:16px;">${info.desc} · Gefühlt ${Math.round(c.apparent_temperature)}°C</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <div style="background:rgba(112,196,247,0.1);border-radius:10px;padding:8px 14px;">
+                <div style="font-size:0.72rem;color:#888;">💨 Wind</div>
+                <div style="font-weight:bold;">${Math.round(c.windspeed_10m)} km/h</div>
+            </div>
+            <div style="background:rgba(112,196,247,0.1);border-radius:10px;padding:8px 14px;">
+                <div style="font-size:0.72rem;color:#888;">💧 Luftfeuchte</div>
+                <div style="font-weight:bold;">${c.relativehumidity_2m}%</div>
+            </div>
+        </div>`;
+    resultsDiv.prepend(div);
+}
+
+/* ===== SCHNELLBEFEHLE (Chips) ===== */
+function triggerChip(command) {
+    document.getElementById('voice-transcript').style.display = 'block';
+    document.getElementById('voice-transcript').innerText = '🗣️ ' + command;
+    document.getElementById('voice-response').style.display = 'block';
+    document.getElementById('voice-response').innerText = '...';
+    askGroqVoice(command);
+}
+
+function focusSearchFromVoice() {
+    closeVoiceAssistant();
+    const input = document.getElementById('glaggleQuery');
+    if (input) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => input.focus(), 400);
+    }
+}
+
+/* ===== STIMME EINSTELLEN ===== */
+function setVoiceSetting(type, val, btn) {
+    if (type === 'speed') {
+        voiceSpeed = parseFloat(val);
+        localStorage.setItem('glaggle-voice-speed', val);
+    } else if (type === 'gender') {
+        voiceGender = val;
+        localStorage.setItem('glaggle-voice-gender', val);
+    } else if (type === 'lang') {
+        currentVoiceLang = val;
+        localStorage.setItem('glaggle-voice-lang', val);
+    }
+    // Aktiven Button markieren
+    document.querySelectorAll(`.voice-setting-btn[data-type="${type}"]`).forEach(b => {
+        b.style.background = 'none';
+        b.style.borderColor = 'rgba(112,196,247,0.25)';
+        b.style.color = '#888';
+    });
+    btn.style.background = 'rgba(112,196,247,0.2)';
+    btn.style.borderColor = '#70C4F7';
+    btn.style.color = '#70C4F7';
+}
+
+function restoreVoiceSettings() {
+    [
+        ['speed', voiceSpeed.toString()],
+        ['gender', voiceGender],
+        ['lang', currentVoiceLang]
+    ].forEach(([type, val]) => {
+        const btn = document.querySelector(`.voice-setting-btn[data-type="${type}"][data-val="${val}"]`);
+        if (btn) setVoiceSetting(type, val, btn);
+    });
+}
+
+// Beim Start wiederherstellen
+window.addEventListener('DOMContentLoaded', () => setTimeout(restoreVoiceSettings, 200));
+    
 function duckMusic(duck = true) {
     if (typeof glaggleAudio === 'undefined' || !glaggleAudio || glaggleAudio.paused) return;
     
@@ -4314,44 +4668,38 @@ function speakResponse(text) {
     window.speechSynthesis.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'de-DE';
-    utter.rate = 0.92;
-    utter.pitch = 0.9;
+    utter.lang = currentVoiceLang;
+    utter.rate = voiceSpeed;
+    utter.pitch = 0.6;
     utter.volume = 1;
 
     function chooseVoice() {
         const voices = window.speechSynthesis.getVoices();
-        const preferred = [
-            'Microsoft Stefan', 'Microsoft Markus', 'Google Deutsch',
-            'Markus', 'Yannick', 'Google German', 'Anna'
-        ];
-
+        const langPrefix = currentVoiceLang.split('-')[0];
         let chosen = null;
-        for (const name of preferred) {
-            chosen = voices.find(v => v.name.includes(name));
-            if (chosen) break;
-        }
-        if (!chosen) {
-            chosen = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('male'));
-        }
-        if (!chosen) {
-            chosen = voices.find(v => v.lang.startsWith('de'));
+
+        if (voiceGender === 'male') {
+            chosen = voices.find(v => v.lang.startsWith(langPrefix) &&
+                (v.name.toLowerCase().includes('male') ||
+                 ['Stefan','Markus','Yannick','Thomas','Daniel'].some(n => v.name.includes(n))));
+        } else if (voiceGender === 'female') {
+            chosen = voices.find(v => v.lang.startsWith(langPrefix) &&
+                (v.name.toLowerCase().includes('female') ||
+                 ['Anna','Petra','Sabrina','Sarah','Monika','Katja'].some(n => v.name.includes(n))));
         }
 
+        // Fallback: beliebige Stimme in der richtigen Sprache
+        if (!chosen) {
+            chosen = voices.find(v => v.lang.startsWith(langPrefix));
+        }
         if (chosen) utter.voice = chosen;
 
-        utter.onstart = () => {
-            setVoiceStatus('🔊 Glaggle spricht...');
-        };
-
+        utter.onstart = () => setVoiceStatus('🔊 Glaggle spricht...');
         utter.onend = () => {
             setVoiceStatus('Tippe auf das Mikrofon zum Sprechen');
             duckMusic(false);
         };
-
-        utter.onerror = () => {
-            duckMusic(false);
-        };
+        utter.onerror = () => duckMusic(false);
 
         window.speechSynthesis.speak(utter);
     }
