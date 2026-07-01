@@ -4230,7 +4230,7 @@ async function askGroqVoice(text) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "groq/compound",
+                model: "llama-3.1-8b-instant",
                 messages: [
                     { role: "system", content: getVoiceSystemPrompt() },
                     { role: "user", content: historyContext + text }
