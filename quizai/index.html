@@ -48,9 +48,278 @@
             .glaggle-card { border: 1px solid #ccc; break-inside: avoid; }
             .option-label { border: 1px solid #eee; }
         }
+
+        /* ---- :root ERWEITERN (bestehende Variablen bleiben, nur ergänzt) ---- */
+:root {
+    --nav-bg: #ffffff;
+    --link-color: #2E94D1;
+    --desc-color: #555555;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --nav-bg: #303134;
+        --link-color: #8cc9f5;
+        --desc-color: #bdc1c6;
+    }
+}
+ 
+/* ---- NAVBAR (1:1 wie Hauptseite) ---- */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 80px;
+    background-color: var(--nav-bg);
+    padding: 0 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    transition: background-color 0.4s ease;
+}
+.nav-left, .nav-right { display: flex; align-items: center; }
+.logo-img { height: 40px; width: auto; }
+ 
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
+}
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    transition: 0.3s;
+}
+ 
+/* ---- SIDEBAR (1:1 wie Hauptseite) ---- */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+.sidebar.active { width: 250px; }
+.sidebar-content { display: flex; flex-direction: column; padding: 20px; }
+ 
+.sidebar-link {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--card-border);
+    transition: 0.3s;
+    display: block;
+}
+.sidebar-link:hover { color: var(--link-color); background-color: var(--card-bg); }
+ 
+.close-btn {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 36px;
+    text-decoration: none;
+    color: var(--text-color);
+}
+ 
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+}
+.overlay.active { display: block; }
+ 
+.sidebar-category { border-bottom: 1px solid var(--card-border); }
+.sidebar-category summary {
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+.sidebar-category summary:hover { background-color: var(--card-bg); color: var(--link-color); }
+.sidebar-category summary::after { content: '›'; font-size: 1.5rem; transition: transform 0.3s; }
+.sidebar-category[open] summary::after { transform: rotate(90deg); }
+.sidebar-category .sidebar-link {
+    padding: 12px 20px 12px 40px;
+    font-size: 1rem;
+    border-bottom: none;
+    display: block;
+    background-color: rgba(0,0,0,0.05);
+}
+.sidebar-category summary::-webkit-details-marker { display: none; }
+ 
+/* Platz für die fixe Navbar */
+.container { margin-top: 100px; }
+ 
+@media (max-width: 700px) {
+    .navbar { padding: 0 15px; }
+}
+ 
+/* ---- GLAGGLE SMART MOUSE ---- */
+body.smart-mouse-active { cursor: none !important; }
+body.smart-mouse-active * { cursor: none !important; }
+ 
+#glaggle-smart-cursor {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    background: #000000;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.15s ease;
+    display: none;
+    top: 0;
+    left: 0;
+}
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover { opacity: 0 !important; }
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+    background: #2E94D1;
+}
+body.smart-mouse-active .btn.smart-hover,
+body.smart-mouse-active a.smart-hover,
+body.smart-mouse-active button.smart-hover,
+body.smart-mouse-active input.smart-hover,
+body.smart-mouse-active select.smart-hover,
+body.smart-mouse-active .option-label.smart-hover,
+body.smart-mouse-active .sidebar-link.smart-hover,
+body.smart-mouse-active .hamburger.smart-hover,
+body.smart-mouse-active .close-btn.smart-hover,
+body.smart-mouse-active summary.smart-hover {
+    filter: brightness(0.92);
+    transition: filter 0.15s ease;
+}
+ 
+/* Sanfter Theme-Wechsel, ohne die bestehenden .btn-Hover-Transitions zu stören */
+:root, body {
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+.glaggle-card, .sidebar, .navbar {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
     </style>
 </head>
 <body>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="https://glaggle.ch"><img src="https://glaggle.ch/glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
+    </div>
+    <div class="nav-right">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</nav>
+ 
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
+ 
+    <div class="sidebar-content">
+        <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+ 
+            <div id="user-logged-in" style="display: none;">
+                <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
+                <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+ 
+                <a href="https://glaggle.ch/account/overview/index.html" class="sidebar-link"
+                   style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    Account Übersicht
+                </a>
+ 
+                <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
+                    Abmelden
+                </button>
+            </div>
+ 
+            <div id="user-logged-out">
+                <a href="https://glaggle.ch/account/index.html" class="sidebar-link"
+                   style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
+                   Registrieren
+                </a>
+                <a href="https://glaggle.ch/login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">
+                   Schon ein Konto? Einloggen
+                </a>
+            </div>
+ 
+        </div>
+ 
+        <details class="sidebar-category">
+            <summary>KI Tools</summary>
+            <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
+            <a href="https://glame.glaggle.ch/" class="sidebar-link">Glame AI Pro</a>
+            <a href="https://glaggle.ch/quizai" class="sidebar-link">Quiz Studio Pro</a>
+            <a href="https://glaggle.ch/aimage/" class="sidebar-link">AImage</a>
+            <a href="https://glaggle.ch/aimage/home" class="sidebar-link">AImage SVG</a>
+            <a href="https://glaggle.ch/avideo" class="sidebar-link">AVideo</a>
+        </details>
+ 
+        <details class="sidebar-category">
+            <summary>Glaggle Tools</summary>
+            <a href="https://glaggle.ch/designstudio" class="sidebar-link">Glaggle Design Studio</a>
+            <a href="https://glaggle.ch/codemaker" class="sidebar-link">Glaggle Code Maker</a>
+            <a href="https://glaggle.ch/avideostudio" class="sidebar-link">Glaggle AVideo Studio</a>
+            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
+        </details>
+ 
+        <details class="sidebar-category">
+            <summary>Gaming</summary>
+            <a href="https://glaggle.ch/gamecenter" class="sidebar-link">Gamecenter</a>
+            <a href="https://glaggle.ch/glagini" class="sidebar-link">Glaggle Glagini</a>
+        </details>
+ 
+        <details class="sidebar-category">
+            <summary>Info</summary>
+            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ & Über Uns</a>
+            <a href="https://glaggle.ch/history" class="sidebar-link">Glaggle History</a>
+            <a href="https://glaggle.ch/historysites" class="sidebar-link">Glaggle Historysites</a>
+        </details>
+ 
+        <details class="sidebar-category">
+            <summary>🎨 Design</summary>
+            <div style="padding: 15px 20px; background: rgba(0,0,0,0.03);">
+                <p style="font-size: 0.8rem; color: var(--desc-color); margin: 0 0 12px 0; line-height: 1.5;">
+                    Farbschema, Musik & Smart Mouse werden zentral auf der Hauptseite verwaltet und hier automatisch übernommen.
+                </p>
+                <a href="https://glaggle.ch/" class="sidebar-link"
+                   style="display: block; text-align: center; background: #70C4F7; color: #ffffff !important; border-radius: 10px; font-weight: bold; padding: 12px; text-decoration: none; border-bottom: none;">
+                    Design auf Hauptseite anpassen →
+                </a>
+            </div>
+        </details>
+    </div>
+</div>
+ 
+<div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
 <div class="container">
     <h1 style="text-align: center;">✨ Glaggle Quiz Studio Pro</h1>
@@ -214,5 +483,216 @@
         reader.readAsText(file);
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+<script>
+/* ============================================================
+   NAVBAR / SIDEBAR — Grundfunktionen (1:1 wie Hauptseite)
+   ============================================================ */
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
+const account = new Appwrite.Account(client);
+ 
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
+}
+ 
+async function checkLogin() {
+    const loggedInDiv = document.getElementById('user-logged-in');
+    const loggedOutDiv = document.getElementById('user-logged-out');
+    const nameDisplay = document.getElementById('user-name-display');
+    try {
+        const user = await account.get();
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'block', 'important');
+            loggedOutDiv.style.setProperty('display', 'none', 'important');
+            if (nameDisplay) nameDisplay.innerText = user.name;
+        }
+    } catch (error) {
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'none', 'important');
+            loggedOutDiv.style.setProperty('display', 'block', 'important');
+        }
+    }
+}
+window.addEventListener('load', () => setTimeout(checkLogin, 500));
+ 
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        location.reload();
+    } catch (error) {
+        alert("Fehler beim Abmelden");
+    }
+}
+ 
+/* ============================================================
+   GLAGGLE THEME SYNC — übernimmt das Farbschema der Hauptseite
+   (Keine eigene Einstellungs-UI hier — nur Auslesen von localStorage)
+   ============================================================ */
+const QUIZ_THEMES = {
+    hell:    { bg:'#ffffff', text:'#333333', nav:'#ffffff', card:'#fdfdfd', border:'#eeeeee', link:'#2E94D1', desc:'#555555', accent:'#70C4F7' },
+    dunkel:  { bg:'#202124', text:'#e8eaed', nav:'#303134', card:'#303134', border:'#444444', link:'#8cc9f5', desc:'#bdc1c6', accent:'#70C4F7' },
+    blau:    { bg:'#12233a', text:'#eaf4ff', nav:'#1a3a5c', card:'#1c3050', border:'#2c4d78', link:'#8fd0ff', desc:'#c3ddf5', accent:'#2980b9' },
+    'grün':  { bg:'#12291d', text:'#eafcef', nav:'#1a3a2a', card:'#1c3524', border:'#2c5039', link:'#7fe3a1', desc:'#c3f0d1', accent:'#27ae60' },
+    rot:     { bg:'#2c1212', text:'#ffecec', nav:'#3a1a1a', card:'#351c1c', border:'#5a2b2b', link:'#ff9a90', desc:'#f0c9c3', accent:'#e74c3c' },
+    gelb:    { bg:'#2b2400', text:'#fff9e0', nav:'#3a3000', card:'#332b00', border:'#554500', link:'#ffe07a', desc:'#f0e4b0', accent:'#f1c40f' },
+    violett: { bg:'#1e0e30', text:'#f3e9ff', nav:'#2a1040', card:'#26123a', border:'#432560', link:'#c99bff', desc:'#dcc4f0', accent:'#8e44ad' }
+};
+ 
+function quizLightenHex(hex, percent) {
+    if (!hex || hex[0] !== '#') return hex || '#303134';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    let r = (num >> 16) + Math.round(255 * percent);
+    let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent);
+    let b = (num & 0x0000FF) + Math.round(255 * percent);
+    r = Math.min(255, Math.max(0, r));
+    g = Math.min(255, Math.max(0, g));
+    b = Math.min(255, Math.max(0, b));
+    return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+}
+ 
+function quizApplyVars(v) {
+    const root = document.documentElement.style;
+    root.setProperty('--bg-color', v.bg);
+    root.setProperty('--text-color', v.text);
+    root.setProperty('--nav-bg', v.nav);
+    root.setProperty('--card-bg', v.card);
+    root.setProperty('--card-border', v.border);
+    root.setProperty('--link-color', v.link);
+    root.setProperty('--desc-color', v.desc);
+    root.setProperty('--accent', v.accent);
+    document.body.style.backgroundColor = v.bg;
+    document.body.style.color = v.text;
+}
+ 
+function quizSyncTheme() {
+    const themeName = localStorage.getItem('glaggle-theme-name');
+    const rawTheme = localStorage.getItem('glaggle-theme');
+ 
+    if (themeName && themeName !== 'custom' && QUIZ_THEMES[themeName]) {
+        quizApplyVars(QUIZ_THEMES[themeName]);
+        return;
+    }
+ 
+    if (rawTheme) {
+        try {
+            const t = JSON.parse(rawTheme);
+            const isDark = !!t.isDark;
+            quizApplyVars({
+                bg:     isDark ? (t.navbar || '#1a1a1a') : '#ffffff',
+                text:   isDark ? '#f0f0f0' : '#333333',
+                nav:    t.navbar || (isDark ? '#1a1a1a' : '#ffffff'),
+                card:   isDark ? quizLightenHex(t.navbar || '#1a1a1a', 0.08) : '#fdfdfd',
+                border: isDark ? 'rgba(255,255,255,0.15)' : '#eeeeee',
+                link:   t.accent || '#70C4F7',
+                desc:   isDark ? 'rgba(255,255,255,0.65)' : '#555555',
+                accent: t.accent || '#70C4F7'
+            });
+        } catch (e) {
+            console.warn('Glaggle Theme Sync: gespeichertes Theme konnte nicht gelesen werden', e);
+        }
+    }
+}
+quizSyncTheme();
+ 
+/* ============================================================
+   GLAGGLE SMART MOUSE SYNC — übernimmt den Zustand der Hauptseite
+   ============================================================ */
+let smartMouseActive = false;
+ 
+function quizCreateSmartCursor() {
+    if (document.getElementById('glaggle-smart-cursor')) return;
+    const cursor = document.createElement('div');
+    cursor.id = 'glaggle-smart-cursor';
+    document.body.appendChild(cursor);
+}
+ 
+function quizEnableSmartMouse() {
+    quizCreateSmartCursor();
+    smartMouseActive = true;
+    document.body.classList.add('smart-mouse-active');
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    cursor.style.display = 'block';
+ 
+    let accentColor = '#000000';
+    const savedTheme = localStorage.getItem('glaggle-theme');
+    if (savedTheme) {
+        try { accentColor = JSON.parse(savedTheme).accent || accentColor; } catch (e) {}
+    } else {
+        const themeName = localStorage.getItem('glaggle-theme-name');
+        if (themeName && QUIZ_THEMES[themeName]) accentColor = QUIZ_THEMES[themeName].accent;
+    }
+    cursor.style.background = accentColor;
+}
+ 
+function quizDisableSmartMouse() {
+    smartMouseActive = false;
+    document.body.classList.remove('smart-mouse-active');
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (cursor) cursor.style.display = 'none';
+    document.querySelectorAll('.smart-hover').forEach(el => el.classList.remove('smart-hover'));
+}
+ 
+const QUIZ_SMART_HOVER_SELECTORS = [
+    'a', 'button', '.btn', '.option-label', 'input', 'select',
+    '.sidebar-link', '.hamburger', '.close-btn', 'summary', '[onclick]'
+].join(', ');
+ 
+document.addEventListener('mousemove', (e) => {
+    if (!smartMouseActive) return;
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (!cursor) return;
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+ 
+document.addEventListener('mousedown', () => {
+    if (!smartMouseActive) return;
+    document.getElementById('glaggle-smart-cursor')?.classList.add('cursor-click');
+});
+document.addEventListener('mouseup', () => {
+    if (!smartMouseActive) return;
+    document.getElementById('glaggle-smart-cursor')?.classList.remove('cursor-click');
+});
+ 
+document.addEventListener('mouseover', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(QUIZ_SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.add('smart-hover');
+        document.getElementById('glaggle-smart-cursor')?.classList.add('cursor-hover');
+    }
+});
+document.addEventListener('mouseout', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(QUIZ_SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.remove('smart-hover');
+        document.getElementById('glaggle-smart-cursor')?.classList.remove('cursor-hover');
+    }
+});
+ 
+if (localStorage.getItem('glaggle-smart-mouse') === 'true') {
+    quizEnableSmartMouse();
+}
+ 
+/* Live-Sync über Tabs */
+window.addEventListener('storage', (e) => {
+    if (e.key === 'glaggle-theme' || e.key === 'glaggle-theme-name') {
+        quizSyncTheme();
+    }
+    if (e.key === 'glaggle-smart-mouse') {
+        if (e.newValue === 'true') quizEnableSmartMouse();
+        else quizDisableSmartMouse();
+    }
+});
+</script>
+
 </body>
 </html>
