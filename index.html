@@ -2615,16 +2615,10 @@ if (q === "timer") {
     return true;
 }
 
-    // --- WETTER (Simuliert für das Beispiel) ---
+// --- WETTER (echte Daten via Open-Meteo) ---
     if (q.includes("wetter")) {
-        const city = q.replace("wetter", "").replace("in", "").trim() || "deinen Standort";
-        renderWidget("☁️ Wetter", `Wetter für <strong>${city}</strong>`, `
-            <div style="display:flex; align-items:center; gap:20px; justify-content:center;">
-                <span style="font-size:3rem;">☀️</span>
-                <span style="font-size:2rem; font-weight:bold;">22°C</span>
-            </div>
-            <p style="margin:5px 0 0 0;">Heiter bis sonnig - Glaggle-Tag!</p>
-        `);
+        const city = q.replace("wetter", "").replace(/\bin\b/gi, "").trim();
+        fetchRealWeather(city);
         return true;
     }
 
