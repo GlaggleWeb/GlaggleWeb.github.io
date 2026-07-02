@@ -4304,13 +4304,6 @@ function executeVoiceAction(action, params) {
             break;
         }
 
-        case "wetter": {
-            const city = params.city || "deinen Standort";
-            checkWidgets("wetter " + city);
-            scrollToWidget();
-            break;
-        }
-
         case "open_app": {
             const apps = {
                 glame: "https://glame.glaggle.ch/",
@@ -4321,6 +4314,7 @@ function executeVoiceAction(action, params) {
                 avideo: "https://glaggle.ch/avideo",
                 aimage: "https://glaggle.ch/aimage/",
                 quizai: "https://glaggle.ch/quizai"
+            
             };
             const url = apps[(params.app || "").toLowerCase()];
             if (url) window.open(url, "_blank");
@@ -4497,6 +4491,73 @@ function executeVoiceAction(action, params) {
         default:
             break;
     }
+}
+
+function openVoiceFeaturesPopup() {
+    let overlay = document.getElementById('voice-features-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'voice-features-overlay';
+        overlay.style.cssText = `
+            display:flex; position:fixed; inset:0;
+            background:rgba(0,0,0,0.65);
+            backdrop-filter:blur(6px);
+            z-index:9500;
+            align-items:center; justify-content:center;
+            opacity:0; transition:opacity 0.3s ease;
+        `;
+        overlay.innerHTML = `
+            <div style="
+                background: rgba(20,20,30,0.96);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(112,196,247,0.3);
+                border-radius: 24px;
+                width: min(400px, 90vw);
+                max-height: 80vh;
+                overflow-y:auto;
+                padding: 28px 24px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                color:#eee;
+                text-align:left;
+            ">
+                <div style="text-align:center; margin-bottom:16px;">
+                    <span style="font-size:2.2rem;">✨</span>
+                    <h2 style="color:#70C4F7; font-size:1.3rem; margin-top:8px;">Was kann Glaggle Assistant?</h2>
+                </div>
+                <ul style="list-style:none; display:flex; flex-direction:column; gap:12px; padding:0; margin:0 0 20px 0;">
+                    <li style="display:flex; gap:10px;"><span>⏱️</span><span>Timer stellen — "Stell einen Timer auf 5 Minuten"</span></li>
+                    <li style="display:flex; gap:10px;"><span>🔍</span><span>Suchen — "Suche nach ..."</span></li>
+                    <li style="display:flex; gap:10px;"><span>☁️</span><span>Wetter — "Wie ist das Wetter in Zürich"</span></li>
+                    <li style="display:flex; gap:10px;"><span>🧮</span><span>Rechnen — "Was ist 24 mal 7"</span></li>
+                    <li style="display:flex; gap:10px;"><span>🎵</span><span>Musik steuern — "Mach die Musik an"</span></li>
+                    <li style="display:flex; gap:10px;"><span>🎨</span><span>Design wechseln — "Wechsle zu dunklem Theme"</span></li>
+                    <li style="display:flex; gap:10px;"><span>🖼️</span><span>Bilder / Wikipedia — "Zeig mir Bilder von ..."</span></li>
+                    <li style="display:flex; gap:10px;">♾️<span></span><span>Und viel mehr"</span></li>
+                </ul>
+                <button id="voice-features-close-btn" style="
+                    width:100%; background: linear-gradient(135deg, #70C4F7, #2E94D1);
+                    color:white; border:none; border-radius:50px;
+                    padding:12px; font-weight:bold; font-size:0.95rem;
+                    cursor:pointer; box-shadow:0 5px 20px rgba(112,196,247,0.3);
+                ">Los geht's!</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#voice-features-close-btn').onclick = closeVoiceFeaturesPopup;
+        overlay.onclick = (e) => { if (e.target === overlay) closeVoiceFeaturesPopup(); };
+    }
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+}
+
+function closeVoiceFeaturesPopup() {
+    const overlay = document.getElementById('voice-features-overlay');
+    if (!overlay) return;
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        startListening(); // danach direkt zuhören, wie ursprünglich geplant
+    }, 300);
 }
 
 
