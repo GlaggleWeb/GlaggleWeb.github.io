@@ -4635,7 +4635,7 @@ function renderWeatherWidget(city, c, info) {
     div.style.textAlign = 'center';
     div.innerHTML = `
         <div style="font-size:0.75rem;font-weight:bold;letter-spacing:1px;color:var(--link-color);text-transform:uppercase;margin-bottom:8px;">
-            ☁️ Glaggle Wetter · ${city}
+            ☁️ Glaggle Wetter (Open-Meteo API) · ${city}
         </div>
         <div style="font-size:3.5rem;margin:8px 0;">${info.emoji}</div>
         <div style="font-size:3rem;font-weight:800;margin-bottom:4px;">${Math.round(c.temperature_2m)}°C</div>
