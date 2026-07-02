@@ -235,6 +235,55 @@
         .game-title { font-size: 1.1rem; }
     }
 </style>
+<style>
+/* ===== GLAGGLE SMART MOUSE — Sync für Gamecenter ===== */
+body.smart-mouse-active { cursor: none !important; }
+body.smart-mouse-active * { cursor: none !important; }
+ 
+#glaggle-smart-cursor {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    background: #000000;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.15s ease;
+    display: none;
+    top: 0;
+    left: 0;
+}
+ 
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover {
+    opacity: 0 !important;
+}
+ 
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+    background: #2E94D1;
+}
+ 
+body.smart-mouse-active .game-card.smart-hover,
+body.smart-mouse-active .play-btn.smart-hover,
+body.smart-mouse-active a.smart-hover,
+body.smart-mouse-active button.smart-hover,
+body.smart-mouse-active select.smart-hover,
+body.smart-mouse-active input.smart-hover,
+body.smart-mouse-active #toggle-leaderboard.smart-hover {
+    filter: brightness(0.92);
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+ 
+/* Sanfter Übergang, wenn das Theme wechselt (z.B. Live-Sync über Tabs) */
+:root, body {
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+.game-card, .news-card, .leaderboard-card, #chat-box, .navbar {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+</style>
 </head>
 <body>
 
@@ -808,6 +857,185 @@ updateLeaderboard();
 
 // Leaderboard alle 30 Sekunden automatisch aktualisieren
 setInterval(updateLeaderboard, 15000);
+</script>
+<script>
+/* ============================================================
+   GLAGGLE THEME SYNC — übernimmt das Farbschema der Hauptseite
+   Liest NUR aus localStorage, keine eigene Einstellungs-UI hier.
+   ============================================================ */
+ 
+// Feste Farbwerte pro benanntem Theme, passend zum Gamecenter-Layout
+const GC_THEMES = {
+    hell:    { bg:'#ffffff', text:'#333333', nav:'#ffffff', card:'#fdfdfd', border:'#eeeeee', link:'#2E94D1', desc:'#555555', accent:'#70C4F7' },
+    dunkel:  { bg:'#202124', text:'#e8eaed', nav:'#1a1a1a', card:'#303134', border:'#444444', link:'#8cc9f5', desc:'#bdc1c6', accent:'#70C4F7' },
+    blau:    { bg:'#12233a', text:'#eaf4ff', nav:'#1a3a5c', card:'#1c3050', border:'#2c4d78', link:'#8fd0ff', desc:'#c3ddf5', accent:'#2980b9' },
+    'grün':  { bg:'#12291d', text:'#eafcef', nav:'#1a3a2a', card:'#1c3524', border:'#2c5039', link:'#7fe3a1', desc:'#c3f0d1', accent:'#27ae60' },
+    rot:     { bg:'#2c1212', text:'#ffecec', nav:'#3a1a1a', card:'#351c1c', border:'#5a2b2b', link:'#ff9a90', desc:'#f0c9c3', accent:'#e74c3c' },
+    gelb:    { bg:'#2b2400', text:'#fff9e0', nav:'#3a3000', card:'#332b00', border:'#554500', link:'#ffe07a', desc:'#f0e4b0', accent:'#f1c40f' },
+    violett: { bg:'#1e0e30', text:'#f3e9ff', nav:'#2a1040', card:'#26123a', border:'#432560', link:'#c99bff', desc:'#dcc4f0', accent:'#8e44ad' }
+};
+ 
+// Hilfsfunktion: Hex-Farbe aufhellen (für Karten im custom/dark Theme)
+function gcLightenHex(hex, percent) {
+    if (!hex || hex[0] !== '#') return hex || '#303134';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    let r = (num >> 16) + Math.round(255 * percent);
+    let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent);
+    let b = (num & 0x0000FF) + Math.round(255 * percent);
+    r = Math.min(255, Math.max(0, r));
+    g = Math.min(255, Math.max(0, g));
+    b = Math.min(255, Math.max(0, b));
+    return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+}
+ 
+function gcApplyVars(v) {
+    const root = document.documentElement.style;
+    root.setProperty('--bg-color', v.bg);
+    root.setProperty('--text-color', v.text);
+    root.setProperty('--nav-bg', v.nav);
+    root.setProperty('--card-bg', v.card);
+    root.setProperty('--card-border', v.border);
+    root.setProperty('--link-color', v.link);
+    root.setProperty('--desc-color', v.desc);
+    root.setProperty('--accent', v.accent);
+    document.body.style.backgroundColor = v.bg;
+    document.body.style.color = v.text;
+}
+ 
+function gcSyncTheme() {
+    const themeName = localStorage.getItem('glaggle-theme-name');
+    const rawTheme = localStorage.getItem('glaggle-theme');
+ 
+    // 1. Bekanntes, benanntes Theme -> feste Gamecenter-Farbpalette nutzen
+    if (themeName && themeName !== 'custom' && GC_THEMES[themeName]) {
+        gcApplyVars(GC_THEMES[themeName]);
+        return;
+    }
+ 
+    // 2. Custom-Theme (oder Fallback) -> aus dem gespeicherten Objekt ableiten
+    if (rawTheme) {
+        try {
+            const t = JSON.parse(rawTheme);
+            const isDark = !!t.isDark;
+            gcApplyVars({
+                bg:     isDark ? (t.navbar || '#1a1a1a') : '#ffffff',
+                text:   isDark ? '#f0f0f0' : '#333333',
+                nav:    t.navbar || (isDark ? '#1a1a1a' : '#ffffff'),
+                card:   isDark ? gcLightenHex(t.navbar || '#1a1a1a', 0.08) : '#fdfdfd',
+                border: isDark ? 'rgba(255,255,255,0.15)' : '#eeeeee',
+                link:   t.accent || '#70C4F7',
+                desc:   isDark ? 'rgba(255,255,255,0.65)' : '#555555',
+                accent: t.accent || '#70C4F7'
+            });
+        } catch (e) {
+            console.warn('Glaggle Theme Sync: gespeichertes Theme konnte nicht gelesen werden', e);
+        }
+    }
+    // Kein gespeichertes Theme vorhanden -> Standard-Look (hell / OS-Einstellung) bleibt einfach bestehen
+}
+ 
+gcSyncTheme();
+ 
+/* ============================================================
+   GLAGGLE SMART MOUSE SYNC — übernimmt den Zustand der Hauptseite
+   ============================================================ */
+let smartMouseActive = false;
+ 
+function gcCreateSmartCursor() {
+    if (document.getElementById('glaggle-smart-cursor')) return;
+    const cursor = document.createElement('div');
+    cursor.id = 'glaggle-smart-cursor';
+    document.body.appendChild(cursor);
+}
+ 
+function gcEnableSmartMouse() {
+    gcCreateSmartCursor();
+    smartMouseActive = true;
+    document.body.classList.add('smart-mouse-active');
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    cursor.style.display = 'block';
+ 
+    let accentColor = '#000000';
+    const savedTheme = localStorage.getItem('glaggle-theme');
+    if (savedTheme) {
+        try { accentColor = JSON.parse(savedTheme).accent || accentColor; } catch (e) {}
+    } else {
+        const themeName = localStorage.getItem('glaggle-theme-name');
+        if (themeName && GC_THEMES[themeName]) accentColor = GC_THEMES[themeName].accent;
+    }
+    cursor.style.background = accentColor;
+}
+ 
+function gcDisableSmartMouse() {
+    smartMouseActive = false;
+    document.body.classList.remove('smart-mouse-active');
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (cursor) cursor.style.display = 'none';
+    document.querySelectorAll('.smart-hover').forEach(el => el.classList.remove('smart-hover'));
+}
+ 
+const GC_SMART_HOVER_SELECTORS = [
+    'a', 'button', 'input', 'select',
+    '.game-card', '.play-btn', '.leader-row',
+    '#toggle-leaderboard', '[onclick]'
+].join(', ');
+ 
+document.addEventListener('mousemove', (e) => {
+    if (!smartMouseActive) return;
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (!cursor) return;
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+ 
+document.addEventListener('mousedown', () => {
+    if (!smartMouseActive) return;
+    document.getElementById('glaggle-smart-cursor')?.classList.add('cursor-click');
+});
+document.addEventListener('mouseup', () => {
+    if (!smartMouseActive) return;
+    document.getElementById('glaggle-smart-cursor')?.classList.remove('cursor-click');
+});
+ 
+document.addEventListener('mouseover', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(GC_SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.add('smart-hover');
+        document.getElementById('glaggle-smart-cursor')?.classList.add('cursor-hover');
+    }
+});
+document.addEventListener('mouseout', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(GC_SMART_HOVER_SELECTORS);
+    if (target) {
+        target.classList.remove('smart-hover');
+        document.getElementById('glaggle-smart-cursor')?.classList.remove('cursor-hover');
+    }
+});
+ 
+// Beim Laden: Zustand direkt von der Hauptseite übernehmen
+if (localStorage.getItem('glaggle-smart-mouse') === 'true') {
+    gcEnableSmartMouse();
+}
+ 
+/* ============================================================
+   LIVE-SYNC ÜBER TABS (optional, aber praktisch):
+   Wenn der Nutzer auf der Hauptseite in einem anderen Tab das
+   Theme/die Maus ändert, aktualisiert sich das Gamecenter live,
+   sobald der Tab wieder aktiv wird bzw. sofort bei offenem Tab.
+   ============================================================ */
+window.addEventListener('storage', (e) => {
+    if (e.key === 'glaggle-theme' || e.key === 'glaggle-theme-name') {
+        gcSyncTheme();
+    }
+    if (e.key === 'glaggle-smart-mouse') {
+        if (e.newValue === 'true') gcEnableSmartMouse();
+        else gcDisableSmartMouse();
+    }
+});
 </script>
 </body>
 </html>
