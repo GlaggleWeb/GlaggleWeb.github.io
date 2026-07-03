@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Gravity</title>
+    <style>
+        :root {
+            --bg-color: #1a0b2e;
+            --text-color: #ffffff;
+            --nav-bg: #2a1b41;
+            --card-border: #9d4edd;
+            --accent: #ff9e00;
+            --danger: #FF6B6B;
+            --neon-blue: #00f3ff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 65px; 
+            background-color: var(--nav-bg);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed; 
+            top: 0; 
+            z-index: 1000;
+        }
+
+        .main-content { margin-top: 85px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
+
+        #game-container {
+            position: relative; 
+            width: 100%; 
+            height: 500px; 
+            background: linear-gradient(to bottom, #1a0b2e, #2a1b41);
+            border: 4px solid var(--card-border);
+            border-radius: 20px; 
+            overflow: hidden; 
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .score-val { font-size: 14px; opacity: 0.9; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0px #cc7a00; margin-bottom: 10px;
+            width: 220px; font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #cc7a00; }
+        
+        .btn-secondary {
+            background: #5a189a;
+            box-shadow: 0 4px 0px #3c096c;
+        }
+        .btn-secondary:active { box-shadow: 0 2px 0px #3c096c; }
+
+        #coin-display {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--nav-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .coin-img { width: 24px; height: 24px; object-fit: contain; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); border-color: #FFD700; }
+            100% { transform: scale(1); }
+        }
+        .pulse { animation: pulse 0.5s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div style="color: var(--accent); font-weight: bold;">Glaggle Gravity</div>
+        <div style="font-size: 20px;">🌌</div>
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Score <b id="score">0</b></div>
+            <div class="score-val">Rekord <b id="highscore">0</b></div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="menu-overlay" class="overlay">
+                <h1 id="msg">✨ Glaggle Gravity</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
+                    Tippe, um die Schwerkraft umzukehren!<br>
+                    Weiche den Neon-Stacheln aus.
+                </p>
+                <button class="btn" onclick="startGame(event)">Starten</button>
+                <button class="btn btn-secondary" onclick="openGameCenter(event)">Gamecenter</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-display">
+        <img src="coin.png" class="coin-img" alt="Coin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>'">
+        <span id="coin-count">0</span>
+    </div>
+
+    <button id="music-toggle" onclick="toggleMusic(event)" style="position: fixed; bottom: 20px; left: 20px; background: var(--nav-bg); border: 2px solid var(--accent); color: white; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+    🔊
+    </button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const coinEl = document.getElementById('coin-count');
+        const menu = document.getElementById('menu-overlay');
+
+        let gameRunning = false;
+        let score = 0;
+        
+        // Eigener Highscore Key für DIESES Spiel, aber gleiche Coins!
+        const HS_KEY = 'glagglegravity_highscore'; 
+        let highscore = localStorage.getItem(HS_KEY) || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+        highscoreEl.innerText = highscore;
+        coinEl.innerText = coins;
+
+        const bgMusic = new Audio("https://res.cloudinary.com/pyxlc0q4/video/upload/v1783096012/partyton-air-zero-117087_d7sf6i.mp3");
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+        let musicActive = true;
+
+        function toggleMusic(e) {
+            if(e) e.stopPropagation();
+            const btn = document.getElementById('music-toggle');
+            if (!bgMusic.paused) {
+                bgMusic.pause();
+                btn.innerText = "🔈";
+                musicActive = false;
+            } else {
+                bgMusic.play().catch(() => {});
+                btn.innerText = "🔊";
+                musicActive = true;
+            }
+        }
+
+        function openGameCenter(e) {
+            if(e) e.stopPropagation();
+            try {
+                window.top.location.href = "https://glaggle.ch/gamecenter";
+            } catch(err) {
+                window.location.href = "https://glaggle.ch/gamecenter";
+            }
+        }
+
+        let player = {
+            x: 80, y: 0, 
+            radius: 14,
+            vy: 0,
+            gravity: 0.8, // Positiv = fällt nach unten
+            color: '#FFD700'
+        };
+
+        let obstacles = [];
+        let particles = [];
+        let gameSpeed = 5;
+        let frameCount = 0;
+        let nextObstacleFrame = 60;
+
+        // Rand-Zonen oben und unten
+        const borderHeight = 20;
+
+        function resize() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function initGame() {
+            player.y = canvas.height / 2;
+            player.vy = 0;
+            player.gravity = 0.8;
+            obstacles = [];
+            particles = [];
+            score = 0;
+            gameSpeed = 5;
+            frameCount = 0;
+            nextObstacleFrame = 50;
+            
+            scoreEl.innerText = score;
+            localStorage.setItem('last_gravity_coin_score', 0);
+        }
+
+        function switchGravity() {
+            if (!gameRunning) return;
+            // Kehrt die Schwerkraft um
+            player.gravity *= -1;
+            
+            // Kleiner Boost in die neue Richtung, damit er sofort "abspringt"
+            player.vy = player.gravity > 0 ? 3 : -3; 
+            
+            createParticles(player.x, player.y + (player.gravity > 0 ? -player.radius : player.radius), 5);
+        }
+
+        container.addEventListener('mousedown', (e) => {
+            if (e.target.tagName !== 'BUTTON') switchGravity();
+        });
+        container.addEventListener('touchstart', (e) => {
+            if (e.target.tagName !== 'BUTTON') { e.preventDefault(); switchGravity(); }
+        }, {passive: false});
+
+        function startGame(e) {
+            if(e) e.stopPropagation();
+            if (musicActive) bgMusic.play().catch(()=>{});
+            initGame();
+            gameRunning = true;
+            menu.style.display = "none";
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnObstacle() {
+            let isTop = Math.random() > 0.5;
+            let h = 40 + Math.random() * 80;
+            
+            obstacles.push({
+                x: canvas.width,
+                y: isTop ? borderHeight : canvas.height - borderHeight - h,
+                w: 25,
+                h: h,
+                passed: false,
+                color: Math.random() > 0.5 ? '#ff9e00' : '#9d4edd'
+            });
+        }
+
+        function createParticles(x, y, amount) {
+            for(let i = 0; i < amount; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    life: 1,
+                    color: '#ffffff'
+                });
+            }
+        }
+
+        function checkCollision(circle, rect) {
+            // AABB to Circle Collision
+            let testX = circle.x;
+            let testY = circle.y;
+
+            if (circle.x < rect.x) testX = rect.x;
+            else if (circle.x > rect.x + rect.w) testX = rect.x + rect.w;
+
+            if (circle.y < rect.y) testY = rect.y;
+            else if (circle.y > rect.y + rect.h) testY = rect.y + rect.h;
+
+            let distX = circle.x - testX;
+            let distY = circle.y - testY;
+            let distance = Math.sqrt((distX*distX) + (distY*distY));
+
+            return distance <= circle.radius - 2; // -2 for slight forgiveness
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            frameCount++;
+
+            // Physics Update
+            player.vy += player.gravity;
+            player.y += player.vy;
+
+            // Boden und Decken Kollision (Laufen an der Wand)
+            if (player.y >= canvas.height - borderHeight - player.radius) {
+                player.y = canvas.height - borderHeight - player.radius;
+                player.vy = 0;
+            } else if (player.y <= borderHeight + player.radius) {
+                player.y = borderHeight + player.radius;
+                player.vy = 0;
+            }
+
+            // Hindernisse generieren
+            if (frameCount >= nextObstacleFrame) {
+                spawnObstacle();
+                nextObstacleFrame = frameCount + Math.floor(Math.random() * 40 + 60); // Random Lücke
+                gameSpeed += 0.02; // Spiel wird langsam schneller
+            }
+
+            // Hindernisse bewegen und Punkte/Kollision prüfen
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.x -= gameSpeed;
+
+                // Hitbox Check
+                if (checkCollision(player, obs)) {
+                    gameOver();
+                    return;
+                }
+
+                // Punkte
+                if (!obs.passed && obs.x + obs.w < player.x - player.radius) {
+                    obs.passed = true;
+                    score++;
+                    scoreEl.innerText = score;
+                    
+                    // Coins vergeben (Genau wie in Orbit: +1 Coin alle 10 Punkte)
+                    let lastCoinScore = parseInt(localStorage.getItem('last_gravity_coin_score')) || 0;
+                    if (score >= lastCoinScore + 20) {
+                        coins++;
+                        localStorage.setItem('glaggleCoins', coins);
+                        localStorage.setItem('last_gravity_coin_score', score);
+                        coinEl.innerText = coins;
+                        document.getElementById('coin-display').classList.add('pulse');
+                        setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 500);
+                    }
+                }
+
+                if (obs.x + obs.w < -10) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // Partikel Update
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx - gameSpeed * 0.5;
+                p.y += p.vy;
+                p.life -= 0.05;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            // Hintergrund
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Sterne / Geschwindigkeitseffekt
+            ctx.fillStyle = "rgba(255,255,255,0.1)";
+            for(let i=0; i<15; i++) {
+                ctx.beginPath();
+                let sx = (i * 80 - (frameCount * gameSpeed * 0.2)) % (canvas.width + 100);
+                if(sx < 0) sx += canvas.width + 100;
+                let sy = (i * 240) % canvas.height;
+                ctx.arc(sx, sy, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Boden und Decke (Neon Style)
+            ctx.fillStyle = "#2a1b41";
+            ctx.fillRect(0, 0, canvas.width, borderHeight);
+            ctx.fillRect(0, canvas.height - borderHeight, canvas.width, borderHeight);
+            
+            ctx.fillStyle = "var(--card-border)";
+            ctx.fillRect(0, borderHeight - 2, canvas.width, 2);
+            ctx.fillRect(0, canvas.height - borderHeight, canvas.width, 2);
+
+            // Hindernisse zeichnen (Stacheln / Blöcke)
+            obstacles.forEach(obs => {
+                ctx.fillStyle = obs.color + "44"; // Glow
+                ctx.fillRect(obs.x - 5, obs.y, obs.w + 10, obs.h);
+                
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+            });
+
+            // Partikel
+            particles.forEach(p => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Spieler (Glaggle Face) zeichnen
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            // Schaut nach unten oder oben basierend auf Gravity
+            if (player.gravity < 0) {
+                ctx.scale(1, -1);
+            }
+
+            // Körper
+            ctx.fillStyle = player.color;
+            ctx.beginPath(); ctx.arc(0, 0, player.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke();
+            
+            // Gesicht (Glaggle Smile)
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(-4, -3, 2, 0, Math.PI*2); ctx.fill(); // Auge Links
+            ctx.beginPath(); ctx.arc(4, -3, 2, 0, Math.PI*2); ctx.fill();  // Auge Rechts
+            ctx.beginPath(); ctx.arc(0, 3, 6, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke(); // Lächeln
+            
+            ctx.restore();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            createParticles(player.x, player.y, 30);
+            draw(); // Letzter Frame mit Explosion
+            
+            localStorage.setItem('last_gravity_coin_score', 0);
+            let currentHigh = parseInt(localStorage.getItem(HS_KEY)) || 0;
+            
+            if (score > currentHigh) {
+                localStorage.setItem(HS_KEY, score);
+                highscoreEl.innerText = score;
+                document.getElementById('msg').innerHTML = "🏆 NEUER REKORD!<br>" + score;
+            } else {
+                document.getElementById('msg').innerHTML = "💥 ZERQUETSCHT!<br>Score: " + score;
+            }
+            menu.style.display = "flex";
+        }
+        
+        // Initiales Zeichnen
+        draw();
+    </script>
+</body>
+</html>
