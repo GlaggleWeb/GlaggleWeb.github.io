@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glaggle Meteo - Glaggle dein Wetter!</title>
+    <meta name="description" content="Immer das aktuellste Wetter mit bester Glaggle-Laune! Aktuelle Temperaturen, Vorhersagen und Radar-Animationen.">
+    <meta name="author" content="Glaggle.ch">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Glaggle Meteo" />
+    <meta property="og:description" content="Immer das aktuellste Wetter mit bester Glaggle-Laune! Aktuelle Temperaturen, Vorhersagen und Radar-Animationen." />
+    <meta property="og:image" content="https://glaggle.ch/glagglelogo.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- Tailwind CSS (Für Layouting) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Leaflet.js (Für die interaktive Wetterkarte/Radar) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        :root {
+            --bg-color: #f4f7fb;
+            --text-color: #333333;
+            --nav-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --link-color: #2E94D1;
+            --desc-color: #64748b;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --gold: #FFD700;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f172a;
+                --text-color: #f8fafc;
+                --nav-bg: #1e293b;
+                --card-bg: #1e293b;
+                --card-border: #334155;
+                --link-color: #7dd3fc;
+                --desc-color: #94a3b8;
+                --accent-glow: rgba(56, 189, 248, 0.1);
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', 'Nunito', 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        /* Glaggle Card Styling (Verbessert) */
+        .glaggle-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease;
+        }
+        .glaggle-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 15px 35px var(--accent-glow);
+        }
+
+        .glaggle-accent-card {
+            border: 2.5px solid var(--accent);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        /* Weltwetter Mini-Cards */
+        .world-city-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .world-city-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        /* Animations */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow { animation: bounce-slow 4s infinite ease-in-out; }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s infinite ease-in-out; }
+
+        /* Map styling */
+        #radar-map {
+            height: 400px;
+            width: 100%;
+            border-radius: 20px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="w-full h-[75px] bg-[var(--nav-bg)] px-6 md:px-10 flex items-center justify-between border-b border-[var(--card-border)] fixed top-0 left-0 z-50 shadow-sm">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+            <span class="text-3xl animate-bounce-slow">🟡</span>
+            <span class="text-2xl font-black tracking-tight text-[var(--link-color)]">Glaggle <span class="text-[var(--text-color)]">Meteo</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="hidden sm:inline text-xs font-bold px-4 py-2 rounded-full bg-[var(--accent-glow)] text-[var(--link-color)] border border-[var(--accent)]">
+                🌦️ Live Radar & Cache
+            </span>
+            <button onclick="toggleTheme()" class="p-2.5 rounded-full bg-[var(--bg-color)] border border-[var(--card-border)] hover:border-[var(--accent)] transition-colors text-lg" title="Theme wechseln">
+                🌓
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="w-full max-w-6xl px-4 mt-28 mb-16 flex flex-col items-center">
+        
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[var(--text-color)] flex justify-center items-center gap-3">
+                Das Glaggle Wetter 🌤️
+            </h1>
+            <p class="text-[var(--desc-color)] text-base mt-3 max-w-xl mx-auto">
+                Suche einen Ort oder entdecke das Wetter auf der ganzen Welt. Dank intelligentem Fallback-Cache immer erreichbar!
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="w-full max-w-3xl glaggle-card glaggle-accent-card p-4 md:p-5 mb-12">
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <input type="text" id="city-input" placeholder="Ort suchen (z.B. Zürich, Hünenberg, Tokio)..." 
+                           class="w-full px-6 py-4 rounded-2xl border-2 border-[var(--card-border)] bg-[var(--bg-color)] text-[var(--text-color)] focus:border-[var(--accent)] outline-none text-lg font-bold transition-all"
+                           onkeydown="if(event.key === 'Enter') searchWeather()">
+                    <div id="suggestions-box" class="absolute left-0 right-0 mt-2 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl shadow-2xl hidden z-40 max-h-60 overflow-y-auto">
+                        <!-- Auto-Suggestions appear here -->
+                    </div>
+                </div>
+                <button onclick="searchWeather()" class="px-8 py-4 bg-[var(--accent)] text-white font-black rounded-2xl shadow-lg shadow-[var(--accent-glow)] hover:opacity-90 active:scale-95 transition-all text-lg shrink-0">
+                    🔍 Suchen
+                </button>
+            </div>
+            
+            <div class="mt-4 flex flex-wrap items-center justify-between text-sm text-[var(--desc-color)] px-2">
+                <span id="cache-indicator" class="flex items-center gap-2 font-bold">
+                    <span class="h-3 w-3 rounded-full bg-green-500 inline-block animate-pulse shadow-[0_0_8px_#22c55e]"></span>
+                    System bereit
+                </span>
+                <span class="opacity-70 font-semibold mt-2 sm:mt-0">⚡ Supabase + LocalStorage Hybrid</span>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden flex-col items-center gap-4 py-12 w-full">
+            <span class="text-6xl animate-spin inline-block">🌀</span>
+            <p class="text-[var(--desc-color)] font-bold text-lg animate-pulse-soft">Glaggle-Meteo analysiert die Wolken...</p>
+        </div>
+
+        <!-- WEATHER DASHBOARD (MAIN) -->
+        <div id="weather-dashboard" class="w-full space-y-8 hidden mb-16 scroll-mt-28">
+            
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-2xl">📍</span>
+                <h2 class="text-2xl font-extrabold text-[var(--text-color)]" id="dashboard-title">Aktueller Standort</h2>
+            </div>
+
+            <!-- Main Current Weather Box -->
+            <div class="w-full glaggle-card p-6 md:p-10 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[var(--card-bg)] to-[var(--bg-color)]">
+                <div class="absolute -right-10 -top-10 text-9xl opacity-10 filter blur-[2px] pointer-events-none select-none" id="bg-weather-icon">☀️</div>
+                
+                <div class="flex justify-between items-start z-10">
+                    <div>
+                        <span class="text-sm uppercase tracking-widest font-black text-[var(--accent)] px-4 py-1.5 rounded-full bg-[var(--accent-glow)]" id="weather-location-country">CH</span>
+                        <h2 class="text-4xl md:text-5xl font-black mt-3 text-[var(--text-color)]" id="weather-city-name">Lade Ort...</h2>
+                        <p class="text-[var(--desc-color)] text-sm mt-2 font-semibold" id="weather-datetime">Gerade eben</p>
+                    </div>
+                    <span class="text-7xl md:text-8xl filter drop-shadow-md" id="weather-icon">☀️</span>
+                </div>
+
+                <div class="my-10 flex items-baseline gap-2 z-10">
+                    <span class="text-7xl md:text-9xl font-black tracking-tighter text-[var(--text-color)]" id="weather-temp">--</span>
+                    <span class="text-4xl md:text-5xl font-bold text-[var(--accent)]">°C</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[var(--card-border)] z-10">
+                    <div class="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)] text-center shadow-sm">
+                        <p class="text-xs font-bold text-[var(--desc-color)] uppercase tracking-wider">Gefühlt</p>
+                        <p class="text-xl font-black text-[var(--text-color)] mt-1" id="weather-feels">--°C</p>
+                    </div>
+                    <div class="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)] text-center shadow-sm">
+                        <p class="text-xs font-bold text-[var(--desc-color)] uppercase tracking-wider">Feuchtigkeit</p>
+                        <p class="text-xl font-black text-[var(--text-color)] mt-1" id="weather-humidity">--%</p>
+                    </div>
+                    <div class="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)] text-center shadow-sm">
+                        <p class="text-xs font-bold text-[var(--desc-color)] uppercase tracking-wider">Wind</p>
+                        <p class="text-xl font-black text-[var(--text-color)] mt-1" id="weather-wind">-- km/h</p>
+                    </div>
+                    <div class="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)] text-center shadow-sm">
+                        <p class="text-xs font-bold text-[var(--desc-color)] uppercase tracking-wider">Regen-Chance</p>
+                        <p class="text-xl font-black text-[var(--text-color)] mt-1" id="weather-rain-prob">--%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stündliche Vorhersage -->
+            <div class="glaggle-card p-6 md:p-8">
+                <h3 class="text-xl font-black mb-6 flex items-center gap-3 text-[var(--text-color)]">
+                    <span>🕒</span> Stündlicher Verlauf (24h)
+                </h3>
+                <div class="flex gap-4 overflow-x-auto pb-4 pt-2 scroll-smooth px-2" id="hourly-forecast-container">
+                    <!-- Hourly item template -->
+                </div>
+            </div>
+
+            <!-- 7-Tage & Radar -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <!-- 7-Day Forecast -->
+                <div class="lg:col-span-2 glaggle-card p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-black mb-6 flex items-center gap-3 text-[var(--text-color)]">
+                            <span>📅</span> 7-Tage-Vorhersage
+                        </h3>
+                        <div class="space-y-4" id="daily-forecast-container">
+                            <!-- Daily item row template -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RADAR MAP -->
+                <div class="lg:col-span-3 glaggle-card p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                            <h3 class="text-xl font-black flex items-center gap-3 text-[var(--text-color)]">
+                                <span>📡</span> Live Regenradar
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleRadarPlayback()" id="radar-play-btn" class="px-4 py-1.5 bg-[var(--accent)] text-white text-sm font-black rounded-xl hover:opacity-90 shadow-md">
+                                    ⏸️ Pause
+                                </button>
+                                <span id="radar-time-label" class="text-sm text-[var(--desc-color)] bg-[var(--bg-color)] border border-[var(--card-border)] px-3 py-1.5 rounded-xl font-mono font-bold">
+                                    --:-- Uhr
+                                </span>
+                            </div>
+                        </div>
+                        <div class="relative overflow-hidden rounded-2xl border-2 border-[var(--card-border)] shadow-inner">
+                            <div id="radar-map"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19 MAJOR CITIES GRID (Startseite) -->
+        <div id="world-weather-section" class="w-full mt-10">
+            <div class="flex items-center gap-3 px-2 mb-6">
+                <span class="text-2xl">🌍</span>
+                <h2 class="text-2xl font-extrabold text-[var(--text-color)]">Glaggle Weltwetter</h2>
+            </div>
+            
+            <div id="world-cities-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <!-- Wird per JS befüllt -->
+                <p class="text-[var(--desc-color)] col-span-full font-bold">Lade Weltwetter-Daten...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-[var(--card-border)] py-10 mt-auto text-center text-sm font-bold text-[var(--desc-color)] px-4 bg-[var(--nav-bg)]">
+        <p>© 2026 Glaggle - Glaggle your life! – Wetterdaten von Open-Meteo & Radar von RainViewer.</p>
+        <div class="flex justify-center gap-6 mt-4">
+            <a href="https://glaggle.ch" class="text-[var(--link-color)] hover:underline">Glaggle Home</a>
+            <span>•</span>
+            <span class="opacity-70">Supabase Cache V2 Active</span>
+        </div>
+    </footer>
+
+    <!-- JS SCRIPT -->
+    <script>
+        // --- 1. SUPABASE INIT & ERROR HANDLING ---
+        const SUPABASE_URL = "https://khainlzhocznvhysnabu.supabase.co"; 
+        const SUPABASE_KEY = "sb_publishable_XG2m5idpwwRRCQQa-ESkIw_6Sq_mC22"; 
+        const CACHE_TABLE = 'glaggle_meteo_cache';
+        
+        let glaggleDb = null;
+        try {
+            if (window.supabase) {
+                glaggleDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log("Supabase Client erfolgreich initialisiert.");
+            }
+        } catch (e) {
+            console.warn("Supabase konnte nicht geladen werden. Nutze LocalStorage-Fallback.", e);
+        }
+
+        // 19 Große Städte
+        const majorCities = [
+            { name: "Zürich", lat: 47.3769, lon: 8.5417, country: "CH" },
+            { name: "Berlin", lat: 52.5244, lon: 13.4105, country: "DE" },
+            { name: "Hamburg", lat: 53.5511, lon: 9.9937, country: "DE" },
+            { name: "München", lat: 48.1372, lon: 11.5756, country: "DE" },
+            { name: "Wien", lat: 48.2085, lon: 16.3721, country: "AT" },
+            { name: "Paris", lat: 48.8534, lon: 2.3488, country: "FR" },
+            { name: "London", lat: 51.5085, lon: -0.1257, country: "GB" },
+            { name: "Rom", lat: 41.8919, lon: 12.5113, country: "IT" },
+            { name: "Madrid", lat: 40.4165, lon: -3.7026, country: "ES" },
+            { name: "New York", lat: 40.7143, lon: -74.006, country: "US" },
+            { name: "Tokyo", lat: 35.6895, lon: 139.6917, country: "JP" },
+            { name: "Sydney", lat: -33.8678, lon: 151.2073, country: "AU" },
+            { name: "Kapstadt", lat: -33.9258, lon: 18.4232, country: "ZA" },
+            { name: "Rio de Janeiro", lat: -22.9064, lon: -43.1822, country: "BR" },
+            { name: "Dubai", lat: 25.276987, lon: 55.296249, country: "AE" },
+            { name: "Singapur", lat: 1.28967, lon: 103.8501, country: "SG" },
+            { name: "Moskau", lat: 55.7522, lon: 37.6156, country: "RU" },
+            { name: "Los Angeles", lat: 34.0522, lon: -118.2437, country: "US" },
+            { name: "Toronto", lat: 43.7001, lon: -79.4163, country: "CA" }
+        ];
+
+        // --- THEME LOGIK ---
+        function toggleTheme() {
+            const root = document.documentElement;
+            const isDark = root.style.getPropertyValue('--bg-color') === '#0f172a';
+            if (isDark) {
+                root.style.setProperty('--bg-color', '#f4f7fb');
+                root.style.setProperty('--text-color', '#333333');
+                root.style.setProperty('--nav-bg', '#ffffff');
+                root.style.setProperty('--card-bg', '#ffffff');
+                root.style.setProperty('--card-border', '#e2e8f0');
+                root.style.setProperty('--link-color', '#2E94D1');
+                root.style.setProperty('--desc-color', '#64748b');
+                root.style.setProperty('--accent-glow', 'rgba(56, 189, 248, 0.15)');
+            } else {
+                root.style.setProperty('--bg-color', '#0f172a');
+                root.style.setProperty('--text-color', '#f8fafc');
+                root.style.setProperty('--nav-bg', '#1e293b');
+                root.style.setProperty('--card-bg', '#1e293b');
+                root.style.setProperty('--card-border', '#334155');
+                root.style.setProperty('--link-color', '#7dd3fc');
+                root.style.setProperty('--desc-color', '#94a3b8');
+                root.style.setProperty('--accent-glow', 'rgba(56, 189, 248, 0.1)');
+            }
+        }
+
+        // --- MAP & REGENRADAR ---
+        let map, radarLayers = [], radarTimestamps = [], currentRadarIndex = 0, radarInterval, isRadarPlaying = true;
+
+        function initMap(lat, lon) {
+            if (map) {
+                map.setView([lat, lon], 8);
+                map.eachLayer((layer) => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+                L.marker([lat, lon]).addTo(map).bindPopup('<b>Glaggle-Zielgebiet!</b>').openPopup();
+                
+                // Behebt das Leaflet-Problem bei initial unsichtbaren Containern
+                setTimeout(() => map.invalidateSize(), 200); 
+                
+                loadRadarLayers();
+                return;
+            }
+            map = L.map('radar-map').setView([lat, lon], 8);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+            L.marker([lat, lon]).addTo(map).bindPopup('<b>Glaggle-Zielgebiet!</b>').openPopup();
+            
+            setTimeout(() => map.invalidateSize(), 200);
+            
+            loadRadarLayers();
+        }
+
+        async function loadRadarLayers() {
+            try {
+                const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+                const data = await res.json();
+                
+                const host = data.host || "https://tilecache.rainviewer.com";
+                radarTimestamps = data.radar.past;
+                
+                radarLayers.forEach(l => map.removeLayer(l));
+                radarLayers = [];
+                
+                radarTimestamps.forEach(ts => {
+                    const layer = L.tileLayer(`${host}${ts.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+                        opacity: 0, 
+                        zIndex: 100,
+                        transparent: true
+                    }).addTo(map);
+                    radarLayers.push(layer);
+                });
+                
+                currentRadarIndex = 0;
+                
+                // FIX: Erste Wolken-Ebene direkt sichtbar machen, damit die Animation nicht leer startet!
+                if (radarLayers.length > 0) {
+                    radarLayers[0].setOpacity(0.65);
+                    const date = new Date(radarTimestamps[0].time * 1000);
+                    document.getElementById('radar-time-label').innerText = 
+                        `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')} Uhr`;
+                }
+
+                startRadarAnimation();
+            } catch (err) { console.warn("Radar Fehler:", err); }
+        }
+
+        function startRadarAnimation() {
+            clearInterval(radarInterval);
+            if (!isRadarPlaying || radarLayers.length === 0) return;
+            
+            radarInterval = setInterval(() => {
+                radarLayers.forEach(l => l.setOpacity(0));
+                currentRadarIndex = (currentRadarIndex + 1) % radarLayers.length;
+                
+                const currentLayer = radarLayers[currentRadarIndex];
+                if (currentLayer) {
+                    currentLayer.setOpacity(0.65);
+                    const date = new Date(radarTimestamps[currentRadarIndex].time * 1000);
+                    document.getElementById('radar-time-label').innerText = 
+                        `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')} Uhr`;
+                }
+            }, 1000);
+        }
+
+        function toggleRadarPlayback() {
+            const btn = document.getElementById('radar-play-btn');
+            if (isRadarPlaying) {
+                isRadarPlaying = false; clearInterval(radarInterval);
+                btn.innerText = "▶️ Starten"; btn.classList.replace('bg-[var(--accent)]', 'bg-green-500');
+            } else {
+                isRadarPlaying = true; startRadarAnimation();
+                btn.innerText = "⏸️ Pause"; btn.classList.replace('bg-green-500', 'bg-[var(--accent)]');
+            }
+        }
+
+        // --- WETTER CODES ---
+        function getWeatherCodeInfo(code) {
+            const map = {
+                0: { label: "Klar ☀️", emoji: "☀️" },
+                1: { label: "Heiter 🌤️", emoji: "🌤️" },
+                2: { label: "Teils bewölkt ⛅", emoji: "⛅" },
+                3: { label: "Bedeckt ☁️", emoji: "☁️" },
+                45: { label: "Nebel 🌫️", emoji: "🌫️" },
+                48: { label: "Raureif 🌫️", emoji: "🌫️" },
+                51: { label: "Leichter Niesel 🌧️", emoji: "🌧️" },
+                53: { label: "Nieselregen 🌧️", emoji: "🌧️" },
+                55: { label: "Starker Niesel 🌧️", emoji: "🌧️" },
+                61: { label: "Leichter Regen 🌦️", emoji: "🌦️" },
+                63: { label: "Regen 🌧️", emoji: "🌧️" },
+                65: { label: "Starker Regen 🌧️", emoji: "🌧️" },
+                71: { label: "Leichter Schnee 🌨️", emoji: "🌨️" },
+                73: { label: "Schnee 🌨️", emoji: "🌨️" },
+                75: { label: "Starker Schnee ❄️", emoji: "❄️" },
+                77: { label: "Schneegriesel 🌨️", emoji: "🌨️" },
+                80: { label: "Regenschauer 🌦️", emoji: "🌦️" },
+                81: { label: "Starke Schauer 🌧️", emoji: "🌧️" },
+                82: { label: "Sturzregen ⛈️", emoji: "⛈️" },
+                85: { label: "Schneeschauer 🌨️", emoji: "🌨️" },
+                86: { label: "Starke Schneeschauer ❄️", emoji: "❄️" },
+                95: { label: "Gewitter ⚡", emoji: "⚡" },
+                96: { label: "Gewitter & Hagel ⛈️", emoji: "⛈️" },
+                99: { label: "Starker Hagel ⛈️", emoji: "⛈️" }
+            };
+            return map[code] || { label: "Unbekannt 🤔", emoji: "🟡" };
+        }
+
+        // --- AUTO-SUGGESTION ---
+        const cityInput = document.getElementById('city-input');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let geocodingTimeout;
+
+        cityInput.addEventListener('input', () => {
+            clearTimeout(geocodingTimeout);
+            const q = cityInput.value.trim();
+            if (q.length < 2) { suggestionsBox.classList.add('hidden'); return; }
+            geocodingTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=de&format=json`);
+                    const data = await res.json();
+                    if (data.results?.length > 0) showSuggestions(data.results);
+                    else suggestionsBox.classList.add('hidden');
+                } catch (e) { console.warn(e); }
+            }, 300);
+        });
+
+        function showSuggestions(results) {
+            suggestionsBox.innerHTML = ''; suggestionsBox.classList.remove('hidden');
+            results.forEach(city => {
+                const display = `${city.name} (${city.country || ''}${city.admin1 ? ', ' + city.admin1 : ''})`;
+                const div = document.createElement('div');
+                div.className = 'px-5 py-3 hover:bg-[var(--accent-glow)] text-[var(--text-color)] text-base font-bold cursor-pointer border-b border-[var(--card-border)] transition-colors';
+                div.innerText = display;
+                div.onclick = () => {
+                    cityInput.value = city.name; suggestionsBox.classList.add('hidden');
+                    loadWeatherForLocation(city.latitude, city.longitude, city.name, city.country_code || 'DE');
+                };
+                suggestionsBox.appendChild(div);
+            });
+        }
+        document.addEventListener('click', (e) => { if (e.target !== cityInput) suggestionsBox.classList.add('hidden'); });
+
+
+        // --- HYBRID CACHING (Supabase + LocalStorage Fallback) ---
+        async function getCachedWeatherData(cityName) {
+            const cleanName = cityName.trim().toLowerCase();
+            
+            // 1. Versuche Supabase
+            if (glaggleDb) {
+                try {
+                    const { data, error } = await glaggleDb.from(CACHE_TABLE).select('*').eq('city_name_lower', cleanName).single();
+                    if (data && !error) {
+                        const ageMin = (new Date() - new Date(data.updated_at)) / 60000;
+                        if (ageMin < 15) {
+                            updateCacheIndicator(true, Math.round(ageMin), "Supabase Cloud");
+                            return JSON.parse(data.weather_json);
+                        }
+                    }
+                } catch (err) { console.log("Supabase Read failed, versuche Local..."); }
+            }
+
+            // 2. Fallback LocalStorage
+            const local = localStorage.getItem(`glaggle_meteo_${cleanName}`);
+            if (local) {
+                const parsed = JSON.parse(local);
+                const ageMin = (new Date() - new Date(parsed.timestamp)) / 60000;
+                if (ageMin < 15) {
+                    updateCacheIndicator(true, Math.round(ageMin), "Lokaler Speicher");
+                    return parsed.data;
+                }
+            }
+            return null;
+        }
+
+        async function saveWeatherToCache(cityName, data, lat, lon, countryCode) {
+            const cleanName = cityName.trim().toLowerCase();
+            const nowIso = new Date().toISOString();
+            
+            // Immer lokal speichern (Offline-Sicherheit)
+            localStorage.setItem(`glaggle_meteo_${cleanName}`, JSON.stringify({ timestamp: nowIso, data: data }));
+
+            // Falls Supabase verbunden ist, auch in Cloud pushen
+            if (glaggleDb) {
+                try {
+                    await glaggleDb.from(CACHE_TABLE).upsert({
+                        city_name_lower: cleanName, city_name: cityName, latitude: lat, longitude: lon,
+                        country_code: countryCode, weather_json: JSON.stringify(data), updated_at: nowIso
+                    }, { onConflict: 'city_name_lower' });
+                } catch (err) { console.warn("Konnte Cache nicht in Supabase schreiben (Normal bei fehlenden Rechten)."); }
+            }
+        }
+
+        function updateCacheIndicator(isCached, ageMin=0, source="") {
+            const ind = document.getElementById('cache-indicator');
+            if (isCached) ind.innerHTML = `<span class="h-3 w-3 rounded-full bg-blue-500 inline-block shadow-[0_0_8px_#3b82f6]"></span> Geladen aus ${source} (${ageMin} Min alt)`;
+            else ind.innerHTML = `<span class="h-3 w-3 rounded-full bg-orange-500 inline-block animate-pulse shadow-[0_0_8px_#f97316]"></span> Frische API-Daten geladen!`;
+        }
+
+        // --- HAUPT LOGIK WETTER ---
+        async function searchWeather() {
+            const q = cityInput.value.trim(); if (!q) return;
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('weather-dashboard').classList.add('hidden');
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=de&format=json`);
+                const data = await res.json();
+                if (!data.results) throw new Error("Nicht gefunden");
+                const c = data.results[0];
+                document.getElementById('dashboard-title').innerText = "Suchergebnis";
+                await loadWeatherForLocation(c.latitude, c.longitude, c.name, c.country_code || 'DE');
+            } catch (err) {
+                alert("Ort nicht gefunden oder Fehler aufgetreten!");
+                document.getElementById('loader').classList.add('hidden');
+            }
+        }
+
+        async function loadWeatherForLocation(lat, lon, cityName, countryCode) {
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('weather-dashboard').classList.add('hidden');
+            try {
+                let weatherData = await getCachedWeatherData(cityName);
+                if (!weatherData) {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+                    const res = await fetch(url);
+                    weatherData = await res.json();
+                    await saveWeatherToCache(cityName, weatherData, lat, lon, countryCode);
+                    updateCacheIndicator(false);
+                }
+                renderDashboard(cityName, countryCode, weatherData, lat, lon);
+            } catch (err) {
+                console.error(err); alert("Fehler beim Laden des Wetters.");
+            } finally {
+                document.getElementById('loader').classList.add('hidden');
+            }
+        }
+
+        function renderDashboard(cityName, countryCode, data, lat, lon) {
+            document.getElementById('weather-dashboard').classList.remove('hidden');
+            const cur = data.current;
+            const codeInfo = getWeatherCodeInfo(cur.weather_code);
+
+            document.getElementById('weather-city-name').innerText = cityName;
+            document.getElementById('weather-location-country').innerText = countryCode;
+            document.getElementById('weather-temp').innerText = Math.round(cur.temperature_2m);
+            document.getElementById('weather-feels').innerText = Math.round(cur.apparent_temperature) + "°C";
+            document.getElementById('weather-humidity').innerText = cur.relative_humidity_2m + "%";
+            document.getElementById('weather-wind').innerText = cur.wind_speed_10m + " km/h";
+            document.getElementById('weather-icon').innerText = codeInfo.emoji;
+            document.getElementById('bg-weather-icon').innerText = codeInfo.emoji;
+
+            const rainProb = data.hourly.precipitation_probability[new Date().getHours()] || 0;
+            document.getElementById('weather-rain-prob').innerText = rainProb + "%";
+            document.getElementById('weather-datetime').innerText = "Stand: " + new Date().toLocaleDateString('de-DE', {weekday:'long', hour:'2-digit', minute:'2-digit'}) + " Uhr";
+
+            // 24h
+            const hCont = document.getElementById('hourly-forecast-container'); hCont.innerHTML = '';
+            for (let i = 0; i < 24; i++) {
+                const hr = new Date(data.hourly.time[i]);
+                const inf = getWeatherCodeInfo(data.hourly.weather_code[i]);
+                hCont.innerHTML += `
+                    <div class="flex flex-col items-center p-4 bg-[var(--card-bg)] border-2 border-[var(--card-border)] rounded-2xl min-w-[90px] text-center hover:border-[var(--accent)] transition-colors">
+                        <p class="text-sm font-bold text-[var(--desc-color)]">${String(hr.getHours()).padStart(2,'0')}:00</p>
+                        <span class="text-3xl my-3 filter drop-shadow-sm">${inf.emoji}</span>
+                        <p class="text-lg font-black text-[var(--text-color)]">${Math.round(data.hourly.temperature_2m[i])}°</p>
+                    </div>`;
+            }
+
+            // 7 Days
+            const dCont = document.getElementById('daily-forecast-container'); dCont.innerHTML = '';
+            for (let i = 0; i < 7; i++) {
+                const dayStr = data.daily.time[i]; // z.B. "2026-07-09"
+                const day = new Date(dayStr);
+                const isToday = i === 0;
+                
+                let dailyCode = data.daily.weather_code[i];
+
+                // FIX: Open-Meteo macht oft den ganzen Tag "Bedeckt" (3), wenn es nur nachts bewölkt war.
+                // Wir berechnen hier zur Sicherheit den häufigsten Code für die echten Tagesstunden (08:00 - 18:00).
+                if (dailyCode <= 3) {
+                    let daytimeCodes = [];
+                    for (let j = 0; j < data.hourly.time.length; j++) {
+                        if (data.hourly.time[j].startsWith(dayStr)) {
+                            let h = new Date(data.hourly.time[j]).getHours();
+                            if (h >= 8 && h <= 18) {
+                                daytimeCodes.push(data.hourly.weather_code[j]);
+                            }
+                        }
+                    }
+                    if (daytimeCodes.length > 0) {
+                        let counts = {};
+                        let maxCode = daytimeCodes[0];
+                        let maxCount = 0;
+                        daytimeCodes.forEach(c => {
+                            counts[c] = (counts[c] || 0) + 1;
+                            if (counts[c] > maxCount) { maxCount = counts[c]; maxCode = c; }
+                        });
+                        dailyCode = maxCode; // Überschreibt die "immer Bedeckt" API mit den echten Tageswerten!
+                    }
+                }
+
+                const inf = getWeatherCodeInfo(dailyCode);
+                
+                dCont.innerHTML += `
+                    <div class="flex items-center justify-between p-4 rounded-2xl border-2 ${isToday ? 'border-[var(--accent)] bg-[var(--accent-glow)]' : 'border-[var(--card-border)] bg-[var(--card-bg)]'}">
+                        <div class="w-24">
+                            <p class="font-extrabold text-[var(--text-color)] text-base">${isToday ? "Heute" : day.toLocaleDateString('de-DE',{weekday:'short'})}</p>
+                            <p class="text-xs font-bold text-[var(--desc-color)]">${day.toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl filter drop-shadow-sm">${inf.emoji}</span>
+                            <span class="text-sm font-bold text-[var(--desc-color)] hidden sm:inline">${inf.label}</span>
+                        </div>
+                        <div class="w-16 text-right">
+                            <span class="font-black text-lg text-[var(--text-color)]">${Math.round(data.daily.temperature_2m_max[i])}°</span>
+                            <span class="text-[var(--desc-color)] font-bold ml-1">${Math.round(data.daily.temperature_2m_min[i])}°</span>
+                        </div>
+                    </div>`;
+            }
+
+            initMap(lat, lon);
+            // Smooth Scroll nach oben
+            document.getElementById('weather-dashboard').scrollIntoView({behavior: "smooth"});
+        }
+
+        // --- WELTWETTER (19 Städte Batch-Fetch) ---
+        async function loadWorldWeather() {
+            try {
+                // Open-Meteo erlaubt Batch-Fetching, indem man lat/lon kommagetrennt übergibt
+                const lats = majorCities.map(c => c.lat).join(',');
+                const lons = majorCities.map(c => c.lon).join(',');
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code&timezone=auto`;
+                
+                const res = await fetch(url);
+                const data = await res.json(); // Array of responses
+                
+                const grid = document.getElementById('world-cities-grid');
+                grid.innerHTML = '';
+
+                majorCities.forEach((city, index) => {
+                    const currentData = data[index].current;
+                    const temp = Math.round(currentData.temperature_2m);
+                    const inf = getWeatherCodeInfo(currentData.weather_code);
+
+                    const card = document.createElement('div');
+                    card.className = 'world-city-card p-4 flex flex-col items-center text-center shadow-sm';
+                    card.innerHTML = `
+                        <p class="text-[10px] font-black text-[var(--desc-color)] uppercase tracking-wider mb-1">${city.country}</p>
+                        <h4 class="font-extrabold text-[var(--text-color)] text-lg line-clamp-1">${city.name}</h4>
+                        <span class="text-4xl my-2 drop-shadow-sm">${inf.emoji}</span>
+                        <p class="text-xl font-black text-[var(--accent)]">${temp}°C</p>
+                    `;
+                    // Klick lädt das volle Dashboard für diese Stadt
+                    card.onclick = () => {
+                        document.getElementById('dashboard-title').innerText = "Ausgewählte Metropole";
+                        loadWeatherForLocation(city.lat, city.lon, city.name, city.country);
+                    };
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                document.getElementById('world-cities-grid').innerHTML = '<p class="text-red-500 font-bold">Fehler beim Laden des Weltwetters.</p>';
+            }
+        }
+
+        // --- GEOLOCATION (Aktueller Standort zum Start) ---
+        function initApp() {
+            // Zuerst laden wir die 19 Weltstädte
+            loadWorldWeather();
+
+            // Versuche GPS-Ortung
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        // Umgekehrte Ortssuche um den Stadtnamen zu bekommen (kostenlose BigDataCloud API)
+                        try {
+                            const rev = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=de`);
+                            const revData = await rev.json();
+                            const city = revData.city || revData.locality || "Mein Standort";
+                            document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
+                            loadWeatherForLocation(lat, lon, city, revData.countryCode || '');
+                        } catch(e) {
+                            // Fallback falls Name nicht aufgelöst werden kann
+                            document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
+                            loadWeatherForLocation(lat, lon, "Hier bei mir", "CH");
+                        }
+                    },
+                    (error) => {
+                        // Bei Ablehnung: Fallback auf Hünenberg / Zürich
+                        console.log("GPS abgelehnt. Zeige Standard-Ort.");
+                        document.getElementById('dashboard-title').innerText = "Standardort (GPS deaktiviert)";
+                        loadWeatherForLocation(47.1775, 8.4239, "Hünenberg", "CH");
+                    }
+                );
+            } else {
+                loadWeatherForLocation(47.1775, 8.4239, "Hünenberg", "CH");
+            }
+        }
+
+        // Start!
+        window.onload = initApp;
+    </script>
+</body>
+</html>
