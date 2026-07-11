@@ -741,41 +741,47 @@
             }
         }
 
-        // --- GEOLOCATION (Aktueller Standort zum Start) ---
-        function initApp() {
-            // Zuerst laden wir die 19 Weltstädte
-            loadWorldWeather();
+function initApp() {
+    loadWorldWeather();
 
-            // Versuche GPS-Ortung
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        // Umgekehrte Ortssuche um den Stadtnamen zu bekommen (kostenlose BigDataCloud API)
-                        try {
-                            const rev = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=de`);
-                            const revData = await rev.json();
-                            const city = revData.city || revData.locality || "Mein Standort";
-                            document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
-                            loadWeatherForLocation(lat, lon, city, revData.countryCode || '');
-                        } catch(e) {
-                            // Fallback falls Name nicht aufgelöst werden kann
-                            document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
-                            loadWeatherForLocation(lat, lon, "Hier bei mir", "CH");
-                        }
-                    },
-                    (error) => {
-                        // Bei Ablehnung: Fallback auf Hünenberg / Zürich
-                        console.log("GPS abgelehnt. Zeige Standard-Ort.");
-                        document.getElementById('dashboard-title').innerText = "Standardort (GPS deaktiviert)";
-                        loadWeatherForLocation(47.1775, 8.4239, "Hünenberg", "CH");
-                    }
-                );
-            } else {
+    // NEU: Prüfen ob eine Stadt per URL übergeben wurde
+    const urlParams = new URLSearchParams(window.location.search);
+    const cityParam = urlParams.get('city');
+
+    if (cityParam) {
+        document.getElementById('city-input').value = cityParam;
+        document.getElementById('dashboard-title').innerText = "Gesuchte Stadt";
+        // Direkt die bestehende Such-Logik nutzen (Geocoding + Laden)
+        searchWeather();
+        return; // GPS-Ortung überspringen, da Stadt schon vorgegeben ist
+    }
+
+    // Bestehende GPS-Logik nur wenn keine Stadt übergeben wurde
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                try {
+                    const rev = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=de`);
+                    const revData = await rev.json();
+                    const city = revData.city || revData.locality || "Mein Standort";
+                    document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
+                    loadWeatherForLocation(lat, lon, city, revData.countryCode || '');
+                } catch(e) {
+                    document.getElementById('dashboard-title').innerText = "Dein Aktueller Standort";
+                    loadWeatherForLocation(lat, lon, "Hier bei mir", "CH");
+                }
+            },
+            (error) => {
+                document.getElementById('dashboard-title').innerText = "Standardort (GPS deaktiviert)";
                 loadWeatherForLocation(47.1775, 8.4239, "Hünenberg", "CH");
             }
-        }
+        );
+    } else {
+        loadWeatherForLocation(47.1775, 8.4239, "Hünenberg", "CH");
+    }
+}
 
         // Start!
         window.onload = initApp;
