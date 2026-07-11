@@ -2592,9 +2592,11 @@ async function optimizeSearch() {
     }
 }
 
-    function checkWidgets(query) {
+function checkWidgets(query) {
     const q = query.toLowerCase();
     const resultsDiv = document.getElementById('glaggleResults');
+
+    if (checkGameWidget(query)) return true; // NEU: Game-Check zuerst
 
 const mathRegex = /^[0-9+\-*/().\s^%]+$/;
 if (q === "rechner" || q === "calculator") {
@@ -2639,6 +2641,91 @@ function renderWidget(title, subtitle, content) {
         <div style="text-align:center;">${content}</div>
     `;
     resultsDiv.prepend(div);
+}
+
+const glaggleGamesList = {
+    "snake": { url: "/snake", title: "Glaggle Snake", icon: "🐍" },
+    "glagglejump": { url: "/glagglejump", title: "Glaggle Jump", icon: "🛤️" },
+    "jump": { url: "/glagglejump", title: "Glaggle Jump", icon: "🛤️" },
+    "tower": { url: "/stacker", title: "Glaggle Tower", icon: "🗼" },
+    "icerun": { url: "/icerun", title: "Glaggle Ice Run", icon: "🧊" },
+    "flappyfish": { url: "/flappyfish", title: "Glaggle Flappyfish", icon: "🐠" },
+    "juggle": { url: "/juggle", title: "Glaggle Juggle Master", icon: "🤹" },
+    "brick": { url: "/brick", title: "Glaggle Brick EXTREM", icon: "🧱" },
+    "crossroad": { url: "/crossroad", title: "Glaggle Cross Road", icon: "🚦" },
+    "catcher": { url: "/catcher", title: "Glaggle Catcher", icon: "😀" },
+    "skyjump": { url: "/skyjump", title: "Glaggle Sky Jump", icon: "☁️" },
+    "orbit": { url: "/orbit", title: "Glaggle Orbit", icon: "🪐" },
+    "run": { url: "/run", title: "Glaggle Run", icon: "🏃" },
+    "gravity": { url: "/glagglegravity", title: "Glaggle Gravity", icon: "🌇" },
+    "pong": { url: "/pong", title: "Glaggle Pong", icon: "🔵" },
+    "tictactoe": { url: "/tictactoe", title: "Tic Tac Toe Live", icon: "❌" },
+    "casino": { url: "/casino", title: "Glaggle Grand Casino", icon: "🎰" },
+    "glagini": { url: "/glagini", title: "Glaggle Glagini", icon: "🃏" },
+    "resort": { url: "/glaggleresort", title: "Glaggle Resort 3D", icon: "🐠" },
+    "jump3d": { url: "/glagglejump3d", title: "Glaggle Jump 3D", icon: "👾" },
+    "race": { url: "/glagglerace", title: "Glaggle Racing", icon: "🛣️" },
+    "zahlenraten": { url: "/zahlenraten", title: "Zahlenraten", icon: "🔢" },
+    "schiffliversenken": { url: "/schiffliversenken", title: "Glaggle Schiffli Versenken", icon: "🛳️" },
+    "elfmeter": { url: "/elfmeter", title: "Glaggle Elfmeter König", icon: "⚽️" }
+};
+
+function checkGameWidget(query) {
+    const q = query.toLowerCase().replace(/glaggle/g, '').trim();
+    
+    // Direkter Key-Match ODER Titel-Teilstring-Match
+    let match = glaggleGamesList[q];
+    if (!match) {
+        const key = Object.keys(glaggleGamesList).find(k => 
+            q.includes(k) || glaggleGamesList[k].title.toLowerCase().includes(q)
+        );
+        if (key) match = glaggleGamesList[key];
+    }
+    
+    if (match) {
+        renderGameWidget(match);
+        return true;
+    }
+    return false;
+}
+
+function renderGameWidget(game) {
+    const resultsDiv = document.getElementById('glaggleResults');
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.padding = '0';
+    div.style.overflow = 'hidden';
+    div.style.borderRadius = '20px';
+
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 20px; background:rgba(112,196,247,0.08);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.4rem;">${game.icon}</span>
+                <strong style="color:var(--link-color); font-size:1.1rem;">${game.title}</strong>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button id="game-fullscreen-btn" style="background:var(--accent, #70C4F7); color:white; border:none; border-radius:15px; padding:8px 16px; font-weight:bold; cursor:pointer; font-size:0.8rem;">
+                    ⛶ Vollbild
+                </button>
+                <a href="${game.url}" target="_blank" style="background:transparent; border:1px solid #70C4F7; color:#70C4F7; border-radius:15px; padding:8px 16px; font-weight:bold; font-size:0.8rem; text-decoration:none;">
+                    ↗ Neuer Tab
+                </a>
+            </div>
+        </div>
+        <iframe id="game-iframe-${game.url.replace(/\//g,'')}" src="${game.url}" 
+            style="width:100%; height:600px; border:none; display:block; background:#000;"
+            allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope"
+            loading="lazy">
+        </iframe>
+    `;
+
+    resultsDiv.prepend(div);
+
+    div.querySelector('#game-fullscreen-btn').onclick = () => {
+        const iframe = div.querySelector('iframe');
+        if (iframe.requestFullscreen) iframe.requestFullscreen();
+        else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+    };
 }
 
 function renderTimerWidget(initialMinutes) {
@@ -4635,7 +4722,7 @@ function renderWeatherWidget(city, c, info) {
         <div style="font-size:3.5rem;margin:8px 0;">${info.emoji}</div>
         <div style="font-size:3rem;font-weight:800;margin-bottom:4px;">${Math.round(c.temperature_2m)}°C</div>
         <div style="color:#888;margin-bottom:16px;">${info.desc} · Gefühlt ${Math.round(c.apparent_temperature)}°C</div>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
             <div style="background:rgba(112,196,247,0.1);border-radius:10px;padding:8px 14px;">
                 <div style="font-size:0.72rem;color:#888;">💨 Wind</div>
                 <div style="font-weight:bold;">${Math.round(c.windspeed_10m)} km/h</div>
@@ -4644,7 +4731,18 @@ function renderWeatherWidget(city, c, info) {
                 <div style="font-size:0.72rem;color:#888;">💧 Luftfeuchte</div>
                 <div style="font-weight:bold;">${c.relativehumidity_2m}%</div>
             </div>
-        </div>`;
+        </div>
+        <a href="https://glaggle.ch/meteo?city=${encodeURIComponent(city)}" target="_blank" style="
+            display:inline-flex; align-items:center; gap:8px;
+            background: linear-gradient(135deg, #70C4F7, #2E94D1);
+            color:white; text-decoration:none; font-weight:bold;
+            padding:12px 24px; border-radius:25px; font-size:0.9rem;
+            box-shadow: 0 4px 15px rgba(112,196,247,0.4);
+            transition: transform 0.2s;
+        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            🌦️ Vollständige Vorhersage auf Glaggle Meteo
+        </a>
+    `;
     resultsDiv.prepend(div);
 }
 
