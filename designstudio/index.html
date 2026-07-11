@@ -2,99 +2,249 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glaggle Design Studio PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Glaggle Design Studio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Montserrat:wght@400;700;800&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
 <style>
+/* ============================================================
+   GLAGGLE DESIGN STUDIO
+   Übernimmt das Farbschema / Theme 1:1 aus localStorage
+   (gesetzt auf glaggle.ch). Keine Theme-Auswahl im Studio selbst.
+   ============================================================ */
 *{box-sizing:border-box;margin:0;padding:0}
+
 :root{
-  --bg:#0a0a0b;--panel:#111114;--panel2:#16161a;--border:rgba(255,255,255,0.07);
-  --accent:#6d5dfc;--accent2:#c084fc;--text:#e2e8f0;--muted:#6b7280;
-  --danger:#ef4444;--success:#22c55e;
+  /* Fallback-Werte (werden beim Laden sofort durch das echte
+     Glaggle-Theme aus localStorage überschrieben) */
+  --gg-navbar:#ffffff;
+  --gg-navtext:#000000;
+  --gg-sidebar:#ffffff;
+  --gg-sidebartext:#000000;
+  --gg-search-bg:rgba(255,255,255,0.9);
+  --gg-search-border:#ffffff;
+  --gg-overlay:rgba(0,0,0,0.4);
+  --gg-accent:#70C4F7;
+  --gg-accent-dark:#2E94D1;
+  --gg-card-bg:rgba(255,255,255,0.2);
+  --gg-card-text:#111111;
+  --gg-panel-bg:#f4f8fc;
+  --gg-panel-border:rgba(0,0,0,0.08);
+  --gg-canvas-shell:#e9eef3;
+
+  /* Studio-Arbeitsbereich (leitet sich vom Theme ab) */
+  --panel:var(--gg-panel-bg);
+  --panel-border:var(--gg-panel-border);
+  --text:#1a1a1a;
+  --muted:#6b7280;
+  --danger:#ea4335;
+  --success:#34a853;
 }
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+
+body{
+  font-family:'Arial Rounded MT Bold','Segoe UI',sans-serif;
+  background:var(--gg-canvas-shell);
+  color:var(--text);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-size:13px;
+  transition:background-color .4s ease;
+}
 button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit;font-size:inherit}
 input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 
-/* NAV */
-nav{height:48px;background:#000;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;shrink:0;z-index:200;gap:12px}
-.nav-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-0.5px;white-space:nowrap}
-.nav-logo span{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
-.nav-logo em{color:var(--accent2);font-style:italic}
-.nav-tools{display:flex;align-items:center;gap:4px}
-.nav-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;transition:all 0.15s;color:var(--muted)}
-.nav-btn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
-.nav-center{display:flex;align-items:center;gap:8px}
-.zoom-ctrl{display:flex;align-items:center;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.zoom-ctrl button{padding:5px 8px;font-size:14px;line-height:1;transition:background 0.1s}
-.zoom-ctrl button:hover{background:rgba(255,255,255,0.1)}
-.zoom-label{font-size:11px;font-family:'DM Mono',monospace;padding:0 8px;min-width:44px;text-align:center;color:var(--muted)}
-.canvas-size{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px}
-.nav-right{display:flex;align-items:center;gap:8px}
-.undo-redo{display:flex;gap:2px}
-.undo-redo button{padding:5px 9px;border-radius:6px;font-size:15px;transition:all 0.15s}
-.undo-redo button:hover{background:rgba(255,255,255,0.08)}
-.undo-redo button:disabled{opacity:0.3;cursor:not-allowed}
-.export-wrap{position:relative}
-.export-btn{background:var(--accent);color:#fff;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px;letter-spacing:0.3px}
-.export-btn:hover{background:#7c6dfd;transform:translateY(-1px)}
-.export-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;width:160px;z-index:300;opacity:0;visibility:hidden;transform:translateY(-4px);transition:all 0.15s;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-.export-wrap:hover .export-menu{opacity:1;visibility:visible;transform:translateY(0)}
-.export-menu button{width:100%;text-align:left;padding:8px 10px;border-radius:7px;font-size:12px;font-weight:500;transition:background 0.1s;display:flex;align-items:center;gap:8px}
-.export-menu button:hover{background:rgba(255,255,255,0.07)}
-.export-menu button span.ext{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:auto}
-.ext-png{background:#1e40af33;color:#60a5fa}
-.ext-jpg{background:#16532433;color:#4ade80}
-.ext-pdf{background:#7f1d1d33;color:#f87171}
+/* ===================== NAVBAR — 1:1 wie Hauptseite ===================== */
+.navbar{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;height:80px;
+  background-color:var(--gg-navbar)!important;
+  backdrop-filter:none!important;
+  padding:0 20px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.12);
+  position:relative;
+  z-index:1000;
+  flex-shrink:0;
+  transition:background-color .4s ease;
+}
+.nav-left,.nav-center,.nav-right{display:flex;align-items:center;gap:10px}
+.nav-left{flex:1}
+.nav-center{flex:2;justify-content:center;gap:14px}
+.nav-right{flex:1;justify-content:flex-end;gap:10px}
+.gg-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;color:var(--gg-navtext);white-space:nowrap;letter-spacing:-0.5px;text-decoration:none}
+.gg-logo .dot{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gg-accent),var(--gg-accent-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 10px rgba(112,196,247,0.4)}
+.gg-logo em{color:var(--gg-accent);font-style:italic;font-weight:800}
 
-/* LAYOUT */
+.nav-btn-pill{
+  text-decoration:none;color:#fff;background-color:var(--gg-accent);
+  padding:8px 16px;border-radius:20px;font-weight:bold;font-size:12px;
+  transition:.25s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+}
+.nav-btn-pill:hover{background-color:var(--gg-accent-dark);transform:scale(1.05)}
+.nav-btn-ghost{
+  color:var(--gg-navtext);padding:8px 12px;border-radius:20px;font-weight:600;font-size:12px;
+  transition:.2s;background:rgba(120,120,120,0.08);
+}
+.nav-btn-ghost:hover{background:rgba(112,196,247,0.18);color:var(--gg-accent-dark)}
+
+.zoom-ctrl{display:flex;align-items:center;background:rgba(120,120,120,0.08);border:1px solid var(--panel-border);border-radius:20px;overflow:hidden}
+.zoom-ctrl button{padding:6px 10px;font-size:14px;line-height:1;color:var(--gg-navtext)}
+.zoom-ctrl button:hover{background:rgba(112,196,247,0.2)}
+.zoom-label{font-size:11px;font-family:monospace;padding:0 6px;min-width:44px;text-align:center;color:var(--muted)}
+
+.undo-redo{display:flex;gap:2px;background:rgba(120,120,120,0.08);border-radius:20px;padding:2px}
+.undo-redo button{padding:6px 10px;border-radius:16px;font-size:15px;color:var(--gg-navtext)}
+.undo-redo button:hover{background:rgba(112,196,247,0.2)}
+.undo-redo button:disabled{opacity:.3;cursor:not-allowed}
+
+.export-wrap{position:relative}
+.export-menu{
+  position:absolute;right:0;top:calc(100% + 8px);background:var(--gg-sidebar);
+  border:1px solid var(--panel-border);border-radius:16px;padding:8px;width:210px;z-index:1200;
+  opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s;
+  box-shadow:0 16px 45px rgba(0,0,0,0.22);
+}
+.export-wrap:hover .export-menu{opacity:1;visibility:visible;transform:translateY(0)}
+.export-menu button{
+  width:100%;text-align:left;padding:9px 11px;border-radius:10px;font-size:12.5px;font-weight:600;
+  transition:background .12s;display:flex;align-items:center;gap:9px;color:var(--gg-sidebartext);
+}
+.export-menu button:hover{background:rgba(112,196,247,0.15)}
+.export-menu .ext{margin-left:auto;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.3px}
+.ext-png{background:#1e40af22;color:#3b82f6}
+.ext-jpg{background:#16532422;color:#22c55e}
+.ext-pdf{background:#7f1d1d22;color:#ef4444}
+.ext-svg{background:#6d5dfc22;color:#8b5cf6}
+.ext-gd{background:#70c4f722;color:var(--gg-accent-dark)}
+.export-menu hr{border:none;border-top:1px solid var(--panel-border);margin:6px 2px}
+
+.hamburger{display:flex;flex-direction:column;gap:5px;cursor:pointer;padding:8px;color:var(--gg-navtext)}
+.hamburger span{display:block;width:24px;height:3px;background-color:var(--gg-navtext);border-radius:3px;transition:.3s}
+
+/* ===================== SIDEBAR — 1:1 wie Hauptseite ===================== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1999}
+.overlay.active{display:block}
+.sidebar{
+  height:100%;width:0;position:fixed;z-index:2000;top:0;right:0;
+  background-color:var(--gg-sidebar)!important;
+  color:var(--gg-sidebartext)!important;
+  overflow-x:hidden;overflow-y:auto;transition:.5s;padding-top:60px;
+  box-shadow:-5px 0 15px rgba(0,0,0,0.12);
+}
+.sidebar.active{width:270px}
+.sidebar-content{display:flex;flex-direction:column;padding:20px}
+.close-btn{position:absolute;top:10px;left:20px;font-size:32px;color:var(--gg-sidebartext);text-decoration:none}
+.sidebar-category{border-bottom:1px solid var(--panel-border)}
+.sidebar-category summary{
+  padding:14px 18px;font-size:1.05rem;cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;align-items:center;transition:.2s;color:var(--gg-sidebartext);
+}
+.sidebar-category summary:hover{background:rgba(112,196,247,0.1);color:var(--gg-accent-dark)}
+.sidebar-category summary::-webkit-details-marker{display:none}
+.sidebar-category summary::after{content:'›';font-size:1.4rem;transition:transform .3s}
+.sidebar-category[open] summary::after{transform:rotate(90deg)}
+.sidebar-link{
+  display:block;padding:11px 18px 11px 36px;text-decoration:none;font-size:0.92rem;
+  color:var(--gg-sidebartext);background:rgba(0,0,0,0.03);transition:.2s;
+}
+.sidebar-link:hover{color:var(--gg-accent-dark);background:rgba(112,196,247,0.12)}
+.sidebar-tool-item{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sidebar-tool-toggle{
+  width:36px;height:20px;border-radius:10px;background:rgba(0,0,0,0.15);position:relative;flex-shrink:0;transition:.2s;
+}
+.sidebar-tool-toggle.on{background:var(--gg-accent)}
+.sidebar-tool-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+.sidebar-tool-toggle.on::after{left:18px}
+
+.smart-mouse-box{padding:15px 20px;border-top:1px solid var(--panel-border);margin-top:6px}
+.smart-mouse-btn{
+  width:100%;padding:10px;border-radius:20px;border:1px solid var(--panel-border);font-size:12px;
+  cursor:pointer;font-weight:700;transition:.2s;color:var(--gg-sidebartext);background:rgba(0,0,0,0.03);
+}
+.smart-mouse-btn.active{background:var(--gg-accent);color:#fff;border-color:var(--gg-accent)}
+
+/* ===================== WORKSPACE ===================== */
 .workspace{flex:1;display:flex;overflow:hidden}
 
-/* LEFT SIDEBAR */
-.left-tabs{width:56px;background:#000;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px}
-.tab-btn{width:40px;height:40px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:var(--muted);font-size:17px}
-.tab-btn span{font-size:8px;font-weight:600;letter-spacing:0.3px}
-.tab-btn:hover{background:rgba(255,255,255,0.07);color:var(--text)}
-.tab-btn.active{background:rgba(109,93,252,0.2);color:var(--accent2)}
+.left-tabs{
+  width:60px;background:var(--gg-sidebar);border-right:1px solid var(--panel-border);
+  display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px;flex-shrink:0;
+}
+.tab-btn{
+  width:44px;height:44px;border-radius:14px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;transition:.15s;color:var(--muted);font-size:18px;
+}
+.tab-btn span{font-size:8px;font-weight:700;letter-spacing:.3px}
+.tab-btn:hover{background:rgba(112,196,247,0.15);color:var(--gg-accent-dark)}
+.tab-btn.active{background:var(--gg-accent);color:#fff;box-shadow:0 4px 14px rgba(112,196,247,0.4)}
 
-/* TOOL PANEL */
-.tool-panel{width:240px;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
-.tool-panel::-webkit-scrollbar{width:4px}
-.tool-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
-.tp-section{padding:14px}
-.tp-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.tp-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.tool-panel{
+  width:250px;background:var(--panel);border-right:1px solid var(--panel-border);
+  overflow-y:auto;flex-shrink:0;
+}
+.tool-panel::-webkit-scrollbar{width:5px}
+.tool-panel::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:3px}
+.tp-section{padding:16px}
+.tp-title{
+  font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.tp-title::after{content:'';flex:1;height:1px;background:var(--panel-border)}
 .hidden{display:none!important}
+.tp-hint{font-size:10.5px;color:var(--muted);line-height:1.5;background:rgba(112,196,247,0.08);padding:9px 11px;border-radius:10px;border:1px solid rgba(112,196,247,0.2);margin-bottom:12px}
 
-/* Templates */
 .tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tmpl-card{border-radius:10px;height:64px;cursor:pointer;padding:8px 10px;font-size:11px;font-weight:700;display:flex;align-items:flex-end;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1)}
-.tmpl-card:hover{transform:scale(1.04);border-color:rgba(255,255,255,0.3)}
+.tmpl-card{
+  border-radius:14px;height:64px;cursor:pointer;padding:8px 10px;font-size:11px;font-weight:800;
+  display:flex;align-items:flex-end;transition:.2s;border:1px solid rgba(0,0,0,0.06);color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,0.4);
+}
+.tmpl-card:hover{transform:scale(1.04);box-shadow:0 6px 18px rgba(0,0,0,0.18)}
 .tmpl-card.wide{grid-column:span 2;height:52px}
 
-/* Shapes */
 .shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.shape-btn{aspect-ratio:1;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.15s;border:1px solid transparent}
-.shape-btn:hover{background:rgba(109,93,252,0.2);border-color:rgba(109,93,252,0.5)}
+.shape-btn{
+  aspect-ratio:1;background:rgba(0,0,0,0.04);border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:18px;cursor:pointer;transition:.15s;border:1px solid transparent;
+}
+.shape-btn:hover{background:rgba(112,196,247,0.18);border-color:var(--gg-accent)}
 
-/* Text panel */
-.text-preset{width:100%;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;transition:all 0.15s;margin-bottom:6px}
-.text-preset:hover{background:rgba(255,255,255,0.08);border-color:rgba(109,93,252,0.4)}
-.font-pill{padding:6px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:11px;transition:all 0.15s;margin-bottom:5px;display:block;width:100%}
-.font-pill:hover{border-color:var(--accent);color:#c4b5fd}
+.text-preset{
+  width:100%;padding:11px 13px;background:rgba(0,0,0,0.03);border:1px solid var(--panel-border);
+  border-radius:12px;cursor:pointer;text-align:left;transition:.15s;margin-bottom:7px;color:var(--text);
+}
+.text-preset:hover{background:rgba(112,196,247,0.12);border-color:var(--gg-accent)}
+.font-pill{
+  padding:7px 11px;background:rgba(0,0,0,0.03);border:1px solid var(--panel-border);border-radius:20px;
+  cursor:pointer;font-size:11px;transition:.15s;margin-bottom:6px;display:block;width:100%;color:var(--text);
+}
+.font-pill:hover{border-color:var(--gg-accent);color:var(--gg-accent-dark)}
 
-/* CANVAS */
-.canvas-wrap{flex:1;background:radial-gradient(circle,#1a1a2e 0%,#0a0a0b 100%);background-image:radial-gradient(#1f1f2e 1px,transparent 1px);background-size:24px 24px;display:flex;align-items:center;justify-content:center;overflow:auto;position:relative}
-#artboard{position:relative;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.1),0 30px 80px rgba(0,0,0,0.8);overflow:hidden;transform-origin:center center}
-#artboard.drag-over{outline:2px dashed var(--accent)}
+.canvas-wrap{
+  flex:1;background:
+    radial-gradient(circle at 50% 0%, rgba(112,196,247,0.08), transparent 60%),
+    var(--gg-canvas-shell);
+  background-image:radial-gradient(rgba(0,0,0,0.05) 1px,transparent 1px), radial-gradient(circle at 50% 0%, rgba(112,196,247,0.08), transparent 60%);
+  background-size:22px 22px, auto;
+  display:flex;align-items:center;justify-content:center;overflow:auto;position:relative;
+}
+#artboard{
+  position:relative;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.06),0 30px 80px rgba(0,0,0,0.25);
+  overflow:hidden;transform-origin:center center;border-radius:6px;
+}
+#artboard.drag-over{outline:3px dashed var(--gg-accent)}
 
-/* Element states */
 .el{position:absolute;cursor:move;user-select:none;box-sizing:border-box}
-.el.selected{outline:2px solid var(--accent);outline-offset:1px}
+.el.selected{outline:2px solid var(--gg-accent);outline-offset:1px}
 .el-text{min-width:80px;min-height:24px;cursor:text}
-.resize-handle{position:absolute;width:8px;height:8px;background:#fff;border:2px solid var(--accent);border-radius:50%;z-index:50;display:none}
+.resize-handle{
+  position:absolute;width:9px;height:9px;background:#fff;border:2px solid var(--gg-accent);
+  border-radius:50%;z-index:50;display:none;
+}
 .el.selected .resize-handle{display:block}
 .rh-nw{top:-5px;left:-5px;cursor:nw-resize}
 .rh-n{top:-5px;left:50%;transform:translateX(-50%);cursor:n-resize}
@@ -104,107 +254,213 @@ nav{height:48px;background:#000;border-bottom:1px solid var(--border);display:fl
 .rh-s{bottom:-5px;left:50%;transform:translateX(-50%);cursor:s-resize}
 .rh-sw{bottom:-5px;left:-5px;cursor:sw-resize}
 .rh-w{top:50%;left:-5px;transform:translateY(-50%);cursor:w-resize}
-.rotate-handle{position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:grab;display:none;z-index:51}
+.rotate-handle{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:14px;height:14px;
+  background:var(--gg-accent);border-radius:50%;cursor:grab;display:none;z-index:51;
+  box-shadow:0 2px 8px rgba(112,196,247,0.5);
+}
 .el.selected .rotate-handle{display:block}
 
-/* INSPECTOR */
-.inspector{width:260px;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:14px}
-.inspector::-webkit-scrollbar{width:4px}
-.inspector::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
-.ins-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.ins-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.ins-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.ins-label{font-size:10px;color:var(--muted);font-weight:500;min-width:64px}
-.ins-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--text);background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 7px;flex:1;outline:none;transition:border 0.15s}
-.ins-val:focus{border-color:var(--accent)}
-.ins-val::-webkit-inner-spin-button{opacity:0.5}
-.color-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.color-swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);cursor:pointer;overflow:hidden;flex-shrink:0}
+.inspector{
+  width:270px;background:var(--panel);border-left:1px solid var(--panel-border);
+  overflow-y:auto;flex-shrink:0;padding:16px;
+}
+.inspector::-webkit-scrollbar{width:5px}
+.inspector::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:3px}
+.ins-title{
+  font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.ins-title::after{content:'';flex:1;height:1px;background:var(--panel-border)}
+.ins-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.ins-label{font-size:10px;color:var(--muted);font-weight:600;min-width:60px}
+.ins-val{
+  font-size:11.5px;font-family:monospace;color:var(--text);background:rgba(0,0,0,0.04);
+  border:1px solid var(--panel-border);border-radius:8px;padding:5px 8px;flex:1;outline:none;transition:border .15s;
+}
+.ins-val:focus{border-color:var(--gg-accent)}
+.color-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.color-swatch{width:30px;height:30px;border-radius:9px;border:1px solid var(--panel-border);cursor:pointer;overflow:hidden;flex-shrink:0}
 .color-swatch input[type=color]{width:200%;height:200%;margin:-25%;border:none;cursor:pointer;background:none}
-.color-hex{flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:11px;font-family:'DM Mono',monospace;outline:none}
-.color-hex:focus{border-color:var(--accent)}
-.ins-slider-row{margin-bottom:10px}
-.ins-slider-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-weight:500;margin-bottom:5px}
-input[type=range]{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;appearance:none;cursor:pointer;outline:none}
-input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer}
-.ins-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:5px 7px;outline:none;color:var(--text);font-size:11px}
-.ins-select option{background:#1a1a2e}
-.text-fmt-row{display:flex;gap:5px;margin-bottom:8px}
-.fmt-btn{flex:1;padding:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:700;transition:all 0.15s;text-align:center}
-.fmt-btn:hover,.fmt-btn.active{background:rgba(109,93,252,0.2);border-color:var(--accent);color:#c4b5fd}
-.ins-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
-.ins-action{padding:7px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;font-size:10px;font-weight:600;text-align:center;transition:all 0.15s;color:var(--text)}
-.ins-action:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.2)}
-.del-btn{width:100%;margin-top:8px;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;color:var(--danger);font-size:11px;font-weight:700;transition:all 0.15s}
-.del-btn:hover{background:rgba(239,68,68,0.2);border-color:var(--danger)}
-.duplicate-btn{width:100%;margin-top:5px;padding:8px;background:rgba(109,93,252,0.1);border:1px solid rgba(109,93,252,0.3);border-radius:7px;color:var(--accent2);font-size:11px;font-weight:700;transition:all 0.15s}
-.duplicate-btn:hover{background:rgba(109,93,252,0.2);border-color:var(--accent2)}
-.gradient-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}
-.grad-swatch{height:30px;border-radius:6px;cursor:pointer;border:1px solid var(--border);transition:all 0.15s}
-.grad-swatch:hover{transform:scale(1.08);border-color:rgba(255,255,255,0.3)}
+.color-hex{
+  flex:1;background:rgba(0,0,0,0.04);border:1px solid var(--panel-border);border-radius:8px;
+  padding:5px 8px;font-size:11.5px;font-family:monospace;outline:none;
+}
+.color-hex:focus{border-color:var(--gg-accent)}
+.ins-slider-row{margin-bottom:11px}
+.ins-slider-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-weight:600;margin-bottom:5px}
+input[type=range]{width:100%;height:4px;background:rgba(0,0,0,0.1);border-radius:2px;appearance:none;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gg-accent);cursor:pointer;box-shadow:0 2px 6px rgba(112,196,247,0.5)}
+.ins-select{
+  width:100%;background:rgba(0,0,0,0.04);border:1px solid var(--panel-border);border-radius:8px;
+  padding:6px 8px;outline:none;color:var(--text);font-size:11.5px;
+}
+.text-fmt-row{display:flex;gap:6px;margin-bottom:9px}
+.fmt-btn{
+  flex:1;padding:7px;background:rgba(0,0,0,0.04);border:1px solid var(--panel-border);border-radius:9px;
+  font-size:12px;font-weight:800;transition:.15s;text-align:center;
+}
+.fmt-btn:hover,.fmt-btn.active{background:var(--gg-accent);border-color:var(--gg-accent);color:#fff}
+.ins-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:11px}
+.ins-action{
+  padding:8px;background:rgba(0,0,0,0.03);border:1px solid var(--panel-border);border-radius:10px;
+  font-size:10.5px;font-weight:700;text-align:center;transition:.15s;color:var(--text);
+}
+.ins-action:hover{background:rgba(112,196,247,0.15);border-color:var(--gg-accent);color:var(--gg-accent-dark)}
+.del-btn{
+  width:100%;margin-top:9px;padding:10px;background:rgba(234,67,53,0.1);border:1px solid rgba(234,67,53,0.3);
+  border-radius:20px;color:var(--danger);font-size:12px;font-weight:800;transition:.15s;
+}
+.del-btn:hover{background:rgba(234,67,53,0.2);border-color:var(--danger)}
+.duplicate-btn{
+  width:100%;margin-top:6px;padding:10px;background:rgba(112,196,247,0.12);border:1px solid rgba(112,196,247,0.35);
+  border-radius:20px;color:var(--gg-accent-dark);font-size:12px;font-weight:800;transition:.15s;
+}
+.duplicate-btn:hover{background:rgba(112,196,247,0.22);border-color:var(--gg-accent)}
+.gradient-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.grad-swatch{height:32px;border-radius:9px;cursor:pointer;border:1px solid var(--panel-border);transition:.15s}
+.grad-swatch:hover{transform:scale(1.08);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
 
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#000;border-radius:100px;padding:10px 20px;font-size:12px;font-weight:700;opacity:0;transition:all 0.3s;pointer-events:none;z-index:1000;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+/* ===================== TOAST / LOADING ===================== */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--gg-sidebar);color:var(--gg-sidebartext);border-radius:100px;padding:11px 22px;
+  font-size:12px;font-weight:800;opacity:0;transition:.3s;pointer-events:none;z-index:5000;
+  white-space:nowrap;box-shadow:0 10px 34px rgba(0,0,0,0.3);border:1px solid var(--panel-border);
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Rulers (top/left) */
-.ruler-h{height:18px;background:#000;border-bottom:1px solid var(--border);overflow:hidden;position:absolute;top:0;left:18px;right:0;z-index:10}
-.ruler-v{width:18px;background:#000;border-right:1px solid var(--border);overflow:hidden;position:absolute;top:0;left:0;bottom:0;z-index:10}
-
-/* Scrollbar */
-.canvas-wrap::-webkit-scrollbar{width:8px;height:8px}
-.canvas-wrap::-webkit-scrollbar-track{background:transparent}
-.canvas-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
-
-/* Loading overlay */
-#loading{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity 0.3s}
+#loading{
+  position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);z-index:6000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
 #loading.show{opacity:1;pointer-events:all}
-.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--gg-accent);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+#loading-msg{font-size:13px;font-weight:700;color:#fff}
+
+/* ===================== SMART MOUSE (integriert wie Hauptseite) ===================== */
+body.smart-mouse-active,body.smart-mouse-active *{cursor:none!important}
+#glaggle-smart-cursor{
+  position:fixed;width:26px;height:26px;background:#000;border-radius:50%;pointer-events:none;
+  z-index:99999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s,opacity .15s;
+  display:none;top:0;left:0;
+}
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover{opacity:0}
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click{width:18px;height:18px}
+
+/* Datei-Input verstecken */
+.hidden-input{display:none}
 </style>
 </head>
 <body>
 
-<!-- Loading overlay -->
+<div id="glaggle-smart-cursor"></div>
+
 <div id="loading">
   <div class="spinner"></div>
-  <div style="font-size:13px;font-weight:600;color:var(--muted)" id="loading-msg">Exportiere...</div>
+  <div id="loading-msg">Exportiere...</div>
 </div>
 
-<!-- NAV -->
-<nav>
-  <div style="display:flex;align-items:center;gap:12px">
-    <div class="nav-logo"><span>G</span> GLAGGLE <em>PRO</em></div>
-    <div class="nav-tools">
-      <button class="nav-btn" onclick="clearCanvas()">Neu</button>
-      <button class="nav-btn" onclick="showSizeDialog()">Größe</button>
-    </div>
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="#" class="gg-logo" onclick="return false;">
+      <span class="dot">G</span> Glaggle <em>Design Studio</em>
+    </a>
   </div>
   <div class="nav-center">
+    <button class="nav-btn-ghost" onclick="clearCanvas()">🗋 Neu</button>
+    <button class="nav-btn-ghost" onclick="switchTab('canvas')">📐 Größe</button>
     <div class="zoom-ctrl">
       <button onclick="setZoom(zoomLevel*0.8)">−</button>
       <span class="zoom-label" id="zoom-label">100%</span>
       <button onclick="setZoom(zoomLevel*1.25)">+</button>
     </div>
-    <button class="nav-btn" onclick="setZoom(1)" style="font-size:10px">Fit</button>
-    <div class="canvas-size" id="canvas-size-label">600 × 400</div>
+    <button class="nav-btn-ghost" onclick="setZoom(1)">Fit</button>
     <div class="undo-redo">
       <button onclick="undo()" id="btn-undo" title="Rückgängig (Strg+Z)">↩</button>
       <button onclick="redo()" id="btn-redo" title="Wiederholen (Strg+Y)">↪</button>
     </div>
   </div>
   <div class="nav-right">
+    <button class="nav-btn-ghost" onclick="document.getElementById('gd-file-input').click()">📂 Öffnen</button>
     <div class="export-wrap">
-      <button class="export-btn">⬇ Exportieren ▾</button>
+      <button class="nav-btn-pill">⬇ Exportieren ▾</button>
       <div class="export-menu">
         <button onclick="exportAs('png')">🖼 PNG <span class="ext ext-png">Bild</span></button>
         <button onclick="exportAs('jpg')">📷 JPEG <span class="ext ext-jpg">Foto</span></button>
         <button onclick="exportAs('pdf')">📄 PDF <span class="ext ext-pdf">Druck</span></button>
-        <button onclick="exportAs('svg')">✏️ SVG <span class="ext" style="background:#6d5dfc22;color:#a78bfa">Vektor</span></button>
+        <button onclick="exportAs('svg')">✏️ SVG <span class="ext ext-svg">Vektor</span></button>
+        <hr>
+        <button onclick="saveProjectFile()">💾 Projekt speichern <span class="ext ext-gd">.gd</span></button>
+        <button onclick="document.getElementById('gd-file-input').click()">📂 Projekt öffnen <span class="ext ext-gd">.gd</span></button>
       </div>
+    </div>
+    <div class="hamburger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
     </div>
   </div>
 </nav>
+
+<input type="file" id="gd-file-input" class="hidden-input" accept=".gd,.json" onchange="loadProjectFile(event)">
+
+<!-- ===================== SIDEBAR (1:1 Hauptseite) ===================== -->
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+<div id="sidebar" class="sidebar">
+  <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+  <div class="sidebar-content">
+
+    <details class="sidebar-category" open>
+      <summary>Datei</summary>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="clearCanvas()">🗋 Neue Leinwand</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="document.getElementById('gd-file-input').click()">📂 Projekt öffnen (.gd)</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="saveProjectFile()">💾 Projekt speichern (.gd)</a>
+    </details>
+
+    <details class="sidebar-category">
+      <summary>Exportieren</summary>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="exportAs('png')">🖼 Als PNG</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="exportAs('jpg')">📷 Als JPEG</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="exportAs('pdf')">📄 Als PDF</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="exportAs('svg')">✏️ Als SVG</a>
+    </details>
+
+    <details class="sidebar-category">
+      <summary>Werkzeuge</summary>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="switchTab('templates');toggleSidebar()">🎨 Vorlagen</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="switchTab('shapes');toggleSidebar()">⬡ Formen</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="switchTab('text');toggleSidebar()">T Text</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="switchTab('upload');toggleSidebar()">🖼 Bilder</a>
+      <a href="javascript:void(0)" class="sidebar-link" onclick="switchTab('canvas');toggleSidebar()">📐 Leinwand</a>
+    </details>
+
+    <details class="sidebar-category">
+      <summary>Weitere Glaggle Tools</summary>
+      <a href="https://glaggle.ch" class="sidebar-link">Glaggle Suche</a>
+      <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
+      <a href="https://glame.glaggle.ch" class="sidebar-link">Glame AI Pro</a>
+      <a href="https://glaggle.ch/gamecenter" class="sidebar-link">Gamecenter</a>
+      <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
+    </details>
+
+    <div class="smart-mouse-box">
+      <div class="tp-title" style="margin-bottom:8px">Maus</div>
+      <button id="smart-mouse-toggle" class="smart-mouse-btn" onclick="toggleSmartMouseFromStudio()">
+        Glaggle Smart Mouse aktivieren
+      </button>
+      <p style="font-size:9.5px;color:var(--muted);margin-top:7px;text-align:center;">
+        Übernimmt automatisch dieselbe Einstellung wie auf Glaggle.ch
+      </p>
+    </div>
+
+    <p style="font-size:9.5px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;padding:0 6px">
+      Farbschema &amp; Design werden automatisch von deinen Glaggle.ch-Einstellungen übernommen.
+      Um das Aussehen zu ändern, passe es direkt auf der Hauptseite an.
+    </p>
+  </div>
+</div>
 
 <div class="workspace">
   <!-- LEFT TABS -->
@@ -213,7 +469,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
     <button class="tab-btn" id="tabn-shapes" onclick="switchTab('shapes')" title="Formen">⬡<span>Form</span></button>
     <button class="tab-btn" id="tabn-text" onclick="switchTab('text')" title="Text">T<span>Text</span></button>
     <button class="tab-btn" id="tabn-upload" onclick="switchTab('upload')" title="Bilder">🖼<span>Bild</span></button>
-    <button class="tab-btn" id="tabn-bg" onclick="switchTab('bg')" title="Hintergrund">◼<span>Bg</span></button>
+    <button class="tab-btn" id="tabn-canvas" onclick="switchTab('canvas')" title="Leinwand">📐<span>Board</span></button>
   </div>
 
   <!-- TOOL PANEL -->
@@ -225,21 +481,9 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <div class="tmpl-card" style="background:linear-gradient(135deg,#0f0f0f,#cc0000)" onclick="applyTemplate('youtube')">YouTube</div>
         <div class="tmpl-card" style="background:linear-gradient(135deg,#1e3a5f,#0ea5e9)" onclick="applyTemplate('twitter')">X / Twitter</div>
         <div class="tmpl-card" style="background:linear-gradient(135deg,#1d1d1f,#3a3a3c)" onclick="applyTemplate('minimal')">Minimal</div>
+        <div class="tmpl-card" style="background:linear-gradient(135deg,var(--gg-accent),var(--gg-accent-dark))" onclick="applyTemplate('glaggle')">Glaggle Look</div>
         <div class="tmpl-card wide" style="background:linear-gradient(135deg,#1e1b4b,#4338ca)" onclick="applyTemplate('presentation')">Präsentation 16:9</div>
         <div class="tmpl-card wide" style="background:linear-gradient(135deg,#0d1117,#161b22)" onclick="applyTemplate('a4')">A4 Dokument</div>
-      </div>
-      <div style="margin-top:12px">
-        <div class="tp-title">Leinwandgröße</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div>
-            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Breite (px)</div>
-            <input id="cw-input" class="ins-val" type="number" value="600" style="width:100%" onchange="resizeCanvas()">
-          </div>
-          <div>
-            <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Höhe (px)</div>
-            <input id="ch-input" class="ins-val" type="number" value="400" style="width:100%" onchange="resizeCanvas()">
-          </div>
-        </div>
       </div>
     </div>
 
@@ -254,6 +498,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <button class="shape-btn" onclick="addShape('diamond')" title="Raute">◆</button>
         <button class="shape-btn" onclick="addShape('heart')" title="Herz">♥</button>
         <button class="shape-btn" onclick="addShape('arrow')" title="Pfeil">→</button>
+        <button class="shape-btn" onclick="addShape('pill')" title="Glaggle Pille" style="font-size:12px">⬭</button>
       </div>
       <div class="tp-title" style="margin-top:14px">Linien</div>
       <div class="shape-grid">
@@ -269,36 +514,49 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
       <button class="text-preset" onclick="addText('h1')" style="font-size:20px;font-weight:800">Überschrift</button>
       <button class="text-preset" onclick="addText('h2')" style="font-size:15px;font-weight:700">Unterüberschrift</button>
       <button class="text-preset" onclick="addText('body')" style="font-size:12px">Fließtext</button>
-      <button class="text-preset" onclick="addText('quote')" style="font-size:12px;font-style:italic;border-left:3px solid var(--accent);padding-left:10px">„Zitat"</button>
+      <button class="text-preset" onclick="addText('quote')" style="font-size:12px;font-style:italic;border-left:3px solid var(--gg-accent);padding-left:10px">„Zitat"</button>
       <div class="tp-title" style="margin-top:12px">Schriftarten</div>
-      <button class="font-pill" style="font-family:'Bebas Neue';font-size:14px;letter-spacing:1px" onclick="applyFontFamily('Bebas Neue')">Bebas Neue</button>
-      <button class="font-pill" style="font-family:'Montserrat';font-weight:800" onclick="applyFontFamily('Montserrat')">Montserrat Black</button>
-      <button class="font-pill" style="font-family:'Playfair Display';font-style:italic" onclick="applyFontFamily('Playfair Display')">Playfair Display</button>
-      <button class="font-pill" style="font-family:'DM Mono'" onclick="applyFontFamily('DM Mono')">DM Mono</button>
-      <button class="font-pill" style="font-family:'Space Grotesk';font-weight:700" onclick="applyFontFamily('Space Grotesk')">Space Grotesk Bold</button>
+      <button class="font-pill" style="font-family:Georgia;font-size:14px" onclick="applyFontFamily('Georgia')">Georgia</button>
+      <button class="font-pill" style="font-family:'Arial Black';font-weight:800" onclick="applyFontFamily('Arial Black')">Arial Black</button>
+      <button class="font-pill" style="font-family:'Courier New'" onclick="applyFontFamily('Courier New')">Courier New</button>
+      <button class="font-pill" style="font-family:'Trebuchet MS'" onclick="applyFontFamily('Trebuchet MS')">Trebuchet MS</button>
+      <button class="font-pill" style="font-family:Verdana" onclick="applyFontFamily('Verdana')">Verdana</button>
     </div>
 
     <div id="tp-upload" class="tp-section hidden">
       <div class="tp-title">Bilder hochladen</div>
-      <label style="display:block;border:2px dashed rgba(109,93,252,0.3);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(109,93,252,0.04)" onmouseover="this.style.borderColor='rgba(109,93,252,0.6)'" onmouseout="this.style.borderColor='rgba(109,93,252,0.3)'">
-        <input type="file" style="display:none" accept="image/*" onchange="handleImageUpload(event)">
+      <label style="display:block;border:2px dashed rgba(112,196,247,0.4);border-radius:14px;padding:26px 16px;text-align:center;cursor:pointer;transition:.2s;background:rgba(112,196,247,0.05)">
+        <input type="file" class="hidden-input" accept="image/*" onchange="handleImageUpload(event)">
         <div style="font-size:28px;margin-bottom:8px">📁</div>
-        <div style="font-size:12px;font-weight:600">Klicken oder ziehen</div>
+        <div style="font-size:12px;font-weight:700">Klicken oder ziehen</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">JPG, PNG, SVG, WebP, GIF</div>
       </label>
       <div id="upload-gallery" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
     </div>
 
-    <div id="tp-bg" class="tp-section hidden">
-      <div class="tp-title">Hintergrundfarbe</div>
+    <div id="tp-canvas" class="tp-section hidden">
+      <div class="tp-title">Leinwandgröße</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Breite (px)</div>
+          <input id="cw-input" class="ins-val" type="number" value="600" style="width:100%" onchange="resizeCanvas()">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px">Höhe (px)</div>
+          <input id="ch-input" class="ins-val" type="number" value="400" style="width:100%" onchange="resizeCanvas()">
+        </div>
+      </div>
+      <div class="tp-hint" style="margin-top:14px">
+        Hintergrundfarbe/-verlauf des Studios folgt automatisch deinem Glaggle.ch-Theme. Die <b>Leinwand</b> selbst kannst du hier trotzdem frei einfärben — das betrifft nur dein Design, nicht das Studio.
+      </div>
+      <div class="tp-title">Leinwand-Hintergrund</div>
       <div class="color-row">
         <div class="color-swatch"><input type="color" id="bg-color" value="#ffffff" oninput="setArtboardBg(this.value)"></div>
         <input class="color-hex" id="bg-hex" value="#ffffff" onchange="setArtboardBg(this.value)">
       </div>
-      <div class="tp-title" style="margin-top:12px">Gradient-Presets</div>
       <div class="gradient-swatches">
         <div class="grad-swatch" style="background:linear-gradient(135deg,#f09433,#bc1888)" onclick="setBgGradient('linear-gradient(135deg,#f09433,#e6683c,#bc1888)')"></div>
-        <div class="grad-swatch" style="background:linear-gradient(135deg,#0ea5e9,#6366f1)" onclick="setBgGradient('linear-gradient(135deg,#0ea5e9,#6366f1)')"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,var(--gg-accent),var(--gg-accent-dark))" onclick="setBgGradient('linear-gradient(135deg,var(--gg-accent),var(--gg-accent-dark))')"></div>
         <div class="grad-swatch" style="background:linear-gradient(135deg,#000,#1e1b4b)" onclick="setBgGradient('linear-gradient(135deg,#000,#1e1b4b)')"></div>
         <div class="grad-swatch" style="background:linear-gradient(135deg,#f59e0b,#ef4444)" onclick="setBgGradient('linear-gradient(135deg,#f59e0b,#ef4444)')"></div>
         <div class="grad-swatch" style="background:linear-gradient(135deg,#10b981,#06b6d4)" onclick="setBgGradient('linear-gradient(135deg,#10b981,#06b6d4)')"></div>
@@ -306,11 +564,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <div class="grad-swatch" style="background:linear-gradient(135deg,#1e293b,#334155)" onclick="setBgGradient('linear-gradient(135deg,#1e293b,#334155)')"></div>
         <div class="grad-swatch" style="background:linear-gradient(135deg,#7c3aed,#db2777)" onclick="setBgGradient('linear-gradient(135deg,#7c3aed,#db2777)')"></div>
       </div>
-      <div class="tp-title" style="margin-top:12px">Transparenz</div>
-      <button onclick="setArtboardBg('transparent')" style="width:100%;padding:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:600;background-image:repeating-conic-gradient(#888 0% 25%,#fff 0% 50%);background-size:10px 10px;color:#000;margin-bottom:6px">Transparent</button>
-      <div class="tp-title">Hintergrundbild</div>
-      <label style="display:block;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;padding:12px;text-align:center;cursor:pointer;font-size:11px;transition:border-color 0.2s" onmouseover="this.style.borderColor='rgba(109,93,252,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'">
-        <input type="file" style="display:none" accept="image/*" onchange="setBgImage(event)">
+      <button onclick="setArtboardBg('transparent')" style="width:100%;padding:9px;margin-top:8px;background:rgba(0,0,0,0.04);border:1px solid var(--panel-border);border-radius:10px;font-size:11px;font-weight:700;background-image:repeating-conic-gradient(#888 0% 25%,#fff 0% 50%);background-size:10px 10px;color:#000">Transparent</button>
+      <div class="tp-title" style="margin-top:14px">Hintergrundbild</div>
+      <label style="display:block;border:1px dashed var(--panel-border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;font-size:11px">
+        <input type="file" class="hidden-input" accept="image/*" onchange="setBgImage(event)">
         📷 Bild als Hintergrund
       </label>
     </div>
@@ -323,11 +580,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
 
   <!-- INSPECTOR -->
   <div class="inspector">
-    <!-- BG inspector -->
     <div id="ins-bg">
       <div class="ins-title">Leinwand</div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Klicke auf ein Element um es zu bearbeiten, oder wähle links eine Hintergrundfarbe.</div>
-      <div class="ins-title" style="margin-top:12px">Leinwand-Größe</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Klicke auf ein Element, um es zu bearbeiten, oder öffne links den Leinwand-Tab.</div>
+      <div class="ins-title" style="margin-top:12px">Größe</div>
       <div class="ins-row">
         <span class="ins-label">Breite</span>
         <input class="ins-val" type="number" id="cw2" value="600" onchange="document.getElementById('cw-input').value=this.value;resizeCanvas()">
@@ -336,19 +592,12 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <span class="ins-label">Höhe</span>
         <input class="ins-val" type="number" id="ch2" value="400" onchange="document.getElementById('ch-input').value=this.value;resizeCanvas()">
       </div>
-      <div class="ins-title" style="margin-top:16px">Hintergrundfarbe</div>
-      <div class="color-row">
-        <div class="color-swatch"><input type="color" value="#ffffff" oninput="setArtboardBg(this.value)"></div>
-        <input class="color-hex" value="#ffffff" id="bg-hex2" onchange="setArtboardBg(this.value)">
-      </div>
     </div>
 
-    <!-- Element inspector -->
     <div id="ins-el" class="hidden">
       <div class="ins-title" id="ins-el-type">Element</div>
 
-      <!-- Position & Size -->
-      <div class="ins-title">Position & Größe</div>
+      <div class="ins-title">Position &amp; Größe</div>
       <div class="ins-row">
         <span class="ins-label">X</span>
         <input class="ins-val" type="number" id="el-x" onchange="setElProp('left',this.value+'px')">
@@ -367,7 +616,6 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <span style="font-size:10px;color:var(--muted);margin-left:2px">°</span>
       </div>
 
-      <!-- Fill -->
       <div class="ins-title" style="margin-top:10px">Füllung</div>
       <div class="color-row">
         <div class="color-swatch"><input type="color" id="el-fill" oninput="setFill(this.value)"></div>
@@ -378,7 +626,6 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <input type="range" id="el-opacity" min="0" max="100" value="100" oninput="setOpacity(this.value)">
       </div>
 
-      <!-- Border -->
       <div class="ins-title">Rahmen</div>
       <div class="ins-row">
         <span class="ins-label">Farbe</span>
@@ -396,13 +643,11 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         </select>
       </div>
 
-      <!-- Corner Radius -->
       <div class="ins-slider-row">
         <div class="ins-slider-label"><span>Eckenradius</span><span id="radius-val">0px</span></div>
         <input type="range" id="el-radius" min="0" max="200" value="0" oninput="setRadius(this.value)">
       </div>
 
-      <!-- Shadow -->
       <div class="ins-title">Schatten</div>
       <div class="ins-row">
         <span class="ins-label">X / Y</span>
@@ -416,21 +661,18 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         <div class="color-swatch"><input type="color" id="shadow-color" value="#000000" oninput="setShadow()"></div>
       </div>
 
-      <!-- Text Options (shown only for text elements) -->
       <div id="ins-text-section" class="hidden">
         <div class="ins-title">Typografie</div>
         <div class="ins-row" style="margin-bottom:6px">
           <span class="ins-label">Schrift</span>
           <select class="ins-select" id="el-font" onchange="setTextProp('fontFamily',this.value)">
-            <option>Inter</option>
-            <option>Bebas Neue</option>
-            <option>Montserrat</option>
-            <option>Playfair Display</option>
-            <option>DM Mono</option>
-            <option>Space Grotesk</option>
             <option>Arial</option>
             <option>Georgia</option>
+            <option>Arial Black</option>
             <option>Courier New</option>
+            <option>Trebuchet MS</option>
+            <option>Verdana</option>
+            <option>Times New Roman</option>
           </select>
         </div>
         <div class="ins-row">
@@ -463,8 +705,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="ins-title" style="margin-top:10px">Ebene & Aktionen</div>
+      <div class="ins-title" style="margin-top:10px">Ebene &amp; Aktionen</div>
       <div class="ins-action-grid">
         <button class="ins-action" onclick="moveLayer(1)">⬆ Vorder.</button>
         <button class="ins-action" onclick="moveLayer(-1)">⬇ Hinter.</button>
@@ -486,7 +727,134 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;b
 <div id="toast"></div>
 
 <script>
-// ====== STATE ======
+/* ================================================================
+   THEME-ÜBERNAHME VON GLAGGLE.CH
+   Liest exakt dieselben localStorage-Keys wie die Hauptseite und
+   färbt Navbar / Sidebar / Suchfeld / Akzente entsprechend ein.
+   Es gibt bewusst KEINE Theme-Auswahl im Studio.
+================================================================ */
+const STUDIO_THEMES = {
+  hell:    {navbar:'#ffffff',navText:'#000000',search:'rgba(255,255,255,0.9)',searchBorder:'#ffffff',overlay:'rgba(0,0,0,0.4)',isDark:false,accent:'#70C4F7',accentDark:'#2E94D1',sidebar:'#ffffff',sidebarText:'#000000',panel:'#f4f8fc',panelBorder:'rgba(0,0,0,0.08)',shell:'#e9eef3',cardBg:'rgba(255,255,255,0.6)',cardText:'#111111'},
+  dunkel:  {navbar:'#1a1a1a',navText:'#ffffff',search:'rgba(40,40,40,0.9)',searchBorder:'#555',overlay:'rgba(0,0,0,0.65)',isDark:true,accent:'#70C4F7',accentDark:'#2E94D1',sidebar:'#1a1a1a',sidebarText:'#ffffff',panel:'#161616',panelBorder:'rgba(255,255,255,0.1)',shell:'#0e0e0e',cardBg:'rgba(255,255,255,0.06)',cardText:'#f1f1f1'},
+  blau:    {navbar:'#1a3a5c',navText:'#ffffff',search:'rgba(200,230,255,0.92)',searchBorder:'#2980b9',overlay:'rgba(0,30,70,0.5)',isDark:true,accent:'#2980b9',accentDark:'#1c5d85',sidebar:'#1a3a5c',sidebarText:'#ffffff',panel:'#132a42',panelBorder:'rgba(255,255,255,0.12)',shell:'#0c1f33',cardBg:'rgba(255,255,255,0.07)',cardText:'#f0f6fb'},
+  grün:    {navbar:'#1a3a2a',navText:'#ffffff',search:'rgba(200,255,220,0.92)',searchBorder:'#27ae60',overlay:'rgba(0,50,20,0.5)',isDark:true,accent:'#27ae60',accentDark:'#1c8449',sidebar:'#1a3a2a',sidebarText:'#ffffff',panel:'#123322',panelBorder:'rgba(255,255,255,0.12)',shell:'#0b2418',cardBg:'rgba(255,255,255,0.07)',cardText:'#eefdf3'},
+  rot:     {navbar:'#3a1a1a',navText:'#ffffff',search:'rgba(255,210,210,0.92)',searchBorder:'#e74c3c',overlay:'rgba(60,0,0,0.5)',isDark:true,accent:'#e74c3c',accentDark:'#b93327',sidebar:'#3a1a1a',sidebarText:'#ffffff',panel:'#331414',panelBorder:'rgba(255,255,255,0.12)',shell:'#240d0d',cardBg:'rgba(255,255,255,0.07)',cardText:'#fdeeee'},
+  gelb:    {navbar:'#3a3000',navText:'#ffffff',search:'rgba(255,248,200,0.95)',searchBorder:'#f1c40f',overlay:'rgba(40,30,0,0.45)',isDark:true,accent:'#f1c40f',accentDark:'#c39d0c',sidebar:'#3a3000',sidebarText:'#ffffff',panel:'#332900',panelBorder:'rgba(255,255,255,0.12)',shell:'#241d00',cardBg:'rgba(255,255,255,0.07)',cardText:'#fffbea'},
+  violett: {navbar:'#2a1040',navText:'#ffffff',search:'rgba(230,210,255,0.92)',searchBorder:'#8e44ad',overlay:'rgba(30,0,60,0.5)',isDark:true,accent:'#8e44ad',accentDark:'#6c3483',sidebar:'#2a1040',sidebarText:'#ffffff',panel:'#230d38',panelBorder:'rgba(255,255,255,0.12)',shell:'#180825',cardBg:'rgba(255,255,255,0.07)',cardText:'#f6ecfb'}
+};
+
+function applyStudioTheme(t) {
+  const r = document.documentElement.style;
+  r.setProperty('--gg-navbar', t.navbar);
+  r.setProperty('--gg-navtext', t.navText);
+  r.setProperty('--gg-sidebar', t.sidebar);
+  r.setProperty('--gg-sidebartext', t.sidebarText);
+  r.setProperty('--gg-search-bg', t.search);
+  r.setProperty('--gg-search-border', t.searchBorder);
+  r.setProperty('--gg-overlay', t.overlay);
+  r.setProperty('--gg-accent', t.accent);
+  r.setProperty('--gg-accent-dark', t.accentDark || t.accent);
+  r.setProperty('--gg-panel-bg', t.panel || (t.isDark ? '#161616' : '#f4f8fc'));
+  r.setProperty('--gg-panel-border', t.panelBorder || (t.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'));
+  r.setProperty('--gg-canvas-shell', t.shell || (t.isDark ? '#0e0e0e' : '#e9eef3'));
+  r.setProperty('--gg-card-bg', t.cardBg || 'rgba(255,255,255,0.2)');
+  r.setProperty('--gg-card-text', t.cardText || '#111111');
+  r.setProperty('--text', t.isDark ? '#f1f1f1' : '#1a1a1a');
+}
+
+function loadThemeFromGlaggle() {
+  // 1. Vollständiges benutzerdefiniertes Theme-Objekt (falls vorhanden)
+  const savedData = localStorage.getItem('glaggle-theme');
+  if (savedData) {
+    try { applyStudioTheme(JSON.parse(savedData)); return; } catch(e) {}
+  }
+  // 2. Theme-Name (hell/dunkel/blau/...)
+  const savedName = localStorage.getItem('glaggle-theme-name');
+  if (savedName && STUDIO_THEMES[savedName]) {
+    applyStudioTheme(STUDIO_THEMES[savedName]);
+    return;
+  }
+  // 3. Fallback: helles Standard-Theme
+  applyStudioTheme(STUDIO_THEMES.hell);
+}
+loadThemeFromGlaggle();
+
+// Theme live aktualisieren, falls in einem anderen Tab (glaggle.ch) geändert
+window.addEventListener('storage', (e) => {
+  if (['glaggle-theme','glaggle-theme-name'].includes(e.key)) loadThemeFromGlaggle();
+  if (e.key === 'glaggle-smart-mouse') restoreSmartMouseFromStorage();
+});
+
+/* ================================================================
+   SMART MOUSE — integriert wie auf glaggle.ch, Zustand geteilt
+================================================================ */
+let smartMouseActive = false;
+const smartCursor = document.getElementById('glaggle-smart-cursor');
+const SMART_HOVER_SELECTORS = [
+  'a','button','input[type="submit"]','.shape-btn','.tab-btn','.tmpl-card','.font-pill',
+  '.text-preset','.ins-action','.fmt-btn','.color-swatch','.nav-btn-pill','.nav-btn-ghost',
+  '.sidebar-link','.hamburger','.export-menu button','[onclick]','summary','.close-btn'
+].join(', ');
+
+function enableSmartMouse() {
+  smartMouseActive = true;
+  document.body.classList.add('smart-mouse-active');
+  smartCursor.style.display = 'block';
+  smartCursor.style.background = getComputedStyle(document.documentElement).getPropertyValue('--gg-accent') || '#000';
+  localStorage.setItem('glaggle-smart-mouse', 'true');
+  updateSmartMouseToggleUI();
+}
+function disableSmartMouse() {
+  smartMouseActive = false;
+  document.body.classList.remove('smart-mouse-active');
+  smartCursor.style.display = 'none';
+  localStorage.setItem('glaggle-smart-mouse', 'false');
+  updateSmartMouseToggleUI();
+}
+function toggleSmartMouseFromStudio() {
+  if (smartMouseActive) disableSmartMouse(); else enableSmartMouse();
+}
+function updateSmartMouseToggleUI() {
+  const btn = document.getElementById('smart-mouse-toggle');
+  if (!btn) return;
+  if (smartMouseActive) { btn.classList.add('active'); btn.textContent = '✓ Glaggle Smart Mouse aktiv'; }
+  else { btn.classList.remove('active'); btn.textContent = 'Glaggle Smart Mouse aktivieren'; }
+}
+function restoreSmartMouseFromStorage() {
+  if (localStorage.getItem('glaggle-smart-mouse') === 'true') enableSmartMouse();
+  else disableSmartMouse();
+}
+restoreSmartMouseFromStorage();
+
+document.addEventListener('mousemove', (e) => {
+  if (!smartMouseActive) return;
+  smartCursor.style.left = e.clientX + 'px';
+  smartCursor.style.top = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => { if (smartMouseActive) smartCursor.classList.add('cursor-click'); });
+document.addEventListener('mouseup', () => { if (smartMouseActive) smartCursor.classList.remove('cursor-click'); });
+document.addEventListener('mouseover', (e) => {
+  if (!smartMouseActive) return;
+  const t = e.target.closest(SMART_HOVER_SELECTORS);
+  if (t) smartCursor.classList.add('cursor-hover');
+});
+document.addEventListener('mouseout', (e) => {
+  if (!smartMouseActive) return;
+  const t = e.target.closest(SMART_HOVER_SELECTORS);
+  if (t) smartCursor.classList.remove('cursor-hover');
+});
+
+/* ================================================================
+   SIDEBAR TOGGLE
+================================================================ */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('active');
+  document.getElementById('overlay').classList.toggle('active');
+}
+
+/* ================================================================
+   STUDIO STATE
+================================================================ */
 let selectedEl = null;
 let zoomLevel = 1;
 let elCounter = 0;
@@ -496,7 +864,7 @@ let isDragging = false, isResizing = false, isRotating = false;
 let dragData = {};
 const artboard = document.getElementById('artboard');
 
-// ====== HISTORY ======
+/* ===== HISTORY ===== */
 function saveState() {
   const s = artboard.innerHTML;
   history = history.slice(0, histIdx + 1);
@@ -529,24 +897,21 @@ function updateUndoRedo() {
   document.getElementById('btn-undo').disabled = histIdx <= 0;
   document.getElementById('btn-redo').disabled = histIdx >= history.length - 1;
 }
-function reattachEvents() {
-  artboard.querySelectorAll('.el').forEach(el => attachElEvents(el));
-}
+function reattachEvents() { artboard.querySelectorAll('.el').forEach(el => attachElEvents(el)); }
 
-// ====== ZOOM ======
+/* ===== ZOOM ===== */
 function setZoom(z) {
   zoomLevel = Math.min(4, Math.max(0.1, z));
   artboard.style.transform = `scale(${zoomLevel})`;
   document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
 }
 
-// ====== CANVAS ======
+/* ===== CANVAS ===== */
 function resizeCanvas() {
   const w = parseInt(document.getElementById('cw-input').value) || 600;
   const h = parseInt(document.getElementById('ch-input').value) || 400;
   artboard.style.width = w + 'px';
   artboard.style.height = h + 'px';
-  document.getElementById('canvas-size-label').textContent = w + ' × ' + h;
   document.getElementById('cw2').value = w;
   document.getElementById('ch2').value = h;
   saveState();
@@ -559,26 +924,25 @@ function clearCanvas() {
   selectedEl = null;
   showInspector(false);
   saveState();
+  showToast('🗋 Leinwand geleert');
 }
 
-// ====== TABS ======
+/* ===== TABS ===== */
 function switchTab(t) {
-  ['templates','shapes','text','upload','bg'].forEach(n => {
+  ['templates','shapes','text','upload','canvas'].forEach(n => {
     document.getElementById('tabn-'+n).classList.toggle('active', n===t);
     document.getElementById('tp-'+n).classList.toggle('hidden', n!==t);
   });
 }
 
-// ====== BACKGROUND ======
+/* ===== BACKGROUND ===== */
 function setArtboardBg(c) {
   artboard.style.background = c;
   artboard.style.backgroundImage = 'none';
-  document.getElementById('bg-hex2').value = c;
-  try { document.getElementById('bg-color').value = c; } catch(e){}
+  document.getElementById('bg-hex').value = c;
+  saveState();
 }
-function setBgGradient(g) {
-  artboard.style.background = g;
-}
+function setBgGradient(g) { artboard.style.background = g; saveState(); }
 function setBgImage(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -592,7 +956,7 @@ function setBgImage(e) {
   reader.readAsDataURL(file);
 }
 
-// ====== CREATE ELEMENT ======
+/* ===== CREATE ELEMENT ===== */
 function createEl(opts = {}) {
   const el = document.createElement('div');
   el.className = 'el';
@@ -604,14 +968,12 @@ function createEl(opts = {}) {
   el.style.zIndex = 10 + elCounter;
   el.dataset.rotation = '0';
 
-  // Resize handles
   ['nw','n','ne','e','se','s','sw','w'].forEach(dir => {
     const h = document.createElement('div');
     h.className = `resize-handle rh-${dir}`;
     h.dataset.dir = dir;
     el.appendChild(h);
   });
-  // Rotate handle
   const rot = document.createElement('div');
   rot.className = 'rotate-handle';
   el.appendChild(rot);
@@ -632,7 +994,7 @@ function attachElEvents(el) {
 
 function addShape(type) {
   const el = createEl({w:150,h:150});
-  el.style.backgroundColor = '#6d5dfc';
+  el.style.backgroundColor = 'var(--gg-accent)';
   el.dataset.type = 'shape';
 
   if (type === 'circle') el.style.borderRadius = '50%';
@@ -642,6 +1004,7 @@ function addShape(type) {
   else if (type === 'diamond') el.style.clipPath = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)';
   else if (type === 'heart') el.style.clipPath = 'path("M75,25 C75,12.5 62.5,0 50,0 C37.5,0 25,12.5 25,25 C25,12.5 12.5,0 0,0 C-12.5,0 -25,12.5 -25,25 C-25,62.5 50,100 50,100 C50,100 125,62.5 125,25 C125,12.5 112.5,0 100,0 C87.5,0 75,12.5 75,25 Z")';
   else if (type === 'arrow') { el.style.clipPath = 'polygon(0% 35%,60% 35%,60% 15%,100% 50%,60% 85%,60% 65%,0% 65%)'; el.style.width='180px'; el.style.height='100px'; }
+  else if (type === 'pill') { el.style.borderRadius = '999px'; el.style.width = '200px'; el.style.height = '80px'; el.style.background = 'linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853)'; }
   else if (type.startsWith('line')) {
     el.style.backgroundColor = '#000';
     if (type === 'line-h') { el.style.height = '4px'; el.style.width = '200px'; el.style.borderRadius = '2px'; }
@@ -670,7 +1033,7 @@ function addText(type) {
   if (c.border) el.style.borderLeft = c.border;
   if (c.pl) el.style.paddingLeft = c.pl;
   el.style.color = '#000';
-  el.style.fontFamily = 'Inter';
+  el.style.fontFamily = 'Arial';
   el.style.display = 'flex';
   el.style.alignItems = 'center';
   el.classList.add('el-text');
@@ -705,10 +1068,9 @@ function handleImageUpload(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     addImage(ev.target.result);
-    // Thumbnail in gallery
     const img = document.createElement('img');
     img.src = ev.target.result;
-    img.style.cssText = 'width:100%;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border)';
+    img.style.cssText = 'width:100%;height:60px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--panel-border)';
     img.onclick = () => addImage(ev.target.result);
     document.getElementById('upload-gallery').appendChild(img);
   };
@@ -725,7 +1087,7 @@ function onDrop(e) {
   }
 }
 
-// ====== SELECTION ======
+/* ===== SELECTION ===== */
 function selectEl(el) {
   if (selectedEl) selectedEl.classList.remove('selected');
   selectedEl = el;
@@ -733,25 +1095,19 @@ function selectEl(el) {
   showInspector(true);
   updateInspector();
 }
-
 function deselectAll() {
   if (selectedEl) selectedEl.classList.remove('selected');
   selectedEl = null;
   showInspector(false);
 }
-
 function showInspector(show) {
   document.getElementById('ins-bg').classList.toggle('hidden', show);
   document.getElementById('ins-el').classList.toggle('hidden', !show);
 }
-
-function onArtboardClick(e) {
-  if (e.target === artboard) deselectAll();
-}
+function onArtboardClick(e) { if (e.target === artboard) deselectAll(); }
 
 function updateInspector() {
   if (!selectedEl) return;
-  const cs = window.getComputedStyle(selectedEl);
   document.getElementById('el-x').value = parseInt(selectedEl.style.left) || 0;
   document.getElementById('el-y').value = parseInt(selectedEl.style.top) || 0;
   document.getElementById('el-w').value = parseInt(selectedEl.style.width) || 0;
@@ -781,7 +1137,7 @@ function updateInspector() {
   document.getElementById('ins-el-type').textContent = isText ? 'Text-Element' : (selectedEl.dataset.type === 'image' ? 'Bild-Element' : 'Form-Element');
 
   if (isText) {
-    document.getElementById('el-font').value = selectedEl.style.fontFamily?.replace(/['"]/g,'') || 'Inter';
+    document.getElementById('el-font').value = selectedEl.style.fontFamily?.replace(/['"]/g,'') || 'Arial';
     document.getElementById('el-fsize').value = parseInt(selectedEl.style.fontSize) || 16;
     document.getElementById('el-lh').value = selectedEl.style.lineHeight || 1.4;
     const tc = selectedEl.style.color || '#000000';
@@ -798,6 +1154,11 @@ function updateInspector() {
 function toHex(color) {
   if (!color || color === 'transparent') return '#000000';
   if (color.startsWith('#')) return color.substring(0,7);
+  if (color.startsWith('var(')) {
+    const varName = color.match(/--[\w-]+/);
+    if (varName) color = getComputedStyle(document.documentElement).getPropertyValue(varName[0]).trim();
+    if (color.startsWith('#')) return color.substring(0,7);
+  }
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 1;
   const ctx = canvas.getContext('2d');
@@ -807,17 +1168,14 @@ function toHex(color) {
   return '#' + [d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
 }
 
-// ====== DRAG ======
+/* ===== DRAG ===== */
 function onElMouseDown(e, el) {
   if (e.target.contentEditable === 'true') return;
   if (e.target.classList.contains('resize-handle') || e.target.classList.contains('rotate-handle')) return;
   e.preventDefault();
   selectEl(el);
   isDragging = true;
-  dragData = {
-    startX: e.clientX, startY: e.clientY,
-    startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0
-  };
+  dragData = { startX: e.clientX, startY: e.clientY, startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0 };
   document.onmousemove = onDragMove;
   document.onmouseup = stopInteract;
 }
@@ -830,15 +1188,14 @@ function onDragMove(e) {
   updateInspector();
 }
 
-// ====== RESIZE ======
+/* ===== RESIZE ===== */
 function startResize(e, el, dir) {
   e.preventDefault();
   isResizing = true;
   dragData = {
     startX: e.clientX, startY: e.clientY,
     startW: parseInt(el.style.width)||100, startH: parseInt(el.style.height)||100,
-    startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0,
-    dir
+    startL: parseInt(el.style.left)||0, startT: parseInt(el.style.top)||0, dir
   };
   document.onmousemove = onResizeMove;
   document.onmouseup = stopInteract;
@@ -858,7 +1215,7 @@ function onResizeMove(e) {
   updateInspector();
 }
 
-// ====== ROTATE ======
+/* ===== ROTATE ===== */
 function startRotate(e, el) {
   e.preventDefault();
   isRotating = true;
@@ -875,19 +1232,14 @@ function onRotateMove(e) {
   dragData.el.style.transform = `rotate(${rounded}deg)`;
   document.getElementById('el-rot').value = rounded;
 }
-
 function stopInteract() {
   if (isDragging || isResizing || isRotating) saveState();
   isDragging = false; isResizing = false; isRotating = false;
   document.onmousemove = null; document.onmouseup = null;
 }
 
-// ====== INSPECTOR ACTIONS ======
-function setElProp(prop, val) {
-  if (!selectedEl) return;
-  selectedEl.style[prop] = val;
-  saveState();
-}
+/* ===== INSPECTOR ACTIONS ===== */
+function setElProp(prop, val) { if (!selectedEl) return; selectedEl.style[prop] = val; saveState(); }
 function setFill(c) {
   if (!selectedEl) return;
   selectedEl.style.backgroundColor = c;
@@ -930,11 +1282,7 @@ function setRotation(deg) {
   selectedEl.style.transform = `rotate(${deg}deg)`;
   saveState();
 }
-function setTextProp(prop, val) {
-  if (!selectedEl) return;
-  selectedEl.style[prop] = val;
-  saveState();
-}
+function setTextProp(prop, val) { if (!selectedEl) return; selectedEl.style[prop] = val; saveState(); }
 function toggleFmt(fmt) {
   if (!selectedEl) return;
   if (fmt === 'bold') {
@@ -1006,7 +1354,7 @@ function deleteEl() {
   saveState();
 }
 
-// ====== TEMPLATES ======
+/* ===== TEMPLATES ===== */
 function applyTemplate(type) {
   if (!confirm('Alle Elemente löschen und Vorlage anwenden?')) return;
   artboard.innerHTML = '';
@@ -1015,46 +1363,42 @@ function applyTemplate(type) {
 
   const sizes = {
     insta: [1080,1080], youtube: [1280,720], twitter: [1200,675],
-    minimal: [800,600], presentation: [800,450], a4: [595,842]
+    minimal: [800,600], glaggle: [1080,1080], presentation: [800,450], a4: [595,842]
   };
   const [w,h] = sizes[type] || [600,400];
-
   const scale = Math.min(600/w, 400/h, 1);
   artboard.style.width = Math.round(w*scale)+'px';
   artboard.style.height = Math.round(h*scale)+'px';
   document.getElementById('cw-input').value = Math.round(w*scale);
   document.getElementById('ch-input').value = Math.round(h*scale);
-  document.getElementById('canvas-size-label').textContent = w + ' × ' + h;
+  document.getElementById('cw2').value = Math.round(w*scale);
+  document.getElementById('ch2').value = Math.round(h*scale);
+
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--gg-accent').trim() || '#70C4F7';
+  const accentDark = getComputedStyle(document.documentElement).getPropertyValue('--gg-accent-dark').trim() || '#2E94D1';
 
   const bgs = {
     insta: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)',
-    youtube: '#0f0f0f', twitter: '#15202b', minimal: '#fafafa', presentation: '#1e293b', a4: '#fff'
+    youtube: '#0f0f0f', twitter: '#15202b', minimal: '#fafafa',
+    glaggle: `linear-gradient(135deg, ${accent}, ${accentDark})`,
+    presentation: '#1e293b', a4: '#fff'
   };
   artboard.style.background = bgs[type] || '#fff';
   artboard.style.backgroundImage = 'none';
-
-  document.getElementById('cw2').value = Math.round(w*scale);
-  document.getElementById('ch2').value = Math.round(h*scale);
   saveState();
+  showToast('🎨 Vorlage angewendet');
 }
 
-// ====== EXPORT ======
-function showLoading(msg) {
-  document.getElementById('loading-msg').textContent = msg;
-  document.getElementById('loading').classList.add('show');
-}
-function hideLoading() {
-  document.getElementById('loading').classList.remove('show');
-}
+/* ===== EXPORT ===== */
+function showLoading(msg) { document.getElementById('loading-msg').textContent = msg; document.getElementById('loading').classList.add('show'); }
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
-
 function prepareForExport() {
-  // Temp deselect
   if (selectedEl) selectedEl.classList.remove('selected');
   artboard.querySelectorAll('.resize-handle,.rotate-handle').forEach(h => h.style.display='none');
 }
@@ -1068,7 +1412,6 @@ function restoreAfterExport() {
 async function exportAs(format) {
   showLoading('Bereite Export vor...');
   prepareForExport();
-  // Short delay for DOM update
   await new Promise(r => setTimeout(r, 80));
 
   try {
@@ -1077,8 +1420,7 @@ async function exportAs(format) {
       const canvas = await html2canvas(artboard, {
         scale: 2, useCORS: true, allowTaint: true,
         backgroundColor: format === 'jpg' ? '#ffffff' : null,
-        width: artboard.offsetWidth, height: artboard.offsetHeight,
-        logging: false
+        width: artboard.offsetWidth, height: artboard.offsetHeight, logging: false
       });
       const link = document.createElement('a');
       link.download = `glaggle-design.${format}`;
@@ -1089,10 +1431,8 @@ async function exportAs(format) {
     } else if (format === 'pdf') {
       showLoading('Erstelle PDF...');
       const canvas = await html2canvas(artboard, {
-        scale: 2, useCORS: true, allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: artboard.offsetWidth, height: artboard.offsetHeight,
-        logging: false
+        scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
+        width: artboard.offsetWidth, height: artboard.offsetHeight, logging: false
       });
       const { jsPDF } = window.jspdf;
       const aw = artboard.offsetWidth, ah = artboard.offsetHeight;
@@ -1102,18 +1442,18 @@ async function exportAs(format) {
       showToast('✓ PDF gespeichert!');
 
     } else if (format === 'svg') {
-      // Simple SVG snapshot from artboard dimensions + background color
       const w = artboard.offsetWidth, h = artboard.offsetHeight;
-      const bg = artboard.style.background || '#fff';
-      let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="${bg.startsWith('linear') ? '#cccccc' : bg}"/>`;
-      svgContent += `<text x="10" y="20" font-family="sans-serif" font-size="12" fill="#666">SVG export: Use PNG for full fidelity</text>`;
-      svgContent += `</svg>`;
+      const canvas = await html2canvas(artboard, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false });
+      const dataUrl = canvas.toDataURL('image/png');
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+<image href="${dataUrl}" x="0" y="0" width="${w}" height="${h}" />
+</svg>`;
       const blob = new Blob([svgContent], {type:'image/svg+xml'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url; link.download = 'glaggle-design.svg'; link.click();
       URL.revokeObjectURL(url);
-      showToast('✓ SVG gespeichert! (Für beste Qualität PNG wählen)');
+      showToast('✓ SVG gespeichert!');
     }
   } catch (err) {
     showToast('⚠ Export fehlgeschlagen: ' + err.message);
@@ -1124,7 +1464,77 @@ async function exportAs(format) {
   hideLoading();
 }
 
-// ====== KEYBOARD SHORTCUTS ======
+/* ================================================================
+   .GD PROJEKTDATEI — Speichern & Wiederladen
+   Enthält Leinwandgröße/-hintergrund + komplettes Element-HTML,
+   damit man später exakt weiterarbeiten kann.
+================================================================ */
+function saveProjectFile() {
+  prepareForExport();
+  const project = {
+    format: 'glaggle-design-studio',
+    version: 1,
+    savedAt: new Date().toISOString(),
+    canvas: {
+      width: artboard.style.width,
+      height: artboard.style.height,
+      background: artboard.style.background,
+      backgroundImage: artboard.style.backgroundImage
+    },
+    elCounter: elCounter,
+    html: artboard.innerHTML
+  };
+  restoreAfterExport();
+
+  const blob = new Blob([JSON.stringify(project, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'projekt.gd';
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 Projekt gespeichert (.gd)');
+}
+
+function loadProjectFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const project = JSON.parse(e.target.result);
+      if (project.format !== 'glaggle-design-studio') {
+        showToast('⚠ Keine gültige .gd-Datei');
+        return;
+      }
+      artboard.style.width = project.canvas.width || '600px';
+      artboard.style.height = project.canvas.height || '400px';
+      artboard.style.background = project.canvas.background || '#ffffff';
+      artboard.style.backgroundImage = project.canvas.backgroundImage || 'none';
+      artboard.innerHTML = project.html || '';
+      elCounter = project.elCounter || 0;
+
+      document.getElementById('cw-input').value = parseInt(artboard.style.width) || 600;
+      document.getElementById('ch-input').value = parseInt(artboard.style.height) || 400;
+      document.getElementById('cw2').value = parseInt(artboard.style.width) || 600;
+      document.getElementById('ch2').value = parseInt(artboard.style.height) || 400;
+
+      selectedEl = null;
+      showInspector(false);
+      reattachEvents();
+      history = []; histIdx = -1;
+      saveState();
+      showToast('📂 Projekt geladen');
+    } catch(err) {
+      console.error(err);
+      showToast('⚠ Fehler beim Laden der Datei');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ===== KEYBOARD SHORTCUTS ===== */
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   if (tag === 'INPUT' || document.activeElement.contentEditable === 'true') return;
@@ -1132,10 +1542,10 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); undo(); }
   if ((e.ctrlKey||e.metaKey) && (e.key==='y'||(e.shiftKey&&e.key==='z'))) { e.preventDefault(); redo(); }
   if ((e.ctrlKey||e.metaKey) && e.key==='d') { e.preventDefault(); duplicateEl(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); saveProjectFile(); }
   if (e.key==='Delete'||e.key==='Backspace') deleteEl();
   if (e.key==='Escape') deselectAll();
 
-  // Arrow keys nudge
   if (selectedEl && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
     e.preventDefault();
     const step = e.shiftKey ? 10 : 1;
@@ -1147,7 +1557,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Double-click to edit text
+/* Doppelklick zum Bearbeiten von Text */
 artboard.addEventListener('dblclick', e => {
   const el = e.target.closest('.el[data-type="text"]');
   if (el) {
@@ -1156,7 +1566,7 @@ artboard.addEventListener('dblclick', e => {
   }
 });
 
-// ====== INIT ======
+/* ===== INIT ===== */
 saveState();
 updateUndoRedo();
 </script>
