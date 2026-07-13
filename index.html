@@ -1467,6 +1467,13 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     width: 20px;
     height: 20px;
 }
+
+/* Versteckt die Elemente standardmäßig auf Mobilgeräten */
+@media (max-width: 768px) {
+    .pc-only {
+        display: none !important;
+    }
+}
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
 </style>
 </head>
@@ -1536,14 +1543,14 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
             <a href="https://glaggle.ch/avideo" class="sidebar-link">AVideo</a>
         </details>
 
-        <details class="sidebar-category">
-            <summary>Glaggle Tools</summary>
-            <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
-            <a href="https://glaggle.ch/designstudio" class="sidebar-link">Glaggle Design Studio</a>
-            <a href="https://glaggle.ch/codemaker" class="sidebar-link">Glaggle Code Maker</a>
-            <a href="https://glaggle.ch/avideostudio" class="sidebar-link">Glaggle AVideo Studio</a>
-            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
-        </details>
+<details class="sidebar-category">
+    <summary>Glaggle Tools</summary>
+    <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
+    <a href="https://glaggle.ch/designstudio" class="sidebar-link pc-only">Glaggle Design Studio</a>
+    <a href="https://glaggle.ch/codemaker" class="sidebar-link pc-only">Glaggle Code Maker</a>
+    <a href="https://glaggle.ch/avideostudio" class="sidebar-link pc-only">Glaggle AVideo Studio</a>
+    <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
+</details>
 
         <details class="sidebar-category">
             <summary>Gaming</summary>
