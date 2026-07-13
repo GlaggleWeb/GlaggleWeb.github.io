@@ -286,6 +286,13 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
 .game-card {
     transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* Versteckt PC-Elemente auf Smartphones (Bildschirme schmaler als 768px) */
+@media (max-width: 768px) {
+    .pc-only {
+        display: none !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -323,7 +330,7 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
         <p style="color: var(--desc-color); opacity: 0.8;">Erlebe die nächste Dimension der Glaggle Games mit Tiefe und neuen Mechaniken. Achtung Glaggle Jump 3D gibt keine Coins!</p>
     </div>
     <div class="game-grid">
-        <a href="/glaggleresort" class="game-card" style="border: 2px solid var(--accent);">
+        <a href="/glaggleresort" class="game-card pc-only" style="border: 2px solid var(--accent);">
             <h2 class="game-title"><span>🐠</span> Glaggle Resort 3D</h2>
             <p class="game-desc">Baue deinen eigenen Resort! Betreue Gäste und kaufe upgrades! In 3D</p>
             <div class="play-btn">Resort eröffnen!</div>
