@@ -1853,12 +1853,16 @@ if (document.readyState === 'loading') {
     restoreTheme(); // DOM bereits fertig
 }
 
-document.getElementById('logo-container').addEventListener('click', function() {
+document.addEventListener('DOMContentLoaded', () => {
+    const logoContainer = document.getElementById('logo-container');
     const searchInput = document.getElementById('glaggleQuery');
-    
-    if (searchInput) {
-        searchInput.value = 'Snake Game'; // Suchbegriff eintragen
-        glaggleSearch();                    // Suche starten
+
+    // Nur ausführen, wenn beide Elemente auch wirklich im HTML existieren
+    if (logoContainer && searchInput) {
+        logoContainer.addEventListener('click', () => {
+            searchInput.value = 'Snake Game'; // Suchbegriff eintragen
+            glaggleSearch();                    // Suche starten
+        });
     }
 });
 </script>
