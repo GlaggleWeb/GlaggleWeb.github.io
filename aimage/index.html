@@ -438,16 +438,21 @@ async function generateImage() {
             throw new Error(`Worker Fehler: ${errData}`);
         }
 
+        // --- ÄNDERUNG HIER: Blob in Base64 umwandeln ---
         const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
+        
+        // Neue Hilfsfunktion aufrufen, um Blob zu Base64 zu konvertieren
+        const base64ImageUrl = await blobToBase64(blob);
 
         const item = { 
             id: Date.now(), 
-            image: imageUrl, 
+            // Hier speichern wir jetzt die Base64-Daten statt der URL
+            image: base64ImageUrl, 
             prompt: basePrompt, // Wir speichern den ursprünglichen Prompt
             model: currentModelKey 
         };
         
+        // In Galerie speichern und anzeigen
         myGallery.unshift(item);
         saveLocalGallery();
         
@@ -468,6 +473,17 @@ async function generateImage() {
         btn.textContent = "Bild generieren";
         alert("Fehler bei der Generierung. Versuche es erneut!");
     }
+}
+
+// --- NEU: Hilfsfunktion zur Konvertierung ---
+// Diese Funktion wandelt einen Blob asynchron in einen Base64 Data URL String um
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result); // reader.result enthält die Base64-URL
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 }
        function showPreview(item) {
             const preview = document.getElementById('preview-area');
