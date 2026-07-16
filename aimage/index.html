@@ -288,8 +288,7 @@
         </section>
 
     </main>
-
-    <script>
+<script>
         // HINWEIS: Hier kommt nun die URL deines bereitgestellten Cloudflare Workers rein
         // Ändere diese Zeile:
         const workerUrl = "https://frosty-night-90c6.rhpjmf7t2s.workers.dev";
@@ -302,15 +301,18 @@
         };
 
         let currentModelKey = "sdxl";
-        let myGallery = [];
+        let myGallery = []; // Speichert jetzt nur noch Bild-Metadaten, keine Blobs/Base64!
+        let currentBlobUrl = null; // Speichert die URL des aktuell angezeigten Bildes
         let confirmAction = null;
 
         window.onload = () => {
             // Preloader ausblenden
             setTimeout(() => {
-                document.getElementById('preloader')?.classList.add('preloader-hidden');
+                const preloader = document.getElementById('preloader');
+                if (preloader) preloader.classList.add('preloader-hidden');
             }, 800);
             
+            // Lade nur noch Metadaten
             loadLocalGallery();
         };
 
@@ -345,6 +347,8 @@
             const toastText = document.getElementById('toast-text');
             const toastIcon = document.getElementById('toast-icon');
 
+            if (!toast || !toastText || !toastIcon) return;
+
             toastText.innerText = message;
 
             if (type === 'error') {
@@ -363,7 +367,6 @@
             }, 6500);
         }
 
-        // Funktion fügt stil-spezifische Schlagwörter hinzu, um die Stile auf FLUX perfekt zu emulieren
         function getStyledPrompt(basePrompt, styleKey) {
             switch(styleKey) {
                 case 'flux':
@@ -381,6 +384,7 @@
         function showConfirm(action) {
             confirmAction = action;
             const modal = document.getElementById('confirm-modal');
+            if (!modal) return;
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
@@ -389,6 +393,7 @@
 
         window.closeConfirm = (confirmed) => {
             const modal = document.getElementById('confirm-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0');
             setTimeout(() => {
                 modal.classList.add('hidden');
@@ -399,94 +404,108 @@
             }, 300);
         };
 
-async function generateImage() {
-    const promptInput = document.getElementById('prompt');
-    const basePrompt = promptInput.value.trim();
-    const btn = document.getElementById('generateBtn');
-    const statusContainer = document.getElementById('status-container');
-    const previewArea = document.getElementById('preview-area');
+        // --- STARK VERBESSERTE GENERIERUNGS-FUNKTION ---
+        async function generateImage() {
+            const promptInput = document.getElementById('prompt');
+            const basePrompt = promptInput.value.trim();
+            const btn = document.getElementById('generateBtn');
+            const statusContainer = document.getElementById('status-container');
+            const previewArea = document.getElementById('preview-area');
+            const troubleshootBox = document.getElementById('troubleshoot-box');
 
-    if (!basePrompt) return alert("Bitte gib einen Prompt ein!");
+            if (!basePrompt) return alert("Bitte gib einen Prompt ein!");
 
-    // 1. UI: Animation zeigen
-    btn.disabled = true;
-    btn.textContent = "Generiere...";
-    statusContainer.classList.remove('hidden'); 
-    previewArea.classList.add('hidden'); 
-    
-    // 2. Den "Noise-Trick": Zufällige Zahl generieren
-    const randomNum = Math.floor(Math.random() * 1000000);
-    // Wir hängen die Zufallszahl an den Prompt an, damit dieser jedes Mal einzigartig ist
-    const finalPrompt = `${getStyledPrompt(basePrompt, currentModelKey)} (seed: ${randomNum})`;
+            // 1. UI: Animation zeigen, alte Fehler/Vorschauen verstecken
+            btn.disabled = true;
+            btn.textContent = "Generiere...";
+            statusContainer.classList.remove('hidden'); 
+            previewArea.classList.add('hidden'); 
+            if(troubleshootBox) troubleshootBox.classList.add('hidden');
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); 
+            // --- NEU & WICHTIG FÜR WEBKIT: Alte Blob-URL freigeben ---
+            // Wenn schon ein Bild generiert wurde, löschen wir dessen temporäre URL
+            // aus dem Browser-Speicher, um Leaks und Fehler zu vermeiden.
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+                currentBlobUrl = null; 
+            }
+            
+            // 2. Den "Noise-Trick": Zufällige Zahl generieren
+            const randomNum = Math.floor(Math.random() * 1000000);
+            const finalPrompt = `${getStyledPrompt(basePrompt, currentModelKey)} (seed: ${randomNum})`;
 
-    try {
-        const response = await fetch(workerUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Wir senden jetzt nur noch den modifizierten finalPrompt
-            body: JSON.stringify({ 
-                inputs: finalPrompt
-            }),
-            signal: controller.signal
-        });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s Timeout
 
-        if (!response.ok) {
-            const errData = await response.text();
-            throw new Error(`Worker Fehler: ${errData}`);
+            try {
+                const response = await fetch(workerUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        inputs: finalPrompt
+                    }),
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error("Zu viele Anfragen. Bitte warte kurz.");
+                    }
+                    const errData = await response.text();
+                    throw new Error(`Worker Fehler: ${errData}`);
+                }
+
+                // --- ZURÜCK ZUR BLOB-URL-METHODE (Speicherschonender) ---
+                const blob = await response.blob();
+                
+                // Prüfen, ob wir wirklich ein Bild erhalten haben
+                if (blob.size < 100 || !blob.type.startsWith('image/')) {
+                    throw new Error("Fehlerhaftes Bild empfangen.");
+                }
+
+                // Neue temporäre URL für dieses Blob erstellen
+                currentBlobUrl = URL.createObjectURL(blob);
+
+                const item = { 
+                    id: Date.now(), 
+                    // WICHTIG: In 'myGallery' speichern wir die 'currentBlobUrl'.
+                    // Diese ist nur gültig, solange die Seite nicht neu geladen wird.
+                    image: currentBlobUrl, 
+                    prompt: basePrompt, 
+                    model: currentModelKey 
+                };
+                
+                // Metadaten in Galerie speichern (aber NICHT im LocalStorage, siehe load/saveLocalGallery)
+                myGallery.unshift(item);
+                
+                statusContainer.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                showPreview(item);
+                
+                btn.disabled = false;
+                btn.textContent = "Erstellen";
+                clearTimeout(timeoutId);
+
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.error("Generierungs-Fehler:", err);
+                
+                statusContainer.classList.add('hidden');
+                btn.disabled = false;
+                btn.textContent = "Erstellen";
+                
+                // Bei Netzwerkfehlern den Troubleshoot-Kasten zeigen
+                if (err.name === 'AbortError' || err.message.includes('NetworkError') || err.message.includes('Worker Fehler')) {
+                    if(troubleshootBox) troubleshootBox.classList.remove('hidden');
+                }
+                
+                alert(`Generierung fehlgeschlagen: ${err.message}`);
+            }
         }
 
-        // --- ÄNDERUNG HIER: Blob in Base64 umwandeln ---
-        const blob = await response.blob();
-        
-        // Neue Hilfsfunktion aufrufen, um Blob zu Base64 zu konvertieren
-        const base64ImageUrl = await blobToBase64(blob);
-
-        const item = { 
-            id: Date.now(), 
-            // Hier speichern wir jetzt die Base64-Daten statt der URL
-            image: base64ImageUrl, 
-            prompt: basePrompt, // Wir speichern den ursprünglichen Prompt
-            model: currentModelKey 
-        };
-        
-        // In Galerie speichern und anzeigen
-        myGallery.unshift(item);
-        saveLocalGallery();
-        
-        statusContainer.classList.add('hidden');
-        previewArea.classList.remove('hidden');
-        showPreview(item);
-        
-        btn.disabled = false;
-        btn.textContent = "Bild generieren";
-        clearTimeout(timeoutId);
-
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.error("Fehler:", err);
-        
-        statusContainer.classList.add('hidden');
-        btn.disabled = false;
-        btn.textContent = "Bild generieren";
-        alert("Fehler bei der Generierung. Versuche es erneut!");
-    }
-}
-
-// --- NEU: Hilfsfunktion zur Konvertierung ---
-// Diese Funktion wandelt einen Blob asynchron in einen Base64 Data URL String um
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result); // reader.result enthält die Base64-URL
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-       function showPreview(item) {
+        function showPreview(item) {
             const preview = document.getElementById('preview-area');
+            if (!preview) return;
             let displayModelName = item.model.toUpperCase();
             if (item.model === "sdxl") displayModelName = "CINEMATIC (FLUX)";
             if (item.model === "anime") displayModelName = "ANIME (FLUX)";
@@ -495,7 +514,7 @@ function blobToBase64(blob) {
             preview.innerHTML = `
                 <div class="glaggle-card max-w-sm w-full p-4 bg-white dark:bg-zinc-800 animate-[popIn_0.5s_ease-out_forwards]">
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden shadow-inner relative group">
-                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
+                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'; alert('Bild-Ladefehler in WebKit. Speicher ist voll.');">
                         <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-mono px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow">
                             🎨 ${displayModelName}
                         </span>
@@ -515,8 +534,11 @@ function blobToBase64(blob) {
             const grid = document.getElementById('gallery-grid');
             const hint = document.getElementById('empty-hint');
             const count = document.getElementById('gallery-count');
+            
+            if (!grid || !hint || !count) return;
+
             grid.innerHTML = '';
-            count.innerText = `${myGallery.length} Bilder`;
+            count.innerText = `${myGallery.length} Bilder (temporär)`;
 
             if (myGallery.length === 0) {
                 hint.classList.remove('hidden');
@@ -536,7 +558,7 @@ function blobToBase64(blob) {
 
                 div.innerHTML = `
                     <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-3 overflow-hidden shadow-inner group cursor-pointer relative">
-                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'">
+                        <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500';">
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-start p-3">
                             <span class="bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
                                 ${displayModelName}
@@ -560,7 +582,7 @@ function blobToBase64(blob) {
             if(!item) return;
 
             const a = document.createElement('a');
-            a.href = item.image;
+            a.href = item.image; // Dies ist die Blob-URL
             a.download = `AImage_Magic_${id}.jpg`;
             document.body.appendChild(a);
             a.click();
@@ -568,23 +590,35 @@ function blobToBase64(blob) {
             showToast("Download gestartet!", "success");
         };
 
-        function saveLocalGallery() {
-            localStorage.setItem('hf_image_gallery', JSON.stringify(myGallery.slice(0, 10)));
-        }
-
+        // --- GEÄNDERT: LocalStorage Management ---
+        
         function loadLocalGallery() {
-            const data = localStorage.getItem('hf_image_gallery');
-            if (data) {
-                myGallery = JSON.parse(data);
-            }
+            // WIR LADEN NICHTS MEHR.
+            // Früher haben wir hier Bilder geladen. Das hat den LocalStorage gesprengt,
+            // wenn es Base64 war, oder zu ungültigen Blob-URLs geführt.
+            // Die Galerie ist jetzt beim Seitenstart immer leer.
+            myGallery = []; 
         }
 
         window.triggerClearGallery = () => {
             showConfirm(() => {
+                // --- WICHTIG FÜR WEBKIT: Alle Blob-URLs in der Galerie freigeben ---
+                // Bevor wir die Liste leeren, müssen wir dem Browser sagen,
+                // dass er den Speicher für alle Galerie-Bilder freigeben kann.
+                myGallery.forEach(item => {
+                    if (item.image && item.image.startsWith('blob:')) {
+                        URL.revokeObjectURL(item.image);
+                    }
+                });
+                if(currentBlobUrl) {
+                    URL.revokeObjectURL(currentBlobUrl);
+                    currentBlobUrl = null;
+                }
+
                 myGallery = [];
-                saveLocalGallery();
+                // saveLocalGallery(); // Nicht mehr nötig
                 renderGallery();
-                showToast("Galerie erfolgreich geleert!", "success");
+                showToast("Galerie erfolgreich geleert und Speicher freigegeben!", "success");
             });
         };
     </script>
