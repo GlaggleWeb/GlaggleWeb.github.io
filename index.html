@@ -2667,6 +2667,7 @@ const glaggleGamesList = {
     "orbit": { url: "/orbit", title: "Glaggle Orbit", icon: "🪐" },
     "run": { url: "/run", title: "Glaggle Run", icon: "🏃" },
     "gravity": { url: "/glagglegravity", title: "Glaggle Gravity", icon: "🌇" },
+    "catch": { url: "/musiccatch", title: "Glaggle Music Catch", icon: "🎵" },
     "pong": { url: "/pong", title: "Glaggle Pong", icon: "🔵" },
     "tictactoe": { url: "/tictactoe", title: "Tic Tac Toe Live", icon: "❌" },
     "casino": { url: "/casino", title: "Glaggle Grand Casino", icon: "🎰" },
@@ -3013,7 +3014,7 @@ async function searchGlaggleImages(query, offset = 0) {
             imageWrapper.innerHTML = `
                 <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
                 <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
-                    Mehr Bilder laden...
+                    Mehr Bilder laden... (Quelle Wikimedia)
                 </button>
             `;
             resultsDiv.appendChild(imageWrapper);
