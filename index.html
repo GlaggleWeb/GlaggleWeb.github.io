@@ -2986,7 +2986,7 @@ window.addEventListener('load', function() {
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
     const limit = 8;
-    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages&piprop=thumbnail&pithumbsize=1000&format=json&origin=*`;
+    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages|imageinfo&piprop=thumbnail&pithumbsize=1000&iiprop=extmetadata&format=json&origin=*`;
 
     try {
         const response = await fetch(url);
@@ -3020,7 +3020,7 @@ async function searchGlaggleImages(query, offset = 0) {
             resultsDiv.appendChild(imageWrapper);
             
             document.getElementById('load-more-imgs').onclick = () => {
-                const currentCount = document.querySelectorAll('#glaggle-image-grid div').length;
+                const currentCount = document.querySelectorAll('#glaggle-image-grid > div').length;
                 searchGlaggleImages(query, currentCount);
             };
         }
@@ -3029,7 +3029,6 @@ async function searchGlaggleImages(query, offset = 0) {
         const loadMoreBtn = document.getElementById('load-more-imgs');
 
         // --- DUPLIKAT-FILTER START ---
-        // Wir sammeln alle bisherigen Bild-URLs im Grid
         const existingSrcs = new Set();
         document.querySelectorAll('#glaggle-image-grid img').forEach(img => existingSrcs.add(img.src));
 
@@ -3037,9 +3036,18 @@ async function searchGlaggleImages(query, offset = 0) {
             if (page.thumbnail && page.thumbnail.source) {
                 const src = page.thumbnail.source;
 
-                // Nur hinzufügen, wenn das Bild noch nicht im Grid ist
                 if (!existingSrcs.has(src)) {
-                    existingSrcs.add(src); // Sofort zum Set hinzufügen für diese Schleife
+                    existingSrcs.add(src);
+
+                    // Lizenz-Metadaten aus der Wikipedia-Seite selbst (kann leer sein,
+                    // da pageimages/thumbnail nicht immer eigene Bild-Metadaten liefert)
+                    const meta = (page.imageinfo && page.imageinfo[0] && page.imageinfo[0].extmetadata) || {};
+                    const author = meta.Artist ? meta.Artist.value.replace(/<[^>]*>/g, "").trim() : null;
+                    const license = meta.LicenseShortName ? meta.LicenseShortName.value : null;
+
+                    // Immer vorhandener, verlässlicher Link: die Wikipedia-Artikelseite selbst,
+                    // von der aus man zum Originalbild inkl. vollständiger Lizenzangabe kommt
+                    const pageUrl = `https://de.wikipedia.org/?curid=${page.pageid}`;
 
                     const imgContainer = document.createElement('div');
                     imgContainer.style.height = "120px";
@@ -3047,9 +3055,11 @@ async function searchGlaggleImages(query, offset = 0) {
                     imgContainer.style.overflow = "hidden";
                     imgContainer.style.cursor = "zoom-in";
                     imgContainer.style.border = "1px solid var(--card-border)";
-                    
+                    imgContainer.style.position = "relative";
+
                     const img = document.createElement('img');
                     img.src = src;
+                    img.loading = "lazy";
                     img.style.width = "100%";
                     img.style.height = "100%";
                     img.style.objectFit = "cover";
@@ -3059,6 +3069,23 @@ async function searchGlaggleImages(query, offset = 0) {
                         const modalImg = document.getElementById('modalImg');
                         modal.style.display = "flex";
                         modalImg.src = src;
+
+                        // Attribution im Modal anzeigen/aktualisieren
+                        let modalCredit = document.getElementById('modalCredit');
+                        if (!modalCredit) {
+                            modalCredit = document.createElement('p');
+                            modalCredit.id = 'modalCredit';
+                            modalCredit.style.cssText = "color:#fff; font-size:0.8rem; text-align:center; margin-top:10px; line-height:1.4;";
+                            modal.appendChild(modalCredit);
+                        }
+                        modalCredit.innerHTML = `
+                            <a href="${pageUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline;">
+                                ${page.title}
+                            </a>
+                            ${author ? ` · Foto: ${author}` : ""}
+                            ${license ? ` · Lizenz: ${license}` : ""}
+                            · via Wikimedia Commons
+                        `;
                     };
 
                     imgContainer.appendChild(img);
