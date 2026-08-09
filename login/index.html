@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glaggle Login</title>
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <meta name="description" content="Melde dich ohne Passwort mit deinem Glaggle-Account an.">
+    <!-- Appwrite SDK v14 für Magic URL Support -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -37,8 +39,10 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            height: 100vh; 
+            min-height: 100vh; 
             margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .box { 
@@ -50,6 +54,11 @@
             max-width: 400px; 
             text-align: center; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 480px) {
+            .box { padding: 30px 20px; }
         }
 
         .logo { width: 180px; margin-bottom: 20px; }
@@ -87,15 +96,16 @@
         }
 
         button:hover { background: var(--accent-dark); transform: translateY(-2px); }
-        
-        .secondary-btn {
-            background: none;
-            color: var(--desc-color);
-            font-size: 0.8rem;
-            text-decoration: underline;
-            margin-top: 10px;
-            border: none;
-            cursor: pointer;
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        #messageBox {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            line-height: 1.4;
         }
 
         .loading-spinner {
@@ -116,25 +126,32 @@
 <div class="box">
     <img src="../glagglelogooriginal.png" alt="Glaggle Logo" class="logo">
     
+    <!-- Schritt 1: Benutzername oder E-Mail eingeben -->
     <div id="step1">
         <h1>Anmelden</h1>
-        <p>Nutze deine GlaggleID, deinen Benutzernamen oder deine E-Mail Adresse.</p>
-        <input type="text" id="identifier" placeholder="ID, Name oder E-Mail">
-        <button onclick="checkUser()">Weiter</button>
+        <p>Gib deinen Benutzernamen oder deine E-Mail-Adresse ein, um einen Login-Link per E-Mail zu erhalten.</p>
+        <input type="text" id="identifier" placeholder="Benutzername oder E-Mail">
+        <button id="btnSend" onclick="requestLoginLink()">Login-Link anfordern</button>
         <p style="margin-top: 20px; font-size: 0.8rem;">
-    Noch kein Konto? <a href="../account/index.html" style="color: var(--link-color); text-decoration: none; font-weight: bold;">Registrieren</a>
-</p>
+            Noch kein Konto? <a href="../account/index.html" style="color: var(--link-color); text-decoration: none; font-weight: bold;">Registrieren</a>
+        </p>
     </div>
 
-    <div id="step2" style="display: none;">
-        <h1 id="welcomeUser">Willkommen!</h1>
-        <p>Bitte gib dein Passwort ein, um dich anzumelden.</p>
-        <input type="password" id="password" placeholder="Passwort">
-        <button onclick="login()">Einloggen</button>
-        <button class="secondary-btn" onclick="goBack()">Anderes Konto verwenden</button>
+    <!-- Schritt 2: E-Mail nach Klick auf den Magic Link bestätigen -->
+    <div id="stepConfirm" style="display: none;">
+        <h1>Fast da!</h1>
+        <p>Klicke unten, um deine Anmeldung bei Glaggle zu bestätigen.</p>
+        <button id="btnConfirm" onclick="confirmLoginLink()">Anmeldung bestätigen ✓</button>
+    </div>
+
+    <!-- Schritt 3: Erfolgreich eingeloggt -->
+    <div id="stepSuccess" style="display: none;">
+        <h1>🎉 Erfolgreich eingeloggt!</h1>
+        <p>Du wirst in wenigen Sekunden weitergeleitet...</p>
     </div>
 
     <div class="loading-spinner" id="spinner"></div>
+    <div id="messageBox"></div>
 </div>
 
 <script>
@@ -149,110 +166,145 @@ const databases = new Appwrite.Databases(client);
 const DB_ID = '69fb65330007c1a1af0a';
 const COLL_ID = 'accounts';
 
-let resolvedEmail = "";
+let isVerifying = false;
 
-// 1. Prüfen, ob User beim Aufruf der Seite bereits eingeloggt ist
+// Hilfsfunktion zur Anzeige von Fehlern und Erfolgen (Ersetzt window.alert)
+function showMessage(text, isError = false) {
+    const msgBox = document.getElementById('messageBox');
+    msgBox.style.display = 'block';
+    msgBox.innerText = text;
+    if (isError) {
+        msgBox.style.background = '#ffebee';
+        msgBox.style.color = '#c62828';
+        msgBox.style.border = '1px solid #ffcdd2';
+    } else {
+        msgBox.style.background = '#e8f5e9';
+        msgBox.style.color = '#2e7d32';
+        msgBox.style.border = '1px solid #c8e6c9';
+    }
+}
+
+function hideMessage() {
+    document.getElementById('messageBox').style.display = 'none';
+}
+
+function showLoading(state) {
+    document.getElementById('spinner').style.display = state ? 'block' : 'none';
+}
+
 window.onload = async () => {
-    try {
-        // Wir prüfen NICHT mehr, ob man eingeloggt ist.
-        // Stattdessen löschen wir beim Aufruf der Login-Seite sicherheitshalber 
-        // eine eventuell korrupte alte Session.
-        await account.deleteSession('current');
-        console.log("Alte Session-Reste bereinigt.");
-    } catch (e) {
-        // Keine Session da? Perfekt, dann können wir uns normal einloggen.
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const secret = urlParams.get('secret');
+
+    // Wenn Magic Link Parameter in der URL vorhanden sind
+    if (userId && secret) {
+        sessionStorage.setItem('magicUserId', userId);
+        sessionStorage.setItem('magicSecret', secret);
+        // Parameter aus URL entfernen für ein sauberes Erscheinungsbild
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('stepConfirm').style.display = 'block';
+    } else {
+        // Prüfen, ob der Nutzer eventuell bereits angemeldet ist
+        try {
+            await account.get();
+            // Wenn eingeloggt, direkt zur Hauptseite weiterleiten
+            window.location.href = "../index.html";
+        } catch (e) {
+            // Nicht eingeloggt: Normales Anmeldeformular bleibt sichtbar
+        }
     }
 };
 
-// 2. Schritt 1: GlaggleID oder Username in E-Mail auflösen
-async function checkUser() {
+async function requestLoginLink() {
+    hideMessage();
     const input = document.getElementById('identifier').value.trim();
-    if (!input) return alert("Bitte gib eine ID, einen Namen oder eine E-Mail ein.");
+    if (!input) return showMessage("Bitte gib einen Benutzernamen oder eine E-Mail ein.", true);
 
     showLoading(true);
+    let targetEmail = "";
+
     try {
         if (input.includes('@')) {
-            // Direkte E-Mail Eingabe
-            resolvedEmail = input;
-            document.getElementById('welcomeUser').innerText = "Hallo!";
+            targetEmail = input;
         } else {
-            // Suche in der Datenbank
-            let queryField = isNaN(input) ? 'userName' : 'glaggleId';
-            let searchValue = isNaN(input) ? input : parseInt(input);
-
+            // Benutzername in der Datenbank suchen, um die E-Mail abzurufen
             const response = await databases.listDocuments(DB_ID, COLL_ID, [
-                Appwrite.Query.equal(queryField, searchValue)
+                Appwrite.Query.equal('userName', input)
             ]);
 
             if (response.documents.length > 0) {
-                const userDoc = response.documents[0];
-                resolvedEmail = userDoc.userEmail;
-                document.getElementById('welcomeUser').innerText = "Hallo " + (userDoc.userName || "User") + "!";
+                targetEmail = response.documents[0].userEmail;
             } else {
                 throw new Error("Konto wurde nicht gefunden. Bitte registriere dich zuerst.");
             }
         }
 
-        // Wechsle zum Passwort-Feld
-        document.getElementById('step1').style.display = 'none';
-        document.getElementById('step2').style.display = 'block';
-        document.getElementById('password').focus();
-
-    } catch (error) {
-        alert(error.message);
-    } finally {
-        showLoading(false);
-    }
-}
-
-// 3. Schritt 2: Eigentlicher Login mit Passwort
-async function login() {
-    const password = document.getElementById('password').value;
-    if (!password) return alert("Bitte Passwort eingeben.");
-
-    showLoading(true);
-    try {
-        // Sicherheit: Falls noch eine alte Sitzung existiert, diese löschen
+        // Falls noch eine alte Sitzung existiert, diese vorher entfernen
         try { await account.deleteSession('current'); } catch(e) {}
 
-        // WICHTIG: In neueren Appwrite-Versionen heißt die Methode 'createEmailSession'
-        // In ganz neuen (v14+) 'createEmailPasswordSession'. Wir probieren die gängigste:
-        console.log("Login-Versuch für:", resolvedEmail);
-        
-        await account.createEmailSession(resolvedEmail, password);
-        
-        // Erfolg: Zurück zur Hauptseite
-        window.location.href = "../index.html";
+        // Sichere eindeutige Token-ID generieren
+        const userId = Appwrite.ID.unique();
+
+        // Magic URL Token erstellen und senden
+        await account.createMagicURLToken(userId, targetEmail, window.location.href);
+
+        showMessage("E-Mail versendet! Bitte überprüfe dein Postfach und klicke auf den Bestätigungslink.", false);
+        document.getElementById('btnSend').disabled = true;
+        document.getElementById('btnSend').innerText = "Link gesendet...";
 
     } catch (error) {
-        console.error("Detaillierter Login-Fehler:", error);
-        
-        // Falls 'createEmailSession' nicht gefunden wurde (is not a function)
-        if (error.message.includes("is not a function")) {
-            alert("SDK-Versionsfehler: Versuche alternative Methode...");
-            try {
-                await account.createEmailPasswordSession(resolvedEmail, password);
-                window.location.href = "../index.html";
-                return;
-            } catch (innerError) {
-                alert("Login fehlgeschlagen: " + innerError.message);
-            }
-        } else {
-            alert("Login fehlgeschlagen: Passwort falsch oder Benutzer existiert nicht.");
-        }
+        showMessage("Fehler: " + error.message, true);
     } finally {
         showLoading(false);
     }
 }
 
-function goBack() {
-    document.getElementById('step1').style.display = 'block';
-    document.getElementById('step2').style.display = 'none';
-    resolvedEmail = "";
-}
+async function confirmLoginLink() {
+    if (isVerifying) return;
 
-function showLoading(state) {
-    document.getElementById('spinner').style.display = state ? 'block' : 'none';
+    hideMessage();
+    const userId = sessionStorage.getItem('magicUserId');
+    const secret = sessionStorage.getItem('magicSecret');
+
+    if (!userId || !secret) {
+        showMessage("Ungültiger oder abgelaufener Link. Bitte neu anfordern.", true);
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+        return;
+    }
+
+    isVerifying = true;
+    showLoading(true);
+
+    try {
+        // Bereinigen bestehender Sitzungen vor Aktivierung der neuen
+        try { await account.deleteSession('current'); } catch(e) {}
+
+        await account.updateMagicURLSession(userId, secret);
+
+        // Aufräumen
+        sessionStorage.removeItem('magicUserId');
+        sessionStorage.removeItem('magicSecret');
+
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
+
+        // Automatische Weiterleitung nach 2 Sekunden
+        setTimeout(() => {
+            window.location.href = "../index.html";
+        }, 2000);
+
+    } catch (error) {
+        showMessage("Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.", true);
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+    } finally {
+        showLoading(false);
+        isVerifying = false;
+    }
 }
 </script>
 
