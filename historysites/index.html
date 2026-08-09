@@ -2,9 +2,15 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Glaggle History Explorer</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         :root {
             --bg-color: #ffffff;
             --text-color: #333333;
@@ -14,6 +20,7 @@
             --link-color: #2E94D1;
             --desc-color: #555555;
             --accent: #70C4F7;
+            --input-bg: #ffffff;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -25,6 +32,7 @@
                 --card-border: #444444;
                 --link-color: #8cc9f5;
                 --desc-color: #bdc1c6;
+                --input-bg: #303134;
             }
         }
 
@@ -35,23 +43,173 @@
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
+            transition: background-color 0.3s;
         }
 
+        /* ===== NAVBAR (1:1 Glaggle Standard) ===== */
         .navbar {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; height: 70px; background-color: var(--nav-bg);
-            padding: 0 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            position: fixed; top: 0; z-index: 1000; box-sizing: border-box;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            width: 100%; 
+            height: 80px; 
+            background-color: #FFFFFF !important; 
+            backdrop-filter: none !important;
+            padding: 0 20px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: 1000; 
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top) !important;
+            height: calc(80px + env(safe-area-inset-top)) !important;
         }
-        .nav-logo { height: 35px; }
 
-        .hero {
-            margin-top: 100px;
+        .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
+        .nav-center { justify-content: center; }
+        .nav-right { justify-content: flex-end; gap: 10px; }
+        .logo-img { height: 40px; width: auto; }
+
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 1001;
+            color: black !important;
+        }
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: #000000 !important;
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+
+        /* ===== SIDEBAR (1:1 Glaggle Standard) ===== */
+        .sidebar {
+            height: 100%;
+            width: 0; 
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            right: 0;
+            background-color: #FFFFFF !important; 
+            backdrop-filter: none !important;
+            opacity: 1 !important;
+            color: #000000 !important; 
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-link, .close-btn {
+            color: #000000 !important;
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .sidebar-link {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--card-border);
+            transition: 0.3s;
+        }
+        .sidebar-link:hover {
+            color: var(--link-color);
+            background-color: var(--card-bg);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 36px;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+        }
+
+        .sidebar.active { width: 250px; }
+        .overlay.active { display: block; }
+
+        /* Sidebar Unterkategorien */
+        .sidebar-category {
+            border-bottom: 1px solid var(--card-border);
+        }
+        .sidebar-category summary {
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .sidebar-category summary:hover {
+            background-color: var(--card-bg);
+            color: var(--link-color);
+        }
+        .sidebar-category summary::after {
+            content: '›'; 
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+        .sidebar-category[open] summary::after {
+            transform: rotate(90deg);
+        }
+        .sidebar-category .sidebar-link {
+            padding: 12px 20px 12px 40px;
+            font-size: 1rem;
+            border-bottom: none;
+            display: block;
+            background-color: rgba(0,0,0,0.05);
+        }
+        .sidebar-category summary::-webkit-details-marker {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .pc-only {
+                display: none !important;
+            }
+        }
+
+        /* ===== HISTORY EXPLORER EIGENER CONTENT ===== */
+        .main-content {
+            margin-top: calc(120px + env(safe-area-inset-top));
+            padding: 20px;
             text-align: center;
             width: 100%;
             max-width: 900px;
-            padding: 20px;
             box-sizing: border-box;
+        }
+
+        .hero h2 {
+            color: var(--accent);
+            margin-bottom: 30px;
         }
 
         .control-card {
@@ -62,7 +220,7 @@
             box-shadow: 0 4px 15px rgba(112, 196, 247, 0.1);
             width: 100%;
             max-width: 860px;
-            margin-bottom: 30px;
+            margin: 0 auto 30px auto;
             box-sizing: border-box;
         }
 
@@ -75,7 +233,7 @@
 
         .date-info {
             font-size: 1.1rem;
-            color: #ff4757; /* Ein schönes Rot für das Datum */
+            color: #ff4757;
             margin-bottom: 15px;
             font-weight: bold;
         }
@@ -110,7 +268,6 @@
             transition: all 0.2s ease;
             box-shadow: 0 4px 10px rgba(112, 196, 247, 0.3);
         }
-
         .load-btn:hover { transform: scale(1.05); }
 
         iframe {
@@ -125,23 +282,402 @@
 </head>
 <body>
 
-    <nav class="navbar">
-        <img src="glagglelogo.png" alt="Logo" class="nav-logo">
-        <span style="font-weight: bold; color: var(--accent);">Glaggle Time-Machine</span>
-    </nav>
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="https://glaggle.ch"><img src="../glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
+    </div>
+    <div class="nav-right">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</nav>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
+
+    <div class="sidebar-content">
+        <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+
+            <div id="user-logged-in" style="display: none;">
+                <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
+                <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+
+                <a href="account/overview/index.html" class="sidebar-link" 
+                   style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    Account Übersicht
+                </a>
+
+                <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
+                    Abmelden
+                </button>
+            </div>
+
+            <div id="user-logged-out">
+                <a href="account/index.html" class="sidebar-link" 
+                   style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
+                   Registrieren
+                </a>
+                <a href="login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">
+                   Schon ein Konto? Einloggen
+                </a>
+            </div>
+
+        </div>
+
+        <details class="sidebar-category">
+            <summary>KI Tools</summary>
+            <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
+            <a href="https://glame.glaggle.ch/" class="sidebar-link">Glame AI Pro</a>
+            <a href="https://glaggle.ch/quizai" class="sidebar-link">Quiz Studio Pro</a>
+            <a href="https://glaggle.ch/aimage/" class="sidebar-link">AImage</a>
+            <a href="https://glaggle.ch/aimage/home" class="sidebar-link">AImage SVG</a>
+            <a href="https://glaggle.ch/avideo" class="sidebar-link">AVideo</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Glaggle Tools</summary>
+            <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
+            <a href="https://glaggle.ch/designstudio" class="sidebar-link pc-only">Glaggle Design Studio</a>
+            <a href="https://glaggle.ch/codemaker" class="sidebar-link pc-only">Glaggle Code Maker</a>
+            <a href="https://glaggle.ch/avideostudio" class="sidebar-link pc-only">Glaggle AVideo Studio</a>
+            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Gaming</summary>
+            <a href="https://glaggle.ch/gamecenter" class="sidebar-link">Gamecenter</a>
+            <a href="https://glaggle.ch/glagini" class="sidebar-link">Glaggle Glagini</a>
+        </details>
+
+        <details class="sidebar-category">
+            <summary>Info</summary>
+            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ & Über Uns</a>
+            <a href="https://glaggle.ch/history" class="sidebar-link">Glaggle History</a>
+            <a href="https://glaggle.ch/historysites" class="sidebar-link">Glaggle Historysites</a>
+        </details>
+
+        <details class="sidebar-category">
+        <summary>🎨 Design</summary>
+        <div style="padding:15px 20px;background:rgba(0,0,0,0.03);" id="sidebar-design-container">
+
+        <style>
+        .theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+        .t-btn{border:2px solid transparent;border-radius:8px;padding:7px 3px;cursor:pointer;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s}
+        .t-btn.active{border-color:#70C4F7!important;box-shadow:0 0 0 2px rgba(112,196,247,.3)}
+        .t-swatch{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,.12)}
+        #custom-pickers{display:none;padding:10px;background:rgba(0,0,0,.05);border-radius:8px;margin-top:6px}
+        #music-controls{display:none;align-items:center;gap:8px;margin-top:8px}
+        #music-vol{flex:1}
+        #design-preview-bar{height:5px;border-radius:3px;margin:12px 0 4px;transition:background .4s}
+        #design-reset{width:100%;margin-top:10px;padding:8px;border-radius:8px;border:1px solid #ddd;background:none;color:#888;font-size:12px;cursor:pointer}
+        #music-select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#000}
+        .sidebar.dark-sidebar #music-select{background:#333;color:#fff;border-color:#555}
+        </style>
+
+        <p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Theme</p>
+        <div class="theme-grid" id="theme-grid">
+          <button class="t-btn active" data-t="hell" onclick="applyTheme('hell',this)" style="background:#f8f8f8;color:#333">
+            <div class="t-swatch" style="background:#fff;border-color:#ccc"></div>Hell
+          </button>
+          <button class="t-btn" data-t="dunkel" onclick="applyTheme('dunkel',this)" style="background:#1a1a1a;color:#eee">
+            <div class="t-swatch" style="background:#1a1a1a"></div>Dunkel
+          </button>
+          <button class="t-btn" data-t="blau" onclick="applyTheme('blau',this)" style="background:#e8f4fd;color:#1a5276">
+            <div class="t-swatch" style="background:#2980b9"></div>Blau
+          </button>
+          <button class="t-btn" data-t="grün" onclick="applyTheme('grün',this)" style="background:#eafaf1;color:#1e8449">
+            <div class="t-swatch" style="background:#27ae60"></div>Grün
+          </button>
+          <button class="t-btn" data-t="rot" onclick="applyTheme('rot',this)" style="background:#fdedec;color:#922b21">
+            <div class="t-swatch" style="background:#e74c3c"></div>Rot
+          </button>
+          <button class="t-btn" data-t="gelb" onclick="applyTheme('gelb',this)" style="background:#fef9e7;color:#7d6608">
+            <div class="t-swatch" style="background:#f1c40f;border-color:#aaa"></div>Gelb
+          </button>
+          <button class="t-btn" data-t="violett" onclick="applyTheme('violett',this)" style="background:#f4ecf7;color:#6c3483">
+            <div class="t-swatch" style="background:#8e44ad"></div>Violett
+          </button>
+          <button class="t-btn" data-t="custom" onclick="toggleCustomPickers()" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b);color:#fff">
+            <div class="t-swatch" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b)"></div>Eigene
+          </button>
+        </div>
+
+        <div id="custom-pickers">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:3px">Navbar</div>
+              <input type="color" id="cp-navbar" value="#ffffff" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:3px">Suchfeld</div>
+              <input type="color" id="cp-search" value="#f0f8ff" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:3px">Overlay</div>
+              <input type="color" id="cp-overlay" value="#000000" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+            </div>
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:3px">Akzentfarbe</div>
+              <input type="color" id="cp-accent" value="#70C4F7" style="width:100%;height:30px;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+            </div>
+          </div>
+          <button onclick="applyCustomTheme()" style="width:100%;padding:8px;background:#70C4F7;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer">Übernehmen ✓</button>
+        </div>
+
+        <div id="design-preview-bar" style="background:linear-gradient(90deg,#fff 33%,#70C4F7 33% 66%,#333 66%)"></div>
+
+        <p style="font-size:11px;color:#888;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Hintergrundmusik</p>
+        <select id="music-select" onchange="handleMusicChange(this)">
+          <option value="">🔇 Keine Musik</option>
+          <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/eliveta-summer-473846_n1ssy1.mp3">☀️ Summer Chill</option>
+          <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/fl_attachment/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3">🎉 Party Music</option>
+          <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/alex-morgan-downtempo-chill-electronic-528322_qeq0gi.mp3">🏝️ Relax Beat</option>
+        </select>
+        <div id="music-controls">
+          <span style="font-size:13px">🔊</span>
+          <input type="range" id="music-vol" min="0" max="100" value="40">
+          <span id="vol-label" style="font-size:12px;color:#888;min-width:32px">40%</span>
+        </div>
+
+        <button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
+
+        <div style="border-top:1px solid #eee; margin-top:12px; padding-top:12px;">
+            <p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Maus</p>
+            <button id="smart-mouse-toggle" onclick="
+                if(typeof smartMouseActive !== 'undefined' && smartMouseActive) {
+                    disableSmartMouse();
+                } else {
+                    enableSmartMouse();
+                }
+            " style="width:100%;padding:9px;border-radius:8px;border:1px solid #ddd;font-size:12px;cursor:pointer;font-weight:700;transition:all 0.2s;">
+                Glaggle Smart Mouse aktivieren
+            </button>
+            <p style="font-size:10px;color:#aaa;margin-top:6px;text-align:center;">Eigener Cursor mit Smart-Hover-Effekten</p>
+        </div>
+        </div>
+        </details>
+
+        <script>
+        /* ===== GLAGGLE UNIFIED THEME SYSTEM ===== */
+        const THEMES = {
+          hell:    {navbar:'#ffffff',navText:'#000000',search:'rgba(255,255,255,0.9)',searchBorder:'#ffffff',overlay:'rgba(0,0,0,0.4)',isDark:false,accent:'#70C4F7',sidebar:'#ffffff',sidebarText:'#000000'},
+          dunkel:  {navbar:'#1a1a1a',navText:'#ffffff',search:'rgba(40,40,40,0.9)',searchBorder:'#555',overlay:'rgba(0,0,0,0.65)',isDark:true,accent:'#70C4F7',sidebar:'#1a1a1a',sidebarText:'#ffffff'},
+          blau:    {navbar:'#1a3a5c',navText:'#ffffff',search:'rgba(200,230,255,0.92)',searchBorder:'#2980b9',overlay:'rgba(0,30,70,0.5)',isDark:true,accent:'#2980b9',sidebar:'#1a3a5c',sidebarText:'#ffffff'},
+          grün:    {navbar:'#1a3a2a',navText:'#ffffff',search:'rgba(200,255,220,0.92)',searchBorder:'#27ae60',overlay:'rgba(0,50,20,0.5)',isDark:true,accent:'#27ae60',sidebar:'#1a3a2a',sidebarText:'#ffffff'},
+          rot:     {navbar:'#3a1a1a',navText:'#ffffff',search:'rgba(255,210,210,0.92)',searchBorder:'#e74c3c',overlay:'rgba(60,0,0,0.5)',isDark:true,accent:'#e74c3c',sidebar:'#3a1a1a',sidebarText:'#ffffff'},
+          gelb:    {navbar:'#3a3000',navText:'#ffffff',search:'rgba(255,248,200,0.95)',searchBorder:'#f1c40f',overlay:'rgba(40,30,0,0.45)',isDark:true,accent:'#f1c40f',sidebar:'#3a3000',sidebarText:'#ffffff'},
+          violett: {navbar:'#2a1040',navText:'#ffffff',search:'rgba(230,210,255,0.92)',searchBorder:'#8e44ad',overlay:'rgba(30,0,60,0.5)',isDark:true,accent:'#8e44ad',sidebar:'#2a1040',sidebarText:'#ffffff'}
+        };
+
+        function applyThemeData(t) {
+          const navbar = document.querySelector('.navbar');
+          if (navbar) {
+            navbar.style.setProperty('background-color', t.navbar, 'important');
+            navbar.style.setProperty('box-shadow', '0 2px 10px rgba(0,0,0,0.15)', 'important');
+          }
+          document.querySelectorAll('.hamburger span').forEach(s => s.style.setProperty('background-color', t.navText, 'important'));
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar) {
+            sidebar.style.setProperty('background-color', t.sidebar, 'important');
+            sidebar.style.setProperty('color', t.sidebarText, 'important');
+          }
+          document.querySelectorAll('.sidebar-link, .close-btn, .sidebar-category summary').forEach(el => {
+            el.style.setProperty('color', t.sidebarText, 'important');
+          });
+          const dynSb = document.getElementById('dyn-searchbar') || (() => {
+            const s = document.createElement('style'); s.id = 'dyn-searchbar';
+            document.head.appendChild(s); return s;
+          })();
+          dynSb.textContent = `.search-bar-container{background:${t.search}!important;border-color:${t.searchBorder}!important;}`;
+          const dynOv = document.getElementById('dyn-overlay') || (() => {
+            const s = document.createElement('style'); s.id = 'dyn-overlay';
+            document.head.appendChild(s); return s;
+          })();
+          dynOv.textContent = `body::before{background:${t.overlay}!important;}`;
+          const bar = document.getElementById('design-preview-bar');
+          if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
+
+          document.documentElement.style.setProperty('--accent', t.accent);
+          const body = document.body;
+          if (t.isDark) {
+            body.style.setProperty('--bg-color', '#202124');
+            body.style.setProperty('--text-color', '#e8eaed');
+            body.style.setProperty('--card-bg', '#303134');
+            body.style.setProperty('--card-border', '#444444');
+            body.style.setProperty('--desc-color', '#bdc1c6');
+            body.style.setProperty('--link-color', t.accent);
+          } else {
+            body.style.setProperty('--bg-color', '#ffffff');
+            body.style.setProperty('--text-color', '#333333');
+            body.style.setProperty('--card-bg', '#fdfdfd');
+            body.style.setProperty('--card-border', '#eeeeee');
+            body.style.setProperty('--desc-color', '#555555');
+            body.style.setProperty('--link-color', '#2E94D1');
+          }
+
+          localStorage.setItem('glaggle-theme', JSON.stringify(t));
+        }
+
+        function applyTheme(name, btn) {
+          const t = THEMES[name];
+          if (!t) return;
+          document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+          if (btn) btn.classList.add('active');
+          document.getElementById('custom-pickers').style.display = 'none';
+          applyThemeData(t);
+          localStorage.setItem('glaggle-theme-name', name);
+        }
+
+        function toggleCustomPickers() {
+          const p = document.getElementById('custom-pickers');
+          p.style.display = p.style.display === 'none' ? 'block' : 'none';
+          document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-t="custom"]').classList.add('active');
+        }
+
+        function applyCustomTheme() {
+          const t = {
+            navbar:       document.getElementById('cp-navbar').value,
+            navText:      '#ffffff',
+            search:       document.getElementById('cp-search').value + 'ee',
+            searchBorder: document.getElementById('cp-accent').value,
+            overlay:      document.getElementById('cp-overlay').value + '88',
+            isDark:       true,
+            accent:       document.getElementById('cp-accent').value,
+            sidebar:      document.getElementById('cp-navbar').value,
+            sidebarText:  '#ffffff'
+          };
+          applyThemeData(t);
+          localStorage.setItem('glaggle-theme-name', 'custom');
+        }
+
+        // ===== MUSIK KOMPLETT =====
+        let glaggleAudio = null;
+
+        document.getElementById('music-select').addEventListener('change', function() {
+            if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+            const ctrl = document.getElementById('music-controls');
+            if (!this.value) { ctrl.style.display = 'none'; localStorage.removeItem('glaggle-music'); return; }
+            ctrl.style.display = 'flex';
+            const volume = document.getElementById('music-vol').value;
+            localStorage.setItem('glaggle-music', JSON.stringify({ url: this.value, volume: parseInt(volume) }));
+            glaggleAudio = new Audio(this.value);
+            glaggleAudio.loop = true;
+            glaggleAudio.volume = volume / 100;
+            glaggleAudio.play().catch(() => {});
+        });
+
+        document.getElementById('music-vol').addEventListener('input', function() {
+            document.getElementById('vol-label').textContent = this.value + '%'
+            if (glaggleAudio) glaggleAudio.volume = this.value / 100;
+            const saved = localStorage.getItem('glaggle-music');
+            if (saved) {
+                const d = JSON.parse(saved);
+                d.volume = parseInt(this.value);
+                localStorage.setItem('glaggle-music', JSON.stringify(d));
+            }
+        });
+
+        function restoreMusic() {
+            const saved = localStorage.getItem('glaggle-music');
+            if (!saved) return;
+            try {
+                const { url, volume } = JSON.parse(saved);
+                const sel = document.getElementById('music-select');
+                const vol = document.getElementById('music-vol');
+                const lbl = document.getElementById('vol-label');
+                const ctrl = document.getElementById('music-controls');
+                if (!sel || !url) return;
+                sel.value = url;
+                if (vol) vol.value = volume;
+                if (lbl) lbl.textContent = volume + '%';
+                if (ctrl) ctrl.style.display = 'flex';
+                glaggleAudio = new Audio(url);
+                glaggleAudio.loop = true;
+                glaggleAudio.volume = volume / 100;
+                glaggleAudio.play().catch(() => {});
+            } catch(e) {}
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreMusic);
+        } else {
+            restoreMusic();
+        }
+
+        function handleMusicChange(sel) {
+          if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+          const ctrl = document.getElementById('music-controls');
+          if (!sel.value) { ctrl.style.display = 'none'; return; }
+          ctrl.style.display = 'flex';
+          glaggleAudio = new Audio(sel.value);
+          glaggleAudio.loop = true;
+          glaggleAudio.volume = document.getElementById('music-vol').value / 100;
+          glaggleAudio.play().catch(() => {});
+        }
+        document.getElementById('music-vol').oninput = function() {
+          document.getElementById('vol-label').textContent = this.value + '%';
+          if (glaggleAudio) glaggleAudio.volume = this.value / 100;
+        };
+
+        /* ===== RESET ===== */
+        function resetDesignFull() {
+          ['glaggle-theme','glaggle-theme-name','glaggle-bg-mode','glaggle-bg-fixed'].forEach(k => localStorage.removeItem(k));
+          ['dyn-overlay','dyn-searchbar'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+          applyTheme('hell', document.querySelector('[data-t="hell"]'));
+          if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
+          document.getElementById('music-select').value = '';
+          document.getElementById('music-controls').style.display = 'none';
+        }
+
+        function restoreTheme() {
+            const savedName = localStorage.getItem('glaggle-theme-name');
+            const savedData = localStorage.getItem('glaggle-theme');
+
+            if (savedData) {
+                try {
+                    applyThemeData(JSON.parse(savedData));
+                } catch(e) {}
+            } else if (savedName && THEMES[savedName]) {
+                applyThemeData(THEMES[savedName]);
+            }
+
+            if (savedName) {
+                document.querySelectorAll('#theme-grid .t-btn').forEach(b => b.classList.remove('active'));
+                const btn = document.querySelector(`#theme-grid [data-t="${savedName}"]`);
+                if (btn) btn.classList.add('active');
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreTheme);
+        } else {
+            restoreTheme();
+        }
+        </script>
+
+    </div>
+</div>
+
+<div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+<main class="main-content">
 
     <div class="hero">
-        <h2 style="color: var(--accent);">🕹️ History Explorer</h2>
+        <h2>🕹️ History Explorer</h2>
     </div>
 
     <div class="control-card">
         <div class="version-info" id="vLabel">Version #139</div>
         <div class="date-info" id="dateLabel">Datum wird geladen...</div>
         <div class="hash-display" id="hashLabel">-</div>
-        
+
         <br>
         <input type="range" id="zeitRegler" min="0" max="138" value="138">
-        
+
         <div style="margin-top: 15px;">
             <button class="load-btn" id="loadBtn">🚀 Version anzeigen</button>
         </div>
@@ -149,9 +685,168 @@
 
     <iframe id="glaggleFrame" src="about:blank"></iframe>
 
-    <script>
-        // Deine Liste (gekürzt für das Beispiel, füge alle 105 hier ein)
-        const commits = [
+</main>
+
+<footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
+    &copy; 2026 Glaggle — Glaggle your life!
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+<script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
+}
+
+/* ===== APPWRITE LOGIN STATUS (1:1 Glaggle Standard) ===== */
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
+
+const account = new Appwrite.Account(client);
+
+async function checkLogin() {
+    try {
+        const user = await account.get();
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+        const nameDisplay = document.getElementById('user-name-display');
+
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'block', 'important');
+            loggedOutDiv.style.setProperty('display', 'none', 'important');
+            if (nameDisplay) nameDisplay.innerText = user.name;
+        }
+    } catch (error) {
+        const loggedInDiv = document.getElementById('user-logged-in');
+        const loggedOutDiv = document.getElementById('user-logged-out');
+
+        if (loggedInDiv && loggedOutDiv) {
+            loggedInDiv.style.setProperty('display', 'none', 'important');
+            loggedOutDiv.style.setProperty('display', 'block', 'important');
+        }
+    }
+}
+
+window.addEventListener('load', () => {
+    setTimeout(checkLogin, 500);
+});
+
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        location.reload();
+    } catch (error) {
+        alert("Fehler beim Abmelden");
+    }
+}
+
+checkLogin();
+
+/* ===== GLAGGLE SMART MOUSE SYSTEM ===== */
+let smartMouseActive = false;
+
+function enableSmartMouse() {
+    smartMouseActive = true;
+    document.body.classList.add('smart-mouse-active');
+    let cursor = document.getElementById('glaggle-smart-cursor');
+    if (!cursor) {
+        cursor = document.createElement('div');
+        cursor.id = 'glaggle-smart-cursor';
+        document.body.appendChild(cursor);
+    }
+    cursor.style.display = 'block';
+
+    const savedTheme = localStorage.getItem('glaggle-theme');
+    if (savedTheme) {
+        try {
+            const t = JSON.parse(savedTheme);
+            cursor.style.background = t.accent || '#000000';
+        } catch(e) {
+            cursor.style.background = '#000000';
+        }
+    } else {
+        cursor.style.background = '#000000';
+    }
+
+    localStorage.setItem('glaggle-smart-mouse', 'true');
+    updateSmartMouseToggleUI();
+}
+
+function disableSmartMouse() {
+    smartMouseActive = false;
+    document.body.classList.remove('smart-mouse-active');
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (cursor) cursor.style.display = 'none';
+    document.querySelectorAll('.smart-hover').forEach(el => el.classList.remove('smart-hover'));
+    localStorage.setItem('glaggle-smart-mouse', 'false');
+    updateSmartMouseToggleUI();
+}
+
+function updateSmartMouseToggleUI() {
+    const toggleBtn = document.getElementById('smart-mouse-toggle');
+    if (!toggleBtn) return;
+    if (smartMouseActive) {
+        toggleBtn.style.background = '#70C4F7';
+        toggleBtn.style.color = '#fff';
+        toggleBtn.textContent = '✓ Glaggle Smart Mouse aktiv';
+    } else {
+        toggleBtn.style.background = 'none';
+        toggleBtn.style.color = 'inherit';
+        toggleBtn.textContent = 'Glaggle Smart Mouse aktivieren';
+    }
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (!smartMouseActive) return;
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (!cursor) return;
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+
+const SMART_HOVER_SELECTORS = [
+    'a', 'button', 'input[type="submit"]',
+    '.web-button', '.nav-button', '.sidebar-link',
+    '.t-btn', '.hamburger', '.load-btn',
+    '.quick-btn', '.close-btn',
+    '[onclick]', 'summary'
+].join(', ');
+
+document.addEventListener('mouseover', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(SMART_HOVER_SELECTORS);
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (target && cursor) {
+        target.classList.add('smart-hover');
+        cursor.classList.add('cursor-hover');
+        cursor.style.opacity = '0';
+    }
+});
+
+document.addEventListener('mouseout', (e) => {
+    if (!smartMouseActive) return;
+    const target = e.target.closest(SMART_HOVER_SELECTORS);
+    const cursor = document.getElementById('glaggle-smart-cursor');
+    if (target && cursor) {
+        target.classList.remove('smart-hover');
+        cursor.classList.remove('cursor-hover');
+        cursor.style.opacity = '1';
+    }
+});
+
+(function restoreSmartMouse() {
+    if (localStorage.getItem('glaggle-smart-mouse') === 'true') {
+        enableSmartMouse();
+    }
+})();
+/* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
+
+/* ===== HISTORY EXPLORER LOGIK ===== */
+const commits = [
 "123be55a0cfd161b047896ac992125b7dd24ead8",
 "de3bceeec4709e48c5c59c9be6fa2874fbab32b9",
 "b7fbe634d7c99acc87701a808ba97b76786c3e73",
@@ -290,51 +985,47 @@
 "3d8d612326f3c9bad7719ca832e5748b7ba8b84f",
 "46092c336ffec6c263bdcc6c89c9e4342e2f4c95",
 "c545277cb5c61dd8e41bc33003432d5801fac1a4",
-"35a88b9f0424249e455acfeecbfee10e1e8752c9",
+"35a88b9f0424249e455acfeecbfee10e1e8752c9"
+];
 
+const startDate = new Date(2025, 11, 1);
+const endDate = new Date(2026, 7, 15);
 
-        ];
+function getInterpolatedDate(index) {
+    const totalCommits = commits.length - 1;
+    const factor = index / totalCommits;
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    const timestamp = startDate.getTime() + (timeDiff * factor);
+    const date = new Date(timestamp);
 
-        // DATUMS-LOGIK:
-        // Da du im Code oben den 26. April 2026 erwähnt hast, 
-        // nehmen wir an, dass die Entwicklung davor stattfand.
-        const startDate = new Date(2025, 11, 1); // Start ca. Dez 2025
-        const endDate = new Date(2026, 7, 15);   // Heute/Ende April 2026
+    return date.toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+}
 
-        function getInterpolatedDate(index) {
-            const totalCommits = commits.length - 1;
-            const factor = index / totalCommits;
-            const timeDiff = endDate.getTime() - startDate.getTime();
-            const timestamp = startDate.getTime() + (timeDiff * factor);
-            const date = new Date(timestamp);
-            
-            return date.toLocaleDateString('de-DE', { 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-        }
+const regler = document.getElementById('zeitRegler');
+const vLabel = document.getElementById('vLabel');
+const dateLabel = document.getElementById('dateLabel');
+const hashLabel = document.getElementById('hashLabel');
+const frame = document.getElementById('glaggleFrame');
 
-        const regler = document.getElementById('zeitRegler');
-        const vLabel = document.getElementById('vLabel');
-        const dateLabel = document.getElementById('dateLabel');
-        const hashLabel = document.getElementById('hashLabel');
-        const frame = document.getElementById('glaggleFrame');
+function updateUI() {
+    const index = regler.value;
+    vLabel.innerText = "Version #" + (parseInt(index) + 1);
+    dateLabel.innerText = "📅 " + getInterpolatedDate(index);
+    hashLabel.innerText = "ID: " + commits[index].substring(0, 10);
+}
 
-        function updateUI() {
-            const index = regler.value;
-            vLabel.innerText = "Version #" + (parseInt(index) + 1);
-            dateLabel.innerText = "📅 " + getInterpolatedDate(index);
-            hashLabel.innerText = "ID: " + commits[index].substring(0, 10);
-        }
+document.getElementById('loadBtn').onclick = () => {
+    const currentHash = commits[regler.value];
+    frame.src = `https://raw.githack.com/GlaggleWeb/GlaggleWeb.github.io/${currentHash}/index.html`;
+};
 
-        document.getElementById('loadBtn').onclick = () => {
-            const currentHash = commits[regler.value];
-            frame.src = `https://raw.githack.com/GlaggleWeb/GlaggleWeb.github.io/${currentHash}/index.html`;
-        };
+regler.oninput = updateUI;
+updateUI();
+</script>
 
-        regler.oninput = updateUI;
-        updateUI(); // Initialer Aufruf
-    </script>
 </body>
 </html>
