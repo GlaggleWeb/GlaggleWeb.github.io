@@ -9,6 +9,7 @@
     <meta name="keywords" content="Glaggle, Glaggle Account, Glaggle Accounts, Account, Accounts">
     <!-- Von 13.0.1 auf 14.0.0 oder höher aktualisieren -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    
     <style>
         :root {
             --bg-color: #ffffff;
@@ -41,8 +42,10 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            height: 100vh; 
+            min-height: 100vh; 
             margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .box { 
@@ -54,6 +57,11 @@
             max-width: 400px; 
             text-align: center; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 480px) {
+            .box { padding: 30px 20px; }
         }
 
         .logo { width: 180px; margin-bottom: 20px; }
@@ -120,6 +128,16 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .optional-tag { font-size: 0.75rem; opacity: 0.6; font-weight: normal; }
+        
+        /* Modernes Benachrichtigungsfeld anstelle von window.alert */
+        #messageBox {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -135,31 +153,26 @@
     </div>
 
     <div id="stepConfirm" style="display: none;">
-    <h1>Fast da!</h1>
-    <p>Klicke unten um deine E-Mail zu bestätigen.</p>
-    <button onclick="confirmMagicLink()">E-Mail bestätigen ✓</button>
-</div>
+        <h1>Fast da!</h1>
+        <p>Klicke unten um deine E-Mail zu bestätigen.</p>
+        <button onclick="confirmMagicLink()">E-Mail bestätigen ✓</button>
+    </div>
     
     <div id="step2" style="display: none;">
         <h1>Fast geschafft!</h1>
-        <p>Vervollständige dein Profil, um deine Glaggle Account zu erstellen.</p>
+        <p>Vervollständige dein Profil, um deinen Glaggle Account zu erstellen.</p>
         <input type="text" id="userName" placeholder="Benutzername">
         <input type="text" id="gamecenterName" placeholder="Gamecenter Name (optional)">
-        <input type="password" id="pass" placeholder="Passwort (mind. 8 Zeichen)">
         <button id="btnStep2" onclick="finishRegistration()">Konto erstellen</button>
     </div>
 
     <div class="loading-spinner" id="spinner"></div>
+    
+    <!-- Statusnachrichten Box (Ersetzt alert) -->
+    <div id="messageBox"></div>
 
-<div id="result">
-    <span>🎉 Erfolgreich! Deine GlaggleID:</span>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0;">
-        <h2 id="idDisplay" style="margin: 0; font-size: 2.2rem;">000000</h2>
-        <button onclick="copyToClipboard()" id="copyBtn" style="width: auto; margin: 0; padding: 8px 12px; background: var(--accent-dark); font-size: 0.8rem;">
-            Kopieren
-        </button>
-    </div>
-        <p style="margin-bottom: 0; color: inherit; font-size: 0.8rem;">Achtung die GlaggleID kannst du brauchen um dich mit deinem Glaggle Account anzumelden, anstatt Benutzername oder Email einzugeben!</p>
+    <div id="result">
+        <span>🎉 Account erfolgreich erstellt! Du wirst in Kürze weitergeleitet.</span>
     </div>
 </div>
 
@@ -176,6 +189,26 @@ const DB_ID = '69fb65330007c1a1af0a';
 const COLL_ID = 'accounts';
 
 let isVerifying = false; // Verhindert doppelten Aufruf
+
+// Hilfsfunktion für Nachrichten (Ersetzt alert)
+function showMessage(text, isError = false) {
+    const msgBox = document.getElementById('messageBox');
+    msgBox.style.display = 'block';
+    msgBox.innerText = text;
+    if (isError) {
+        msgBox.style.background = '#ffebee';
+        msgBox.style.color = '#c62828';
+        msgBox.style.border = '1px solid #ffcdd2';
+    } else {
+        msgBox.style.background = '#e8f5e9';
+        msgBox.style.color = '#2e7d32';
+        msgBox.style.border = '1px solid #c8e6c9';
+    }
+}
+
+function hideMessage() {
+    document.getElementById('messageBox').style.display = 'none';
+}
 
 // Statt sofort in window.onload zu verifizieren:
 window.onload = async () => {
@@ -196,8 +229,9 @@ window.onload = async () => {
 };
     
 async function sendMagicLink() {
+    hideMessage();
     const email = document.getElementById('email').value;
-    if (!email.includes('@')) return alert("Bitte eine gültige E-Mail eingeben.");
+    if (!email.includes('@')) return showMessage("Bitte eine gültige E-Mail eingeben.", true);
 
     showLoading(true);
     try {
@@ -205,46 +239,38 @@ async function sendMagicLink() {
         const userId = email.replace(/[^a-zA-Z0-9]/g, '').substring(0, 36);
 
         await account.createMagicURLToken(userId, email, window.location.href);
-        alert("E-Mail versendet! Bitte schaue in deinem Postfach nach.");
+        showMessage("E-Mail versendet! Bitte schaue in deinem Postfach nach.", false);
         document.getElementById('btnStep1').disabled = true;
         document.getElementById('btnStep1').innerText = "Link versendet...";
     } catch (error) {
-        alert("Fehler: " + error.message);
+        showMessage("Fehler: " + error.message, true);
     } finally {
         showLoading(false);
     }
 }
-    
+
 async function finishRegistration() {
+    hideMessage();
     const uName = document.getElementById('userName').value;
     const gameName = document.getElementById('gamecenterName').value;
-    const password = document.getElementById('pass').value;
 
-    if (uName.length < 3) return alert("Benutzername muss mind. 3 Zeichen haben.");
-    if (password.length < 8) return alert("Passwort muss mind. 8 Zeichen haben.");
+    if (uName.length < 3) return showMessage("Benutzername muss mind. 3 Zeichen haben.", true);
 
     showLoading(true);
     try {
-        // 1. Passwort setzen
-        await account.updatePassword(password);
-
-        // 2. WICHTIG: Den Namen im Account-System setzen
+        // 1. WICHTIG: Den Namen im Account-System setzen
         // Das sorgt dafür, dass account.get() später den Namen zurückgibt!
         await account.updateName(uName);
 
-        // 3. User-Daten abrufen
+        // 2. User-Daten abrufen
         const user = await account.get();
 
-        // 4. Glaggle ID generieren
-        const glaggleId = Math.floor(100000 + Math.random() * 900000);
-
-        // 5. Dokument in Datenbank speichern
+        // 3. Dokument in Datenbank speichern
         await databases.createDocument(
             DB_ID,
             COLL_ID,
             'unique()',
             {
-                glaggleId: glaggleId,
                 userEmail: user.email,
                 userName: uName,
                 gamecenterName: gameName || "" 
@@ -253,8 +279,8 @@ async function finishRegistration() {
 
         // UI Update
         document.getElementById('step2').style.display = 'none';
-        document.getElementById('idDisplay').innerText = glaggleId;
         document.getElementById('result').style.display = 'block';
+        showMessage("Account erfolgreich erstellt!", false);
 
         // Optional: Nach 5 Sekunden automatisch zur Hauptseite
         setTimeout(() => {
@@ -262,35 +288,18 @@ async function finishRegistration() {
         }, 5000);
 
     } catch (error) {
-        alert("Fehler beim Abschluss: " + error.message);
+        showMessage("Fehler beim Abschluss: " + error.message, true);
     } finally {
         showLoading(false);
     }
 }
+
 function showLoading(state) {
     document.getElementById('spinner').style.display = state ? 'block' : 'none';
 }
 
-function copyToClipboard() {
-    const idText = document.getElementById('idDisplay').innerText;
-    const btn = document.getElementById('copyBtn');
-
-    navigator.clipboard.writeText(idText).then(() => {
-        // Visuelles Feedback geben
-        const originalText = btn.innerText;
-        btn.innerText = "Kopiert!";
-        btn.style.background = "#2e7d32"; // Kurz grün einfärben
-
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = "var(--accent-dark)";
-        }, 2000);
-    }).catch(err => {
-        console.error('Fehler beim Kopieren: ', err);
-    });
-}
-
 async function confirmMagicLink() {
+    hideMessage();
     const userId = sessionStorage.getItem('magicUserId');
     const secret = sessionStorage.getItem('magicSecret');
     showLoading(true);
@@ -299,7 +308,7 @@ async function confirmMagicLink() {
         document.getElementById('stepConfirm').style.display = 'none';
         document.getElementById('step2').style.display = 'block';
     } catch (error) {
-        alert("Link abgelaufen. Bitte neu anfordern.");
+        showMessage("Link abgelaufen. Bitte neu anfordern.", true);
         document.getElementById('stepConfirm').style.display = 'none';
         document.getElementById('step1').style.display = 'block';
     } finally {
