@@ -133,6 +133,17 @@
 
         .info-text { font-size: 0.8rem; color: var(--desc-color); line-height: 1.4; margin-top: -5px; margin-bottom: 15px; }
 
+        #status-message {
+            display: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); display: flex; justify-content: center; align-items: center;
@@ -160,13 +171,11 @@
         <h1>Account Übersicht</h1>
     </div>
 
+    <div id="status-message"></div>
+
     <!-- Profil Card -->
     <div class="card">
         <h2>👤 Profil</h2>
-        <div class="info-row">
-            <span class="info-label">Deine GlaggleID</span>
-            <span class="info-value" id="display-id">------</span>
-        </div>
         
         <label for="edit-username">Benutzername</label>
         <input type="text" id="edit-username" placeholder="Lade...">
@@ -179,7 +188,7 @@
 
     <!-- Sicherheit & E-Mail -->
     <div class="card">
-        <h2>🔒 Sicherheit & E-Mail</h2>
+        <h2>🔒 E-Mail Einstellungen</h2>
         
         <div class="info-row">
             <span class="info-label">E-Mail</span>
@@ -187,19 +196,14 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn-secondary" onclick="sendPasswordReset()">Passwort ändern</button>
-            <p class="info-text">Wir senden dir einen Link zum Zurücksetzen an deine Adresse.</p>
-            
-            <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 10px 0; width: 100%;">
-            
-            <label>Neue E-Mail Adresse</label>
+            <label for="new-email">Neue E-Mail Adresse</label>
             <input type="email" id="new-email" placeholder="beispiel@mail.de">
             <button class="btn-secondary" onclick="updateEmail()">E-Mail Adresse aktualisieren</button>
             <p class="info-text">Du musst die neue Adresse bestätigen, bevor sie aktiv wird.</p>
         </div>
     </div>
 
-    <button class="btn-danger" onclick="window.location.href='../../index.html'">Zurück zur Suche</button>
+    <button class="btn-danger" onclick="navigateTo('../../index.html')">Zurück zur Suche</button>
 </div>
 
 <script>
@@ -215,13 +219,46 @@ const DB_ID = '69fb65330007c1a1af0a';
 const COLL_ID = 'accounts';
 let userDocId = "";
 
+// Safe navigation helper for iFrames and environments without standard base URLs
+function navigateTo(path) {
+    try {
+        const base = (document.baseURI && document.baseURI !== 'about:blank') ? document.baseURI : window.location.href;
+        window.location.href = new URL(path, base).href;
+    } catch (err) {
+        console.warn("Standard navigation warning, falling back:", err);
+        try {
+            window.location.assign(path);
+        } catch (e2) {
+            console.error("Navigation error:", e2);
+        }
+    }
+}
+
+function showStatus(text, isError = false) {
+    const msg = document.getElementById('status-message');
+    msg.style.display = 'block';
+    msg.innerText = text;
+    if (isError) {
+        msg.style.background = '#ffebee';
+        msg.style.color = '#c62828';
+        msg.style.border = '1px solid #ffcdd2';
+    } else {
+        msg.style.background = '#e8f5e9';
+        msg.style.color = '#2e7d32';
+        msg.style.border = '1px solid #c8e6c9';
+    }
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 5000);
+}
+
 window.onload = async () => {
     try {
         const user = await account.get();
         document.getElementById('display-email').innerText = user.email;
         document.getElementById('edit-username').value = user.name || "";
 
-        // Suche Dokument mit Query (Bugfix: Query.equal statt Array-String)
+        // Suche Dokument mit Query
         const response = await databases.listDocuments(DB_ID, COLL_ID, [
             Appwrite.Query.equal('userEmail', user.email)
         ]);
@@ -229,25 +266,33 @@ window.onload = async () => {
         if (response.documents.length > 0) {
             const doc = response.documents[0];
             userDocId = doc.$id;
-            document.getElementById('display-id').innerText = doc.glaggleId;
             document.getElementById('edit-gamecenter').value = doc.gamecenterName || "";
         } else {
             console.warn("Kein Datenbank-Eintrag für diesen User gefunden.");
         }
     } catch (e) {
-        console.error(e);
-        window.location.href = "../login/index.html";
+        console.error("Appwrite error:", e);
+        // Direct to login only if unauthorized (401), otherwise show fetch error message
+        if (e.code === 401 || e.type === 'user_unauthorized') {
+            showStatus("Nicht angemeldet. Leite weiter zum Login...", true);
+            setTimeout(() => navigateTo("../login/index.html"), 1500);
+        } else {
+            showStatus("Verbindungsfehler zu Appwrite: " + (e.message || "Failed to fetch") + ". Bitte Hostname/CORS in Appwrite prüfen.", true);
+        }
     } finally {
-        document.getElementById('loading-overlay').style.opacity = '0';
-        setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 500);
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 500);
+        }
     }
 };
 
 async function updateProfile() {
-    const newName = document.getElementById('edit-username').value;
-    const newGameName = document.getElementById('edit-gamecenter').value;
+    const newName = document.getElementById('edit-username').value.trim();
+    const newGameName = document.getElementById('edit-gamecenter').value.trim();
     
-    if(newName.length < 3) return alert("Der Name ist zu kurz!");
+    if (newName.length < 3) return showStatus("Der Name muss mindestens 3 Zeichen haben!", true);
 
     try {
         // 1. Appwrite Account Name
@@ -259,44 +304,30 @@ async function updateProfile() {
                 userName: newName,
                 gamecenterName: newGameName
             });
-            alert("Profil erfolgreich aktualisiert! 🎉");
+            showStatus("Profil erfolgreich aktualisiert! 🎉", false);
         } else {
-            alert("Fehler: Datenbank-Profil nicht gefunden.");
+            showStatus("Fehler: Datenbank-Profil nicht gefunden.", true);
         }
     } catch (e) { 
-        alert("Fehler: " + e.message); 
-    }
-}
-
-async function sendPasswordReset() {
-    try {
-        const user = await account.get();
-        // Redirect URL anpassen an dein Projekt-Verzeichnis
-        const recoveryUrl = window.location.origin + "/account/overview/reset-password.html";
-        await account.createRecovery(user.email, recoveryUrl);
-        alert("Check dein Postfach! Wir haben dir einen Link geschickt.");
-    } catch (e) { 
-        alert("Fehler: " + e.message); 
+        showStatus("Fehler: " + e.message, true); 
     }
 }
 
 async function updateEmail() {
-    const newEmail = document.getElementById('new-email').value;
-    if(!newEmail.includes('@')) return alert("Bitte gib eine gültige E-Mail ein.");
-
-    const pass = prompt("Bitte gib dein Passwort zur Sicherheit ein:");
-    if(!pass) return;
+    const newEmail = document.getElementById('new-email').value.trim();
+    if (!newEmail.includes('@')) return showStatus("Bitte gib eine gültige E-Mail ein.", true);
 
     try {
-        // Dieser Call sendet die Bestätigungsmail an die NEUE Adresse
-        await account.updateEmail(newEmail, pass);
-        alert("Bestätigungs-Link an " + newEmail + " gesendet! Bitte klicke auf den Link in der Mail.");
+        // Bei passwortlosen Konten wird ein leeres Passwort übergeben
+        await account.updateEmail(newEmail, '');
+        showStatus("Bestätigungs-Link an " + newEmail + " gesendet! Bitte klicke auf den Link in der E-Mail.", false);
         
-        // Logout aus Sicherheitsgründen
-        await account.deleteSession('current');
-        window.location.href = "../../login/index.html";
+        setTimeout(async () => {
+            try { await account.deleteSession('current'); } catch(e) {}
+            navigateTo("../login/index.html");
+        }, 3000);
     } catch (e) {
-        alert("Fehler: " + e.message);
+        showStatus("Fehler beim Aktualisieren der E-Mail: " + e.message, true);
     }
 }
 </script>
