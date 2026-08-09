@@ -225,6 +225,15 @@ window.onload = async () => {
         // Stattdessen einen Button anzeigen
         document.getElementById('step1').style.display = 'none';
         document.getElementById('stepConfirm').style.display = 'block';
+    } else {
+        // Prüfen, ob wir vielleicht schon eingeloggt sind (dann direkt zu Schritt 2)
+        try {
+            await account.get();
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+        } catch (e) {
+            // Nicht eingeloggt, alles normal lassen
+        }
     }
 };
     
@@ -235,8 +244,11 @@ async function sendMagicLink() {
 
     showLoading(true);
     try {
-        // Konsistente userId aus E-Mail ableiten
-        const userId = email.replace(/[^a-zA-Z0-9]/g, '').substring(0, 36);
+        // Falls noch eine alte Sitzung existiert, ausloggen um Konflikte zu vermeiden
+        try { await account.deleteSession('current'); } catch(e) {}
+
+        // Appwrite's eigene sichere ID-Generierung verwenden
+        const userId = Appwrite.ID.unique();
 
         await account.createMagicURLToken(userId, email, window.location.href);
         showMessage("E-Mail versendet! Bitte schaue in deinem Postfach nach.", false);
@@ -299,20 +311,41 @@ function showLoading(state) {
 }
 
 async function confirmMagicLink() {
+    if (isVerifying) return; // Verhindert Doppelklicks
+    
     hideMessage();
     const userId = sessionStorage.getItem('magicUserId');
     const secret = sessionStorage.getItem('magicSecret');
+    
+    if (!userId || !secret) {
+        showMessage("Kein gültiger Link gefunden. Bitte neu anfordern.", true);
+        document.getElementById('stepConfirm').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+        return;
+    }
+
+    isVerifying = true;
     showLoading(true);
+    
     try {
+        // Vor dem Einlösen des Tokens sicherstellen, dass keine andere Session stört
+        try { await account.deleteSession('current'); } catch(e) {}
+
         await account.updateMagicURLSession(userId, secret);
+        
         document.getElementById('stepConfirm').style.display = 'none';
         document.getElementById('step2').style.display = 'block';
+        
+        // Nach erfolgreicher Nutzung die Keys aus dem Storage löschen
+        sessionStorage.removeItem('magicUserId');
+        sessionStorage.removeItem('magicSecret');
     } catch (error) {
-        showMessage("Link abgelaufen. Bitte neu anfordern.", true);
+        showMessage("Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.", true);
         document.getElementById('stepConfirm').style.display = 'none';
         document.getElementById('step1').style.display = 'block';
     } finally {
         showLoading(false);
+        isVerifying = false;
     }
 }
 </script>
