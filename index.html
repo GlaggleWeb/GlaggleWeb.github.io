@@ -2983,22 +2983,39 @@ window.addEventListener('load', function() {
         preloader.classList.add('preloader-hidden');
     }, 500);
 });
+
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
     const limit = 8;
-    const url = `https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${limit}&gsroffset=${offset}&prop=pageimages|imageinfo&piprop=thumbnail&pithumbsize=1000&iiprop=extmetadata&format=json&origin=*`;
+    // Schritt 1: Passende Dateien direkt auf Commons suchen (namespace 6 = Datei),
+    // damit wir zuverlässige imageinfo/extmetadata bekommen statt der schwächeren
+    // Wikipedia-pageimages-Variante.
+    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&format=json&origin=*&srlimit=${limit}&sroffset=${offset}`;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const searchRes = await fetch(searchUrl);
+        const searchData = await searchRes.json();
 
-        const hasImages = data.query && data.query.pages && 
-                          Object.values(data.query.pages).some(page => page.thumbnail);
+        const results = (searchData.query && searchData.query.search) || [];
 
-        if (!hasImages) {
-            if (offset === 0) return; 
+        if (!results.length) {
+            if (offset === 0) return;
             const loadMoreBtn = document.getElementById('load-more-imgs');
             if (loadMoreBtn) loadMoreBtn.style.display = "none";
+            return;
+        }
+
+        // Schritt 2: Für alle gefundenen Dateien in EINEM Call Thumbnail-URL + Metadaten holen
+        const titles = results.map(r => r.title).join('|');
+        const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=500&format=json&origin=*`;
+        const infoRes = await fetch(infoUrl);
+        const infoData = await infoRes.json();
+
+        const pages = (infoData.query && infoData.query.pages) || {};
+        const pageList = Object.values(pages).filter(p => p.imageinfo && p.imageinfo.length);
+
+        if (!pageList.length) {
+            if (offset === 0) return;
             return;
         }
 
@@ -3008,17 +3025,17 @@ async function searchGlaggleImages(query, offset = 0) {
         let imageWrapper = document.getElementById('glaggle-image-container');
         if (!imageWrapper) {
             imageWrapper = document.createElement('div');
-            imageWrapper.id = 'glaggle-image-container'; 
+            imageWrapper.id = 'glaggle-image-container';
             imageWrapper.className = 'glaggle-entry fav-project';
             imageWrapper.style.marginTop = "15px";
             imageWrapper.innerHTML = `
-                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;"></div>
+                <div id="glaggle-image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;"></div>
                 <button id="load-more-imgs" style="width: 100%; padding: 12px; margin-top: 15px; border: none; background: var(--nav-bg); color: var(--link-color); cursor: pointer; border-radius: 8px; font-weight: bold;">
                     Mehr Bilder laden... (Quelle Wikimedia)
                 </button>
             `;
             resultsDiv.appendChild(imageWrapper);
-            
+
             document.getElementById('load-more-imgs').onclick = () => {
                 const currentCount = document.querySelectorAll('#glaggle-image-grid > div').length;
                 searchGlaggleImages(query, currentCount);
@@ -3028,70 +3045,76 @@ async function searchGlaggleImages(query, offset = 0) {
         const grid = document.getElementById('glaggle-image-grid');
         const loadMoreBtn = document.getElementById('load-more-imgs');
 
-        // --- DUPLIKAT-FILTER START ---
+        // --- DUPLIKAT-FILTER ---
         const existingSrcs = new Set();
         document.querySelectorAll('#glaggle-image-grid img').forEach(img => existingSrcs.add(img.src));
 
-        Object.values(data.query.pages).forEach(page => {
-            if (page.thumbnail && page.thumbnail.source) {
-                const src = page.thumbnail.source;
+        pageList.forEach(page => {
+            const info = page.imageinfo[0];
+            // NUR Thumbnail nutzen, niemals die Originaldatei (kein Hotlinking der Vollauflösung)
+            const src = info.thumburl;
+            if (!src || existingSrcs.has(src)) return;
+            existingSrcs.add(src);
 
-                if (!existingSrcs.has(src)) {
-                    existingSrcs.add(src);
+            const meta = info.extmetadata || {};
+            let author = meta.Artist ? meta.Artist.value.replace(/<[^>]*>/g, "").trim() : "Unbekannt";
+            if (!author || author.length > 100) author = "Unbekannt";
+            const license = meta.LicenseShortName ? meta.LicenseShortName.value : "Freie Lizenz";
+            const descriptionUrl = info.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURIComponent(page.title)}`;
+            const displayTitle = page.title.replace(/^(File:|Datei:)/i, "");
 
-                    // Lizenz-Metadaten aus der Wikipedia-Seite selbst (kann leer sein,
-                    // da pageimages/thumbnail nicht immer eigene Bild-Metadaten liefert)
-                    const meta = (page.imageinfo && page.imageinfo[0] && page.imageinfo[0].extmetadata) || {};
-                    const author = meta.Artist ? meta.Artist.value.replace(/<[^>]*>/g, "").trim() : null;
-                    const license = meta.LicenseShortName ? meta.LicenseShortName.value : null;
+            // Card statt reinem Bild: Bild + direkt sichtbarer Lizenztext darunter,
+            // nicht erst im Klick-Modal versteckt
+            const card = document.createElement('div');
+            card.style.cssText = "border:1px solid var(--card-border); border-radius:10px; overflow:hidden; background: var(--card-bg);";
 
-                    // Immer vorhandener, verlässlicher Link: die Wikipedia-Artikelseite selbst,
-                    // von der aus man zum Originalbild inkl. vollständiger Lizenzangabe kommt
-                    const pageUrl = `https://de.wikipedia.org/?curid=${page.pageid}`;
+            const linkImg = document.createElement('a');
+            linkImg.href = descriptionUrl;
+            linkImg.target = "_blank";
+            linkImg.rel = "noopener noreferrer";
+            linkImg.style.cssText = "display:block; height:120px; overflow:hidden;";
 
-                    const imgContainer = document.createElement('div');
-                    imgContainer.style.height = "120px";
-                    imgContainer.style.borderRadius = "10px";
-                    imgContainer.style.overflow = "hidden";
-                    imgContainer.style.cursor = "zoom-in";
-                    imgContainer.style.border = "1px solid var(--card-border)";
-                    imgContainer.style.position = "relative";
+            const img = document.createElement('img');
+            img.src = src;
+            img.loading = "lazy";
+            img.alt = displayTitle.replace(/"/g, '&quot;');
+            img.style.cssText = "width:100%; height:100%; object-fit:cover; cursor:zoom-in;";
 
-                    const img = document.createElement('img');
-                    img.src = src;
-                    img.loading = "lazy";
-                    img.style.width = "100%";
-                    img.style.height = "100%";
-                    img.style.objectFit = "cover";
+            linkImg.appendChild(img);
 
-                    imgContainer.onclick = () => {
-                        const modal = document.getElementById('imageModal');
-                        const modalImg = document.getElementById('modalImg');
-                        modal.style.display = "flex";
-                        modalImg.src = src;
+            const credit = document.createElement('p');
+            credit.style.cssText = "font-size:0.68rem; color:var(--desc-color); padding:6px 8px; line-height:1.3; margin:0;";
+            credit.innerHTML = `
+                ${author} · 
+                <a href="${descriptionUrl}" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline;">${license}</a>
+            `;
 
-                        // Attribution im Modal anzeigen/aktualisieren
-                        let modalCredit = document.getElementById('modalCredit');
-                        if (!modalCredit) {
-                            modalCredit = document.createElement('p');
-                            modalCredit.id = 'modalCredit';
-                            modalCredit.style.cssText = "color:#fff; font-size:0.8rem; text-align:center; margin-top:10px; line-height:1.4;";
-                            modal.appendChild(modalCredit);
-                        }
-                        modalCredit.innerHTML = `
-                            <a href="${pageUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline;">
-                                ${page.title}
-                            </a>
-                            ${author ? ` · Foto: ${author}` : ""}
-                            ${license ? ` · Lizenz: ${license}` : ""}
-                            · via Wikimedia Commons
-                        `;
-                    };
+            card.appendChild(linkImg);
+            card.appendChild(credit);
 
-                    imgContainer.appendChild(img);
-                    grid.appendChild(imgContainer);
+            // Klick aufs Bild öffnet weiterhin das Zoom-Modal (Original bleibt aber nur Thumbnail)
+            img.onclick = (e) => {
+                e.preventDefault();
+                const modal = document.getElementById('imageModal');
+                const modalImg = document.getElementById('modalImg');
+                if (!modal || !modalImg) return;
+                modal.style.display = "flex";
+                modalImg.src = src;
+
+                let modalCredit = document.getElementById('modalCredit');
+                if (!modalCredit) {
+                    modalCredit = document.createElement('p');
+                    modalCredit.id = 'modalCredit';
+                    modalCredit.style.cssText = "color:#fff; font-size:0.8rem; text-align:center; margin-top:10px; line-height:1.4;";
+                    modal.appendChild(modalCredit);
                 }
-            }
+                modalCredit.innerHTML = `
+                    <a href="${descriptionUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline;">${displayTitle}</a>
+                    · Foto: ${author} · Lizenz: ${license} · via Wikimedia Commons
+                `;
+            };
+
+            grid.appendChild(card);
         });
         // --- DUPLIKAT-FILTER ENDE ---
 
