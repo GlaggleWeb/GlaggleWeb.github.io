@@ -3098,20 +3098,44 @@ async function searchGlaggleImages(query, offset = 0) {
                 const modal = document.getElementById('imageModal');
                 const modalImg = document.getElementById('modalImg');
                 if (!modal || !modalImg) return;
+
+                // WICHTIG: Modal explizit als Spalte erzwingen, damit der Credit-Text
+                // garantiert UNTER dem Bild landet statt daneben (Flex-Default ist "row")
                 modal.style.display = "flex";
+                modal.style.flexDirection = "column";
+                modal.style.alignItems = "center";
+                modal.style.justifyContent = "center";
+                modal.style.gap = "0";
+
                 modalImg.src = src;
+                modalImg.style.maxWidth = "95vw";
+                modalImg.style.maxHeight = "75vh";
+                modalImg.style.objectFit = "contain";
 
                 let modalCredit = document.getElementById('modalCredit');
                 if (!modalCredit) {
                     modalCredit = document.createElement('p');
                     modalCredit.id = 'modalCredit';
-                    modalCredit.style.cssText = "color:#fff; font-size:0.8rem; text-align:center; margin-top:10px; line-height:1.4;";
                     modal.appendChild(modalCredit);
                 }
+                modalCredit.style.cssText = `
+                    color:#fff;
+                    font-size:0.8rem;
+                    text-align:center;
+                    margin-top:14px;
+                    line-height:1.4;
+                    max-width:90vw;
+                    padding:0 20px;
+                    box-sizing:border-box;
+                `;
                 modalCredit.innerHTML = `
                     <a href="${descriptionUrl}" target="_blank" rel="noopener noreferrer" style="color:#fff; text-decoration:underline;">${displayTitle}</a>
                     · Foto: ${author} · Lizenz: ${license} · via Wikimedia Commons
                 `;
+
+                // Reihenfolge im DOM erzwingen: Bild zuerst, Credit danach
+                modal.appendChild(modalImg);
+                modal.appendChild(modalCredit);
             };
 
             grid.appendChild(card);
