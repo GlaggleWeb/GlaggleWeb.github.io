@@ -1863,17 +1863,9 @@ if (document.readyState === 'loading') {
 
 <main class="main-content">
     
-<div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center;">
-    <img src="Glaggle Logo Clip kurz.gif" id="glaggle-gif" class="large-logo" alt="Glaggle Animation" 
-         style="display: block; width: 100%; height: auto;">
-    
-    <img src="../glagglelogo-3.png" id="static-logo-light" class="large-logo" alt="Glaggle Logo" 
-         style="display: none; width: 100%; height: auto;">
-
-    <img src="../glagglelogo-3.png" id="static-logo-dark" class="large-logo" alt="Glaggle Logo Dark" 
-         style="display: none; width: 100%; height: auto;">
+<div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center; cursor: pointer;">
+    <img src="glagglelogoclicky.png" id="glaggle-logo" alt="Glaggle Logo" style="display: block; width: 100%; height: auto;">
 </div>
-
     
     <form class="search-bar-container" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
         <div class="custom-caret"></div> 
@@ -3840,6 +3832,21 @@ function dismissPushNotice() {
         }, 500);
     }
 }
+
+//Zu unterst lassen:
+document.addEventListener('DOMContentLoaded', () => {
+    const logoContainer = document.getElementById('logo-container');
+    const searchInput = document.getElementById('glaggleQuery');
+
+    // Nur ausführen, wenn beide Elemente auch wirklich im HTML existieren
+    if (logoContainer && searchInput) {
+        logoContainer.addEventListener('click', () => {
+            searchInput.value = 'Flappyfish'; // Suchbegriff eintragen
+            glaggleSearch();                    // Suche starten
+        });
+    }
+});
+
 </script>
 
 <div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
