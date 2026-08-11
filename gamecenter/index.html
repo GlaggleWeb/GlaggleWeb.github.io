@@ -293,6 +293,154 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
         display: none !important;
     }
 }
+
+/* ===== GLAGGLE STREAK & GLÜCKSRAD ===== */
+.streak-card {
+    background: var(--card-bg);
+    border: 2px solid #ff9f43;
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+}
+.streak-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.streak-flame {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+.streak-count {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #ff9f43;
+}
+.streak-sub {
+    font-size: 0.8rem;
+    color: var(--desc-color);
+}
+.streak-progress-wrap {
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    height: 18px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+.streak-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9f43, #FFD700);
+    width: 0%;
+    transition: width 0.4s ease;
+}
+.streak-shield-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.streak-shield-status {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.streak-buy-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.streak-buy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.streak-highscore {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--card-border);
+    font-size: 0.85rem;
+    color: var(--desc-color);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* GLÜCKSRAD */
+.wheel-card {
+    background: var(--card-bg);
+    border: 2px solid #FFD700;
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+    text-align: center;
+}
+.wheel-locked-msg {
+    color: var(--desc-color);
+    font-size: 0.9rem;
+    padding: 10px 0;
+}
+.wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+}
+.wheel-outer {
+    position: relative;
+    width: 220px;
+    height: 220px;
+}
+.wheel-pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.8rem;
+    z-index: 5;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+.wheel-svg {
+    width: 100%;
+    height: 100%;
+    transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    transform: rotate(0deg);
+}
+.wheel-spin-btn {
+    background: linear-gradient(45deg, #FFD700, #ffb300);
+    color: #333;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.35);
+}
+.wheel-spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.wheel-result {
+    font-size: 1rem;
+    font-weight: bold;
+    min-height: 24px;
+}
 </style>
 </head>
 <body>
@@ -321,6 +469,52 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
             Juhu! Ein neues Glaggle 3D Game ist rausgekommen wie weit kommst und wie viele Münzen sammelst du,
             eher du 3x in ein Stein reinfliegst? Viel Spass.
         </p>
+    </div>
+</div>
+
+<!-- ===== STREAK KARTE (nach news-container einfügen) ===== -->
+<div class="streak-card" id="streak-card">
+    <div class="streak-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="streak-flame" id="streak-flame">🔥</span>
+            <div>
+                <div class="streak-count"><span id="streak-days">0</span> Tage Streak</div>
+                <div class="streak-sub" id="streak-status-text">Verdiene heute deinen ersten Coin!</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="streak-sub" style="margin-bottom: 4px;">Heutiger Fortschritt (<span id="streak-today-coins">0</span>/3 Coins fürs Glücksrad)</div>
+    <div class="streak-progress-wrap">
+        <div class="streak-progress-bar" id="streak-progress-bar"></div>
+    </div>
+
+    <div class="streak-shield-row">
+        <div class="streak-shield-status" id="streak-shield-status">
+            🛡️ Kein Streak-Schutz aktiv
+        </div>
+        <button class="streak-buy-btn" id="streak-buy-shield-btn">Schutz kaufen (25 🪙)</button>
+    </div>
+
+    <div class="streak-highscore">
+        <span>🏆 Längster Streak</span>
+        <span id="streak-best">0 Tage</span>
+    </div>
+</div>
+
+<!-- ===== GLÜCKSRAD KARTE (direkt danach einfügen) ===== -->
+<div class="wheel-card" id="wheel-card">
+    <h2 class="game-title" style="justify-content: center;"><span>🎡</span> Glaggle Glücksrad</h2>
+    <div id="wheel-locked-msg" class="wheel-locked-msg">
+        Verdiene heute <b id="wheel-coins-needed">3</b> Glaggle Coins, um das Rad freizuschalten!
+    </div>
+    <div class="wheel-container" id="wheel-container" style="display:none;">
+        <div class="wheel-outer">
+            <div class="wheel-pointer">🔻</div>
+            <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 200 200"></svg>
+        </div>
+        <button class="wheel-spin-btn" id="wheel-spin-btn">Jetzt drehen!</button>
+        <div class="wheel-result" id="wheel-result"></div>
     </div>
 </div>
 
@@ -1063,6 +1257,386 @@ window.addEventListener('storage', (e) => {
         else gcDisableSmartMouse();
     }
 });
+
+/* ============================================================
+   GLAGGLE STREAK SYSTEM & GLÜCKSRAD
+   Speichert alles im localStorage:
+   - glaggleStreakDays        (aktueller Streak in Tagen)
+   - glaggleStreakBest        (höchster jemals erreichter Streak)
+   - glaggleStreakLastDate    (Datum "YYYY-MM-DD" des letzten gültigen Tages)
+   - glaggleStreakTodayCoins  (heute verdiente Coins, zählt für 1-Coin-Regel & Rad)
+   - glaggleStreakWheelSpunDate (Datum, an dem heute schon gedreht wurde)
+   - glaggleStreakShieldCount (Anzahl aktiver Streak-Schutz-Karten, 0 oder mehr)
+   - glaggleStreakShieldPrice (nächster Kaufpreis, startet bei 25, +25 pro Kauf)
+   ============================================================ */
+
+const STREAK_COINS_FOR_WHEEL = 3;
+const STREAK_SHIELD_BASE_PRICE = 25;
+const STREAK_SHIELD_STEP = 25;
+
+function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function daysBetween(dateStrA, dateStrB) {
+    const a = new Date(dateStrA + 'T00:00:00');
+    const b = new Date(dateStrB + 'T00:00:00');
+    return Math.round((b - a) / (1000 * 60 * 60 * 24));
+}
+
+function getStreakState() {
+    return {
+        days: parseInt(localStorage.getItem('glaggleStreakDays')) || 0,
+        best: parseInt(localStorage.getItem('glaggleStreakBest')) || 0,
+        lastDate: localStorage.getItem('glaggleStreakLastDate') || null,
+        todayCoins: parseInt(localStorage.getItem('glaggleStreakTodayCoins')) || 0,
+        wheelSpunDate: localStorage.getItem('glaggleStreakWheelSpunDate') || null,
+        shieldCount: parseInt(localStorage.getItem('glaggleStreakShieldCount')) || 0,
+        shieldPrice: parseInt(localStorage.getItem('glaggleStreakShieldPrice')) || STREAK_SHIELD_BASE_PRICE
+    };
+}
+
+function saveStreakState(state) {
+    localStorage.setItem('glaggleStreakDays', state.days);
+    localStorage.setItem('glaggleStreakBest', state.best);
+    localStorage.setItem('glaggleStreakLastDate', state.lastDate || '');
+    localStorage.setItem('glaggleStreakTodayCoins', state.todayCoins);
+    localStorage.setItem('glaggleStreakWheelSpunDate', state.wheelSpunDate || '');
+    localStorage.setItem('glaggleStreakShieldCount', state.shieldCount);
+    localStorage.setItem('glaggleStreakShieldPrice', state.shieldPrice);
+}
+
+/**
+ * Prüft beim Laden der Seite, ob seit dem letzten Login Tage vergangen sind,
+ * und wendet ggf. Streak-Schutz an oder setzt den Streak zurück.
+ * Muss beim Seitenaufruf einmal ausgeführt werden, bevor irgendwas angezeigt wird.
+ */
+function evaluateStreakOnLoad() {
+    const state = getStreakState();
+    const today = todayStr();
+
+    if (!state.lastDate) {
+        // Erster Besuch überhaupt -> noch kein Streak, wird erst bei erstem Coin heute gestartet
+        state.todayCoins = 0;
+        saveStreakState(state);
+        renderStreakUI();
+        return;
+    }
+
+    const diff = daysBetween(state.lastDate, today);
+
+    if (diff === 0) {
+        // Gleicher Tag wie beim letzten Besuch -> nichts tun
+    } else if (diff === 1) {
+        // Genau ein Tag vergangen -> normaler neuer Tag, todayCoins zurücksetzen
+        state.todayCoins = 0;
+        state.wheelSpunDate = null;
+    } else if (diff > 1) {
+        // Mindestens ein ganzer Tag wurde komplett verpasst
+        const missedDays = diff - 1; // Tage, an denen 0 Coins verdient wurden
+        if (state.shieldCount > 0 && missedDays === 1) {
+            // Streak-Schutz rettet genau einen verpassten Tag automatisch
+            state.shieldCount -= 1;
+            state.todayCoins = 0;
+            state.wheelSpunDate = null;
+            showStreakToast('🛡️ Dein Streak-Schutz hat deinen Streak gerettet!');
+        } else {
+            // Kein Schutz mehr da (oder mehr als 1 Tag verpasst) -> Streak reißt
+            if (state.days > 0) {
+                showStreakToast('💔 Dein Streak ist leider gerissen. Starte gleich einen neuen!');
+            }
+            state.days = 0;
+            state.shieldPrice = STREAK_SHIELD_BASE_PRICE; // Schutzpreis setzt bei neuem Streak zurück
+            state.todayCoins = 0;
+            state.wheelSpunDate = null;
+        }
+    }
+
+    state.lastDate = today; // Besuch für heute vermerken (Streak-Tag wird erst bei 1. Coin final bestätigt)
+    saveStreakState(state);
+    renderStreakUI();
+}
+
+/**
+ * Diese Funktion IMMER statt direktem localStorage-Coin-Update aufrufen,
+ * wenn der User Glaggle Coins verdient (z.B. am Ende eines Spiels).
+ * amount = Anzahl neu verdienter Coins (nicht der Gesamtstand!)
+ */
+function addGlaggleCoins(amount) {
+    if (!amount || amount <= 0) return;
+
+    // 1. Gesamt-Coins hochzählen (bestehende Logik)
+    glaggleCoins = (parseInt(localStorage.getItem('glaggleCoins')) || 0) + amount;
+    localStorage.setItem('glaggleCoins', glaggleCoins);
+    updateCoinDisplay();
+
+    // Optional: gleich in die Cloud syncen, falls glaggleID vorhanden
+    if (typeof glaggleID !== 'undefined' && glaggleID) {
+        supabaseClient.from('glaggle_accounts')
+            .update({ total_coins: glaggleCoins })
+            .eq('glaggle_id', glaggleID)
+            .then(() => {})
+            .catch(() => {});
+    }
+
+    // 2. Streak-Fortschritt aktualisieren
+    const state = getStreakState();
+    const today = todayStr();
+    const wasFirstCoinToday = state.todayCoins === 0;
+
+    state.todayCoins += amount;
+
+    if (wasFirstCoinToday) {
+        // Heute war noch kein Coin verdient -> Streak-Tag zählt jetzt
+        if (state.lastDate === today) {
+            // War schon "angemeldet" heute (evaluateStreakOnLoad lief schon)
+            if (state.days === 0 || daysBetween(state.lastDate === today ? today : state.lastDate, today) >= 0) {
+                // Nur hochzählen, wenn heute noch nicht mitgezählt wurde
+            }
+        }
+        state.days += 1;
+        if (state.days > state.best) state.best = state.days;
+        state.lastDate = today;
+    }
+
+    saveStreakState(state);
+    renderStreakUI();
+}
+
+function renderStreakUI() {
+    const state = getStreakState();
+
+    const daysEl = document.getElementById('streak-days');
+    const flameEl = document.getElementById('streak-flame');
+    const statusText = document.getElementById('streak-status-text');
+    const todayCoinsEl = document.getElementById('streak-today-coins');
+    const progressBar = document.getElementById('streak-progress-bar');
+    const bestEl = document.getElementById('streak-best');
+    const shieldStatusEl = document.getElementById('streak-shield-status');
+    const buyBtn = document.getElementById('streak-buy-shield-btn');
+
+    if (!daysEl) return; // UI noch nicht im DOM
+
+    daysEl.innerText = state.days;
+    flameEl.style.opacity = state.days > 0 ? '1' : '0.35';
+    bestEl.innerText = `${state.best} Tage`;
+
+    const todayEarned = Math.min(state.todayCoins, STREAK_COINS_FOR_WHEEL);
+    todayCoinsEl.innerText = todayEarned;
+    progressBar.style.width = `${(todayEarned / STREAK_COINS_FOR_WHEEL) * 100}%`;
+
+    if (state.todayCoins === 0) {
+        statusText.innerText = 'Verdiene heute deinen ersten Coin, um den Streak zu sichern!';
+    } else if (state.todayCoins < STREAK_COINS_FOR_WHEEL) {
+        statusText.innerText = 'Streak gesichert! Weiter Coins sammeln fürs Glücksrad.';
+    } else {
+        statusText.innerText = 'Streak gesichert & Glücksrad freigeschaltet! 🎉';
+    }
+
+    if (state.shieldCount > 0) {
+        shieldStatusEl.innerHTML = `🛡️ ${state.shieldCount}x Streak-Schutz aktiv`;
+    } else {
+        shieldStatusEl.innerHTML = `🛡️ Kein Streak-Schutz aktiv`;
+    }
+
+    buyBtn.innerText = `Schutz kaufen (${state.shieldPrice} 🪙)`;
+    const currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    buyBtn.disabled = currentCoins < state.shieldPrice;
+
+    renderWheelUI(state);
+}
+
+function buyStreakShield() {
+    const state = getStreakState();
+    const currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+    if (currentCoins < state.shieldPrice) {
+        showStreakToast('Nicht genug Coins für einen Streak-Schutz!');
+        return;
+    }
+
+    const newCoinTotal = currentCoins - state.shieldPrice;
+    localStorage.setItem('glaggleCoins', newCoinTotal);
+    glaggleCoins = newCoinTotal;
+    updateCoinDisplay();
+
+    state.shieldCount += 1;
+    state.shieldPrice += STREAK_SHIELD_STEP;
+    saveStreakState(state);
+    renderStreakUI();
+    showStreakToast('🛡️ Streak-Schutz gekauft!');
+}
+
+function showStreakToast(msg) {
+    let toast = document.getElementById('streak-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'streak-toast';
+        toast.style.cssText = `
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); border: 2px solid var(--accent); color: var(--text-color);
+            padding: 12px 22px; border-radius: 20px; z-index: 10000; font-size: 0.9rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15); max-width: 90vw; text-align: center;
+            transition: opacity 0.4s ease;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.innerText = msg;
+    toast.style.opacity = '1';
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+}
+
+/* ============================================================
+   GLÜCKSRAD
+   ============================================================ */
+
+// Segmente: Preise + Gewichtung (höhere Zahl = wahrscheinlicher)
+const WHEEL_SEGMENTS = [
+    { label: '1 🪙', type: 'coins', value: 1, weight: 28, color: '#70C4F7' },
+    { label: '2 🪙', type: 'coins', value: 2, weight: 24, color: '#8cc9f5' },
+    { label: '3 🪙', type: 'coins', value: 3, weight: 18, color: '#2E94D1' },
+    { label: '1 🪙', type: 'coins', value: 1, weight: 12, color: '#70C4F7' },
+    { label: '4 🪙', type: 'coins', value: 4, weight: 9, color: '#163F82' },
+    { label: '2 🪙', type: 'coins', value: 2, weight: 5, color: '#8cc9f5' },
+    { label: '5 🪙', type: 'coins', value: 5, weight: 3, color: '#FFD700' },
+    { label: '🛡️ Schutz', type: 'shield', value: 1, weight: 1, color: '#a55eea' }
+];
+
+function buildWheelSVG() {
+    const svg = document.getElementById('wheel-svg');
+    if (!svg || svg.dataset.built === 'true') return;
+
+    const total = WHEEL_SEGMENTS.length;
+    const anglePer = 360 / total;
+    const cx = 100, cy = 100, r = 95;
+    let html = '';
+
+    WHEEL_SEGMENTS.forEach((seg, i) => {
+        const startAngle = i * anglePer;
+        const endAngle = startAngle + anglePer;
+        const startRad = (startAngle - 90) * Math.PI / 180;
+        const endRad = (endAngle - 90) * Math.PI / 180;
+        const x1 = cx + r * Math.cos(startRad);
+        const y1 = cy + r * Math.sin(startRad);
+        const x2 = cx + r * Math.cos(endRad);
+        const y2 = cy + r * Math.sin(endRad);
+        const largeArc = anglePer > 180 ? 1 : 0;
+
+        html += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${seg.color}" stroke="var(--card-bg)" stroke-width="1"/>`;
+
+        const midAngle = (startAngle + endAngle) / 2 - 90;
+        const midRad = midAngle * Math.PI / 180;
+        const tx = cx + (r * 0.62) * Math.cos(midRad);
+        const ty = cy + (r * 0.62) * Math.sin(midRad);
+        html += `<text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle" dominant-baseline="middle" transform="rotate(${midAngle + 90}, ${tx.toFixed(2)}, ${ty.toFixed(2)})">${seg.label}</text>`;
+    });
+
+    svg.innerHTML = html;
+    svg.dataset.built = 'true';
+    svg.dataset.segAngle = anglePer;
+}
+
+function pickWeightedSegment() {
+    const totalWeight = WHEEL_SEGMENTS.reduce((sum, s) => sum + s.weight, 0);
+    let rnd = Math.random() * totalWeight;
+    for (let i = 0; i < WHEEL_SEGMENTS.length; i++) {
+        rnd -= WHEEL_SEGMENTS[i].weight;
+        if (rnd <= 0) return i;
+    }
+    return 0;
+}
+
+function spinWheel() {
+    const state = getStreakState();
+    const today = todayStr();
+    const spinBtn = document.getElementById('wheel-spin-btn');
+    const resultEl = document.getElementById('wheel-result');
+    const svg = document.getElementById('wheel-svg');
+
+    if (state.todayCoins < STREAK_COINS_FOR_WHEEL) return;
+    if (state.wheelSpunDate === today) return;
+
+    spinBtn.disabled = true;
+    resultEl.innerText = '';
+
+    const segIndex = pickWeightedSegment();
+    const anglePer = 360 / WHEEL_SEGMENTS.length;
+    const segmentCenter = segIndex * anglePer + anglePer / 2;
+    // Rad dreht sich mehrfach + landet so, dass der Pointer (oben) auf die Segmentmitte zeigt
+    const fullSpins = 5 * 360;
+    const targetRotation = fullSpins + (360 - segmentCenter);
+
+    svg.style.transform = `rotate(${targetRotation}deg)`;
+
+    setTimeout(() => {
+        const seg = WHEEL_SEGMENTS[segIndex];
+        state.wheelSpunDate = today;
+        saveStreakState(state);
+
+        if (seg.type === 'coins') {
+            addGlaggleCoins(seg.value);
+            resultEl.innerText = `🎉 Du hast ${seg.value} Glaggle Coin${seg.value > 1 ? 's' : ''} gewonnen!`;
+        } else if (seg.type === 'shield') {
+            const s2 = getStreakState();
+            s2.shieldCount += 1;
+            saveStreakState(s2);
+            resultEl.innerText = `🛡️ Jackpot! Du hast einen Streak-Schutz gewonnen!`;
+        }
+
+        renderStreakUI();
+    }, 4600);
+}
+
+function renderWheelUI(state) {
+    const lockedMsg = document.getElementById('wheel-locked-msg');
+    const container = document.getElementById('wheel-container');
+    const spinBtn = document.getElementById('wheel-spin-btn');
+    const resultEl = document.getElementById('wheel-result');
+    const coinsNeededEl = document.getElementById('wheel-coins-needed');
+    if (!lockedMsg) return;
+
+    const today = todayStr();
+    const unlocked = state.todayCoins >= STREAK_COINS_FOR_WHEEL;
+    const alreadySpun = state.wheelSpunDate === today;
+
+    if (!unlocked) {
+        lockedMsg.style.display = 'block';
+        container.style.display = 'none';
+        coinsNeededEl.innerText = STREAK_COINS_FOR_WHEEL - state.todayCoins;
+        return;
+    }
+
+    lockedMsg.style.display = 'none';
+    container.style.display = 'flex';
+    buildWheelSVG();
+
+    if (alreadySpun) {
+        spinBtn.disabled = true;
+        spinBtn.innerText = 'Morgen wieder drehen!';
+        if (!resultEl.innerText) resultEl.innerText = 'Du hast dein heutiges Drehen bereits genutzt.';
+    } else {
+        spinBtn.disabled = false;
+        spinBtn.innerText = 'Jetzt drehen!';
+    }
+}
+
+// --- INITIALISIERUNG ---
+document.addEventListener('DOMContentLoaded', () => {
+    evaluateStreakOnLoad();
+    document.getElementById('streak-buy-shield-btn')?.addEventListener('click', buyStreakShield);
+    document.getElementById('wheel-spin-btn')?.addEventListener('click', spinWheel);
+});
+
+// Falls das Script nach DOMContentLoaded eingebunden wird (z.B. am Seitenende):
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    evaluateStreakOnLoad();
+    setTimeout(() => {
+        document.getElementById('streak-buy-shield-btn')?.addEventListener('click', buyStreakShield);
+        document.getElementById('wheel-spin-btn')?.addEventListener('click', spinWheel);
+    }, 0);
+}
 </script>
 </body>
 </html>
