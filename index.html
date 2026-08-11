@@ -1666,6 +1666,25 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
 </div>
 </details>
 
+<!-- Google Translate Widget START -->
+<div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px;">
+    <p style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600;">Sprache / Language</p>
+    <div id="google_translate_element" style="min-height: 38px;"></div>
+</div>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'de',
+    includedLanguages: 'en,de,fr,it,es,pt,nl,pl,ru,zh-CN,ja',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- Google Translate Widget ENDE -->
+
 <script>
 /* ===== GLAGGLE UNIFIED THEME SYSTEM ===== */
 const THEMES = {
