@@ -1359,28 +1359,52 @@ function evaluateStreakOnLoad() {
 }
 
 /**
- * Diese Funktion IMMER statt direktem localStorage-Coin-Update aufrufen,
- * wenn der User Glaggle Coins verdient (z.B. am Ende eines Spiels).
- * amount = Anzahl neu verdienter Coins (nicht der Gesamtstand!)
+ * PASSIVE COIN-ERKENNUNG — keine Änderung an den Spielen nötig!
+ *
+ * Deine Spiele schreiben weiterhin ganz normal direkt in
+ * localStorage.setItem('glaggleCoins', ...). Diese Funktion vergleicht
+ * regelmäßig den aktuellen glaggleCoins-Wert mit dem zuletzt bekannten
+ * Stand (glaggleStreakLastKnownCoins) und verbucht die Differenz
+ * automatisch als "heute verdiente Coins" für den Streak.
+ *
+ * Das deckt beide Fälle ab:
+ * - Spiel als eigene Seite: beim Zurückkommen zum Gamecenter greift der
+ *   Check beim Laden (checkForNewCoins beim DOMContentLoaded).
+ * - Spiel als iframe im Gamecenter: das Interval erkennt die Änderung
+ *   auch ohne Seiten-Reload (native storage-Events feuern im selben
+ *   Tab nicht, deshalb Polling statt 'storage'-Listener).
  */
-function addGlaggleCoins(amount) {
-    if (!amount || amount <= 0) return;
+function checkForNewCoins() {
+    const currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+    let lastKnown = localStorage.getItem('glaggleStreakLastKnownCoins');
+    lastKnown = lastKnown === null ? currentCoins : parseInt(lastKnown);
 
-    // 1. Gesamt-Coins hochzählen (bestehende Logik)
-    glaggleCoins = (parseInt(localStorage.getItem('glaggleCoins')) || 0) + amount;
-    localStorage.setItem('glaggleCoins', glaggleCoins);
-    updateCoinDisplay();
-
-    // Optional: gleich in die Cloud syncen, falls glaggleID vorhanden
-    if (typeof glaggleID !== 'undefined' && glaggleID) {
-        supabaseClient.from('glaggle_accounts')
-            .update({ total_coins: glaggleCoins })
-            .eq('glaggle_id', glaggleID)
-            .then(() => {})
-            .catch(() => {});
+    if (currentCoins > lastKnown) {
+        const earned = currentCoins - lastKnown;
+        registerStreakCoins(earned);
+    } else if (currentCoins < lastKnown) {
+        // Coins wurden ausgegeben (z.B. Casino, Glagini) -> kein Streak-Fortschritt,
+        // nur den bekannten Stand nachziehen, damit keine falsche Differenz entsteht
     }
 
-    // 2. Streak-Fortschritt aktualisieren
+    localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
+
+    // UI-Coin-Anzeige immer synchron halten, falls sich glaggleCoins von
+    // außen (Spiel/iframe) geändert hat
+    if (typeof glaggleCoins !== 'undefined' && currentCoins !== glaggleCoins) {
+        glaggleCoins = currentCoins;
+        updateCoinDisplay();
+    }
+}
+
+/**
+ * Verbucht neu verdiente Coins für den Streak-Fortschritt.
+ * Wird intern von checkForNewCoins() aufgerufen, oder direkt vom
+ * Glücksrad-Gewinn (dort wissen wir die Menge exakt, ohne Umweg über Polling).
+ */
+function registerStreakCoins(amount) {
+    if (!amount || amount <= 0) return;
+
     const state = getStreakState();
     const today = todayStr();
     const wasFirstCoinToday = state.todayCoins === 0;
@@ -1388,13 +1412,6 @@ function addGlaggleCoins(amount) {
     state.todayCoins += amount;
 
     if (wasFirstCoinToday) {
-        // Heute war noch kein Coin verdient -> Streak-Tag zählt jetzt
-        if (state.lastDate === today) {
-            // War schon "angemeldet" heute (evaluateStreakOnLoad lief schon)
-            if (state.days === 0 || daysBetween(state.lastDate === today ? today : state.lastDate, today) >= 0) {
-                // Nur hochzählen, wenn heute noch nicht mitgezählt wurde
-            }
-        }
         state.days += 1;
         if (state.days > state.best) state.best = state.days;
         state.lastDate = today;
@@ -1576,7 +1593,24 @@ function spinWheel() {
         saveStreakState(state);
 
         if (seg.type === 'coins') {
-            addGlaggleCoins(seg.value);
+            // Coins direkt gutschreiben (wie deine Spiele es auch tun) +
+            // gleichzeitig den "letzten bekannten Stand" mit hochziehen,
+            // damit das Polling diesen Gewinn nicht nochmal doppelt zählt
+            const newTotal = (parseInt(localStorage.getItem('glaggleCoins')) || 0) + seg.value;
+            localStorage.setItem('glaggleCoins', newTotal);
+            localStorage.setItem('glaggleStreakLastKnownCoins', newTotal);
+            glaggleCoins = newTotal;
+            updateCoinDisplay();
+
+            if (typeof glaggleID !== 'undefined' && glaggleID) {
+                supabaseClient.from('glaggle_accounts')
+                    .update({ total_coins: newTotal })
+                    .eq('glaggle_id', glaggleID)
+                    .then(() => {})
+                    .catch(() => {});
+            }
+
+            registerStreakCoins(seg.value);
             resultEl.innerText = `🎉 Du hast ${seg.value} Glaggle Coin${seg.value > 1 ? 's' : ''} gewonnen!`;
         } else if (seg.type === 'shield') {
             const s2 = getStreakState();
@@ -1623,19 +1657,32 @@ function renderWheelUI(state) {
 }
 
 // --- INITIALISIERUNG ---
-document.addEventListener('DOMContentLoaded', () => {
+function initStreakSystem() {
     evaluateStreakOnLoad();
+    checkForNewCoins(); // einmal sofort prüfen (deckt "Spiel als eigene Seite"-Fall ab)
     document.getElementById('streak-buy-shield-btn')?.addEventListener('click', buyStreakShield);
     document.getElementById('wheel-spin-btn')?.addEventListener('click', spinWheel);
-});
 
-// Falls das Script nach DOMContentLoaded eingebunden wird (z.B. am Seitenende):
+    // Alle 2 Sekunden prüfen, ob sich glaggleCoins verändert hat (deckt den
+    // "Spiel läuft im iframe / gleicher Tab"-Fall ab, ganz ohne Spiel-Änderungen)
+    setInterval(checkForNewCoins, 2000);
+
+    // Zusätzlich: reagiert auch, wenn ein ANDERER Tab (z.B. Spiel in neuem Tab
+    // geöffnet) die Coins ändert
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'glaggleCoins') checkForNewCoins();
+    });
+
+    // Und wenn der User von einem anderen Tab/Fenster zurück zum Gamecenter wechselt
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) checkForNewCoins();
+    });
+}
+
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    evaluateStreakOnLoad();
-    setTimeout(() => {
-        document.getElementById('streak-buy-shield-btn')?.addEventListener('click', buyStreakShield);
-        document.getElementById('wheel-spin-btn')?.addEventListener('click', spinWheel);
-    }, 0);
+    initStreakSystem();
+} else {
+    document.addEventListener('DOMContentLoaded', initStreakSystem);
 }
 </script>
 </body>
