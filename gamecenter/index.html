@@ -533,51 +533,55 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
         </p>
     </div>
 </div>
+<!-- ===== STREAK & GLÜCKSRAD WRAPPER (nach news-container einfügen) ===== -->
+<div style="width: 100%; max-width: 900px; padding: 0 20px; box-sizing: border-box; margin: 0 auto;">
 
-<!-- ===== STREAK KARTE (nach news-container einfügen) ===== -->
-<div class="streak-card" id="streak-card">
-    <div class="streak-header">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span class="streak-flame" id="streak-flame">🔥</span>
-            <div>
-                <div class="streak-count"><span id="streak-days">0</span> Tage Streak</div>
-                <div class="streak-sub" id="streak-status-text">Verdiene heute deinen ersten Coin!</div>
+    <!-- STREAK KARTE -->
+    <div class="streak-card" id="streak-card">
+        <div class="streak-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="streak-flame" id="streak-flame">🔥</span>
+                <div>
+                    <div class="streak-count"><span id="streak-days">0</span> Tage Streak</div>
+                    <div class="streak-sub" id="streak-status-text">Verdiene heute deinen ersten Coin!</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="streak-sub" style="margin-bottom: 4px;">Heutiger Fortschritt (<span id="streak-today-coins">0</span>/3 Coins fürs Glücksrad)</div>
-    <div class="streak-progress-wrap">
-        <div class="streak-progress-bar" id="streak-progress-bar"></div>
-    </div>
-
-    <div class="streak-shield-row">
-        <div class="streak-shield-status" id="streak-shield-status">
-            🛡️ Kein Streak-Schutz aktiv
+        <div class="streak-sub" style="margin-bottom: 4px;">Heutiger Fortschritt (<span id="streak-today-coins">0</span>/3 Coins fürs Glücksrad)</div>
+        <div class="streak-progress-wrap">
+            <div class="streak-progress-bar" id="streak-progress-bar"></div>
         </div>
-        <button class="streak-buy-btn" id="streak-buy-shield-btn">Schutz kaufen (25 🪙)</button>
-    </div>
 
-    <div class="streak-highscore">
-        <span>🏆 Längster Streak</span>
-        <span id="streak-best">0 Tage</span>
-    </div>
-</div>
-
-<!-- ===== GLÜCKSRAD KARTE (direkt danach einfügen) ===== -->
-<div class="wheel-card" id="wheel-card">
-    <h2 class="game-title" style="justify-content: center;"><span>🎡</span> Glaggle Glücksrad</h2>
-    <div id="wheel-locked-msg" class="wheel-locked-msg">
-        Verdiene heute <b id="wheel-coins-needed">3</b> Glaggle Coins, um das Rad freizuschalten!
-    </div>
-    <div class="wheel-container" id="wheel-container" style="display:none;">
-        <div class="wheel-outer">
-            <div class="wheel-pointer">🔻</div>
-            <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 200 200"></svg>
+        <div class="streak-shield-row">
+            <div class="streak-shield-status" id="streak-shield-status">
+                🛡️ Kein Streak-Schutz aktiv
+            </div>
+            <button class="streak-buy-btn" id="streak-buy-shield-btn">Schutz kaufen (25 🪙)</button>
         </div>
-        <button class="wheel-spin-btn" id="wheel-spin-btn">Jetzt drehen!</button>
-        <div class="wheel-result" id="wheel-result"></div>
+
+        <div class="streak-highscore">
+            <span>🏆 Längster Streak</span>
+            <span id="streak-best">0 Tage</span>
+        </div>
     </div>
+
+    <!-- GLÜCKSRAD KARTE -->
+    <div class="wheel-card" id="wheel-card">
+        <h2 class="game-title" style="justify-content: center;"><span>🎡</span> Glaggle Glücksrad</h2>
+        <div id="wheel-locked-msg" class="wheel-locked-msg">
+            Verdiene heute <b id="wheel-coins-needed">3</b> Glaggle Coins, um das Rad freizuschalten!
+        </div>
+        <div class="wheel-container" id="wheel-container" style="display:none;">
+            <div class="wheel-outer">
+                <div class="wheel-pointer">🔻</div>
+                <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 200 200"></svg>
+            </div>
+            <button class="wheel-spin-btn" id="wheel-spin-btn">Jetzt drehen!</button>
+            <div class="wheel-result" id="wheel-result"></div>
+        </div>
+    </div>
+
 </div>
 
 <section>
@@ -1605,7 +1609,7 @@ const WHEEL_SEGMENTS = [
     { label: '4 🪙', type: 'coins', value: 4, weight: 9, color: '#163F82' },
     { label: '2 🪙', type: 'coins', value: 2, weight: 5, color: '#8cc9f5' },
     { label: '5 🪙', type: 'coins', value: 5, weight: 3, color: '#FFD700' },
-    { label: '🛡️ Schutz', type: 'shield', value: 1, weight: 1, color: '#a55eea' }
+    { label: '🛡️', type: 'shield', value: 1, weight: 1, color: '#a55eea' }
 ];
 
 function buildWheelSVG() {
