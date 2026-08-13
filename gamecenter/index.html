@@ -297,7 +297,7 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
 /* ===== GLAGGLE STREAK & GLÜCKSRAD ===== */
 .streak-card {
     background: var(--card-bg);
-    border: 2px solid #ff9f43;
+    border: 2px solid var(--accent);
     border-radius: 18px;
     padding: 20px;
     width: 100%;
@@ -315,11 +315,31 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
 .streak-flame {
     font-size: 2.2rem;
     line-height: 1;
+    display: inline-block;
+    transition: opacity 0.4s ease;
+}
+.streak-flame.flame-active {
+    animation: streakFlameFlicker 1.6s ease-in-out infinite;
+}
+.streak-flame.flame-pulse {
+    animation: streakFlamePulse 0.6s ease;
+}
+@keyframes streakFlameFlicker {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.05) rotate(-2deg); }
+    50% { transform: scale(0.97) rotate(1deg); }
+    75% { transform: scale(1.03) rotate(2deg); }
+}
+@keyframes streakFlamePulse {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.5); filter: drop-shadow(0 0 10px var(--accent)); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
 }
 .streak-count {
     font-size: 1.6rem;
     font-weight: bold;
-    color: #ff9f43;
+    color: var(--accent);
 }
 .streak-sub {
     font-size: 0.8rem;
@@ -332,12 +352,43 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
     height: 18px;
     overflow: hidden;
     margin: 10px 0;
+    transition: box-shadow 0.3s ease;
+}
+.streak-progress-wrap.bar-pulse {
+    animation: streakBarWrapPulse 0.6s ease;
+}
+@keyframes streakBarWrapPulse {
+    0% { box-shadow: 0 0 0 0 var(--accent); }
+    50% { box-shadow: 0 0 0 6px rgba(112, 196, 247, 0.25); }
+    100% { box-shadow: 0 0 0 0 transparent; }
 }
 .streak-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ff9f43, #FFD700);
+    background: var(--accent);
     width: 0%;
-    transition: width 0.4s ease;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+.streak-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    animation: streakBarShine 2s linear infinite;
+}
+@keyframes streakBarShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+.streak-progress-bar.progress-complete {
+    background: linear-gradient(90deg, var(--accent), #FFD700, var(--accent));
+    background-size: 200% 100%;
+    animation: streakBarComplete 2s linear infinite;
+}
+@keyframes streakBarComplete {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
 }
 .streak-shield-row {
     display: flex;
@@ -362,6 +413,11 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
     font-size: 0.8rem;
     font-weight: bold;
     cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.streak-buy-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
 }
 .streak-buy-btn:disabled {
     opacity: 0.5;
@@ -380,7 +436,7 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
 /* GLÜCKSRAD */
 .wheel-card {
     background: var(--card-bg);
-    border: 2px solid #FFD700;
+    border: 2px solid var(--accent);
     border-radius: 18px;
     padding: 20px;
     width: 100%;
@@ -421,15 +477,20 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
     transform: rotate(0deg);
 }
 .wheel-spin-btn {
-    background: linear-gradient(45deg, #FFD700, #ffb300);
-    color: #333;
+    background: var(--accent);
+    color: white;
     border: none;
     border-radius: 24px;
     padding: 12px 28px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.35);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.wheel-spin-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
 }
 .wheel-spin-btn:disabled {
     opacity: 0.5;
@@ -1258,7 +1319,7 @@ window.addEventListener('storage', (e) => {
         else gcDisableSmartMouse();
     }
 });
-
+    
 /* ============================================================
    GLAGGLE STREAK SYSTEM & GLÜCKSRAD
    Speichert alles im localStorage:
@@ -1293,7 +1354,7 @@ function getStreakState() {
         lastDate: localStorage.getItem('glaggleStreakLastDate') || null,
         todayCoins: parseInt(localStorage.getItem('glaggleStreakTodayCoins')) || 0,
         wheelSpunDate: localStorage.getItem('glaggleStreakWheelSpunDate') || null,
-        shieldCount: parseInt(localStorage.getItem('glaggleStreakShieldCount')) || 0,
+        shieldCount: parseInt(localStorage.getItem('glaggleStreakShieldCount') ?? '2'),
         shieldPrice: parseInt(localStorage.getItem('glaggleStreakShieldPrice')) || STREAK_SHIELD_BASE_PRICE
     };
 }
@@ -1368,33 +1429,38 @@ function evaluateStreakOnLoad() {
  * Stand (glaggleStreakLastKnownCoins) und verbucht die Differenz
  * automatisch als "heute verdiente Coins" für den Streak.
  *
- * Das deckt beide Fälle ab:
- * - Spiel als eigene Seite: beim Zurückkommen zum Gamecenter greift der
- *   Check beim Laden (checkForNewCoins beim DOMContentLoaded).
- * - Spiel als iframe im Gamecenter: das Interval erkennt die Änderung
- *   auch ohne Seiten-Reload (native storage-Events feuern im selben
- *   Tab nicht, deshalb Polling statt 'storage'-Listener).
+ * WICHTIG: liest glaggleCoins IMMER frisch aus localStorage (nicht aus
+ * der globalen JS-Variable), damit es unabhängig davon funktioniert,
+ * ob/wann das Hauptscript seine eigene Variable aktualisiert. Das macht
+ * die Live-Erkennung zuverlässig, auch bei iframes oder wenn Coins per
+ * Cloud-Sync asynchron nachgeladen werden.
  */
 function checkForNewCoins() {
     const currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
-    let lastKnown = localStorage.getItem('glaggleStreakLastKnownCoins');
-    lastKnown = lastKnown === null ? currentCoins : parseInt(lastKnown);
+    const storedLastKnown = localStorage.getItem('glaggleStreakLastKnownCoins');
+    const lastKnown = storedLastKnown === null ? currentCoins : (parseInt(storedLastKnown) || 0);
 
     if (currentCoins > lastKnown) {
         const earned = currentCoins - lastKnown;
+        localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
         registerStreakCoins(earned);
     } else if (currentCoins < lastKnown) {
         // Coins wurden ausgegeben (z.B. Casino, Glagini) -> kein Streak-Fortschritt,
         // nur den bekannten Stand nachziehen, damit keine falsche Differenz entsteht
+        localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
     }
 
-    localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
-
-    // UI-Coin-Anzeige immer synchron halten, falls sich glaggleCoins von
-    // außen (Spiel/iframe) geändert hat
-    if (typeof glaggleCoins !== 'undefined' && currentCoins !== glaggleCoins) {
+    // Coin-Anzeige oben rechts immer synchron mit localStorage halten,
+    // unabhängig vom Zustand der globalen glaggleCoins-Variable
+    const countElement = document.getElementById('coin-count');
+    if (countElement) {
+        const displayed = countElement.innerText.replace(/[^\d]/g, '');
+        if (parseInt(displayed) !== currentCoins) {
+            countElement.innerText = currentCoins.toLocaleString();
+        }
+    }
+    if (typeof glaggleCoins !== 'undefined') {
         glaggleCoins = currentCoins;
-        updateCoinDisplay();
     }
 }
 
@@ -1416,10 +1482,12 @@ function registerStreakCoins(amount) {
         state.days += 1;
         if (state.days > state.best) state.best = state.days;
         state.lastDate = today;
+        pulseFlame();
     }
 
     saveStreakState(state);
     renderStreakUI();
+    pulseProgressBar();
 }
 
 function renderStreakUI() {
@@ -1438,11 +1506,13 @@ function renderStreakUI() {
 
     daysEl.innerText = state.days;
     flameEl.style.opacity = state.days > 0 ? '1' : '0.35';
+    flameEl.classList.toggle('flame-active', state.days > 0);
     bestEl.innerText = `${state.best} Tage`;
 
     const todayEarned = Math.min(state.todayCoins, STREAK_COINS_FOR_WHEEL);
     todayCoinsEl.innerText = todayEarned;
     progressBar.style.width = `${(todayEarned / STREAK_COINS_FOR_WHEEL) * 100}%`;
+    progressBar.classList.toggle('progress-complete', todayEarned >= STREAK_COINS_FOR_WHEEL);
 
     if (state.todayCoins === 0) {
         statusText.innerText = 'Verdiene heute deinen ersten Coin, um den Streak zu sichern!';
@@ -1484,6 +1554,22 @@ function buyStreakShield() {
     saveStreakState(state);
     renderStreakUI();
     showStreakToast('🛡️ Streak-Schutz gekauft!');
+}
+
+function pulseFlame() {
+    const flameEl = document.getElementById('streak-flame');
+    if (!flameEl) return;
+    flameEl.classList.remove('flame-pulse');
+    void flameEl.offsetWidth; // Reflow erzwingen, damit die Animation neu startet
+    flameEl.classList.add('flame-pulse');
+}
+
+function pulseProgressBar() {
+    const barWrap = document.getElementById('streak-progress-bar')?.parentElement;
+    if (!barWrap) return;
+    barWrap.classList.remove('bar-pulse');
+    void barWrap.offsetWidth;
+    barWrap.classList.add('bar-pulse');
 }
 
 function showStreakToast(msg) {
@@ -1664,20 +1750,24 @@ function initStreakSystem() {
     document.getElementById('streak-buy-shield-btn')?.addEventListener('click', buyStreakShield);
     document.getElementById('wheel-spin-btn')?.addEventListener('click', spinWheel);
 
-    // Alle 2 Sekunden prüfen, ob sich glaggleCoins verändert hat (deckt den
-    // "Spiel läuft im iframe / gleicher Tab"-Fall ab, ganz ohne Spiel-Änderungen)
-    setInterval(checkForNewCoins, 2000);
+    // Regelmäßiges Live-Polling -> fängt Coin-Änderungen aus Spielen,
+    // iframes, oder anderen Skripten im gleichen Tab zuverlässig ab
+    // (dafür gibt es kein natives Browser-Event, deshalb Polling)
+    if (window.__glaggleStreakPollInterval) {
+        clearInterval(window.__glaggleStreakPollInterval);
+    }
+    window.__glaggleStreakPollInterval = setInterval(checkForNewCoins, 1000);
 
-    // Zusätzlich: reagiert auch, wenn ein ANDERER Tab (z.B. Spiel in neuem Tab
-    // geöffnet) die Coins ändert
+    // Reagiert, wenn der User von einem anderen Tab/Fenster ODER von
+    // einer separaten Spiel-Seite zurück zum Gamecenter wechselt
     window.addEventListener('storage', (e) => {
         if (e.key === 'glaggleCoins') checkForNewCoins();
     });
-
-    // Und wenn der User von einem anderen Tab/Fenster zurück zum Gamecenter wechselt
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) checkForNewCoins();
     });
+    window.addEventListener('focus', checkForNewCoins);
+    window.addEventListener('pageshow', checkForNewCoins); // fängt Zurück-Navigation via Browser-Cache (bfcache) ab
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
