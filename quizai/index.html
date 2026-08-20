@@ -431,38 +431,52 @@ body.smart-mouse-active summary.smart-hover {
         return `<input type="text" id="ans${i}" placeholder="Antwort eintippen...">`;
     }
 
-    function evaluateQuiz() {
-        let score = 0;
-        currentQuiz.forEach((q, i) => {
-            const feedback = document.getElementById(`feedback-${i}`);
-            let userAns = "";
-            if (q.type === 'choice') {
-                const checked = document.querySelector(`input[name="r${i}"]:checked`);
-                userAns = checked ? checked.value : "";
-            } else {
-                userAns = document.getElementById(`ans${i}`).value.trim();
-            }
+function evaluateQuiz() {
+    let score = 0;
+    currentQuiz.forEach((q, i) => {
+        const feedback = document.getElementById(`feedback-${i}`);
+        let userAns = "";
+        if (q.type === 'choice') {
+            const checked = document.querySelector(`input[name="r${i}"]:checked`);
+            userAns = checked ? checked.value : "";
+        } else {
+            userAns = document.getElementById(`ans${i}`).value.trim();
+        }
 
-            let isCorrect = false;
-            if (q.type === 'slider' && q.range) {
-                const val = parseFloat(userAns);
-                isCorrect = val >= q.range[0] && val <= q.range[1];
-            } else {
-                const acceptable = q.correct.split(',').map(v => v.trim().toLowerCase());
-                isCorrect = acceptable.includes(userAns.toLowerCase());
-            }
+        let isCorrect = false;
+        let correctDisplay = q.correct;
 
-            feedback.style.display = "block";
-            feedback.style.background = isCorrect ? "rgba(52, 168, 83, 0.1)" : "rgba(234, 67, 53, 0.1)";
-            feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
-            feedback.innerHTML = `<strong>${isCorrect ? "✅ Korrekt!" : "❌ Falsch!"}</strong><br>
-                                  <small>Lösung: ${q.correct}</small><br>
-                                  <p style="color:var(--text-color); font-size:0.9rem; margin-top:5px;">${q.desc || ""}</p>`;
-            if(isCorrect) score++;
-        });
-        document.getElementById('eval-markdown').style.display = "block";
-        document.getElementById('eval-markdown').innerHTML = ` 🎉 Ergebnis: ${score} von ${currentQuiz.length} richtig!`;
-    }
+        if (q.type === 'slider' && q.range) {
+            const val = parseFloat(userAns);
+            isCorrect = val >= q.range[0] && val <= q.range[1];
+        } else if (q.type === 'choice') {
+            // "correct" kann ein Buchstabe (A/B/C), ein Index (0/1/2) oder der volle Text sein
+            let correctText = q.correct.trim();
+            const letterMatch = correctText.match(/^([A-Za-z])$/);
+            if (letterMatch) {
+                const idx = letterMatch[1].toUpperCase().charCodeAt(0) - 65; // A=0, B=1, ...
+                correctText = q.opts[idx] ?? correctText;
+            } else if (/^\d+$/.test(correctText)) {
+                correctText = q.opts[parseInt(correctText)] ?? correctText;
+            }
+            correctDisplay = correctText;
+            isCorrect = userAns.trim().toLowerCase() === correctText.trim().toLowerCase();
+        } else {
+            const acceptable = q.correct.split(',').map(v => v.trim().toLowerCase());
+            isCorrect = acceptable.includes(userAns.toLowerCase());
+        }
+
+        feedback.style.display = "block";
+        feedback.style.background = isCorrect ? "rgba(52, 168, 83, 0.1)" : "rgba(234, 67, 53, 0.1)";
+        feedback.style.color = isCorrect ? "#34A853" : "#EA4335";
+        feedback.innerHTML = `<strong>${isCorrect ? "✅ Korrekt!" : "❌ Falsch!"}</strong><br>
+                              <small>Lösung: ${correctDisplay}</small><br>
+                              <p style="color:var(--text-color); font-size:0.9rem; margin-top:5px;">${q.desc || ""}</p>`;
+        if(isCorrect) score++;
+    });
+    document.getElementById('eval-markdown').style.display = "block";
+    document.getElementById('eval-markdown').innerHTML = ` 🎉 Ergebnis: ${score} von ${currentQuiz.length} richtig!`;
+}
 
     function saveQuiz() {
         let fileName = (document.getElementById('quiz-filename').value || "quiz") + ".json";
