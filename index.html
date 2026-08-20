@@ -2173,9 +2173,9 @@ async function fetchGroqAI(query) {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
+                model: "openai/gpt-oss-20b", 
                 messages: [
-                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert!" },
+                    { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert! (Max etwa 5-8 Sätze)" },
                     { role: "user", content: query }
                 ] 
             })
@@ -2335,7 +2335,7 @@ async function sendMessage() {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
+                model: "openai/gpt-oss-20b", 
                 messages: chatHistory,
                 stream: true // 1. Streaming aktivieren!
             })
@@ -2432,7 +2432,7 @@ async function getAiProcessedFavs(query) {
                 "Content-Type": "application/json" 
             },
             body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
+                model: "openai/gpt-oss-20b",
                 messages: [
                     { 
                         role: "system", 
@@ -2587,7 +2587,7 @@ async function optimizeSearch() {
             method: "POST",
             headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
             body: JSON.stringify({ 
-                model: "llama-3.1-8b-instant", 
+                model: "openai/gpt-oss-20b", 
                 messages: [
                     { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert (wenn es zb schreibfehler hat korrigiere das wort so dass es korrekt geschrieben ist). Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. (nur Beispiel) der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
                     { role: "user", content: query }
@@ -4420,7 +4420,7 @@ async function askGroqVoice(text) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
+                model: "openai/gpt-oss-20b",
                 messages: [
                     { role: "system", content: getVoiceSystemPrompt() },
                     { role: "user", content: historyContext + text }
