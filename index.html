@@ -1474,6 +1474,68 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
         display: none !important;
     }
 }
+
+.sticky-search-wrapper {
+    position: sticky;
+    top: 80px; /* Höhe deiner Navbar */
+    z-index: 999;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.3s ease,
+                padding 0.4s ease;
+}
+
+.sticky-search-wrapper.show {
+    max-height: 70px;
+    opacity: 1;
+}
+
+.sticky-search-bar {
+    display: flex;
+    align-items: center;
+    width: min(500px, 90vw);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #70C4F7;
+    border-radius: 30px;
+    padding: 6px 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+#stickyGlaggleQuery {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 8px;
+    font-size: 15px;
+    background: transparent;
+    color: #000;
+}
+
+.sticky-search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+}
+.sticky-search-btn::before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-color: #70C4F7;
+    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+}
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
 </style>
 </head>
@@ -1500,6 +1562,12 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
             <span></span>
         </div>
     </div>
+    <div id="sticky-search-wrapper" class="sticky-search-wrapper">
+    <form class="sticky-search-bar" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
+        <input type="search" id="stickyGlaggleQuery" placeholder="Suchen..." autocomplete="off" enterkeyhint="search">
+        <button type="submit" class="sticky-search-btn" aria-label="Suche"></button>
+    </form>
+</div>
 </nav>
 
 <div id="sidebar" class="sidebar">
@@ -3855,6 +3923,56 @@ function dismissPushNotice() {
     }
 }
 
+(function initStickySearch() {
+    const originalInput = document.getElementById('glaggleQuery');
+    const originalContainer = document.querySelector('.search-bar-container');
+    const stickyWrapper = document.getElementById('sticky-search-wrapper');
+    const stickyInput = document.getElementById('stickyGlaggleQuery');
+
+    if (!originalContainer || !stickyWrapper || !stickyInput) return;
+
+    // Sync: Sticky-Input tippen -> überträgt sich beim Absenden aufs echte Feld
+    stickyInput.addEventListener('input', () => {
+        originalInput.value = stickyInput.value;
+    });
+    stickyInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            glaggleSearch();
+            stickyInput.blur();
+        }
+    });
+    // Umgekehrt: falls Nutzer oben tippt, sticky mitziehen
+    originalInput.addEventListener('input', () => {
+        stickyInput.value = originalInput.value;
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                stickyWrapper.classList.remove('show');
+            } else {
+                // Nur einblenden, wenn Original NACH OBEN verschwunden ist (gescrollt),
+                // nicht wenn es einfach noch nicht geladen ist
+                if (entry.boundingClientRect.top < 0) {
+                    stickyWrapper.classList.add('show');
+                }
+            }
+        });
+    }, {
+        root: null,
+        threshold: 0,
+        rootMargin: "-80px 0px 0px 0px" // Navbar-Höhe berücksichtigen
+    });
+
+    observer.observe(originalContainer);
+})();
+
+// Beim DOMContentLoaded aufrufen
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStickySearch);
+}
+
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
     const logoContainer = document.getElementById('logo-container');
@@ -3863,11 +3981,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Nur ausführen, wenn beide Elemente auch wirklich im HTML existieren
     if (logoContainer && searchInput) {
         logoContainer.addEventListener('click', () => {
-            searchInput.value = 'Flappyfish'; // Suchbegriff eintragen
+            searchInput.value = 'Glaggle'; // Suchbegriff eintragen
             glaggleSearch();                    // Suche starten
         });
     }
 });
+
 
 </script>
 
