@@ -1476,14 +1476,16 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
 }
 
 .sticky-search-wrapper {
-    position: sticky;
-    top: 80px; /* Höhe deiner Navbar */
+    position: fixed;
+    top: calc(80px + env(safe-area-inset-top));
+    left: 0;
+    right: 0;
     z-index: 999;
-    width: 100%;
     display: flex;
     justify-content: center;
     padding: 10px 0;
-    
+    pointer-events: none; /* damit es beim Ausgeblendetsein nichts blockiert */
+
     max-height: 0;
     opacity: 0;
     overflow: hidden;
@@ -1495,6 +1497,7 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
 .sticky-search-wrapper.show {
     max-height: 70px;
     opacity: 1;
+    pointer-events: auto;
 }
 
 .sticky-search-bar {
@@ -1562,13 +1565,14 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
             <span></span>
         </div>
     </div>
-    <div id="sticky-search-wrapper" class="sticky-search-wrapper">
+</nav>
+
+<div id="sticky-search-wrapper" class="sticky-search-wrapper">
     <form class="sticky-search-bar" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
         <input type="search" id="stickyGlaggleQuery" placeholder="Suchen..." autocomplete="off" enterkeyhint="search">
         <button type="submit" class="sticky-search-btn" aria-label="Suche"></button>
     </form>
 </div>
-</nav>
 
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
@@ -3922,16 +3926,15 @@ function dismissPushNotice() {
         }, 500);
     }
 }
-
 (function initStickySearch() {
     const originalInput = document.getElementById('glaggleQuery');
     const originalContainer = document.querySelector('.search-bar-container');
     const stickyWrapper = document.getElementById('sticky-search-wrapper');
     const stickyInput = document.getElementById('stickyGlaggleQuery');
+    const navbar = document.querySelector('.navbar');
 
-    if (!originalContainer || !stickyWrapper || !stickyInput) return;
+    if (!originalContainer || !stickyWrapper || !stickyInput || !navbar) return;
 
-    // Sync: Sticky-Input tippen -> überträgt sich beim Absenden aufs echte Feld
     stickyInput.addEventListener('input', () => {
         originalInput.value = stickyInput.value;
     });
@@ -3942,35 +3945,42 @@ function dismissPushNotice() {
             stickyInput.blur();
         }
     });
-    // Umgekehrt: falls Nutzer oben tippt, sticky mitziehen
     originalInput.addEventListener('input', () => {
         stickyInput.value = originalInput.value;
     });
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                stickyWrapper.classList.remove('show');
-            } else {
-                // Nur einblenden, wenn Original NACH OBEN verschwunden ist (gescrollt),
-                // nicht wenn es einfach noch nicht geladen ist
-                if (entry.boundingClientRect.top < 0) {
+    function setupObserver() {
+        const navHeight = navbar.getBoundingClientRect().height;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    stickyWrapper.classList.remove('show');
+                } else if (entry.boundingClientRect.top < 0) {
                     stickyWrapper.classList.add('show');
                 }
-            }
+            });
+        }, {
+            root: null,
+            threshold: 0,
+            rootMargin: `-${navHeight}px 0px 0px 0px`
         });
-    }, {
-        root: null,
-        threshold: 0,
-        rootMargin: "-80px 0px 0px 0px" // Navbar-Höhe berücksichtigen
-    });
 
-    observer.observe(originalContainer);
+        observer.observe(originalContainer);
+    }
+
+    // Kurz warten, bis Layout final ist (Preloader, Fonts etc.)
+    if (document.readyState === 'complete') {
+        setupObserver();
+    } else {
+        window.addEventListener('load', setupObserver);
+    }
 })();
 
-// Beim DOMContentLoaded aufrufen
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initStickySearch);
+} else {
+    initStickySearch();
 }
 
 //Zu unterst lassen:
