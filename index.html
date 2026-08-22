@@ -1475,6 +1475,19 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     }
 }
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
+
+/* Smooth Entry Animation für alle Ergebnis-Karten */
+.glaggle-entry {
+    opacity: 0;
+    transform: translateY(24px);
+}
+
+.glaggle-entry.entry-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
 </style>
 </head>
 <body>
@@ -2065,6 +2078,9 @@ function createAiPlaceholder() {
         ">Mehr erfahren ↓</button>
     `;
     return aiBox;
+
+    resultsDiv.prepend(div);
+    animateEntryIn(div);
 }
     
 document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
@@ -2533,6 +2549,19 @@ function renderResult(title, text, url, type = "web", elementId = null, dbId = n
     } else {
         resultsDiv.appendChild(div);
     }
+
+    // NEU: gestaffelte Animation
+    const index = resultsDiv.children.length; // simpler Stagger-Faktor
+    animateEntryIn(div, Math.min(index * 60, 300));
+}
+
+function animateEntryIn(el, delay = 0) {
+    // Erzwingt Reflow, damit die Transition sicher greift
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            el.classList.add('entry-visible');
+        }, delay);
+    });
 }
 
 const input = document.getElementById('glaggleQuery');
@@ -2664,6 +2693,7 @@ function renderWidget(title, subtitle, content) {
         <div style="text-align:center;">${content}</div>
     `;
     resultsDiv.prepend(div);
+    animateEntryIn(div);
 }
 
 const glaggleGamesList = {
@@ -2747,6 +2777,8 @@ function renderGameWidget(game) {
     `;
 
     resultsDiv.prepend(div);
+    animateEntryIn(div);
+     
 
     div.querySelector('#game-fullscreen-btn').onclick = () => {
         const iframe = div.querySelector('iframe');
@@ -2789,6 +2821,7 @@ function renderTimerWidget(initialMinutes) {
     `;
     
     resultsDiv.prepend(div);
+    animateEntryIn(div);
 
     const displayInput = div.querySelector('#timer-display-input');
     const runBtn = div.querySelector('#timer-run-btn');
@@ -2928,6 +2961,7 @@ function renderCalculatorWidget(initialQuery) {
     `;
 
     resultsDiv.prepend(div);
+    animateEntryIn(div);
 
     const display = div.querySelector('#calc-display');
     const history = div.querySelector('#calc-history');
@@ -4860,6 +4894,7 @@ function renderWeatherWidget(city, c, info) {
         </a>
     `;
     resultsDiv.prepend(div);
+    animateEntryIn(div);
 }
 
 /* ===== SCHNELLBEFEHLE (Chips) ===== */
