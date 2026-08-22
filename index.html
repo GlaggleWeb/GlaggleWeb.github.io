@@ -3926,7 +3926,7 @@ function dismissPushNotice() {
         }, 500);
     }
 }
-(function initStickySearch() {
+function initStickySearch() {
     const originalInput = document.getElementById('glaggleQuery');
     const originalContainer = document.querySelector('.search-bar-container');
     const stickyWrapper = document.getElementById('sticky-search-wrapper');
@@ -3969,14 +3969,14 @@ function dismissPushNotice() {
         observer.observe(originalContainer);
     }
 
-    // Kurz warten, bis Layout final ist (Preloader, Fonts etc.)
     if (document.readyState === 'complete') {
         setupObserver();
     } else {
         window.addEventListener('load', setupObserver);
     }
-})();
+}
 
+// Aufruf
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initStickySearch);
 } else {
