@@ -3949,26 +3949,31 @@ function initStickySearch() {
         stickyInput.value = originalInput.value;
     });
 
-    function setupObserver() {
-        const navHeight = navbar.getBoundingClientRect().height;
+   function setupObserver() {
+    const navHeight = navbar.getBoundingClientRect().height;
+    let hasFiredOnce = false;
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    stickyWrapper.classList.remove('show');
-                } else if (entry.boundingClientRect.top < 0) {
-                    stickyWrapper.classList.add('show');
-                }
-            });
-        }, {
-            root: null,
-            threshold: 0,
-            rootMargin: `-${navHeight}px 0px 0px 0px`
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!hasFiredOnce) {
+                hasFiredOnce = true;
+                // Ersten Callback ignorieren, falls er direkt beim Setup mit falschem Wert kommt
+                if (entry.isIntersecting) return;
+            }
+            if (entry.isIntersecting) {
+                stickyWrapper.classList.remove('show');
+            } else {
+                stickyWrapper.classList.add('show');
+            }
         });
+    }, {
+        root: null,
+        threshold: 0,
+        rootMargin: `-${Math.round(navHeight)}px 0px 0px 0px`
+    });
 
-        observer.observe(originalContainer);
-    }
-
+    observer.observe(originalContainer);
+}
     if (document.readyState === 'complete') {
         setupObserver();
     } else {
