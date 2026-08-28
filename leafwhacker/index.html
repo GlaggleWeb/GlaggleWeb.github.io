@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glaggle Leaf Whacker</title>
+    <style>
+        :root {
+            --bg-color: #0b2e1a;
+            --text-color: #ffffff;
+            --nav-bg: #123a24;
+            --card-bg: #123a24;
+            --card-border: #4edd9d;
+            --accent: #4edd9d;
+            --danger: #FF6B6B;
+            --coin-gold: #FFD700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 65px;
+            background-color: var(--nav-bg);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .main-content { margin-top: 85px; width: 100%; max-width: 500px; padding: 15px; text-align: center; }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(to top, #123a24, #0b2e1a);
+            border: 4px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #holes-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 15px;
+            gap: 10px;
+        }
+
+        .hole {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hole::before {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 34%;
+            background: radial-gradient(ellipse at center, #06170d 0%, #0e2617 70%, transparent 100%);
+            border-radius: 50%;
+            border: 3px solid #1a4a2c;
+            z-index: 1;
+        }
+
+        .critter {
+            position: absolute;
+            bottom: -70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 56px;
+            height: 56px;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            cursor: pointer;
+            transition: bottom 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+        }
+
+        .critter.up { bottom: 14px; }
+        .critter.hit {
+            transform: translateX(-50%) scale(1.4);
+            opacity: 0;
+            transition: all 0.25s ease-out;
+        }
+
+        .score-box {
+            display: flex; justify-content: space-around; margin-bottom: 15px;
+            background: var(--nav-bg); padding: 10px; border-radius: 15px;
+            border: 1px solid var(--card-border);
+        }
+
+        .score-val { font-size: 14px; opacity: 0.9; }
+        .score-val b { color: var(--accent); font-size: 20px; display: block; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .btn {
+            background: var(--accent); color: #0b2e1a; border: none; padding: 12px 35px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0px #2a9c68; margin-bottom: 10px;
+            width: 200px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #2a9c68; }
+
+        .btn-secondary {
+            background: transparent !important;
+            border: 2px solid var(--accent) !important;
+            box-shadow: none !important;
+            margin-top: 5px;
+            color: var(--accent) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .btn-secondary:active {
+            background: rgba(78, 221, 157, 0.1) !important;
+            transform: scale(0.98);
+        }
+
+        #timer-bar-wrap {
+            width: 100%;
+            height: 10px;
+            background: var(--nav-bg);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            transition: width 0.2s linear;
+        }
+
+        #coin-display {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--nav-bg); border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .coin-img { width: 24px; height: 24px; object-fit: contain; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); border-color: #FFD700; }
+            100% { transform: scale(1); }
+        }
+        .pulse { animation: pulse 0.5s ease-in-out; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div style="color: var(--accent); font-weight: bold;">Leaf Whacker</div>
+        <div style="font-size: 24px;">🍃</div>
+    </div>
+
+    <div class="main-content">
+        <div class="score-box">
+            <div class="score-val">Punkte <b id="score">0</b></div>
+            <div class="score-val">Rekord <b id="highscore">0</b></div>
+        </div>
+
+        <div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+
+        <div id="game-container">
+            <div id="holes-layer"></div>
+
+            <div id="menu-overlay" class="overlay">
+                <h1 id="msg">🍃 Leaf Whacker</h1>
+                <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.9; text-align: center;">
+                    Tippe die Blätter an, bevor sie verschwinden!<br>
+                    Vorsicht vor der Wespe 🐝 – die kostet Punkte!<br>
+                    60 Sekunden Zeit.<br><br>
+                    <span style="color: var(--accent);">Alle 15 Punkte = 1 Glaggle Coin!</span>
+                </p>
+
+                <button class="btn" onclick="startGame(event)">Starten</button>
+
+                <a href="https://glaggle.ch/gamecenter" class="btn btn-secondary">
+                    Game Center 🏠
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="coin-display">
+        <img src="coin.png" class="coin-img" alt="Coin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>'">
+        <span id="coin-count">0</span>
+    </div>
+
+    <button id="music-toggle" onclick="toggleMusic(event)" style="position: fixed; bottom: 20px; left: 20px; background: var(--nav-bg); border: 2px solid var(--accent); color: white; padding: 10px; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+    🔊
+    </button>
+
+    <script>
+        const holesLayer = document.getElementById('holes-layer');
+        const menu = document.getElementById('menu-overlay');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const coinEl = document.getElementById('coin-count');
+        const timerBar = document.getElementById('timer-bar');
+
+        let gameRunning = false;
+        let score = 0;
+
+        // Highscore Key für Leaf Whacker
+        const HS_KEY = 'leafwhacker_highscore';
+        let highscore = parseInt(localStorage.getItem(HS_KEY)) || 0;
+        let coins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+
+        highscoreEl.innerText = highscore;
+        coinEl.innerText = coins;
+
+        // Musik Setup
+        const bgMusic = new Audio('https://res.cloudinary.com/pyxlc0q4/video/upload/echoes_of_lumen-pixel-art-game-soundtrack-chiptune-588667_d6kzph.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+        let musicActive = true;
+
+        function toggleMusic(e) {
+            if(e) e.stopPropagation();
+            const btn = document.getElementById('music-toggle');
+            if (!bgMusic.paused) {
+                bgMusic.pause();
+                btn.innerText = "🔈";
+                musicActive = false;
+            } else {
+                bgMusic.play().catch(err => console.log("Audio blockiert"));
+                btn.innerText = "🔊";
+                musicActive = true;
+            }
+        }
+
+        const HOLE_COUNT = 9;
+        let holes = [];
+
+        // Objekttypen: gute Blätter (Punkte) und die Wespe (Abzug)
+        const GOOD_TYPES = ['🍃', '🍂', '🌿'];
+        const BAD_TYPE = '🐝';
+        const BAD_CHANCE = 0.22; // Anteil an "falschen" Objekten
+
+        let roundTime = 60; // Sekunden
+        let timeLeft = roundTime;
+        let timerInterval = null;
+        let spawnTimeout = null;
+        let lastCoinThreshold = 0;
+
+        function buildHoles() {
+            holesLayer.innerHTML = '';
+            holes = [];
+            for (let i = 0; i < HOLE_COUNT; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'hole';
+                const critter = document.createElement('div');
+                critter.className = 'critter';
+                hole.appendChild(critter);
+                holesLayer.appendChild(hole);
+                holes.push({ el: hole, critter: critter, active: false, isBad: false, hideTimeout: null });
+            }
+        }
+        buildHoles();
+
+        function randomHole() {
+            const freeHoles = holes.filter(h => !h.active);
+            if (freeHoles.length === 0) return null;
+            return freeHoles[Math.floor(Math.random() * freeHoles.length)];
+        }
+
+        function popUp() {
+            if (!gameRunning) return;
+
+            const hole = randomHole();
+            if (hole) {
+                const isBad = Math.random() < BAD_CHANCE;
+                hole.active = true;
+                hole.isBad = isBad;
+                hole.critter.innerText = isBad ? BAD_TYPE : GOOD_TYPES[Math.floor(Math.random() * GOOD_TYPES.length)];
+                hole.critter.classList.remove('hit');
+                hole.critter.classList.add('up');
+
+                // Bleibt kürzer, je länger das Spiel läuft (schwerer)
+                const progress = 1 - (timeLeft / roundTime);
+                const minVisible = 550, maxVisible = 950;
+                const visibleTime = maxVisible - (maxVisible - minVisible) * progress;
+
+                hole.hideTimeout = setTimeout(() => {
+                    if (hole.active) {
+                        hole.critter.classList.remove('up');
+                        setTimeout(() => { hole.active = false; }, 160);
+                    }
+                }, visibleTime);
+            }
+
+            // Nächstes Pop-up planen (wird mit der Zeit etwas schneller)
+            const progress = 1 - (timeLeft / roundTime);
+            const minGap = 380, maxGap = 750;
+            const gap = maxGap - (maxGap - minGap) * progress;
+            spawnTimeout = setTimeout(popUp, gap + Math.random() * 200);
+        }
+
+        function whack(hole) {
+            if (!gameRunning || !hole.active) return;
+
+            clearTimeout(hole.hideTimeout);
+            hole.active = false;
+            hole.critter.classList.add('hit');
+            hole.critter.classList.remove('up');
+
+            if (hole.isBad) {
+                score = Math.max(0, score - 3);
+            } else {
+                score += 1;
+            }
+            scoreEl.innerText = score;
+
+            // Coin selten: alle 30 Punkte, nur einmal pro Schwelle
+            const threshold = Math.floor(score / 15);
+            if (threshold > lastCoinThreshold && score > 0) {
+                lastCoinThreshold = threshold;
+                addCoin();
+            }
+
+            setTimeout(() => {
+                hole.critter.classList.remove('hit');
+            }, 260);
+        }
+
+        holes.forEach(hole => {
+            hole.critter.addEventListener('mousedown', (e) => { e.stopPropagation(); whack(hole); });
+            hole.critter.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); whack(hole); }, {passive: false});
+        });
+
+        function addCoin() {
+            coins++;
+            localStorage.setItem('glaggleCoins', coins);
+            coinEl.innerText = coins;
+            document.getElementById('coin-display').classList.add('pulse');
+            setTimeout(() => document.getElementById('coin-display').classList.remove('pulse'), 500);
+        }
+
+        function startGame(e) {
+            if (e) e.stopPropagation();
+
+            if (musicActive) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(() => console.log("Audio braucht Nutzerinteraktion..."));
+            }
+
+            score = 0;
+            lastCoinThreshold = 0;
+            scoreEl.innerText = score;
+            timeLeft = roundTime;
+            timerBar.style.width = '100%';
+
+            gameRunning = true;
+            menu.style.display = "none";
+
+            buildHoles();
+            holes.forEach(hole => {
+                hole.critter.addEventListener('mousedown', (e) => { e.stopPropagation(); whack(hole); });
+                hole.critter.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); whack(hole); }, {passive: false});
+            });
+
+            spawnTimeout = setTimeout(popUp, 400);
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                timerBar.style.width = Math.max(0, (timeLeft / roundTime) * 100) + '%';
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 100);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            clearTimeout(spawnTimeout);
+            holes.forEach(h => {
+                clearTimeout(h.hideTimeout);
+                h.critter.classList.remove('up');
+                h.active = false;
+            });
+
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem(HS_KEY, highscore);
+                highscoreEl.innerText = highscore;
+                document.getElementById('msg').innerHTML = "🏆 NEUER REKORD!<br><span style='color:var(--accent)'>" + score + " Punkte</span>";
+            } else {
+                document.getElementById('msg').innerHTML = "⏱️ ZEIT UM!<br>Punkte: " + score;
+            }
+
+            menu.style.display = "flex";
+        }
+    </script>
+</body>
+</html>
