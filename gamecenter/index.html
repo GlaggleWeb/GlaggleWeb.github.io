@@ -877,10 +877,21 @@ async function syncAccountData() {
                 .single();
 
             if (data) {
-                glaggleCoins = data.total_coins;
-                currentUserName = data.game_center_name; 
+                // WICHTIG: lokalen Stand NIE mit einem niedrigeren Cloud-Wert überschreiben.
+                // Sonst gehen frisch verdiente Coins verloren, wenn der Cloud-Sync
+                // langsamer/schneller ist als der Streak-Check (Race Condition).
+                const localCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
+                glaggleCoins = Math.max(data.total_coins, localCoins);
+
+                currentUserName = data.game_center_name;
                 localStorage.setItem('glaggleCoins', glaggleCoins);
                 localStorage.setItem('glaggleUserName', currentUserName);
+
+                // Falls die Cloud tatsächlich einen höheren Wert hatte,
+                // muss der Streak-Zähler das mitbekommen, sonst denkt er
+                // gleich danach "Coins wurden ausgegeben".
+                localStorage.setItem('glaggleStreakLastKnownCoins', glaggleCoins);
+
                 console.log("Cloud-Sync erfolgreich: " + currentUserName);
             }
         } catch (e) {
@@ -901,7 +912,6 @@ async function syncAccountData() {
     }
 
     updateCoinDisplay();
-    // Chat-Placeholder aktualisieren, falls das Feld existiert
     if (document.getElementById('chat-input')) {
         document.getElementById('chat-input').placeholder = `${currentUserName}: Tippen...`;
     }
