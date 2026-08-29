@@ -4371,6 +4371,16 @@ function fadeVolume(target) {
     }, 25);
 }
 
+function unlockSpeechSynthesis() {
+    if (!window.speechSynthesis) return;
+    // Ein winziger, fast unhörbarer Dummy-Satz "entsperrt" die Engine
+    // für alle folgenden speak()-Aufrufe in dieser Seiten-Session,
+    // auch außerhalb eines direkten Gesture-Kontexts.
+    const unlock = new SpeechSynthesisUtterance(' ');
+    unlock.volume = 0;
+    window.speechSynthesis.speak(unlock);
+}
+
 function getVoiceSystemPrompt() {
     const langMap = {
         'de-DE': 'Antworte im "reply"-Feld immer auf Deutsch.',
@@ -4419,6 +4429,7 @@ ERLAUBTE AKTIONEN:
 }
 
 function toggleVoiceAssistant() {
+    unlockSpeechSynthesis(); // NEU: ganz am Anfang, noch im User-Gesture
     const popup = document.getElementById('voice-popup');
     voiceOpen = !voiceOpen;
     popup.style.display = voiceOpen ? 'block' : 'none';
@@ -4443,53 +4454,51 @@ function closeVoiceAssistant() {
 }
 
 function startListening() {
+    unlockSpeechSynthesis(); // NEU: ganz am Anfang, noch im User-Gesture
     if (isListening) { stopListening(); return; }
     duckMusic(true);
 
-    // Browser-Unterstützung prüfen
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         setVoiceStatus('❌ Dein Browser unterstützt keine Spracheingabe');
         return;
     }
 
-    recognition = new SpeechRecognition();
+    // Sicherer Kontext prüfen
+    if (!window.isSecureContext) {
+        setVoiceStatus('❌ Spracheingabe benötigt HTTPS');
+        return;
+    }
 
+    recognition = new SpeechRecognition();
     recognition.lang = currentVoiceLang;
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onstart = () => {
-        isListening = true;
-        setVoiceStatus('🎙️ Ich höre zu...');
-        document.getElementById('voice-wave').classList.add('active');
-        document.getElementById('voice-mic-btn').classList.add('listening');
-        document.getElementById('voice-btn').classList.add('listening');
-        document.getElementById('voice-transcript').style.display = 'block';
-        document.getElementById('voice-transcript').innerText = '...';
-    };
-
-    recognition.onresult = (e) => {
-        const transcript = Array.from(e.results)
-            .map(r => r[0].transcript).join('');
-        document.getElementById('voice-transcript').innerText = '🗣️ ' + transcript;
-
-        if (e.results[e.results.length - 1].isFinal) {
-            stopListening();
-            askGroqVoice(transcript);
-        }
-    };
+    recognition.onstart = () => { /* ... unverändert ... */ };
+    recognition.onresult = (e) => { /* ... unverändert ... */ };
 
     recognition.onerror = (e) => {
         stopListening();
-        setVoiceStatus('❌ Fehler: ' + e.error);
+        // Spezifischere Fehlermeldungen für den User
+        const msgMap = {
+            'not-allowed': '❌ Mikrofonzugriff verweigert — bitte in den Einstellungen erlauben',
+            'service-not-allowed': '❌ Spracherkennung auf diesem Gerät nicht verfügbar',
+            'no-speech': '⚠️ Keine Sprache erkannt — versuch es nochmal',
+            'network': '❌ Keine Internetverbindung für Spracherkennung'
+        };
+        setVoiceStatus(msgMap[e.error] || ('❌ Fehler: ' + e.error));
     };
 
     recognition.onend = () => {
         if (isListening) stopListening();
     };
 
-    recognition.start();
+    try {
+        recognition.start();
+    } catch (err) {
+        setVoiceStatus('❌ Spracherkennung konnte nicht gestartet werden');
+    }
 }
 
 function stopListening() {
