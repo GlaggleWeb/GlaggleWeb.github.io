@@ -4454,7 +4454,8 @@ function closeVoiceAssistant() {
 }
 
 function startListening() {
-    unlockSpeechSynthesis(); // NEU: ganz am Anfang, noch im User-Gesture
+    unlockSpeechSynthesis(); // entsperrt speechSynthesis noch im User-Gesture
+
     if (isListening) { stopListening(); return; }
     duckMusic(true);
 
@@ -4464,7 +4465,6 @@ function startListening() {
         return;
     }
 
-    // Sicherer Kontext prüfen
     if (!window.isSecureContext) {
         setVoiceStatus('❌ Spracheingabe benötigt HTTPS');
         return;
@@ -4475,12 +4475,29 @@ function startListening() {
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onstart = () => { /* ... unverändert ... */ };
-    recognition.onresult = (e) => { /* ... unverändert ... */ };
+    recognition.onstart = () => {
+        isListening = true;
+        setVoiceStatus('🎙️ Ich höre zu...');
+        document.getElementById('voice-wave').classList.add('active');
+        document.getElementById('voice-mic-btn').classList.add('listening');
+        document.getElementById('voice-btn').classList.add('listening');
+        document.getElementById('voice-transcript').style.display = 'block';
+        document.getElementById('voice-transcript').innerText = '...';
+    };
+
+    recognition.onresult = (e) => {
+        const transcript = Array.from(e.results)
+            .map(r => r[0].transcript).join('');
+        document.getElementById('voice-transcript').innerText = '🗣️ ' + transcript;
+
+        if (e.results[e.results.length - 1].isFinal) {
+            stopListening();
+            askGroqVoice(transcript);
+        }
+    };
 
     recognition.onerror = (e) => {
         stopListening();
-        // Spezifischere Fehlermeldungen für den User
         const msgMap = {
             'not-allowed': '❌ Mikrofonzugriff verweigert — bitte in den Einstellungen erlauben',
             'service-not-allowed': '❌ Spracherkennung auf diesem Gerät nicht verfügbar',
