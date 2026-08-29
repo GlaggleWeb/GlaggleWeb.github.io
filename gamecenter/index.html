@@ -1466,20 +1466,31 @@ function evaluateStreakOnLoad() {
 function checkForNewCoins() {
     const currentCoins = parseInt(localStorage.getItem('glaggleCoins')) || 0;
     const storedLastKnown = localStorage.getItem('glaggleStreakLastKnownCoins');
-    const lastKnown = storedLastKnown === null ? currentCoins : (parseInt(storedLastKnown) || 0);
+
+    // Beim allerersten Aufruf überhaupt (Key existiert noch nicht):
+    // NICHT currentCoins als Baseline nehmen, sonst geht ein bereits
+    // vorhandener/frisch verdienter Coin-Stand spurlos verloren.
+    // Stattdessen: falls schon Coins da sind, aber noch kein Streak-Tag
+    // vermerkt wurde, gilt der komplette aktuelle Stand als "neu".
+    const streakState = getStreakState();
+    let lastKnown;
+    if (storedLastKnown === null) {
+        lastKnown = streakState.lastDate ? currentCoins : 0;
+    } else {
+        lastKnown = parseInt(storedLastKnown) || 0;
+    }
 
     if (currentCoins > lastKnown) {
         const earned = currentCoins - lastKnown;
         localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
         registerStreakCoins(earned);
     } else if (currentCoins < lastKnown) {
-        // Coins wurden ausgegeben (z.B. Casino, Glagini) -> kein Streak-Fortschritt,
-        // nur den bekannten Stand nachziehen, damit keine falsche Differenz entsteht
+        localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
+    } else if (storedLastKnown === null) {
+        // Gleichstand beim allerersten Mal -> Baseline trotzdem setzen
         localStorage.setItem('glaggleStreakLastKnownCoins', currentCoins);
     }
 
-    // Coin-Anzeige oben rechts immer synchron mit localStorage halten,
-    // unabhängig vom Zustand der globalen glaggleCoins-Variable
     const countElement = document.getElementById('coin-count');
     if (countElement) {
         const displayed = countElement.innerText.replace(/[^\d]/g, '');
