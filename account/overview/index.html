@@ -234,21 +234,18 @@
         <button onclick="updateProfile()">Änderungen speichern</button>
     </div>
 
-    <!-- Sicherheit & E-Mail -->
+   
+    <!-- E-Mail (nur Anzeige) -->
     <div class="card">
-        <h2>🔒 E-Mail Einstellungen</h2>
+        <h2>🔒 E-Mail</h2>
         
-        <div class="info-row">
+        <div class="info-row" style="margin-bottom: 0;">
             <span class="info-label">E-Mail</span>
             <span class="info-value" id="display-email">Lade...</span>
         </div>
-
-        <div class="btn-group">
-            <label for="new-email">Neue E-Mail Adresse</label>
-            <input type="email" id="new-email" placeholder="beispiel@mail.de">
-            <button class="btn-secondary" onclick="updateEmail()">E-Mail Adresse aktualisieren</button>
-            <p class="info-text">Du musst die neue Adresse bestätigen, bevor sie aktiv wird.</p>
-        </div>
+        <p class="info-text" style="margin-top: 12px; margin-bottom: 0;">
+            Deine E-Mail-Adresse ist dein Login. Eine Änderung ist derzeit nicht möglich. Du kannst dir jederzeit einen neuen Account erstellen.
+        </p>
     </div>
 
     <button class="btn-danger" onclick="navigateTo('../../index.html')">Zurück zur Suche</button>
