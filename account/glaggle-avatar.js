@@ -240,7 +240,7 @@ const _p = {
         "2) Der Avatar soll ein rundes, freundliches Profilbild sein (Hintergrund als Kreis mit r=50 um 50,50). " +
         "3) Erlaubte Elemente: circle, ellipse, rect, path, line, polyline, polygon, g, defs, linearGradient, radialGradient, stop. " +
         "4) Verboten: script, style, image, foreignObject, text, a, use, Animationen, Event-Handler, externe URLs. " +
-        "5) Nutze nur flache Formen und Farbverläufe, maximal ca. 40 Elemente, unter 6000 Zeichen. " +
+        "5) Nutze nur flache Formen KEINE Farbverläufe!!, maximal ca. 40 Elemente, unter 6000 Zeichen. " +
         "6) Keine Texte oder Buchstaben im Bild. " +
         "7) Setze die Beschreibung des Nutzers kreativ um, bleibe aber jugendfrei und freundlich.";
 
