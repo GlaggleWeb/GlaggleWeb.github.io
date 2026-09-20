@@ -15,6 +15,8 @@
     <meta property="og:type" content="website">
     
     <meta name="msvalidate.01" content="A0C60E86E6016FC8B90A3EC932FF0F78" />
+
+    <script src="/account/glaggle-avatar.js"></script>
     
 <meta property="og:url" content="https://glaggle.ch/">
 <meta property="og:title" content="Glaggle">
@@ -1540,6 +1542,28 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     mask-size: contain;
 }
 /* ===== ENDE GLAGGLE SMART MOUSE ===== */
+
+/* ===== AVATAR ===== */
+.nav-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #70C4F7;
+    display: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nav-avatar:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(112, 196, 247, 0.6);
+}
+.nav-avatar svg,
+#sidebar-avatar svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
 </style>
 </head>
 <body>
@@ -1558,13 +1582,14 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     <div class="nav-left">
         <a href="https://glaggle.ch"><img src="../glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
     </div>
-    <div class="nav-right">
-        <div class="hamburger" onclick="toggleMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+<div class="nav-right">
+    <a href="account/overview/index.html" id="nav-avatar" class="nav-avatar" title="Account Übersicht" style="display:none;"></a>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
+</div>
 </nav>
 
 <div id="sticky-search-wrapper" class="sticky-search-wrapper">
@@ -1582,7 +1607,10 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     
     <div id="user-logged-in" style="display: none;">
         <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
-        <p id="user-name-display" style="font-weight: bold; margin: 5px 0; color: var(--link-color);"></p>
+        <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+    <span id="sidebar-avatar" style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-block;"></span>
+    <span id="user-name-display" style="font-weight: bold; color: var(--link-color);"></span>
+</div>
         
         <a href="account/overview/index.html" class="sidebar-link" 
            style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -3513,21 +3541,34 @@ async function checkLogin() {
         const loggedOutDiv = document.getElementById('user-logged-out');
         const nameDisplay = document.getElementById('user-name-display');
 
-        // WICHTIG: Nur stylen, wenn die Divs wirklich existieren!
         if (loggedInDiv && loggedOutDiv) {
             loggedInDiv.style.setProperty('display', 'block', 'important');
             loggedOutDiv.style.setProperty('display', 'none', 'important');
             if (nameDisplay) nameDisplay.innerText = user.name;
         }
+
+        // Avatar aus dem localStorage anzeigen (kein Netzwerkzugriff).
+        // Ist dort nichts, wird lokal ein Standard-Avatar aus dem Namen erzeugt.
+        const avatarSvg = GlaggleAvatar.getAvatar(user.name);
+
+        const navAvatar = document.getElementById('nav-avatar');
+        if (navAvatar) {
+            GlaggleAvatar.render(navAvatar, avatarSvg);
+            navAvatar.style.setProperty('display', 'block', 'important');
+        }
+        GlaggleAvatar.render(document.getElementById('sidebar-avatar'), avatarSvg);
+
     } catch (error) {
         console.log("Nicht eingeloggt oder Fehler:", error.message);
         const loggedInDiv = document.getElementById('user-logged-in');
         const loggedOutDiv = document.getElementById('user-logged-out');
+        const navAvatar = document.getElementById('nav-avatar');
 
         if (loggedInDiv && loggedOutDiv) {
             loggedInDiv.style.setProperty('display', 'none', 'important');
             loggedOutDiv.style.setProperty('display', 'block', 'important');
         }
+        if (navAvatar) navAvatar.style.setProperty('display', 'none', 'important');
     }
 }
 
@@ -3539,7 +3580,8 @@ window.addEventListener('load', () => {
 async function logout() {
     try {
         await account.deleteSession('current');
-        location.reload(); // Seite neu laden, um Status zu aktualisieren
+        GlaggleAvatar.clearCached();   // Avatar-Cache leeren (wichtig auf geteilten Geräten)
+        location.reload();
     } catch (error) {
         alert("Fehler beim Abmelden");
     }
