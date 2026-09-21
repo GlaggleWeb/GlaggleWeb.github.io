@@ -5279,6 +5279,10 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(tryAutoplayMusic, 500); 
 });
 
+document.getElementById('voice-text-input').addEventListener('focus', () => {
+    if (isListening) stopListening();
+});
+
 /* ===== GLAGGLE SMART MOUSE SYSTEM ===== */
 let smartMouseActive = false;
 const smartCursor = document.getElementById('glaggle-smart-cursor');
