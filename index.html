@@ -101,8 +101,7 @@
 })();
 </script>
 
-<!-- 3. Google Translate initialisieren -->
-<script type="text/javascript">
+<script>
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
     pageLanguage: 'de',
@@ -110,6 +109,17 @@ function googleTranslateElementInit() {
     autoDisplay: false
   }, 'google_translate_element');
 }
+
+window.addEventListener('load', () => {
+    // Nur laden, wenn überhaupt übersetzt werden soll
+    if (!document.cookie.includes('googtrans=')) return;
+
+    setTimeout(() => {
+        const s = document.createElement('script');
+        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        document.body.appendChild(s);
+    }, 1200);
+});
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <!-- Google Translate Widget ENDE -->
