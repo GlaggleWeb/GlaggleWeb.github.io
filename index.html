@@ -77,53 +77,6 @@
 }
 </script>
 
-<!-- 1. Cookie setzen (Auto-Erkennung) -->
-<script>
-(function autoTranslateSetup() {
-    const manual = localStorage.getItem('glaggle-lang-choice');
-    if (manual === 'de') return;
-
-    const browserLang = (navigator.language || navigator.userLanguage || 'de').toLowerCase();
-    const isGerman = browserLang.startsWith('de');
-
-    let target = manual || browserLang.split('-')[0];
-    if (!manual && browserLang.startsWith('zh')) {
-        target = (browserLang.includes('tw') || browserLang.includes('hk')) ? 'zh-TW' : 'zh-CN';
-    }
-
-    if (!manual && isGerman) return;
-    if (target === 'de') return;
-
-    const cookieValue = `/de/${target}`;
-    const host = location.hostname;
-    document.cookie = `googtrans=${cookieValue}; path=/`;
-    document.cookie = `googtrans=${cookieValue}; path=/; domain=${host}`;
-})();
-</script>
-
-<script>
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'de',
-    includedLanguages: 'en,fr,it,es,pt,nl,pl,ru,zh-CN,ja,tr,ar,ko,sv,da,cs,uk,el,hu,ro',
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-
-window.addEventListener('load', () => {
-    // Nur laden, wenn überhaupt übersetzt werden soll
-    if (!document.cookie.includes('googtrans=')) return;
-
-    setTimeout(() => {
-        const s = document.createElement('script');
-        s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-        document.body.appendChild(s);
-    }, 1200);
-});
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<!-- Google Translate Widget ENDE -->
-
     <style>
 /* Globale Einstellungen */
 * {
@@ -1611,30 +1564,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     height: 100%;
     display: block;
 }
-
-/* Google Translate Banner & Tooltips verstecken */
-.goog-te-banner-frame,
-.skiptranslate iframe,
-iframe.goog-te-banner-frame {
-    display: none !important;
-}
-body {
-    top: 0 !important;
-}
-.goog-tooltip,
-.goog-tooltip:hover {
-    display: none !important;
-}
-.goog-text-highlight {
-    background: none !important;
-    box-shadow: none !important;
-}
-#goog-gt-tt, .goog-te-balloon-frame {
-    display: none !important;
-}
-font {
-    background: transparent !important;
-}
 </style>
 </head>
 <body>
@@ -1822,32 +1751,6 @@ font {
 <button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
 
 <div style="border-top:1px solid #eee; margin-top:12px; padding-top:12px;">
-    <p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">🌐 Sprache</p>
-    <select id="site-lang-select" onchange="setSiteLanguage(this.value)" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#000">
-        <option value="de">🇩🇪 Deutsch (Original)</option>
-        <option value="en">🇬🇧 English</option>
-        <option value="fr">🇫🇷 Français</option>
-        <option value="it">🇮🇹 Italiano</option>
-        <option value="es">🇪🇸 Español</option>
-        <option value="pt">🇵🇹 Português</option>
-        <option value="nl">🇳🇱 Nederlands</option>
-        <option value="pl">🇵🇱 Polski</option>
-        <option value="ru">🇷🇺 Русский</option>
-        <option value="tr">🇹🇷 Türkçe</option>
-        <option value="ja">🇯🇵 日本語</option>
-        <option value="zh-CN">🇨🇳 中文</option>
-        <option value="ar">🇸🇦 العربية</option>
-    </select>
-
-    <p id="translate-credit" translate="no" style="display:none;font-size:10px;color:#aaa;margin-top:6px;text-align:center;">
-    Powered by
-    <a href="https://translate.google.com" target="_blank" rel="noopener" style="color:#4285F4;text-decoration:none;font-weight:600;">Google Translate</a>
-</p>
-</div>
-
-
-    
-<div style="border-top:1px solid #eee; margin-top:12px; padding-top:12px;">
     <p style="font-size:11px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Maus</p>
     <button id="smart-mouse-toggle" onclick="
         if(typeof smartMouseActive !== 'undefined' && smartMouseActive) {
@@ -1863,14 +1766,13 @@ font {
 </div>
 </details>
 
-<!-- Verstecktes Widget-Element (Google braucht es zum Initialisieren) -->
-<div id="google_translate_element" style="display:none;"></div>
 
 <script type="text/javascript">
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
     pageLanguage: 'de',
-    includedLanguages: 'en,fr,it,es,pt,nl,pl,ru,zh-CN,ja,tr,ar,ko,sv,da,cs,uk,el,hu,ro',
+    includedLanguages: 'en,de,fr,it,es,pt,nl,pl,ru,zh-CN,ja',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
     autoDisplay: false
   }, 'google_translate_element');
 }
@@ -4123,37 +4025,6 @@ if (document.readyState === 'loading') {
     initStickySearch();
 }
 
-function setSiteLanguage(lang) {
-    localStorage.setItem('glaggle-lang-choice', lang);
-
-    const host = location.hostname;
-    if (lang === 'de') {
-        // Cookie löschen = Original
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${host}`;
-    } else {
-        document.cookie = `googtrans=/de/${lang}; path=/`;
-        document.cookie = `googtrans=/de/${lang}; path=/; domain=${host}`;
-    }
-    location.reload();
-}
-
-// Dropdown beim Laden auf aktuelle Sprache setzen
-window.addEventListener('DOMContentLoaded', () => {
-    const sel = document.getElementById('site-lang-select');
-    if (!sel) return;
-    const saved = localStorage.getItem('glaggle-lang-choice');
-    if (saved) {
-        sel.value = saved;
-    } else {
-        const bl = (navigator.language || 'de').toLowerCase();
-        if (!bl.startsWith('de')) {
-            const short = bl.startsWith('zh') ? 'zh-CN' : bl.split('-')[0];
-            if ([...sel.options].some(o => o.value === short)) sel.value = short;
-        }
-    }
-});
-
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
     const logoContainer = document.getElementById('logo-container');
@@ -5584,8 +5455,5 @@ document.addEventListener('mouseout', (e) => {
         </div>
     </div>
 </div>
-
-<!-- ganz unten, direkt vor </body> -->
-<div id="google_translate_element" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;"></div>
 </body>
 </html>
