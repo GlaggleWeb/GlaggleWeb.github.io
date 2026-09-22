@@ -4025,6 +4025,18 @@ if (document.readyState === 'loading') {
     initStickySearch();
 }
 
+// Automatischer Suchstart aus URL-Parameter (?q=...)
+(function autoSearchFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q && q.trim() !== '') {
+        document.getElementById('glaggleQuery').value = q;
+        window.addEventListener('load', () => {
+            setTimeout(() => glaggleSearch(), 300);
+        });
+    }
+})();
+    
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
     const logoContainer = document.getElementById('logo-container');
