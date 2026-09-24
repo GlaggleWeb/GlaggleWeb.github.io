@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coins Synchronisieren...</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #70C4F7 0%, #2E94D1 100%);
+        }
+        .loader {
+            text-align: center;
+            color: white;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status { font-size: 1.2rem; margin-bottom: 10px; }
+        .sub { font-size: 0.9rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <div class="status">Coins werden synchronisiert...</div>
+        <div class="sub" id="counter">Bitte warten</div>
+    </div>
+
+    <script>
+        (function() {
+            // URL Parameter auslesen
+            const params = new URLSearchParams(window.location.search);
+            const coinAmount = parseInt(params.get('q') || '0', 10);
+            const returnUrl = params.get('return') || 'https://glaggle.ch/gamecenter/';
+
+            if (coinAmount <= 0) {
+                console.error('Ungültiger Coin-Wert:', coinAmount);
+                window.location.href = returnUrl;
+                return;
+            }
+
+            // Coins zur lokalen Speicherung hinzufügen
+            const currentCoins = parseInt(localStorage.getItem('glaggleCoins') || '0', 10);
+            const newCoins = currentCoins + coinAmount;
+            
+            localStorage.setItem('glaggleCoins', newCoins.toString());
+            localStorage.setItem('glaggleStreakLastKnownCoins', newCoins.toString());
+
+            console.log(`✅ +${coinAmount} Coins hinzugefügt. Neues Gesamt: ${newCoins}`);
+
+            // Kurze Verzögerung für UX, dann weiterleiten
+            let countdown = 2;
+            const counterEl = document.getElementById('counter');
+            
+            const interval = setInterval(() => {
+                countdown--;
+                if (counterEl) counterEl.textContent = `Weiterleitung in ${countdown}...`;
+                
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    
+                    // Optional: Rückmeldung an den Shop-Tab senden (falls noch offen)
+                    try {
+                        window.opener?.postMessage({
+                            type: 'COINS_SYNC_SUCCESS',
+                            coins: newCoins
+                        }, 'https://learn.glaggle.ch');
+                    } catch(e) {}
+
+                    // Zur Ziel-URL weiterleiten
+                    window.location.href = returnUrl;
+                }
+            }, 1000);
+        })();
+    </script>
+</body>
+</html>
