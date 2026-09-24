@@ -232,17 +232,6 @@ body::before {
     /* HAUPTINHALT */
     .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
 
-    /* --- HIER SIND DEINE GEWÜNSCHTEN ÄNDERUNGEN --- */
-
-    .large-logo { 
-        width: 100%; 
-        max-width: 600px; /* Genau so breit wie die Suche */
-        height: auto; 
-        margin-bottom: 40px; /* Abstand zum Suchbalken */
-    }
-
-    .search-section { width: 100%; max-width: 600px; margin: 0 auto 30px auto; }
-
    /* Suchfeld deutlich machen */
 .search-bar-container {
     display: flex; 
@@ -1719,7 +1708,7 @@ if (document.readyState === 'loading') {
 </button>
     
 <footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
-    &copy; 2026 Glaggle — Glaggle your life!
+    &copy; 09/2026 Glaggle — Glaggle your life!
 </footer>
 <script src="favoriten.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1727,6 +1716,14 @@ if (document.readyState === 'loading') {
 
 <script>
 
+function glaggleTriggerSearch(query) {
+    if (typeof glaggleSearch === 'function') {
+        glaggleSearch();
+    } else if (query && query.trim() !== '') {
+        window.location.href = "https://glaggle.ch/search?q=" + encodeURIComponent(query);
+    }
+}
+    
 const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1737,15 +1734,6 @@ const client = new Appwrite.Client()
 
     const account = new Appwrite.Account(client);
 
-
-    
-document.getElementById('glaggleQuery').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // Verhindert Neuladen der Seite
-        glaggleSearch();
-        this.blur(); // Schließt die mobile Tastatur
-    }
-});
 
 const input = document.getElementById('glaggleQuery');
 const container = document.querySelector('.search-bar-container');
@@ -1793,39 +1781,6 @@ input.addEventListener('blur', () => {
 
 // Initial aufrufen
 updateCaret();
-
-// --- 2. KI SUCHOPTIMIERUNG ---
-async function optimizeSearch() {
-    const query = input.value.trim();
-    if (!query) return;
-
-    const magicBtn = document.querySelector('.ai-magic-btn');
-    magicBtn.innerText = "⏳"; // Lade-Status
-
-    try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                model: "openai/gpt-oss-20b", 
-                messages: [
-                    { role: "system", content: "Du bist ein Suchmaschinen-Optimierer. Formuliere die Suchanfrage des Nutzers so um, dass sie bessere Ergebnisse liefert (wenn es zb schreibfehler hat korrigiere das wort so dass es korrekt geschrieben ist). Antworte NUR mit der neuen Anfrage, kein Smalltalk. Bsp. (nur Beispiel) der benutzer schreibt KI du wandelst es dan in Künsliche Intelligenz um. Du formulierst in max.2-4 Wörter um." },
-                    { role: "user", content: query }
-                ] 
-            })
-        });
-        const data = await res.json();
-        const optimizedQuery = data.choices[0].message.content.replace(/"/g, ''); // Anführungszeichen entfernen
-        
-        input.value = optimizedQuery;
-        updateCaret();
-        glaggleSearch(); // Starte Suche direkt mit dem neuen Begriff
-    } catch (e) {
-        console.error("Optimierung fehlgeschlagen", e);
-    } finally {
-        magicBtn.innerText = "✨";
-    }
-}
 
 
 async function checkLogin() {
@@ -2259,60 +2214,7 @@ function dismissPushNotice() {
         }, 500);
     }
 }
-function initStickySearch() {
-    const originalInput = document.getElementById('glaggleQuery');
-    const originalContainer = document.querySelector('.search-bar-container');
-    const stickyWrapper = document.getElementById('sticky-search-wrapper');
-    const stickyInput = document.getElementById('stickyGlaggleQuery');
-    const navbar = document.querySelector('.navbar');
 
-    if (!originalContainer || !stickyWrapper || !stickyInput || !navbar) return;
-
-    stickyInput.addEventListener('input', () => {
-        originalInput.value = stickyInput.value;
-    });
-    stickyInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            glaggleSearch();
-            stickyInput.blur();
-        }
-    });
-    originalInput.addEventListener('input', () => {
-        stickyInput.value = originalInput.value;
-    });
-
-   function setupObserver() {
-    const navHeight = navbar.getBoundingClientRect().height;
-    let hasFiredOnce = false;
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!hasFiredOnce) {
-                hasFiredOnce = true;
-                // Ersten Callback ignorieren, falls er direkt beim Setup mit falschem Wert kommt
-                if (entry.isIntersecting) return;
-            }
-            if (entry.isIntersecting) {
-                stickyWrapper.classList.remove('show');
-            } else {
-                stickyWrapper.classList.add('show');
-            }
-        });
-    }, {
-        root: null,
-        threshold: 0,
-        rootMargin: `-${Math.round(navHeight)}px 0px 0px 0px`
-    });
-
-    observer.observe(originalContainer);
-}
-    if (document.readyState === 'complete') {
-        setupObserver();
-    } else {
-        window.addEventListener('load', setupObserver);
-    }
-}
 
 // Aufruf
 if (document.readyState === 'loading') {
@@ -2332,28 +2234,9 @@ if (document.readyState === 'loading') {
         });
     }
 })();
-    
-//Zu unterst lassen:
-document.addEventListener('DOMContentLoaded', () => {
-    const logoContainer = document.getElementById('logo-container');
-    const searchInput = document.getElementById('glaggleQuery');
-
-    // Nur ausführen, wenn beide Elemente auch wirklich im HTML existieren
-    if (logoContainer && searchInput) {
-        logoContainer.addEventListener('click', () => {
-            searchInput.value = 'Glaggle Flappyfish'; // Suchbegriff eintragen
-            glaggleSearch();                    // Suche starten
-        });
-    }
-});
 
 
 </script>
-
-<div id="imageModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center;" onclick="this.style.display='none'">
-    <img id="modalImg" style="max-width:95%; max-height:95%; border-radius:8px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
-    <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer;">&times;</div>
-</div>
     
 <!-- Glaggle AI Chat Popup -->
 <div id="ai-chat-overlay" style="
