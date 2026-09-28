@@ -1972,30 +1972,116 @@ function scrollToWidget(delay = 300) {
     }, delay);
 }
 
-function executeVoiceAction(action, params) {
-    switch (action) {
+// --- HILFSFUNKTIONEN FÜR CROSS-TAB ACTIONS ---
 
+// Prüft, ob wir uns auf der Hauptseite (Suchseite) befinden
+function isGlaggleHome() {
+    // Der glaggleResults Container existiert nur auf der index.html
+    return document.getElementById('glaggleResults') !== null;
+}
+
+// Baut die URL für den neuen Tab
+function buildRemoteUrl(action, params) {
+    let url = "https://glaggle.ch/?glaggle_auto=1&action=" + action;
+    if (action === 'timer') url += "&minutes=" + (params.minutes || 5);
+    if (action === 'search') url += "&q=" + encodeURIComponent(params.query || "");
+    if (action === 'wetter') url += "&city=" + encodeURIComponent(params.city || "");
+    if (action === 'calculator') url += "&expr=" + encodeURIComponent(params.expression || "");
+    return url;
+}
+
+// Das Bestätigungs-Popup
+function showPermissionDialog(actionLabel, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.id = 'glaggle-permission-overlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+        z-index: 20000; display: flex; align-items: center; justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+    `;
+    
+    const box = document.createElement('div');
+    box.style.cssText = `
+        background: #1a1a1a; border: 1px solid #70C4F7; border-radius: 20px;
+        padding: 25px; width: min(350px, 90vw); text-align: center; color: white;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: sans-serif;
+    `;
+    box.innerHTML = `
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🚀</div>
+        <h3 style="margin: 0 0 15px 0; color: #70C4F7; font-size: 1.1rem;">Aktion auf Hauptseite</h3>
+        <p style="margin: 0 0 25px 0; color: #ccc; line-height: 1.5; font-size: 0.95rem;">
+            Darf Glaggle Assistant <strong style="color: white;">${actionLabel}</strong> auf der Hauptseite <strong>Glaggle.ch</strong> öffnen?
+        </p>
+        <div style="display: flex; gap: 10px;">
+            <button id="perm-no" style="flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;">Abbrechen</button>
+            <button id="perm-yes" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #70C4F7, #2E94D1); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(112,196,247,0.3);">Ja, öffnen</button>
+        </div>
+    `;
+    
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    document.getElementById('perm-no').onclick = () => overlay.remove();
+    document.getElementById('perm-yes').onclick = () => {
+        overlay.remove();
+        onConfirm();
+    };
+}
+
+// --- DIE NEUE EXECUTE FUNKTION ---
+
+function executeVoiceAction(action, params) {
+    const isHome = isGlaggleHome();
+
+    // Helper für Remote-Actions (wenn wir NICHT zuhause sind)
+    const tryRemote = (actionName, urlAction, urlParams) => {
+        if (isHome) return false; // Wir sind zuhause -> mach es lokal (unten im switch)
+        
+        showPermissionDialog(actionName, () => {
+            const url = buildRemoteUrl(urlAction, params);
+            window.open(url, '_blank');
+            speakResponse("Ich öffne " + actionName + " auf der Hauptseite für dich.");
+            closeVoiceAssistant();
+        });
+        return true; // Wir haben uns darum gekümmert
+    };
+
+    switch (action) {
         case "timer": {
-            const minutes = parseFloat(params.minutes) || 5;
-            renderTimerWidget(minutes);
-            scrollToWidget();
+            if (tryRemote("den Timer", "timer", params)) return;
+            // Lokale Logik (nur auf Home)
+            if (typeof renderTimerWidget === 'function') {
+                const minutes = parseFloat(params.minutes) || 5;
+                renderTimerWidget(minutes);
+                scrollToWidget();
+            }
             break;
         }
-
         case "search": {
+            if (tryRemote("die Suche", "search", params)) return;
             const query = params.query || "";
             if (!query) break;
             closeVoiceAssistant();
             document.getElementById('glaggleQuery').value = query;
-            glaggleSearch();
+            if (typeof glaggleSearch === 'function') glaggleSearch();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             break;
         }
-
         case "calculator": {
-            const expr = (params.expression || "").replace(/x/gi, '*');
-            renderCalculatorWidget(expr);
-            scrollToWidget();
+            if (tryRemote("den Rechner", "calculator", params)) return;
+            if (typeof renderCalculatorWidget === 'function') {
+                const expr = (params.expression || "").replace(/x/gi, '*');
+                renderCalculatorWidget(expr);
+                scrollToWidget();
+            }
+            break;
+        }
+        case "wetter": {
+            if (tryRemote("das Wetter", "wetter", params)) return;
+            if (typeof fetchRealWeather === 'function') {
+                fetchRealWeather(params.city || "");
+                scrollToWidget(800);
+            }
             break;
         }
 
