@@ -2002,9 +2002,9 @@ function showPermissionDialog(actionLabel, onConfirm) {
     
     const box = document.createElement('div');
     box.style.cssText = `
-        background: #1a1a1a; border: 1px solid #70C4F7; border-radius: 20px;
+        background: #1a1a1a; border: 1px solid #70C4F7; border-radius: 25px;
         padding: 25px; width: min(350px, 90vw); text-align: center; color: white;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: sans-serif;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Arial Rounded MT Bold';
     `;
     box.innerHTML = `
         <div style="font-size: 2.5rem; margin-bottom: 10px;">🚀</div>
@@ -2313,7 +2313,7 @@ function openVoiceFeaturesPopup() {
                     <li style="display:flex; gap:10px;"><span>🎵</span><span>Musik steuern — "Mach die Musik an"</span></li>
                     <li style="display:flex; gap:10px;"><span>🎨</span><span>Design wechseln — "Wechsle zu dunklem Theme"</span></li>
                     <li style="display:flex; gap:10px;"><span>🖼️</span><span>Bilder / Wikipedia — "Zeig mir Bilder von ..."</span></li>
-                    <li style="display:flex; gap:10px;">♾️<span></span><span>Und viel mehr</span></li>
+                    <li style="display:flex; gap:10px;">♾️<span></span><span>Und viel mehr...</span></li>
                 </ul>
                 <button id="voice-features-close-btn" style="
                     width:100%; background: linear-gradient(135deg, #70C4F7, #2E94D1);
@@ -2339,110 +2339,6 @@ function closeVoiceFeaturesPopup() {
         overlay.style.display = 'none';
         startListening(); // danach direkt zuhören, wie ursprünglich geplant
     }, 300);
-}
-
-
-/* ===== ECHTES WETTER (Open-Meteo) ===== */
-async function fetchRealWeather(city) {
-    let lat, lon, cityName;
-    try {
-        if (city && city.trim() !== '' && city !== 'deinen Standort') {
-            const geoRes = await fetch(
-                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=de&format=json`
-            );
-            const geoData = await geoRes.json();
-            if (!geoData.results?.length) { checkWidgets("wetter " + city); return; }
-            lat = geoData.results[0].latitude;
-            lon = geoData.results[0].longitude;
-            cityName = geoData.results[0].name;
-        } else {
-            const pos = await new Promise((res, rej) =>
-                navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
-            );
-            lat = pos.coords.latitude;
-            lon = pos.coords.longitude;
-            cityName = 'deinem Standort';
-        }
-
-        const wRes = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-            `&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m,relativehumidity_2m` +
-            `&timezone=auto&forecast_days=1`
-        );
-        const wData = await wRes.json();
-        const c = wData.current;
-        const info = getWeatherInfo(c.weathercode);
-
-        renderWeatherWidget(cityName, c, info);
-    } catch(e) {
-        console.error('Wetter Fehler:', e);
-        checkWidgets("wetter " + (city || ''));
-    }
-}
-
-function getWeatherInfo(code) {
-    const map = {
-        0:  { emoji:'☀️',  desc:'Klarer Himmel' },
-        1:  { emoji:'🌤️', desc:'Überwiegend klar' },
-        2:  { emoji:'⛅',  desc:'Teilweise bewölkt' },
-        3:  { emoji:'☁️',  desc:'Bedeckt' },
-        45: { emoji:'🌫️', desc:'Nebel' },
-        48: { emoji:'🌫️', desc:'Gefrierender Nebel' },
-        51: { emoji:'🌦️', desc:'Leichter Nieselregen' },
-        53: { emoji:'🌦️', desc:'Nieselregen' },
-        55: { emoji:'🌧️', desc:'Starker Nieselregen' },
-        61: { emoji:'🌧️', desc:'Leichter Regen' },
-        63: { emoji:'🌧️', desc:'Regen' },
-        65: { emoji:'🌧️', desc:'Starker Regen' },
-        71: { emoji:'❄️',  desc:'Leichter Schnee' },
-        73: { emoji:'❄️',  desc:'Schneefall' },
-        75: { emoji:'❄️',  desc:'Starker Schnee' },
-        80: { emoji:'🌦️', desc:'Regenschauer' },
-        81: { emoji:'🌧️', desc:'Starke Schauer' },
-        82: { emoji:'⛈️',  desc:'Heftige Schauer' },
-        95: { emoji:'⛈️',  desc:'Gewitter' },
-        99: { emoji:'⛈️',  desc:'Gewitter mit Hagel' },
-    };
-    return map[code] || { emoji:'🌡️', desc:'Unbekannt' };
-}
-
-function renderWeatherWidget(city, c, info) {
-    const resultsDiv = document.getElementById('glaggleResults');
-    document.getElementById('weather-widget')?.remove();
-
-    const div = document.createElement('div');
-    div.id = 'weather-widget';
-    div.className = 'glaggle-entry fav-project';
-    div.style.textAlign = 'center';
-    div.innerHTML = `
-        <div style="font-size:0.75rem;font-weight:bold;letter-spacing:1px;color:var(--link-color);text-transform:uppercase;margin-bottom:8px;">
-            ☁️ Glaggle Wetter (Open-Meteo API) · ${city}
-        </div>
-        <div style="font-size:3.5rem;margin:8px 0;">${info.emoji}</div>
-        <div style="font-size:3rem;font-weight:800;margin-bottom:4px;">${Math.round(c.temperature_2m)}°C</div>
-        <div style="color:#888;margin-bottom:16px;">${info.desc} · Gefühlt ${Math.round(c.apparent_temperature)}°C</div>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
-            <div style="background:rgba(112,196,247,0.1);border-radius:10px;padding:8px 14px;">
-                <div style="font-size:0.72rem;color:#888;">💨 Wind</div>
-                <div style="font-weight:bold;">${Math.round(c.windspeed_10m)} km/h</div>
-            </div>
-            <div style="background:rgba(112,196,247,0.1);border-radius:10px;padding:8px 14px;">
-                <div style="font-size:0.72rem;color:#888;">💧 Luftfeuchte</div>
-                <div style="font-weight:bold;">${c.relativehumidity_2m}%</div>
-            </div>
-        </div>
-        <a href="https://glaggle.ch/meteo?city=${encodeURIComponent(city)}" target="_blank" style="
-            display:inline-flex; align-items:center; gap:8px;
-            background: linear-gradient(135deg, #70C4F7, #2E94D1);
-            color:white; text-decoration:none; font-weight:bold;
-            padding:12px 24px; border-radius:25px; font-size:0.9rem;
-            box-shadow: 0 4px 15px rgba(112,196,247,0.4);
-            transition: transform 0.2s;
-        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            🌦️ Vollständige Vorhersage auf Glaggle Meteo
-        </a>
-    `;
-    resultsDiv.prepend(div);
 }
 
 /* ===== SCHNELLBEFEHLE (Chips) ===== */
