@@ -603,6 +603,27 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     height: 100%;
     display: block;
 }
+
+/* BG Auswahl */
+.bg-btn{
+  border:2px solid transparent;
+  border-radius:8px;
+  padding:9px 3px;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:700;
+  background:#fff;
+  color:#333;
+  border:1px solid #ddd;
+  transition:.2s;
+  text-align:center;
+}
+.bg-btn:hover{ transform:scale(1.02); }
+.bg-btn.active{
+  border-color:#70C4F7!important;
+  box-shadow:0 0 0 2px rgba(112,196,247,.3);
+}
+.sidebar.dark-sidebar .bg-btn{ background:#333;color:#fff;border-color:#555; }
 </style>
 </head>
 <body>
@@ -778,6 +799,26 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
   <input type="range" id="music-vol" min="0" max="100" value="40">
   <span id="vol-label" style="font-size:12px;color:#888;min-width:32px">40%</span>
 </div>
+
+<p style="font-size:11px;color:#888;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Hintergrund</p>
+
+<!-- Modus-Buttons -->
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
+  <button class="bg-btn active" id="bg-btn-auto" onclick="setBgMode('auto')">🎞️ Spotlight</button>
+  <button class="bg-btn" id="bg-btn-theme" onclick="setBgMode('theme')">🎨 Theme-Farbe</button>
+  <button class="bg-btn" id="bg-btn-none" onclick="setBgMode('none')">🚫 Kein Bild</button>
+  <button class="bg-btn" id="bg-btn-custom" onclick="setBgMode('custom')">📁 Eigenes Bild</button>
+</div>
+
+<!-- Upload-Zone (nur sichtbar bei "Eigenes Bild") -->
+<div id="custom-upload-zone" style="display:none;padding:10px;background:rgba(0,0,0,.05);border-radius:8px;margin-bottom:10px;">
+  <input type="file" id="custom-bg-input" accept="image/*" onchange="loadCustomBg(event)"
+         style="width:100%;font-size:12px;color:#555;cursor:pointer;">
+</div>
+
+<!-- Bildauswahl -->
+<p style="font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Bilder auswählen</p>
+<div id="spotlight-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;"></div>
 
 <button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
 
@@ -1169,34 +1210,47 @@ window.toggleMenu = function() {
 };
 
 function setBgMode(mode, fixedIndex = null) {
-    // Buttons zurücksetzen
-    ['auto','none','custom'].forEach(id => {
+    // Alle Modus-Buttons zurücksetzen
+    ['auto','theme','none','custom'].forEach(id => {
         const btn = document.getElementById('bg-btn-' + id);
-        if (btn) {
-            btn.style.border = '2px solid transparent';
-            btn.style.opacity = '1';
-        }
+        if (btn) btn.classList.remove('active');
     });
-    
+
+    // Bildauswahl-Buttons zurücksetzen
     document.querySelectorAll('#spotlight-grid button').forEach(b => {
         b.style.borderColor = 'transparent';
     });
 
-    // Blendet die Upload-Zone standardmäßig aus
-    document.getElementById('custom-upload-zone').style.display = 'none';
+    // Upload-Zone standardmäßig ausblenden
+    const uploadZone = document.getElementById('custom-upload-zone');
+    if (uploadZone) uploadZone.style.display = 'none';
+
+    const grid = document.getElementById('spotlight-grid');
 
     if (mode === 'auto') {
-        document.getElementById('bg-btn-auto').style.border = '2px solid #70C4F7';
-        document.getElementById('spotlight-grid').style.opacity = '0.5';
-        document.getElementById('spotlight-grid').style.pointerEvents = 'none';
+        document.getElementById('bg-btn-auto')?.classList.add('active');
+        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
         localStorage.removeItem('glaggle-bg-mode');
         localStorage.removeItem('glaggle-bg-fixed');
         startBgRotation();
 
+    } else if (mode === 'theme') {
+        // 🎨 NEU: Theme-Farbe als Hintergrund
+        document.getElementById('bg-btn-theme')?.classList.add('active');
+        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
+        stopBgRotation();
+
+        const savedTheme = localStorage.getItem('glaggle-theme');
+        let accent = '#70C4F7';
+        if (savedTheme) {
+            try { accent = JSON.parse(savedTheme).accent || accent; } catch(e) {}
+        }
+        applyThemeBackground(accent);
+        localStorage.setItem('glaggle-bg-mode', 'theme');
+
     } else if (mode === 'none') {
-        document.getElementById('bg-btn-none').style.border = '2px solid #70C4F7';
-        document.getElementById('spotlight-grid').style.opacity = '0.5';
-        document.getElementById('spotlight-grid').style.pointerEvents = 'none';
+        document.getElementById('bg-btn-none')?.classList.add('active');
+        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
         stopBgRotation();
         const bgLayer = document.getElementById('background-layer');
         if(bgLayer) {
@@ -1206,8 +1260,7 @@ function setBgMode(mode, fixedIndex = null) {
         localStorage.setItem('glaggle-bg-mode', 'none');
 
     } else if (mode === 'fixed' && fixedIndex !== null) {
-        document.getElementById('spotlight-grid').style.opacity = '1';
-        document.getElementById('spotlight-grid').style.pointerEvents = 'auto';
+        if (grid) { grid.style.opacity = '1'; grid.style.pointerEvents = 'auto'; }
         const activeBtn = document.querySelector(`#spotlight-grid button[data-index="${fixedIndex}"]`);
         if (activeBtn) activeBtn.style.borderColor = '#70C4F7';
         stopBgRotation();
@@ -1216,11 +1269,36 @@ function setBgMode(mode, fixedIndex = null) {
         localStorage.setItem('glaggle-bg-fixed', fixedIndex);
 
     } else if (mode === 'custom') {
-        document.getElementById('bg-btn-custom').style.border = '2px solid #7b2ff7';
-        // Zeigt die Upload-Zone an und triggert das Auswahlfenster (unten auf Mobilgeräten)
-        document.getElementById('custom-upload-zone').style.display = 'block';
-        document.getElementById('custom-bg-input').click();
+        document.getElementById('bg-btn-custom')?.classList.add('active');
+        if (uploadZone) uploadZone.style.display = 'block';
+        document.getElementById('custom-bg-input')?.click();
     }
+}
+
+// Erzeugt einen schönen Farbverlauf aus der Theme-Akzentfarbe
+function applyThemeBackground(accent) {
+    const bgLayer = document.getElementById('background-layer');
+    if (!bgLayer) return;
+    bgLayer.style.opacity = '0';
+    setTimeout(() => {
+        const darker = shadeColor(accent, -40);
+        bgLayer.style.backgroundImage = `linear-gradient(135deg, ${accent}, ${darker})`;
+        bgLayer.style.opacity = '1';
+    }, 500);
+}
+
+// Hilfsfunktion: Farbe abdunkeln/aufhellen
+function shadeColor(hex, percent) {
+    if (!hex || hex.charAt(0) !== '#') return hex;
+    let R = parseInt(hex.substring(1,3),16);
+    let G = parseInt(hex.substring(3,5),16);
+    let B = parseInt(hex.substring(5,7),16);
+    R = Math.max(0, Math.min(255, Math.round(R * (100 + percent) / 100)));
+    G = Math.max(0, Math.min(255, Math.round(G * (100 + percent) / 100)));
+    B = Math.max(0, Math.min(255, Math.round(B * (100 + percent) / 100)));
+    return "#" + R.toString(16).padStart(2,'0')
+               + G.toString(16).padStart(2,'0')
+               + B.toString(16).padStart(2,'0');
 }
 
 function loadCustomBg(event) {
