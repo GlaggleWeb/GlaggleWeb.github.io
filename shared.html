@@ -698,14 +698,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     </div>
 </div>
 </nav>
-
-<div id="sticky-search-wrapper" class="sticky-search-wrapper">
-    <form class="sticky-search-bar" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
-        <input type="search" id="stickyGlaggleQuery" placeholder="Suchen..." autocomplete="off" enterkeyhint="search">
-        <button type="submit" class="sticky-search-btn" aria-label="Suche"></button>
-    </form>
-</div>
-
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
     
@@ -1058,60 +1050,13 @@ if (document.readyState === 'loading') {
 } else {
     restoreTheme(); // DOM bereits fertig
 }
-
-
+    
 </script>
 
     </div>
 </div>
 
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
-<main class="main-content">
-    
-<div id="logo-container" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto 40px auto; text-align: center; cursor: pointer;">
-    <img src="glagglelogoclicky.png" id="glaggle-logo" alt="Glaggle Logo" style="display: block; width: 100%; height: auto;">
-</div>
-
-
-    
-    <form class="search-bar-container" onsubmit="glaggleSearch(); return false;" action="javascript:void(0);">
-        <div class="custom-caret"></div> 
-        
-        <input type="search" 
-               id="glaggleQuery" 
-               placeholder="The AI-Powered Searchmachine..." 
-               autocomplete="off" 
-               enterkeyhint="search" 
-               name="q">
-        
-        <button type="submit" class="search-icon-btn" aria-label="Suche"></button>
-        <button type="button" onclick="optimizeSearch()" class="ai-magic-btn" title="Suche mit KI optimieren">✨</button>
-    </form>
-<style>
-@keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-</style>
-    
-    <div id="glaggle-push-notice" class="glaggle-push-notice" style="display: none;">
-        <div class="push-content">
-            <span class="push-emoji">💙</span>
-            <p>Gefällt dir Glaggle.ch? Wir würden uns freuen wenn du uns weiter empfehlen würdest!</p>
-        </div>
-        <button class="push-close-btn" onclick="dismissPushNotice()" title="Schließen">✕</button>
-    </div>
-    
-
-    <div class="loader" id="glaggleLoader"></div>
-
-    <div class="button-container" id="quickButtons">
-        <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
-        <a href="https://glaggle.ch/gamecenter" class="web-button">Gamecenter →</a>
-    </div>
-</main>
 
 <button id="backToTop" title="Nach oben">
     <span style="font-size: 20px;">↑</span>
@@ -1120,8 +1065,6 @@ if (document.readyState === 'loading') {
 <footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
     &copy; 09/2026 Glaggle — Glaggle your life!
 </footer>
-<script src="favoriten.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
 
 <script>
@@ -1458,159 +1401,7 @@ function resetDesign() {
     }
 })();
 
-let currentWelcomeSlide = 1;
-const totalWelcomeSlides = 3;
-
-document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('glaggle-welcome-overlay');
-    
-    // Prüfen, ob der Nutzer die Seite zum ersten Mal besucht
-    const hasVisitedBefore = localStorage.getItem('glaggle_first_timer');
-    
-    if (!hasVisitedBefore) {
-        overlay.style.display = 'flex';
-        setTimeout(() => {
-            overlay.classList.add('show');
-        }, 100);
-    }
-});
-
-// Schaltet zur nächsten Folie oder schließt das Fenster auf Folie 3
-function nextSlide() {
-    if (currentWelcomeSlide < totalWelcomeSlides) {
-        currentWelcomeSlide++;
-        showSlide(currentWelcomeSlide);
-    } else {
-        dismissWelcomePopup();
-    }
-}
-
-// Direktes Springen durch Klicken auf die Punkte
-function goToSlide(slideNum) {
-    currentWelcomeSlide = slideNum;
-    showSlide(currentWelcomeSlide);
-}
-
-// Steuert die Sichtbarkeit der Elemente
-function showSlide(slideNum) {
-    // Alle Folien deaktivieren
-    document.querySelectorAll('.welcome-slide').forEach(slide => {
-        slide.classList.remove('active');
-    });
-    // Gewünschte Folie aktivieren
-    document.querySelector(`.welcome-slide[data-slide="${slideNum}"]`).classList.add('active');
-
-    // Punkte aktualisieren
-    const dots = document.querySelectorAll('.welcome-dot');
-    dots.forEach((dot, index) => {
-        if (index + 1 === slideNum) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
-
-    // Button-Text anpassen
-    const actionBtn = document.getElementById('welcome-action-btn');
-    if (slideNum === totalWelcomeSlides) {
-        actionBtn.innerText = "Los geht's!";
-    } else {
-        actionBtn.innerText = "Weiter";
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Prüfen, ob der Nutzer die Nachricht in der Vergangenheit schon weggedrückt hat
-    const isDismissed = localStorage.getItem('glaggle_push_dismissed');
-
-    if (!isDismissed) {
-        // Nach genau 5 Sekunden (5000 Millisekunden) wird die Box eingeblendet
-        setTimeout(() => {
-            const pushNotice = document.getElementById('glaggle-push-notice');
-            if (pushNotice) {
-                pushNotice.style.display = 'flex'; // Sichtbar im Layout machen
-                
-                // Minimale Verzögerung, damit das CSS das sanfte Einblenden animiert
-                setTimeout(() => {
-                    pushNotice.classList.add('show');
-                }, 50);
-            }
-        }, 30000); 
-    }
-});
-
 </script>
-    
-<!-- Glaggle AI Chat Popup -->
-<div id="ai-chat-overlay" style="
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,0.6);
-    backdrop-filter:blur(6px);
-    z-index:9000;
-    align-items:center; justify-content:center;
-">
-    <div id="ai-chat-popup" style="
-        background: rgba(20,20,30,0.92);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(112,196,247,0.3);
-        border-radius: 24px;
-        width: min(560px, 92vw);
-        max-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        animation: popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
-        overflow: hidden;
-    ">
-        <!-- Header -->
-        <div style="
-            padding:18px 20px; border-bottom:1px solid rgba(112,196,247,0.2);
-            display:flex; align-items:center; justify-content:space-between;
-            background: rgba(112,196,247,0.08);
-        ">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:1.3rem;">✨</span>
-                <strong style="color:#70C4F7; font-size:1rem;">Glaggle AI Chat</strong>
-            </div>
-            <button onclick="closeAiChat()" style="
-                background:none; border:none; color:#999; font-size:1.5rem;
-                cursor:pointer; transition:color 0.2s; line-height:1;
-                padding:4px 8px; border-radius:8px;
-            " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">✕</button>
-        </div>
-
-        <!-- Messages -->
-        <div id="ai-chat-messages" style="
-            flex:1; overflow-y:auto; padding:16px 20px;
-            display:flex; flex-direction:column; gap:12px;
-            scrollbar-width:thin; scrollbar-color:#70C4F7 transparent;
-        "></div>
-
-        <!-- Input -->
-        <div style="
-            padding:14px 16px; border-top:1px solid rgba(112,196,247,0.2);
-            display:flex; gap:10px; align-items:center;
-            background: rgba(0,0,0,0.2);
-        ">
-            <input id="ai-chat-input" type="text" placeholder="Stell eine Folgefrage..." style="
-                flex:1; background:rgba(255,255,255,0.08);
-                border:1px solid rgba(112,196,247,0.3); border-radius:20px;
-                padding:11px 18px; font-size:0.9rem; outline:none;
-                color:white; transition:border-color 0.3s;
-            " onfocus="this.style.borderColor='#70C4F7'" onblur="this.style.borderColor='rgba(112,196,247,0.3)'">
-            <button id="ai-chat-send" style="
-                background: linear-gradient(135deg, #70C4F7, #2E94D1);
-                color:white; border:none; border-radius:20px;
-                padding:11px 20px; font-weight:bold; cursor:pointer;
-                font-size:0.9rem; white-space:nowrap;
-                transition:transform 0.2s, box-shadow 0.2s;
-                box-shadow: 0 4px 12px rgba(112,196,247,0.3);
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                Senden ↗
-            </button>
-        </div>
-    </div>
-</div>
 
 <!-- Glaggle Voice Assistant -->
 <button id="voice-btn" onclick="toggleVoiceAssistant()" title="Glaggle Assistant">
@@ -2892,62 +2683,5 @@ document.addEventListener('mouseout', (e) => {
 })();
 /* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
 </script>
-
-<div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
-    <div class="welcome-popup">
-        <div class="welcome-gradient-border"></div>
-        <div class="welcome-content">
-            
-            <div class="welcome-slide active" data-slide="1">
-                <span class="welcome-emoji">✨</span>
-                <h2>Willkommen auf Glaggle.ch | The AI-Powered Searchmachine</h2>
-                <p>Schön, dass du da bist! Wir freuen uns, dich auf Glaggle.ch zu sehen.</p>
-            </div>
-
-            <div class="welcome-slide" data-slide="2">
-                <span class="welcome-emoji">🤝</span>
-                <h2>Unsere Versprechen</h2>
-                <ul class="welcome-promises">
-                    <li><span class="promise-icon">🔒</span> <strong>100% Privatsphäre:</strong> Wir geben deine Daten niemals für Werbung oder kommerzielle Zwecke weiter. </li>
-                    <li><span class="promise-icon">👤</span> <strong>Kein LogIn zwang:</strong> Du kannst alle Glaggle Dienste ohne LogIn nutzen.</li>
-                    <li><span class="promise-icon">✅</span> <strong>100% Kostenlos:</strong> Alle Dienste von Glaggle.ch sind zu 100% Kostenlos. Egal ob du Bilder generieren willst oder Games gamen.</li>
-                </ul>
-            </div>
-
-            <div class="welcome-slide" data-slide="3">
-                <span class="welcome-emoji">🚀</span>
-                <h2>Kurzanleitung</h2>
-                <div class="welcome-guide">
-                    <div class="guide-step">
-                        <span class="step-num">1</span>
-                        <p><strong>Suchen:</strong> Tippe deine Frage ins Suchfeld ein und drücke die Enter-Taste oder klicke auf die blaue Lupe.</p>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-num">2</span>
-                        <p><strong>Mehr von Glaggle:</strong> Klicke auf die drei Striche oben rechts, um auf weitere Glaggle-Tools zu kommen.</p>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-num">3</span>
-                        <p><strong>Glaggle Assistant:</strong> Drücke auf das Mikrofon um mit Glaggle Assistant zu sprechen.</p>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-num">4</span>
-                        <p><strong>Design Anpassen:</strong> Klicke auf die drei Striche oben rechts, und öffne das Design Menu. Personalisiere die Startseite nun nach deinem Geschmack!</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="welcome-footer">
-                <div class="welcome-dots">
-                    <span class="welcome-dot active" onclick="goToSlide(1)"></span>
-                    <span class="welcome-dot" onclick="goToSlide(2)"></span>
-                    <span class="welcome-dot" onclick="goToSlide(3)"></span>
-                </div>
-                <button id="welcome-action-btn" class="welcome-btn" onclick="nextSlide()">Weiter</button>
-            </div>
-
-        </div>
-    </div>
-</div>
 </body>
 </html>
