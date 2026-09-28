@@ -223,36 +223,6 @@ body::before {
     }
     .nav-button:hover { background-color: #7ab8e6; transform: scale(1.05); }
 
-    /* HAUPTINHALT */
-    .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
-
-/* Erlaube nur optische Änderungen, keine Größen- oder Layoutänderungen */
-.search-bar-container, .navbar, .nav-item {
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-}
-/* Texte im Suchfeld lesbar machen */
-#glaggleQuery {
-    color: #000000 !important; /* Schrift im Suchfeld schwarz */
-    font-weight: 500;
-}
-
-/* Placeholder-Text ebenfalls dunkler machen */
-#glaggleQuery::placeholder {
-    color: #555555 !important;
-    opacity: 1;
-}
-    /* -------------------------------------------- */
-
-    #glaggleQuery {
-        flex: 1; border: none; outline: none; padding: 12px;
-        font-size: 18px; background: transparent; color: var(--text-color);
-    }
-
-/* Den echten Strich unsichtbar machen */
-#glaggleQuery {
-    caret-color: transparent;
-}
-
 /* Die Farben wandern sanft auf und ab */
 @keyframes glaggleFlow {
     0% { background-position: 0% 0%; }
@@ -351,17 +321,6 @@ body::before {
 /* Wenn aktiv */
 .sidebar.active { width: 250px; }
 .overlay.active { display: block; }
-
-/* Größere Schrift auf Desktop */
-@media (min-width: 768px) {
-    #timer-display-input {
-        font-size: 8rem !important; /* Massive Anzeige für PC */
-    }
-    .quick-btn {
-        padding: 10px 20px !important;
-        font-size: 1rem !important;
-    }
-}
 
 /* Navbar hell machen */
 .navbar {
@@ -514,26 +473,6 @@ html {
     box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
 }
 
-/* Verhindert, dass das Suchfeld durch interne Elemente aufgeblasen wird */
-#glaggleQuery {
-    width: 100% !important;
-    flex: 1 !important;
-    min-width: 0 !important;          /* WICHTIG: Erlaubt dem Input, sich zu verkleinern */
-}
-
-#glaggleQuery {
-    flex: 1 !important;
-    min-width: 0 !important;   /* Verhindert, dass Input-Inhalt den Container aufbläht */
-    border: none !important;
-    outline: none !important;
-    padding: 12px !important;
-    font-size: 18px !important;
-    background: transparent !important;
-    color: #000000 !important;
-    caret-color: transparent !important;
-}
-
-/* ===== FIX 2: Grauer Balken auf iPhone ===== */
 body {
     /* Safe Area für den iPhone Home-Indicator */
     padding-bottom: env(safe-area-inset-bottom) !important;
@@ -605,13 +544,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
     width: 20px;
     height: 20px;
     background: #2E94D1;
-}
-
-/* Suchfeld: Cursor verschwindet, Feld leuchtet auf */
-body.smart-mouse-active .search-bar-container.smart-hover {
-    border-color: #70C4F7 !important;
-    box-shadow: 0 0 25px rgba(112, 196, 247, 0.6) !important;
-    background: rgba(255, 255, 255, 1) !important;
 }
 
 /* Buttons & Links: füllen sich schwarz wie im Beispiel */
