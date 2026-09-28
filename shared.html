@@ -901,6 +901,46 @@ function applyTheme(name, btn) {
   localStorage.setItem('glaggle-theme-name', name);
 }
 
+function restoreBackgroundSettings() {
+  const mode = localStorage.getItem('glaggle-bg-mode');
+  const fixedIndex = parseInt(localStorage.getItem('glaggle-bg-fixed'));
+  const overlayData = localStorage.getItem('glaggle-overlay');
+  const themeData = localStorage.getItem('glaggle-theme');
+
+  // Hintergrundmodus wiederherstellen
+  if (mode) {
+    setBgMode(mode, !isNaN(fixedIndex) ? fixedIndex : null);
+  } else {
+    // Standard: automatische Rotation starten
+    setBgMode('auto');
+  }
+
+  // Bei Theme-Farbe: Hintergrund anhand des gespeicherten Themes setzen
+  if (mode === 'theme') {
+    if (themeData) {
+      try {
+        const themeObj = JSON.parse(themeData);
+        applyThemeBackground(themeObj.accent);
+      } catch(e) {
+        // Fallback: Standardhintergrund
+        startBgRotation();
+      }
+    } else {
+      startBgRotation();
+    }
+  }
+
+  // Overlay Einstellungen wiederherstellen (falls vorhanden)
+  if (overlayData) {
+    try {
+      const overlayObj = JSON.parse(overlayData);
+      setOverlay(overlayObj.color, overlayObj.isDark);
+    } catch(e) {
+      // keine Aktion
+    }
+  }
+}
+
 function toggleCustomPickers() {
   const p = document.getElementById('custom-pickers');
   p.style.display = p.style.display === 'none' ? 'block' : 'none';
@@ -2734,6 +2774,11 @@ document.addEventListener('mouseout', (e) => {
     }
 })();
 /* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
+
+window.addEventListener('DOMContentLoaded', () => {
+  restoreBackgroundSettings();
+});
+
 </script>
 </body>
 </html>
