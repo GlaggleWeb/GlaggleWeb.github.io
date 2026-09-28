@@ -884,6 +884,11 @@ function applyThemeData(t) {
   if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
   // Speichern
   localStorage.setItem('glaggle-theme', JSON.stringify(t));
+
+  // 🎨 Wenn Theme-Hintergrund aktiv ist, Farbe sofort anpassen
+if (localStorage.getItem('glaggle-bg-mode') === 'theme') {
+    applyThemeBackground(t.accent);
+}
 }
 
 function applyTheme(name, btn) {
@@ -996,7 +1001,7 @@ function resetDesignFull() {
   if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
   document.getElementById('music-select').value = '';
   document.getElementById('music-controls').style.display = 'none';
-  startBgRotation();
+  setBgMode('auto');  // Setzt auch die Button-Optik korrekt zurück
 }
 function restoreTheme() {
     const savedName = localStorage.getItem('glaggle-theme-name');
