@@ -209,12 +209,6 @@ body::before {
     color: #000000 !important;
 }
 
-.search-bar-container:focus-within {
-    background: rgba(255, 255, 255, 1) !important; /* Wird voll weiß */
-    border-color: #70C4F7 !important; /* Glaggle-Blau leuchtet am Rand auf */
-    box-shadow: 0 0 20px rgba(112, 196, 247, 0.5) !important; /* Leuchten um das Feld herum */
-    transform: scale(1.01); /* Das Feld wird beim Klicken ganz leicht größer */
-}
 
     .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
     .nav-center { justify-content: center; }
@@ -231,25 +225,6 @@ body::before {
 
     /* HAUPTINHALT */
     .main-content { margin-top: 120px; padding: 20px; text-align: center; width: 100%; max-width: 800px; box-sizing: border-box; }
-
-   /* Suchfeld deutlich machen */
-.search-bar-container {
-    display: flex; 
-    align-items: center; 
-    
-    /* HIER: Hintergrund undurchsichtiger machen */
-    background: rgba(255, 255, 255, 0.9) !important; 
-    backdrop-filter: blur(10px); /* Sorgt für einen modernen Glaseffekt */
-    
-    /* HIER: Rand und Schatten für besseren Kontrast */
-    border: 2px solid #ffffff !important; 
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important; 
-    
-    border-radius: 30px; 
-    padding: 5px 20px;
-    margin-bottom: 60px; 
-    transition: all 0.3s ease;
-}
 
 /* Erlaube nur optische Änderungen, keine Größen- oder Layoutänderungen */
 .search-bar-container, .navbar, .nav-item {
@@ -268,103 +243,20 @@ body::before {
 }
     /* -------------------------------------------- */
 
-    .search-bar-container:focus-within { box-shadow: 0 4px 15px rgba(112, 196, 247, 0.4); border-color: #70C4F7; }
-
     #glaggleQuery {
         flex: 1; border: none; outline: none; padding: 12px;
         font-size: 18px; background: transparent; color: var(--text-color);
     }
-.search-icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px; 
-    height: 44px;
-    padding: 0;
-    position: relative;
-    z-index: 10; /* Höher als der Cursor */
-    flex-shrink: 0;
-    -webkit-appearance: none; /* Verhindert iOS Button-Styles */
-}
-.search-icon-btn::before {
-    content: "";
-    display: block;
-    width: 24px;
-    height: 24px;
-    background-color: #70C4F7;
-    /* Deine SVG Maske */
-    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    mask-size: contain;
-    -webkit-mask-size: contain;
-}
-
-
 
 /* Den echten Strich unsichtbar machen */
 #glaggleQuery {
     caret-color: transparent;
 }
 
-.search-bar-container {
-    position: relative; /* WICHTIG: Damit der Cursor im Balken bleibt */
-    display: flex; 
-    align-items: center; 
-    background: var(--input-bg);
-    border: 1px solid #dfe1e5; 
-    border-radius: 30px; 
-    padding: 5px 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 60px;
-    transition: all 0.5s ease-in-out;
-}
-
-.custom-caret {
-    position: absolute;
-    width: 3px;
-    height: 24px;
-    background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853, #FF6D00);
-    background-size: 100% 300%;
-    pointer-events: none;
-    z-index: 1;
-    border-radius: 5px;
-    animation: glaggleFlow 3s infinite alternate ease-in-out;
-    display: none;
-    /* Vertikale Zentrierung innerhalb des Containers */
-    top: 50%;
-    transform: translateY(-50%);
-}
 /* Die Farben wandern sanft auf und ab */
 @keyframes glaggleFlow {
     0% { background-position: 0% 0%; }
     100% { background-position: 0% 100%; }
-}
-
-/* Styling für den KI-Optimierer Button */
-.ai-magic-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease, filter 0.3s ease;
-    filter: grayscale(0.5);
-}
-
-.ai-magic-btn:hover {
-    transform: scale(1.2) rotate(10deg);
-    filter: grayscale(0);
-}
-
-/* Verhindert, dass der Button das Layout zerschießt */
-.search-bar-container {
-    gap: 5px;
 }
 
 /* Hamburger Icon Styling */
@@ -594,70 +486,11 @@ body::before {
     background-color: #0C7EC6
 ;
 }
-
-.nav-scroll-wrapper {
-    display: flex;
-    gap: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 10px;
-    overflow-x: auto; /* Scrollbar für schmale Bildschirme */
-    scrollbar-width: none; /* Versteckt Scrollbar in Firefox */
-}
-
-.nav-scroll-wrapper::-webkit-scrollbar {
-    display: none; /* Versteckt Scrollbar in Chrome/Safari */
-}
-.glaggle-nav {
-    display: none; /* Wird per JS eingeblendet */
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-    background: #1a1a1a; /* Dein Schwarz */
-    padding: 8px 15px;
-    margin: 10px auto;
-    width: fit-content;
-    max-width: 90%;
-    /* HIER SIND DIE RUNDEN ECKEN */
-    border-radius: 50px; 
-    border: 1px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
-.nav-item {
-    color: #999;
-    text-decoration: none;
-    padding: 8px 18px;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-/* Der aktive Status mit dem weißen „Pillen-Look“ */
-.nav-item.active {
-    background: #333;
-    color: #fff;
-    box-shadow: inset 0 0 0 1px #555;
-}
-.nav-item:hover {
-    color: #fff;
-}
-
+        
 /* Weiches Scrollen mit Abstand für die Leiste */
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 60px; /* Damit die Überschrift nicht unter der Leiste landet */
-}
-
-/* Erzeugt einen Puffer oben, damit die Überschrift nicht von der Nav verdeckt wird */
-#ai-container, 
-#fav-section, 
-#glaggle-web-search-box, 
-#glaggle-image-container, 
-#wiki-section {
-    scroll-margin-top: 120px;
 }
 
 /* Sidebar erzwingt massiven, weißen Hintergrund */
@@ -681,105 +514,11 @@ html {
     box-shadow: -5px 0 15px rgba(0,0,0,0.1); /* Dezentere Schatten */
 }
 
-/* Das Suchfeld bändigen */
-.search-bar-container {
-    /* WICHTIG: Padding wird von der Breite abgezogen, nicht dazugerechnet */
-    box-sizing: border-box !important; 
-    
-    /* Breite flexibel halten, aber nie über 90% des Bildschirms */
-    width: 90% !important; 
-    
-    /* Maximale Breite, damit es auf Desktops nicht riesig wird */
-    max-width: 600px !important; 
-    
-    /* Zentrierung erzwingen */
-    margin-left: auto !important;
-    margin-right: auto !important;
-    
-    /* Sicherheit: Alles, was übersteht, abschneiden (nur für den Notfall) */
-    overflow: hidden !important;
-}
-
-/* --- SICHERSHELL-LAYOUT-FIXES --- */
-
-/* 1. Suchfeld starr bändigen */
-.search-bar-container {
-    width: 90% !important;         /* Nimmt 90% Breite */
-    max-width: 600px !important;   /* Wird nie breiter als 600px */
-    margin: 0 auto !important;     /* Immer zentriert */
-    box-sizing: border-box !important; /* WICHTIG: Padding wird eingerechnet */
-    display: flex !important;
-    align-items: center !important;
-    
-    /* Animationen: NUR Farben, NIEMALS Breite oder Margin! */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-}
-
-/* Die Korrektur für deine .glaggle-nav */
-.glaggle-nav {
-    display: none; /* Initial versteckt */
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-    
-    /* WICHTIG: Statt fit-content (das springt), definieren wir eine feste Max-Breite */
-    width: 90% !important;        /* Passt sich dem Bildschirm an */
-    max-width: 800px !important;  /* Wird nie breiter als das Suchfeld */
-    margin: 10px auto !important; /* Zentriert */
-    
-    background: #1a1a1a; 
-    padding: 8px 15px;
-    border-radius: 50px; 
-    border: 1px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    
-    /* GANZ WICHTIG: Animation nur für Farben, KEIN width/height/margin! */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
-    
-    /* Sorgt dafür, dass Padding nicht die Breite sprengt */
-    box-sizing: border-box !important;
-}
-/* --- FINALE REPARATUR DES SUCHFELDES --- */
-
-.search-bar-container {
-    width: 100% !important;           /* Zwingt den Browser zur vollen Breite */
-    max-width: 600px !important;      /* Begrenzt es aber bei 600px */
-    display: flex !important;         /* Zwingt es in den Flex-Modus */
-    flex: 0 1 600px !important;       /* Erlaubt Flexibilität, ohne zu springen */
-    margin: 0 auto !important;        /* Zentriert */
-    box-sizing: border-box !important;
-}
-
 /* Verhindert, dass das Suchfeld durch interne Elemente aufgeblasen wird */
 #glaggleQuery {
     width: 100% !important;
     flex: 1 !important;
     min-width: 0 !important;          /* WICHTIG: Erlaubt dem Input, sich zu verkleinern */
-}
-
-/* ===== FIX 1: Suchleiste springt nicht mehr ===== */
-/* Alle bisherigen .search-bar-container Regeln mit diesem EINEN Block ersetzen */
-.search-bar-container {
-    display: flex !important;
-    align-items: center !important;
-    width: min(600px, 90vw) !important;   /* Immer stabil, reagiert nie auf Fokus */
-    margin: 0 auto 60px auto !important;
-    padding: 5px 20px !important;
-    border-radius: 30px !important;
-    border: 2px solid #ffffff !important;
-    background: rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    /* NUR visuelle Properties animieren, NIEMALS width/flex/margin! */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-}
-
-.search-bar-container:focus-within {
-    background: rgba(255, 255, 255, 1) !important;
-    border-color: #70C4F7 !important;
-    box-shadow: 0 0 20px rgba(112, 196, 247, 0.5) !important;
-    /* Kein transform: scale() — das verschiebt das Layout! */
 }
 
 #glaggleQuery {
@@ -814,27 +553,6 @@ footer {
     padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
 }
 
-.glaggle-nav {
-    display: none;
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-    
-    width: fit-content !important;  /* Nur so breit wie der Inhalt */
-    max-width: calc(100vw - 20px) !important;  /* Aber nie breiter als der Screen */
-    margin: 10px auto !important;
-    
-    background: #1a1a1a;
-    padding: 8px 15px;
-    border-radius: 50px;
-    border: 1px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    
-    transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
-}
-
 @keyframes wordFadeUp {
     from { opacity:0; transform:translateY(8px); }
     to   { opacity:1; transform:translateY(0);   }
@@ -848,233 +566,6 @@ footer {
 @keyframes overlayIn {
     from { opacity:0; }
     to   { opacity:1; }
-}
-
-#ai-open-chat-btn:hover {
-    transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 6px 20px rgba(112,196,247,0.5) !important;
-}
-
-#ai-expand-btn:hover {
-    background: rgba(112,196,247,0.25) !important;
-    transform: translateY(-1px);
-}
-
-
-/* Overlay & Container */
-.welcome-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(15px);
-    z-index: 10000;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.4s ease;
-}
-.welcome-overlay.show { opacity: 1; }
-
-.welcome-popup {
-    position: relative;
-    width: min(440px, 92vw);
-    background: rgba(15, 15, 25, 0.96);
-    border-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(112, 196, 247, 0.15);
-    transform: scale(0.9) translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.welcome-overlay.show .welcome-popup { transform: scale(1) translateY(0); }
-
-.welcome-gradient-border {
-    height: 6px; width: 100%;
-    background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853);
-}
-
-.welcome-content {
-    padding: 35px 25px 25px 25px;
-    text-align: center;
-    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
-    color: #eee;
-}
-
-.welcome-emoji { font-size: 3rem; display: inline-block; margin-bottom: 10px; }
-
-.welcome-content h2 { color: #70C4F7; font-size: 1.5rem; margin-bottom: 15px; }
-.welcome-content p { color: #bbb; font-size: 0.95rem; line-height: 1.6; }
-
-/* Folien-Sichtbarkeit */
-.welcome-slide {
-    display: none;
-    animation: fadeInSlide 0.4s ease forwards;
-}
-.welcome-slide.active { display: block; }
-
-@keyframes fadeInSlide {
-    from { opacity: 0; transform: translateX(10px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* Styling Folie 2 (Versprechen) */
-.welcome-promises {
-    list-style: none;
-    text-align: left;
-    margin: 20px auto;
-    max-width: 360px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-.welcome-promises li {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    color: #ccc;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-.promise-icon { font-size: 1.1rem; }
-
-/* Styling Folie 3 (Anleitung) */
-.welcome-guide {
-    text-align: left;
-    margin: 20px auto;
-    max-width: 360px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-.guide-step {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.step-num {
-    background: rgba(112, 196, 247, 0.15);
-    color: #70C4F7;
-    border: 1px solid rgba(112, 196, 247, 0.3);
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: bold; font-size: 0.85rem; flex-shrink: 0;
-}
-.guide-step p { font-size: 0.9rem; margin: 0; }
-
-/* Footer & Navigation */
-.welcome-footer {
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-/* Punkte / Dots */
-.welcome-dots {
-    display: flex;
-    gap: 8px;
-}
-.welcome-dot {
-    width: 8px; height: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-/* Der aktive Punkt wird breiter gezogen (Pillen-Look) */
-.welcome-dot.active {
-    background: #70C4F7;
-    width: 20px;
-    border-radius: 4px;
-}
-
-/* Button */
-.welcome-btn {
-    background: linear-gradient(135deg, #70C4F7, #2E94D1);
-    color: white; border: none; border-radius: 50px;
-    padding: 12px 45px; font-size: 0.95rem; font-weight: bold;
-    cursor: pointer; box-shadow: 0 5px 20px rgba(112, 196, 247, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.welcome-btn:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 25px rgba(112, 196, 247, 0.5);
-}
-
-/* Glaggle In-Page Push Benachrichtigung (MASSIV & UNDURCHSICHTIG) */
-.glaggle-push-notice {
-    background: #FFFFFF !important; /* 100% massives Weiß, absolut blickdicht */
-    border: 2px solid #70C4F7 !important; /* Fester Glaggle-Blauer Rand */
-    border-radius: 20px;
-    padding: 14px 20px;
-    
-    /* Schiebt die Box trotz des großen Suchleisten-Abstands schön darunter */
-    margin-top: -40px; 
-    margin-bottom: 40px;
-    margin-left: auto;
-    margin-right: auto;
-    
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 600px; /* Exakt so breit wie deine Suchleiste */
-    box-sizing: border-box;
-    
-    /* Eleganter Schatten für Tiefe, passend zu deiner Suchleiste */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
-    
-    /* Animationen für das Hereinfliegen */
-    opacity: 0;
-    transform: translateY(-15px);
-    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Sichtbarer Zustand (wird per JS getriggert) */
-.glaggle-push-notice.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.push-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.push-emoji {
-    font-size: 1.3rem;
-    animation: pushHeartbeat 2s infinite ease-in-out;
-}
-
-.glaggle-push-notice p {
-    color: #000000 !important; /* Massives Schwarz für maximale Lesbarkeit */
-    font-size: 0.95rem;
-    margin: 0;
-    font-weight: 600; /* Leicht fett, damit es direkt ins Auge springt */
-    text-align: left;
-}
-
-/* Schließen-Button */
-.push-close-btn {
-    background: none;
-    border: none;
-    color: #555555 !important; /* Dunkelgraues Schließen-Kreuz */
-    cursor: pointer;
-    font-size: 1.1rem;
-    padding: 5px 10px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.push-close-btn:hover {
-    background-color: rgba(112, 196, 247, 0.15); /* Sanfter blauer Hover-Effekt */
-    color: #2E94D1 !important;
-}
-
-/* Kleiner Herzschlag-Effekt für das Emoji */
-@keyframes pushHeartbeat {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
 }
 
 /* ===== GLAGGLE SMART MOUSE ===== */
@@ -1158,72 +649,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
         display: none !important;
     }
 }
-
-.sticky-search-wrapper {
-    position: fixed;
-    top: calc(80px + env(safe-area-inset-top));
-    left: 0;
-    right: 0;
-    z-index: 999;
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
-    pointer-events: none; /* damit es beim Ausgeblendetsein nichts blockiert */
-
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                opacity 0.3s ease,
-                padding 0.4s ease;
-}
-
-.sticky-search-wrapper.show {
-    max-height: 70px;
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.sticky-search-bar {
-    display: flex;
-    align-items: center;
-    width: min(500px, 90vw);
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    border: 2px solid #70C4F7;
-    border-radius: 30px;
-    padding: 6px 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
-
-#stickyGlaggleQuery {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 8px;
-    font-size: 15px;
-    background: transparent;
-    color: #000;
-}
-
-.sticky-search-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-}
-.sticky-search-btn::before {
-    content: "";
-    display: block;
-    width: 20px;
-    height: 20px;
-    background-color: #70C4F7;
-    -webkit-mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    mask: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center;
-    mask-size: contain;
-}
-/* ===== ENDE GLAGGLE SMART MOUSE ===== */
 
 /* ===== AVATAR ===== */
 .nav-avatar {
@@ -1447,21 +872,6 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
 </div>
 </div>
 </details>
-
-
-<script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'de',
-    includedLanguages: 'en,de,fr,it,es,pt,nl,pl,ru,zh-CN,ja',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<!-- Google Translate Widget ENDE -->
-
 <script>
 /* ===== GLAGGLE UNIFIED THEME SYSTEM ===== */
 const THEMES = {
@@ -1715,14 +1125,6 @@ if (document.readyState === 'loading') {
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
 
 <script>
-
-function glaggleTriggerSearch(query) {
-    if (typeof glaggleSearch === 'function') {
-        glaggleSearch();
-    } else if (query && query.trim() !== '') {
-        window.location.href = "https://glaggle.ch/search?q=" + encodeURIComponent(query);
-    }
-}
     
 const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
@@ -1733,56 +1135,7 @@ const client = new Appwrite.Client()
         .setProject('69fb638a002b7d03d829');
 
     const account = new Appwrite.Account(client);
-
-
-const input = document.getElementById('glaggleQuery');
-const container = document.querySelector('.search-bar-container');
-// Wir suchen gezielt das Caret im Container
-const fakeCaret = container.querySelector('.custom-caret');
-
-function updateCaret() {
-    // Prüfen, ob das Element überhaupt existiert, bevor wir darauf zugreifen
-    if (!fakeCaret) return; 
-
-    if (document.activeElement === input) {
-        fakeCaret.style.display = 'block';
-        
-        const inputStyle = window.getComputedStyle(input);
-        const measurementSpan = document.createElement('span');
-        
-        measurementSpan.style.font = inputStyle.font;
-        measurementSpan.style.letterSpacing = inputStyle.letterSpacing;
-        measurementSpan.style.textTransform = inputStyle.textTransform;
-        measurementSpan.style.whiteSpace = 'pre';
-        measurementSpan.style.visibility = 'hidden';
-        measurementSpan.style.position = 'absolute';
-        
-        measurementSpan.textContent = input.value.substring(0, input.selectionStart);
-        document.body.appendChild(measurementSpan);
-        
-        const textWidth = measurementSpan.offsetWidth;
-        const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
-        fakeCaret.style.left = (input.offsetLeft + paddingLeft + textWidth) + 'px';
-        
-        document.body.removeChild(measurementSpan);
-    } else {
-        fakeCaret.style.display = 'none';
-    }
-}
-
-// Events für die Live-Verfolgung
-['input', 'click', 'keyup', 'focus', 'selectionchange'].forEach(event => {
-    input.addEventListener(event, updateCaret);
-});
-
-input.addEventListener('blur', () => {
-    setTimeout(() => { fakeCaret.style.display = 'none'; }, 150);
-});
-
-// Initial aufrufen
-updateCaret();
-
-
+    
 async function checkLogin() {
     try {
         const user = await account.get();
@@ -2166,19 +1519,6 @@ function showSlide(slideNum) {
     }
 }
 
-// Pop-up schließen und Besuch loggen
-function dismissWelcomePopup() {
-    const overlay = document.getElementById('glaggle-welcome-overlay');
-    overlay.classList.remove('show');
-    
-    // Merken, dass der Nutzer da war
-    localStorage.setItem('glaggle_first_timer', 'true');
-    
-    setTimeout(() => {
-        overlay.style.display = 'none';
-    }, 400);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     // Prüfen, ob der Nutzer die Nachricht in der Vergangenheit schon weggedrückt hat
     const isDismissed = localStorage.getItem('glaggle_push_dismissed');
@@ -2198,43 +1538,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 30000); 
     }
 });
-
-// Funktion zum Schließen und permanenten Merken
-function dismissPushNotice() {
-    const pushNotice = document.getElementById('glaggle-push-notice');
-    if (pushNotice) {
-        pushNotice.classList.remove('show'); // Animation rückwärts abspielen
-        
-        // Im Browser permanent speichern, dass die Box weggedrückt wurde
-        localStorage.setItem('glaggle_push_dismissed', 'true');
-        
-        // Nach dem Ausblenden komplett aus dem Layout entfernen
-        setTimeout(() => {
-            pushNotice.style.display = 'none';
-        }, 500);
-    }
-}
-
-
-// Aufruf
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initStickySearch);
-} else {
-    initStickySearch();
-}
-
-// Automatischer Suchstart aus URL-Parameter (?q=...)
-(function autoSearchFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    if (q && q.trim() !== '') {
-        document.getElementById('glaggleQuery').value = q;
-        window.addEventListener('load', () => {
-            setTimeout(() => glaggleSearch(), 300);
-        });
-    }
-})();
-
 
 </script>
     
