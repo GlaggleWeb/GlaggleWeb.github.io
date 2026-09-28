@@ -804,16 +804,11 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
 
 <!-- Modus-Buttons -->
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
-  <button class="bg-btn active" id="bg-btn-auto" onclick="setBgMode('auto')">🎞️ Spotlight</button>
-  <button class="bg-btn" id="bg-btn-theme" onclick="setBgMode('theme')">🎨 Theme-Farbe</button>
-  <button class="bg-btn" id="bg-btn-none" onclick="setBgMode('none')">🚫 Kein Bild</button>
-  <button class="bg-btn" id="bg-btn-custom" onclick="setBgMode('custom')">📁 Eigenes Bild</button>
-</div>
+  <button class="bg-btn active" id="bg-btn-auto" onclick="setBgMode('auto')">Spotlight</button>
+  <button class="bg-btn" id="bg-btn-theme" onclick="setBgMode('theme')">Theme-Farbe</button>
+  <button class="bg-btn" id="bg-btn-none" onclick="setBgMode('none')">Kein Bild</button>
+  <button class="bg-btn" id="bg-btn-fixed" onclick="setBgMode('fixed-select')"> Bild auswählen </button>
 
-<!-- Upload-Zone (nur sichtbar bei "Eigenes Bild") -->
-<div id="custom-upload-zone" style="display:none;padding:10px;background:rgba(0,0,0,.05);border-radius:8px;margin-bottom:10px;">
-  <input type="file" id="custom-bg-input" accept="image/*" onchange="loadCustomBg(event)"
-         style="width:100%;font-size:12px;color:#555;cursor:pointer;">
 </div>
 
 <!-- Bildauswahl -->
@@ -899,46 +894,6 @@ function applyTheme(name, btn) {
   document.getElementById('custom-pickers').style.display = 'none';
   applyThemeData(t);
   localStorage.setItem('glaggle-theme-name', name);
-}
-
-function restoreBackgroundSettings() {
-  const mode = localStorage.getItem('glaggle-bg-mode');
-  const fixedIndex = parseInt(localStorage.getItem('glaggle-bg-fixed'));
-  const overlayData = localStorage.getItem('glaggle-overlay');
-  const themeData = localStorage.getItem('glaggle-theme');
-
-  // Hintergrundmodus wiederherstellen
-  if (mode) {
-    setBgMode(mode, !isNaN(fixedIndex) ? fixedIndex : null);
-  } else {
-    // Standard: automatische Rotation starten
-    setBgMode('auto');
-  }
-
-  // Bei Theme-Farbe: Hintergrund anhand des gespeicherten Themes setzen
-  if (mode === 'theme') {
-    if (themeData) {
-      try {
-        const themeObj = JSON.parse(themeData);
-        applyThemeBackground(themeObj.accent);
-      } catch(e) {
-        // Fallback: Standardhintergrund
-        startBgRotation();
-      }
-    } else {
-      startBgRotation();
-    }
-  }
-
-  // Overlay Einstellungen wiederherstellen (falls vorhanden)
-  if (overlayData) {
-    try {
-      const overlayObj = JSON.parse(overlayData);
-      setOverlay(overlayObj.color, overlayObj.isDark);
-    } catch(e) {
-      // keine Aktion
-    }
-  }
 }
 
 function toggleCustomPickers() {
@@ -1225,28 +1180,62 @@ let currentIndex = Math.floor(Math.random() * spotlightImages.length);
 
 function buildSpotlightGrid() {
     const grid = document.getElementById('spotlight-grid');
+
     if (!grid || grid.children.length > 0) return;
 
     spotlightImages.forEach((url, i) => {
+
         const btn = document.createElement('button');
+
         btn.style.cssText = `
-            width: 100%; aspect-ratio: 16/9;
-            border-radius: 8px; border: 2px solid transparent;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 8px;
+            border: 2px solid transparent;
             background-image: url('${url}');
-            background-size: cover; background-position: center;
-            cursor: pointer; transition: border-color 0.2s, transform 0.2s;
-            padding: 0; overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+            padding: 0;
+            overflow: hidden;
         `;
+
         btn.title = `Bild ${i + 1}`;
         btn.dataset.index = i;
+
         btn.onclick = () => {
             setBgMode('fixed', i);
         };
-        btn.onmouseover = () => btn.style.transform = 'scale(1.05)';
-        btn.onmouseout = () => btn.style.transform = 'scale(1)';
+
+        btn.onmouseover = () => {
+            btn.style.transform = 'scale(1.05)';
+        };
+
+        btn.onmouseout = () => {
+            btn.style.transform = 'scale(1)';
+        };
+
         grid.appendChild(btn);
     });
+
+    // Bereits gespeichertes Bild markieren
+    const savedMode = localStorage.getItem('glaggle-bg-mode');
+    const savedIndex = parseInt(
+        localStorage.getItem('glaggle-bg-fixed')
+    );
+
+    if (savedMode === 'fixed' && !isNaN(savedIndex)) {
+        const activeBtn = grid.querySelector(
+            `button[data-index="${savedIndex}"]`
+        );
+
+        if (activeBtn) {
+            activeBtn.style.borderColor = '#70C4F7';
+        }
+    }
 }
+
 
 const origToggleMenu = window.toggleMenu;
 window.toggleMenu = function() {
@@ -1255,70 +1244,148 @@ window.toggleMenu = function() {
 };
 
 function setBgMode(mode, fixedIndex = null) {
+
     // Alle Modus-Buttons zurücksetzen
-    ['auto','theme','none','custom'].forEach(id => {
+    ['auto', 'theme', 'none', 'fixed'].forEach(id => {
         const btn = document.getElementById('bg-btn-' + id);
         if (btn) btn.classList.remove('active');
     });
 
-    // Bildauswahl-Buttons zurücksetzen
+    const grid = document.getElementById('spotlight-grid');
+
+    // Standard: Bilder deaktivieren
+    if (grid) {
+        grid.style.opacity = '0.5';
+        grid.style.pointerEvents = 'none';
+    }
+
+    // Bildauswahl zurücksetzen
     document.querySelectorAll('#spotlight-grid button').forEach(b => {
         b.style.borderColor = 'transparent';
     });
 
-    // Upload-Zone standardmäßig ausblenden
-    const uploadZone = document.getElementById('custom-upload-zone');
-    if (uploadZone) uploadZone.style.display = 'none';
 
-    const grid = document.getElementById('spotlight-grid');
-
+    // =========================
+    // AUTOMATISCH
+    // =========================
     if (mode === 'auto') {
+
         document.getElementById('bg-btn-auto')?.classList.add('active');
-        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
+
         localStorage.removeItem('glaggle-bg-mode');
         localStorage.removeItem('glaggle-bg-fixed');
-        startBgRotation();
 
-    } else if (mode === 'theme') {
-        // 🎨 NEU: Theme-Farbe als Hintergrund
+        startBgRotation();
+        return;
+    }
+
+
+    // =========================
+    // THEME-FARBE
+    // =========================
+    if (mode === 'theme') {
+
         document.getElementById('bg-btn-theme')?.classList.add('active');
-        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
+
         stopBgRotation();
 
         const savedTheme = localStorage.getItem('glaggle-theme');
+
         let accent = '#70C4F7';
+
         if (savedTheme) {
-            try { accent = JSON.parse(savedTheme).accent || accent; } catch(e) {}
+            try {
+                accent = JSON.parse(savedTheme).accent || accent;
+            } catch(e) {}
         }
+
         applyThemeBackground(accent);
+
         localStorage.setItem('glaggle-bg-mode', 'theme');
+        localStorage.removeItem('glaggle-bg-fixed');
 
-    } else if (mode === 'none') {
+        return;
+    }
+
+
+    // =========================
+    // KEIN BILD
+    // =========================
+    if (mode === 'none') {
+
         document.getElementById('bg-btn-none')?.classList.add('active');
-        if (grid) { grid.style.opacity = '0.5'; grid.style.pointerEvents = 'none'; }
-        stopBgRotation();
-        const bgLayer = document.getElementById('background-layer');
-        if(bgLayer) {
-            bgLayer.style.opacity = '0';
-            setTimeout(() => { bgLayer.style.backgroundImage = 'none'; bgLayer.style.opacity = '1'; }, 500);
-        }
-        localStorage.setItem('glaggle-bg-mode', 'none');
 
-    } else if (mode === 'fixed' && fixedIndex !== null) {
-        if (grid) { grid.style.opacity = '1'; grid.style.pointerEvents = 'auto'; }
-        const activeBtn = document.querySelector(`#spotlight-grid button[data-index="${fixedIndex}"]`);
-        if (activeBtn) activeBtn.style.borderColor = '#70C4F7';
         stopBgRotation();
+
+        const bgLayer = document.getElementById('background-layer');
+
+        if (bgLayer) {
+            bgLayer.style.opacity = '0';
+
+            setTimeout(() => {
+                bgLayer.style.backgroundImage = 'none';
+                bgLayer.style.opacity = '1';
+            }, 500);
+        }
+
+        localStorage.setItem('glaggle-bg-mode', 'none');
+        localStorage.removeItem('glaggle-bg-fixed');
+
+        return;
+    }
+
+
+    // =========================
+    // BILDAUSWAHL ÖFFNEN
+    // =========================
+    if (mode === 'fixed-select') {
+
+        document.getElementById('bg-btn-fixed')?.classList.add('active');
+
+        // Bilder anklickbar machen
+        if (grid) {
+            grid.style.opacity = '1';
+            grid.style.pointerEvents = 'auto';
+        }
+
+        // Grid erst aufbauen
+        buildSpotlightGrid();
+
+        return;
+    }
+
+
+    // =========================
+    // FESTES BILD
+    // =========================
+    if (mode === 'fixed' && fixedIndex !== null) {
+
+        document.getElementById('bg-btn-fixed')?.classList.add('active');
+
+        if (grid) {
+            grid.style.opacity = '1';
+            grid.style.pointerEvents = 'auto';
+        }
+
+        const activeBtn = document.querySelector(
+            `#spotlight-grid button[data-index="${fixedIndex}"]`
+        );
+
+        if (activeBtn) {
+            activeBtn.style.borderColor = '#70C4F7';
+        }
+
+        stopBgRotation();
+
         setBackgroundImage(spotlightImages[fixedIndex]);
+
         localStorage.setItem('glaggle-bg-mode', 'fixed');
         localStorage.setItem('glaggle-bg-fixed', fixedIndex);
 
-    } else if (mode === 'custom') {
-        document.getElementById('bg-btn-custom')?.classList.add('active');
-        if (uploadZone) uploadZone.style.display = 'block';
-        document.getElementById('custom-bg-input')?.click();
+        return;
     }
 }
+
 
 // Erzeugt einen schönen Farbverlauf aus der Theme-Akzentfarbe
 function applyThemeBackground(accent) {
@@ -1450,31 +1517,86 @@ function resetDesign() {
 
 // Laden beim Seitenstart
 (function loadSavedDesign() {
+
+    // Theme
+    const savedTheme = localStorage.getItem('glaggle-theme');
+
+    if (savedTheme) {
+        try {
+            applyThemeData(JSON.parse(savedTheme));
+        } catch(e) {}
+    }
+
+
+    // Overlay
     const overlay = localStorage.getItem('glaggle-overlay');
+
     if (overlay) {
-        const d = JSON.parse(overlay);
-        setOverlay(d.color, d.isDark);
+        try {
+            const d = JSON.parse(overlay);
+            setOverlay(d.color, d.isDark);
+        } catch(e) {}
     }
 
+
+    // Navbar
     const navbar = localStorage.getItem('glaggle-navbar');
-    if (navbar) { 
-        const d = JSON.parse(navbar); 
-        setNavbar(d.bg, d.textColor, d.isDark); 
+
+    if (navbar) {
+        try {
+            const d = JSON.parse(navbar);
+            setNavbar(d.bg, d.textColor, d.isDark);
+        } catch(e) {}
     }
 
+
+    // Suchleiste
     const searchbar = localStorage.getItem('glaggle-searchbar');
-    if (searchbar) { const d = JSON.parse(searchbar); setSearchbar(d.bg, d.borderColor); }
+
+    if (searchbar) {
+        try {
+            const d = JSON.parse(searchbar);
+            setSearchbar(d.bg, d.borderColor);
+        } catch(e) {}
+    }
+
+
+    // =========================
+    // HINTERGRUND
+    // =========================
 
     const bgMode = localStorage.getItem('glaggle-bg-mode');
+
     if (!bgMode || bgMode === 'auto') {
-        startBgRotation();
+
+        setBgMode('auto');
+
+    } else if (bgMode === 'theme') {
+
+        setBgMode('theme');
+
     } else if (bgMode === 'none') {
+
         setBgMode('none');
+
     } else if (bgMode === 'fixed') {
-        const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
-        stopBgRotation();
-        setBackgroundImage(spotlightImages[idx]);
+
+        const idx = parseInt(
+            localStorage.getItem('glaggle-bg-fixed') || '0'
+        );
+
+        if (
+            !isNaN(idx) &&
+            idx >= 0 &&
+            idx < spotlightImages.length
+        ) {
+            buildSpotlightGrid();
+            setBgMode('fixed', idx);
+        } else {
+            setBgMode('auto');
+        }
     }
+
 })();
 
 </script>
