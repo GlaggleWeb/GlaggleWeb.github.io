@@ -5409,6 +5409,85 @@ document.addEventListener('mouseout', (e) => {
     }
 })();
 /* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
+
+/* ===== AUTO-START FÜR VOICE ACTIONS (DEEP LINKING EMPFÄNGER) ===== */
+(function handleIncomingVoiceActions() {
+    const params = new URLSearchParams(window.location.search);
+    
+    // Nur aktiv werden, wenn der Assistant uns von einer Unterseite geschickt hat
+    if (params.get('glaggle_auto') === '1') {
+        const action = params.get('action');
+        
+        // 1 Sekunde warten, damit die Seite und alle Widgets komplett geladen sind
+        setTimeout(() => {
+            try {
+                if (action === 'timer') {
+                    const mins = parseFloat(params.get('minutes')) || 5;
+                    if (typeof renderTimerWidget === 'function') {
+                        renderTimerWidget(mins);
+                        scrollToWidget();
+                    }
+                } 
+                else if (action === 'search') {
+                    const q = params.get('q');
+                    if (q) {
+                        document.getElementById('glaggleQuery').value = q;
+                        if (typeof glaggleSearch === 'function') glaggleSearch();
+                    }
+                } 
+                else if (action === 'wetter') {
+                    const city = params.get('city');
+                    if (typeof fetchRealWeather === 'function') {
+                        fetchRealWeather(city || "");
+                        scrollToWidget(800);
+                    }
+                }
+                else if (action === 'calculator') {
+                    const expr = params.get('expr');
+                    if (typeof renderCalculatorWidget === 'function') {
+                        renderCalculatorWidget(expr || "");
+                        scrollToWidget();
+                    }
+                }
+                else if (action === 'image_search') {
+                    const q = params.get('q');
+                    if (q) {
+                        document.getElementById('glaggleQuery').value = q;
+                        if (typeof glaggleSearch === 'function') {
+                            glaggleSearch();
+                            setTimeout(() => document.getElementById('nav-img')?.click(), 1500);
+                        }
+                    }
+                }
+                else if (action === 'wiki_search') {
+                    const q = params.get('q');
+                    if (q) {
+                        document.getElementById('glaggleQuery').value = q;
+                        if (typeof glaggleSearch === 'function') {
+                            glaggleSearch();
+                            setTimeout(() => document.getElementById('nav-wiki')?.click(), 1500);
+                        }
+                    }
+                }
+                else if (action === 'help') {
+                    const overlay = document.getElementById('glaggle-welcome-overlay');
+                    if (overlay && typeof showSlide === 'function') {
+                        currentWelcomeSlide = 1;
+                        showSlide(1);
+                        overlay.style.display = 'flex';
+                        setTimeout(() => overlay.classList.add('show'), 50);
+                    }
+                }
+                
+                // WICHTIG: URL bereinigen, damit ein Reload nicht wieder die Aktion auslöst
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+            } catch (e) {
+                console.error("Auto-Start Fehler:", e);
+            }
+        }, 1000); // 1000ms Delay für sicheres Laden der DOM-Elemente
+    }
+})();
 </script>
 
 <div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
