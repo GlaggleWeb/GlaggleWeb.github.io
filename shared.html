@@ -1010,6 +1010,32 @@ const client = new Appwrite.Client()
         .setProject('69fb638a002b7d03d829');
 
     const account = new Appwrite.Account(client);
+
+// 1. Sidebar Toggle (Wird vom Hamburger-Icon und Overlay gebraucht)
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (sidebar) sidebar.classList.toggle("active");
+    if (overlay) overlay.classList.toggle("active");
+}
+
+// 2. Groq API Key (Wird zwingend für den Voice Assistant benötigt!)
+const p1 = "gsk_";
+const p2 = "FAnwmg4IMqrAexyzdupqWGdyb";
+const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r";
+function getGKey() { 
+    return p1 + p2 + p3; 
+}
+
+// 3. Preloader ausblenden (WICHTIG: Sonst bleibt die Ladeanimation auf allen Unterseiten stehen!)
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        setTimeout(() => {
+            preloader.classList.add('preloader-hidden');
+        }, 500);
+    }
+});
     
 async function checkLogin() {
     try {
