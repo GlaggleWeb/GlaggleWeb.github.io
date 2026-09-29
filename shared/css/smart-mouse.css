@@ -1,0 +1,75 @@
+
+/* ===== GLAGGLE SMART MOUSE ===== */
+body.smart-mouse-active {
+    cursor: none !important;
+}
+
+body.smart-mouse-active * {
+    cursor: none !important;
+}
+
+#glaggle-smart-cursor {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    background: #000000;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.15s ease;
+    display: none;
+    top: 0;
+    left: 0;
+}
+
+/* Cursor wird grösser + Glaggle-Blau wenn über klickbarem Element */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover {
+    width: 44px;
+    height: 44px;
+    background: #70C4F7;
+    mix-blend-mode: normal;
+}
+
+/* Cursor schrumpft beim Klicken */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+    background: #2E94D1;
+}
+
+/* Buttons & Links: füllen sich schwarz wie im Beispiel */
+body.smart-mouse-active a.smart-hover,
+body.smart-mouse-active button.smart-hover,
+body.smart-mouse-active .nav-button.smart-hover,
+body.smart-mouse-active .web-button.smart-hover,
+body.smart-mouse-active .sidebar-link.smart-hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+/* Glaggle-Buttons: füllen sich in Glaggle-Blau */
+body.smart-mouse-active .web-button.smart-hover,
+body.smart-mouse-active .nav-button.smart-hover {
+    background: #70C4F7 !important;
+    color: #ffffff !important;
+}
+
+/* Cursor verschwindet über klickbaren Elementen */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-hover {
+    opacity: 0 !important;
+}
+
+/* Cursor schrumpft beim Klicken */
+body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
+    width: 20px;
+    height: 20px;
+}
+
+/* Versteckt die Elemente standardmäßig auf Mobilgeräten */
+@media (max-width: 768px) {
+    .pc-only {
+        display: none !important;
+    }
+}
