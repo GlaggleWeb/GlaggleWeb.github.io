@@ -12,8 +12,10 @@
      smart-mouse  Smart Cursor
      voice        Glaggle Assistant
 
-   Abhängigkeiten werden automatisch aufgelöst und in der
-   richtigen Reihenfolge geladen (core -> auth -> ... -> voice).
+   Pro Feature passiert in dieser Reihenfolge:
+     Abhängigkeiten -> HTML einfügen (components/*.html) + CSS -> JS
+
+   Abhängigkeiten werden automatisch aufgelöst.
    ========================================================= */
 (function () {
     'use strict';
@@ -27,33 +29,41 @@
     const wanted  = (script.dataset.features || 'navbar')
                       .split(',').map(s => s.trim()).filter(Boolean);
 
-    // Jedes Feature: welche Features es braucht (deps), welche CSS/JS-Dateien es lädt.
-    // Pfade mit http/ oder / am Anfang werden unverändert benutzt, alle anderen relativ zu BASE.
+    // Jedes Feature:
+    //   deps: welche Features vorher geladen werden müssen
+    //   html: [Datei, Ziel-Selektor, Position] -> wird per fetch geholt und eingefügt (VOR dem JS)
+    //   css / js: Dateien (relativ zu shared.js, oder absolut mit / bzw. https://)
+    // Position = insertAdjacentHTML: 'afterbegin' | 'beforeend' | 'beforebegin' | 'afterend'
     const FEATURES = {
         core: {
             deps: [],
+            html: [['components/core.html', 'body', 'afterbegin']],          // Preloader, Hintergrund, Back-to-Top
             css:  ['css/base.css'],
             js:   ['https://cdn.jsdelivr.net/npm/appwrite@13.0.1', 'js/core.js']
         },
         navbar: {
             deps: ['core'],
+            html: [['components/navbar.html', 'body', 'beforeend']],         // Navbar, Sidebar, Overlay
             css:  ['css/navbar.css'],
-            js:   ['/account/glaggle-avatar.js', 'js/auth.js', 'components/navbar.js']
+            js:   ['/account/glaggle-avatar.js', 'js/auth.js']
         },
         design: {
             deps: ['navbar'],
+            html: [['components/design-panel.html', '#sidebar-design-slot', 'beforeend']],
             css:  ['css/design.css'],
-            js:   ['js/theme.js', 'js/music.js', 'js/background.js', 'components/design-panel.js']
+            js:   ['js/theme.js', 'js/music.js', 'js/background.js']
         },
         'smart-mouse': {
             deps: ['core'],
+            html: [['components/smart-mouse.html', 'body', 'afterbegin']],
             css:  ['css/smart-mouse.css'],
             js:   ['js/smart-mouse.js']
         },
         voice: {
             deps: ['design', 'smart-mouse'],   // Voice ruft applyTheme, setBgMode, glaggleAudio, enableSmartMouse auf
+            html: [['components/voice-assistant.html', 'body', 'beforeend']],
             css:  ['css/voice.css'],
-            js:   ['js/voice-assistant.js', 'components/voice-assistant.js']
+            js:   ['js/voice-assistant.js']
         }
     };
 
@@ -82,6 +92,19 @@
         });
     }
 
+    async function loadHTML([file, target, position]) {
+        const url = resolve(file);
+        if (loaded.has(url)) return;
+        loaded.add(url);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTML nicht gefunden: ' + url + ' (' + res.status + ')');
+        const html = await res.text();
+        const el = document.querySelector(target);
+        if (!el) throw new Error('Ziel "' + target + '" existiert nicht für ' + file);
+        el.insertAdjacentHTML(position || 'beforeend', html);
+        // Hinweis: <script> innerhalb der HTML-Dateien wird NICHT ausgeführt -> Logik gehört in js/
+    }
+
     function loadJS(path) {
         const url = resolve(path);
         if (loaded.has(url)) return Promise.resolve();
@@ -104,9 +127,11 @@
         // 1. Abhängigkeiten zuerst (nacheinander, damit die Reihenfolge stimmt)
         for (const dep of f.deps) await loadFeature(dep);
 
-        // 2. CSS parallel, JS nacheinander
-        await Promise.all(f.css.map(loadCSS));
-        for (const file of f.js) await loadJS(file);
+        // 2. HTML einfügen (nacheinander) + CSS parallel, danach JS nacheinander
+        const cssDone = Promise.all((f.css || []).map(loadCSS));
+        for (const h of (f.html || [])) await loadHTML(h);
+        await cssDone;
+        for (const file of (f.js || [])) await loadJS(file);
 
         done.add(name);
         document.dispatchEvent(new CustomEvent('glaggle:feature', { detail: name }));
