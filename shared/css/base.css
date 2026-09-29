@@ -92,3 +92,40 @@ body::before {
     opacity: 0;
     pointer-events: none;
 }
+
+#backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    border: none;
+    background-color: #70C4F7; /* Glaggle Grün */
+    color: white;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    
+    /* Animation */
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Zentrierung des Pfeils */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Diese Klasse wird per JS hinzugefügt */
+#backToTop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#backToTop:hover {
+    transform: scale(1.1);
+    background-color: #0C7EC6
+;
+}
