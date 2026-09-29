@@ -1,0 +1,94 @@
+/* Globale Einstellungen */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Der EINZIGE Body-Block */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Verhindert horizontales Scrollen */
+    
+    /* Hintergrund-Logik */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
+    /* Animationen */
+    transition: background-color 0.3s, opacity 2s ease-in-out, background-image 1s ease-in-out;
+    opacity: 1; /* War vorher 2, das war falsch! */
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Overlay bleibt separat, da es ein Pseudoelement ist */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Dunkles Overlay */
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+    #background-layer {
+    position: fixed; /* Fixiert den Hintergrund fest im Viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Legt den Hintergrund hinter alles andere */
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1s ease-in-out; /* Hier kommt der sanfte Wechsel rein */
+    opacity: 1;
+}
+
+
+        
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color, #ffffff); /* Nutzt deine Hintergrundfarbe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Immer ganz oben */
+    transition: opacity 0.5s ease;
+}
+
+.loader-logo {
+    width: 150px; /* Oder deine gewünschte Größe */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+/* Versteckt den Preloader */
+.preloader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
