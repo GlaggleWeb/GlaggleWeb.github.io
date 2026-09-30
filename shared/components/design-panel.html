@@ -1,0 +1,81 @@
+<details class="sidebar-category">
+    <summary>🎨 Design</summary>
+    <div class="design-panel">
+
+        <!-- THEME -->
+        <p class="design-label">Theme</p>
+        <div class="theme-grid" id="theme-grid">
+            <button class="t-btn active" data-t="hell" onclick="applyTheme('hell',this)" style="background:#f8f8f8;color:#333">
+                <div class="t-swatch" style="background:#fff;border-color:#ccc"></div>Hell
+            </button>
+            <button class="t-btn" data-t="dunkel" onclick="applyTheme('dunkel',this)" style="background:#1a1a1a;color:#eee">
+                <div class="t-swatch" style="background:#1a1a1a"></div>Dunkel
+            </button>
+            <button class="t-btn" data-t="blau" onclick="applyTheme('blau',this)" style="background:#e8f4fd;color:#1a5276">
+                <div class="t-swatch" style="background:#2980b9"></div>Blau
+            </button>
+            <button class="t-btn" data-t="grün" onclick="applyTheme('grün',this)" style="background:#eafaf1;color:#1e8449">
+                <div class="t-swatch" style="background:#27ae60"></div>Grün
+            </button>
+            <button class="t-btn" data-t="rot" onclick="applyTheme('rot',this)" style="background:#fdedec;color:#922b21">
+                <div class="t-swatch" style="background:#e74c3c"></div>Rot
+            </button>
+            <button class="t-btn" data-t="gelb" onclick="applyTheme('gelb',this)" style="background:#fef9e7;color:#7d6608">
+                <div class="t-swatch" style="background:#f1c40f;border-color:#aaa"></div>Gelb
+            </button>
+            <button class="t-btn" data-t="violett" onclick="applyTheme('violett',this)" style="background:#f4ecf7;color:#6c3483">
+                <div class="t-swatch" style="background:#8e44ad"></div>Violett
+            </button>
+            <button class="t-btn" data-t="custom" onclick="toggleCustomPickers()" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b);color:#fff">
+                <div class="t-swatch" style="background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#ff6b6b)"></div>Eigene
+            </button>
+        </div>
+
+        <div id="custom-pickers">
+            <div class="picker-grid">
+                <div><div class="picker-label">Navbar</div><input type="color" id="cp-navbar" value="#ffffff"></div>
+                <div><div class="picker-label">Suchfeld</div><input type="color" id="cp-search" value="#f0f8ff"></div>
+                <div><div class="picker-label">Overlay</div><input type="color" id="cp-overlay" value="#000000"></div>
+                <div><div class="picker-label">Akzentfarbe</div><input type="color" id="cp-accent" value="#70C4F7"></div>
+            </div>
+            <button class="picker-apply" onclick="applyCustomTheme()">Übernehmen ✓</button>
+        </div>
+
+        <div id="design-preview-bar"></div>
+
+        <!-- MUSIK (Listener kommen aus music.js, daher KEIN onchange hier) -->
+        <p class="design-label">Hintergrundmusik</p>
+        <select id="music-select">
+            <option value="">🔇 Keine Musik</option>
+            <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/eliveta-summer-473846_n1ssy1.mp3">☀️ Summer Chill</option>
+            <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/fl_attachment/fassounds-escape-your-love-upbeat-fashion-pop-dance-412230_zdz3fs.mp3">🎉 Party Music</option>
+            <option value="https://res.cloudinary.com/dcvdvvbnj/video/upload/alex-morgan-downtempo-chill-electronic-528322_qeq0gi.mp3">🏝️ Relax Beat</option>
+        </select>
+        <div id="music-controls">
+            <span>🔊</span>
+            <input type="range" id="music-vol" min="0" max="100" value="40">
+            <span id="vol-label">40%</span>
+        </div>
+
+        <!-- HINTERGRUND -->
+        <p class="design-label">Hintergrund</p>
+        <div class="bg-mode-grid">
+            <button class="bg-btn active" id="bg-btn-auto"  onclick="setBgMode('auto')">Spotlight</button>
+            <button class="bg-btn"        id="bg-btn-theme" onclick="setBgMode('theme')">Theme-Farbe</button>
+            <button class="bg-btn"        id="bg-btn-none"  onclick="setBgMode('none')">Kein Bild</button>
+            <button class="bg-btn"        id="bg-btn-fixed" onclick="setBgMode('fixed-select')">Bild auswählen</button>
+        </div>
+        <p class="design-label">Bilder auswählen</p>
+        <div id="spotlight-grid"></div>
+
+        <button id="design-reset" onclick="resetDesignFull()">↺ Alles zurücksetzen</button>
+
+        <!-- MAUS -->
+        <div class="design-mouse">
+            <p class="design-label">Maus</p>
+            <button id="smart-mouse-toggle" onclick="toggleSmartMouse()">Glaggle Smart Mouse aktivieren</button>
+            <p class="design-hint">Eigener Cursor mit Smart-Hover-Effekten</p>
+        </div>
+
+    </div>
+</details>
