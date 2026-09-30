@@ -1,50 +1,34 @@
-   <nav class="navbar">
+ <nav class="navbar">
     <div class="nav-left">
-        <a href="https://glaggle.ch"><img src="../glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
+        <a href="https://glaggle.ch"><img src="/glagglelogooriginal.png" class="logo-img" alt="Logo"></a>
     </div>
-<div class="nav-right">
-    <a href="account/overview/index.html" id="nav-avatar" class="nav-avatar" title="Account Übersicht" style="display:none;"></a>
-    <div class="hamburger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+    <div class="nav-right">
+        <a href="/account/overview/index.html" id="nav-avatar" class="nav-avatar" title="Account Übersicht" style="display:none;"></a>
+        <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
     </div>
-</div>
 </nav>
+
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
-    
+
     <div class="sidebar-content">
-    <div id="user-section" style="padding: 15px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
-    
-    <div id="user-logged-in" style="display: none;">
-        <p style="margin: 0; font-size: 0.8rem; color: var(--desc-color);">Eingeloggt als:</p>
-        <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-    <span id="sidebar-avatar" style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-block;"></span>
-    <span id="user-name-display" style="font-weight: bold; color: var(--link-color);"></span>
-</div>
-        
-        <a href="account/overview/index.html" class="sidebar-link" 
-           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            Account Übersicht
-        </a>
+        <div id="user-section">
+            <div id="user-logged-in" style="display:none;">
+                <p class="user-label">Eingeloggt als:</p>
+                <div class="user-row">
+                    <span id="sidebar-avatar"></span>
+                    <span id="user-name-display"></span>
+                </div>
+                <a href="/account/overview/index.html" class="sidebar-link sidebar-cta">Account Übersicht</a>
+                <button onclick="logout()" class="logout-btn">Abmelden</button>
+            </div>
 
-        <button onclick="logout()" style="background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; width: 100%; margin-top: 5px;">
-            Abmelden
-        </button>
-    </div>
+            <div id="user-logged-out">
+                <a href="/account/index.html" class="sidebar-link sidebar-cta">Registrieren</a>
+                <a href="/login/index.html" class="login-hint">Schon ein Konto? Einloggen</a>
+            </div>
+        </div>
 
-    <div id="user-logged-out">
-        <a href="account/index.html" class="sidebar-link" 
-           style="display: block; background: #70C4F7; color: #ffffff !important; text-align: center; border-radius: 10px; font-weight: bold; text-decoration: none; padding: 12px; margin-bottom: 10px; border: none;">
-           Registrieren
-        </a>
-        <a href="login/index.html" style="display: block; text-align: center; font-size: 0.75rem; margin-top: 8px; color: var(--desc-color); text-decoration: none;">
-           Schon ein Konto? Einloggen
-        </a>
-    </div>
-
-</div>
         <details class="sidebar-category">
             <summary>KI Tools</summary>
             <a href="https://glaggle.ch/glame" class="sidebar-link">Glame AI</a>
@@ -55,14 +39,14 @@
             <a href="https://glaggle.ch/avideo" class="sidebar-link">AVideo</a>
         </details>
 
-<details class="sidebar-category">
-    <summary>Glaggle Tools</summary>
-    <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
-    <a href="https://glaggle.ch/designstudio" class="sidebar-link pc-only">Glaggle Design Studio</a>
-    <a href="https://glaggle.ch/codemaker" class="sidebar-link pc-only">Glaggle Code Maker</a>
-    <a href="https://glaggle.ch/avideostudio" class="sidebar-link pc-only">Glaggle AVideo Studio</a>
-    <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
-</details>
+        <details class="sidebar-category">
+            <summary>Glaggle Tools</summary>
+            <a href="https://glaggle.ch/meteo" class="sidebar-link">Glaggle Meteo</a>
+            <a href="https://glaggle.ch/designstudio" class="sidebar-link pc-only">Glaggle Design Studio</a>
+            <a href="https://glaggle.ch/codemaker" class="sidebar-link pc-only">Glaggle Code Maker</a>
+            <a href="https://glaggle.ch/avideostudio" class="sidebar-link pc-only">Glaggle AVideo Studio</a>
+            <a href="https://glaggle.ch/canvas" class="sidebar-link">Glaggle Bildschirmschoner</a>
+        </details>
 
         <details class="sidebar-category">
             <summary>Gaming</summary>
@@ -72,18 +56,11 @@
 
         <details class="sidebar-category">
             <summary>Info</summary>
-            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ & Über Uns</a>
+            <a href="https://glaggle.ch/faq" class="sidebar-link">FAQ &amp; Über Uns</a>
             <a href="https://glaggle.ch/history" class="sidebar-link">Glaggle History</a>
             <a href="https://glaggle.ch/historysites" class="sidebar-link">Glaggle Historysites</a>
         </details>
-
-       <!-- Hier hängt sich design-panel.html ein -->
-        <details class="sidebar-category">
-            <summary>🎨 Design</summary>
-            <div id="sidebar-design-slot"></div>
-        </details>
     </div>
 </div>
- 
+
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
- 
