@@ -1,0 +1,66 @@
+<!-- Glaggle Voice Assistant -->
+<button id="voice-btn" onclick="toggleVoiceAssistant()" title="Glaggle Assistant">
+    <span id="voice-icon">🎙️</span>
+</button>
+
+<div id="voice-popup" style="display:none;">
+    <div id="voice-header">
+        <span>✨ Glaggle Assistant</span>
+        <div>
+            <button onclick="openVoiceFeaturesPopup()" id="voice-help-btn" title="Was kann ich?">?</button>
+            <button onclick="closeVoiceAssistant()" id="voice-close">✕</button>
+        </div>
+    </div>
+    <div id="voice-status">Einen Moment...</div>
+    <div id="voice-wave">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div>
+    </div>
+    <div id="voice-transcript"></div>
+    <div id="voice-response"></div>
+
+<!-- NEU: Texteingabe -->
+<form id="voice-text-form" onsubmit="submitVoiceText(event)" autocomplete="off">
+    <input type="text" id="voice-text-input" placeholder="Frage..." enterkeyhint="send" autocomplete="off">
+    <button type="submit" id="voice-text-send" aria-label="Senden">➤</button>
+</form>
+
+<button id="voice-mic-btn" onclick="startListening()">🎙️</button>
+
+    <!-- Schnellbefehle -->
+    <div id="voice-chips">
+        <button class="voice-chip" onclick="triggerChip('Stell einen Timer auf 5 Minuten')">⏱️ Timer 5min</button>
+        <button class="voice-chip" onclick="triggerChip('Mach die Musik an')">🎵 Musik an</button>
+        <button class="voice-chip" onclick="focusSearchFromVoice()">🔍 Suche...</button>
+        <button class="voice-chip" onclick="triggerChip('Wie ist das Wetter in Zürich')">☁️ Wetter</button>
+        <button class="voice-chip" onclick="triggerChip('Scroll nach oben')">⬆️ Oben</button>
+    </div>
+
+    <!-- Stimme & Sprache einstellen -->
+    <details id="voice-settings-panel" style="margin-top:10px;">
+        <summary style="font-size:0.75rem;color:#888;cursor:pointer;list-style:none;text-align:center;padding:6px 0;">
+            ⚙️ Stimme einstellen
+        </summary>
+        <div style="margin-top:10px;">
+            <div class="voice-setting-label">Geschwindigkeit</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="speed" data-val="0.6"  onclick="setVoiceSetting('speed','0.6',this)">🐢 Langsam</button>
+                <button class="voice-setting-btn" data-type="speed" data-val="0.82" onclick="setVoiceSetting('speed','0.82',this)">▶️ Normal</button>
+                <button class="voice-setting-btn" data-type="speed" data-val="1.15" onclick="setVoiceSetting('speed','1.15',this)">⚡ Schnell</button>
+            </div>
+            <div class="voice-setting-label" style="margin-top:8px;">Stimme</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="gender" data-val="male"   onclick="setVoiceSetting('gender','male',this)">👨 Männlich</button>
+                <button class="voice-setting-btn" data-type="gender" data-val="female" onclick="setVoiceSetting('gender','female',this)">👩 Weiblich</button>
+                <button class="voice-setting-btn" data-type="gender" data-val="auto"   onclick="setVoiceSetting('gender','auto',this)">🔀 Auto</button>
+            </div>
+            <div class="voice-setting-label" style="margin-top:8px;">Sprache</div>
+            <div class="voice-setting-row">
+                <button class="voice-setting-btn" data-type="lang" data-val="de-DE" onclick="setVoiceSetting('lang','de-DE',this)">🇩🇪 DE</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="en-US" onclick="setVoiceSetting('lang','en-US',this)">🇬🇧 EN</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="fr-FR" onclick="setVoiceSetting('lang','fr-FR',this)">🇫🇷 FR</button>
+                <button class="voice-setting-btn" data-type="lang" data-val="es-ES" onclick="setVoiceSetting('lang','es-ES',this)">🇪🇸 ES</button>
+            </div>
+        </div>
+    </details>
+</div>
