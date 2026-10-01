@@ -441,7 +441,7 @@
                     let msg = `Fehler ${response.status}`;
                     try {
                         const data = await response.json();
-                        if (data && data.error) msg = data.error;
+                        if (data && data.error) msg = data.error + (data.details ? ` (${data.details})` : "");
                     } catch (_) { /* Antwort war kein JSON */ }
 
                     if (response.status === 429) {
