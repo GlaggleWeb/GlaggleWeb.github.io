@@ -193,7 +193,7 @@
         <!-- Search & Create View -->
         <section id="search-view" class="view-section active w-full max-w-2xl text-center">
             <h1 class="text-4xl sm:text-5xl font-extrabold mb-2">Glaggle-Magic</h1>
-            <p class="text-slate-500 text-lg mb-8">Erschaffe Bilder mit der Kraft von Hugging Face</p>
+            <p class="text-slate-500 text-lg mb-8">Erschaffe Bilder mit der Kraft von Cloudfare Workers und Black Forest Labs</p>
 
 <!-- ============================================================
   1) HTML: den kompletten Block "Model Selection Grid" ersetzen
@@ -594,12 +594,12 @@
     const item = myGallery.find(i => i.id == id);
     if (!item) return;
  
-    const loadImg = (src) => new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-    });
+const loadImg = (src) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Konnte nicht laden: " + src));
+    img.src = src;
+});
  
     let href = item.image;
     let tempUrl = null;
