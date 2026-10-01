@@ -195,32 +195,50 @@
             <h1 class="text-4xl sm:text-5xl font-extrabold mb-2">Glaggle-Magic</h1>
             <p class="text-slate-500 text-lg mb-8">Erschaffe Bilder mit der Kraft von Hugging Face</p>
 
-            <!-- Model Selection Grid -->
-            <div class="mb-8 w-full">
-                <label class="text-xs sm:text-sm font-semibold text-slate-400 block mb-3 uppercase tracking-wider">Künstlerischen Stil wählen (100% Kostenlos)</label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
-                    <!-- Model: SDXL -->
-                    <button onclick="changeModel('sdxl')" id="btn-sdxl" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 active">
-                        <span class="text-2xl">🎬</span>
-                        <span>Cinematic (Flux)</span>
-                    </button>
-                    <!-- Model: FLUX -->
-                    <button onclick="changeModel('flux')" id="btn-flux" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
-                        <span class="text-2xl">⚡</span>
-                        <span>Flux Realismus</span>
-                    </button>
-                    <!-- Model: Anime -->
-                    <button onclick="changeModel('anime')" id="btn-anime" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
-                        <span class="text-2xl">🌸</span>
-                        <span>Anime (Flux)</span>
-                    </button>
-                    <!-- Model: Dreamshaper -->
-                    <button onclick="changeModel('dream')" id="btn-dream" class="model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
-                        <span class="text-2xl">✨</span>
-                        <span>Fantasy (Flux)</span>
-                    </button>
-                </div>
-            </div>
+<!-- ============================================================
+  1) HTML: den kompletten Block "Model Selection Grid" ersetzen
+     (<div class="mb-8 w-full"> ... </div> über der Prompt-Bar)
+============================================================ -->
+<div class="mb-8 w-full space-y-6">
+
+    <!-- Stil -->
+    <div>
+        <label class="text-xs sm:text-sm font-semibold text-slate-400 block mb-3 uppercase tracking-wider">Stil</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
+            <button onclick="changeModel('sdxl')" id="btn-sdxl" class="style-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 active">
+                <span class="text-2xl">🎬</span><span>Cinematic</span>
+            </button>
+            <button onclick="changeModel('flux')" id="btn-flux" class="style-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">📷</span><span>Realismus</span>
+            </button>
+            <button onclick="changeModel('anime')" id="btn-anime" class="style-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">🌸</span><span>Anime</span>
+            </button>
+            <button onclick="changeModel('dream')" id="btn-dream" class="style-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">✨</span><span>Fantasy</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Format -->
+    <div>
+        <label class="text-xs sm:text-sm font-semibold text-slate-400 block mb-3 uppercase tracking-wider">Format</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
+            <button onclick="setSize(1024,1024,this)" class="size-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5 active">
+                <span class="text-2xl">⬜</span><span>Quadrat 1:1</span>
+            </button>
+            <button onclick="setSize(1024,768,this)" class="size-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">🖼️</span><span>Quer 4:3</span>
+            </button>
+            <button onclick="setSize(768,1024,this)" class="size-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">📱</span><span>Hochkant 3:4</span>
+            </button>
+            <button onclick="setSize(1024,576,this)" class="size-btn model-tab-btn py-3 px-3 rounded-2xl text-xs font-bold flex flex-col items-center gap-1.5">
+                <span class="text-2xl">🎞️</span><span>Breit 16:9</span>
+            </button>
+        </div>
+    </div>
+</div>
 
             <!-- Magic Prompt Bar -->
             <div class="search-bar-wrapper mb-6">
@@ -297,6 +315,8 @@
         let myGallery = []; // Speichert jetzt nur noch Bild-Metadaten, keine Blobs/Base64!
         let currentBlobUrl = null; // Speichert die URL des aktuell angezeigten Bildes
         let confirmAction = null;
+        let currentSize = { w: 1024, h: 1024 };
+
 
         window.onload = () => {
             // Preloader ausblenden
@@ -321,20 +341,17 @@
         };
 
         window.changeModel = (modelKey) => {
-            currentModelKey = modelKey;
-            
-            document.querySelectorAll('.model-tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const activeBtn = document.getElementById(`btn-${modelKey}`);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-            }
-            
-            showToast(`Modell gewechselt: ${modelKey.toUpperCase()}`, 'info');
-        };
+    currentModelKey = modelKey;
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`btn-${modelKey}`);
+    if (activeBtn) activeBtn.classList.add('active');
+};
 
+    window.setSize = (w, h, el) => {
+    currentSize = { w, h };
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+};
         function showToast(message, type = 'info') {
             const toast = document.getElementById('custom-toast');
             const toastText = document.getElementById('toast-text');
@@ -420,9 +437,7 @@
                 URL.revokeObjectURL(currentBlobUrl);
                 currentBlobUrl = null;
             }
-
-            // 2. Seed separat senden (nicht mehr im Prompt, sonst landet er evtl. im Bild)
-            const seed = Math.floor(Math.random() * 1000000);
+        
             const finalPrompt = getStyledPrompt(basePrompt, currentModelKey);
 
             const controller = new AbortController();
@@ -430,11 +445,15 @@
 
             try {
                 const response = await fetch(workerUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ inputs: finalPrompt, seed }),
-                    signal: controller.signal
-                });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        inputs: finalPrompt,
+        width: currentSize.w,
+        height: currentSize.h
+    }),
+    signal: controller.signal
+});
 
                 if (!response.ok) {
                     // Worker antwortet bei Fehlern mit JSON: { error, details }
