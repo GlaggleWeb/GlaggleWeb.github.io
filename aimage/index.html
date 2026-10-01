@@ -605,11 +605,11 @@
     let tempUrl = null;
     let filename = `AImage_Magic_${id}.jpg`;
  
-    try {
-        // Pfad ggf. anpassen, relativ zu aimage.html
-        const [img, logo] = await Promise.all([loadImg(item.image), loadImg('aimagelogo.png')]);
- 
-        const canvas = document.createElement('canvas');
+try {
+    const img  = await loadImg(item.image);              // Bild aus dem Browser-Speicher
+    const logo = await loadImg('/aimage/aimagelogo.png'); // Logo vom Server
+
+    const canvas = document.createElement('canvas');
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext('2d');
