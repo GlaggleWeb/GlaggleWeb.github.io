@@ -293,13 +293,6 @@
         // Ändere diese Zeile:
         const workerUrl = "https://frosty-night-90c6.rhpjmf7t2s.workers.dev";
 
-const modelRegistry = {
-    sdxl: "https://router.huggingface.co/hf-inference/models/Lykon/dreamshaper-xl-v2-turbo",
-    flux: "https://router.huggingface.co/hf-inference/models/Lykon/dreamshaper-xl-v2-turbo",
-    anime: "https://router.huggingface.co/hf-inference/models/Lykon/dreamshaper-xl-v2-turbo",
-    dream: "https://router.huggingface.co/hf-inference/models/Lykon/dreamshaper-xl-v2-turbo"
-};
-
         let currentModelKey = "sdxl";
         let myGallery = []; // Speichert jetzt nur noch Bild-Metadaten, keine Blobs/Base64!
         let currentBlobUrl = null; // Speichert die URL des aktuell angezeigten Bildes
@@ -405,7 +398,7 @@ const modelRegistry = {
         };
 
         // --- STARK VERBESSERTE GENERIERUNGS-FUNKTION ---
-        async function generateImage() {
+       async function generateImage() {
             const promptInput = document.getElementById('prompt');
             const basePrompt = promptInput.value.trim();
             const btn = document.getElementById('generateBtn');
@@ -418,21 +411,19 @@ const modelRegistry = {
             // 1. UI: Animation zeigen, alte Fehler/Vorschauen verstecken
             btn.disabled = true;
             btn.textContent = "Generiere...";
-            statusContainer.classList.remove('hidden'); 
-            previewArea.classList.add('hidden'); 
-            if(troubleshootBox) troubleshootBox.classList.add('hidden');
+            statusContainer.classList.remove('hidden');
+            previewArea.classList.add('hidden');
+            if (troubleshootBox) troubleshootBox.classList.add('hidden');
 
-            // --- NEU & WICHTIG FÜR WEBKIT: Alte Blob-URL freigeben ---
-            // Wenn schon ein Bild generiert wurde, löschen wir dessen temporäre URL
-            // aus dem Browser-Speicher, um Leaks und Fehler zu vermeiden.
+            // Alte Blob-URL freigeben (WebKit-Speicher)
             if (currentBlobUrl) {
                 URL.revokeObjectURL(currentBlobUrl);
-                currentBlobUrl = null; 
+                currentBlobUrl = null;
             }
-            
-            // 2. Den "Noise-Trick": Zufällige Zahl generieren
-            const randomNum = Math.floor(Math.random() * 1000000);
-            const finalPrompt = `${getStyledPrompt(basePrompt, currentModelKey)} (seed: ${randomNum})`;
+
+            // 2. Seed separat senden (nicht mehr im Prompt, sonst landet er evtl. im Bild)
+            const seed = Math.floor(Math.random() * 1000000);
+            const finalPrompt = getStyledPrompt(basePrompt, currentModelKey);
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s Timeout
@@ -441,68 +432,69 @@ const modelRegistry = {
                 const response = await fetch(workerUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        inputs: finalPrompt
-                    }),
+                    body: JSON.stringify({ inputs: finalPrompt, seed }),
                     signal: controller.signal
                 });
 
                 if (!response.ok) {
+                    // Worker antwortet bei Fehlern mit JSON: { error, details }
+                    let msg = `Fehler ${response.status}`;
+                    try {
+                        const data = await response.json();
+                        if (data && data.error) msg = data.error;
+                    } catch (_) { /* Antwort war kein JSON */ }
+
                     if (response.status === 429) {
-                        throw new Error("Zu viele Anfragen. Bitte warte kurz.");
+                        msg = "Tageslimit erreicht. Das kostenlose Kontingent wird täglich um 00:00 UTC zurückgesetzt.";
                     }
-                    const errData = await response.text();
-                    throw new Error(`Worker Fehler: ${errData}`);
+                    throw new Error(msg);
                 }
 
-                // --- ZURÜCK ZUR BLOB-URL-METHODE (Speicherschonender) ---
                 const blob = await response.blob();
-                
+
                 // Prüfen, ob wir wirklich ein Bild erhalten haben
                 if (blob.size < 100 || !blob.type.startsWith('image/')) {
                     throw new Error("Fehlerhaftes Bild empfangen.");
                 }
 
-                // Neue temporäre URL für dieses Blob erstellen
                 currentBlobUrl = URL.createObjectURL(blob);
 
-                const item = { 
-                    id: Date.now(), 
-                    // WICHTIG: In 'myGallery' speichern wir die 'currentBlobUrl'.
-                    // Diese ist nur gültig, solange die Seite nicht neu geladen wird.
-                    image: currentBlobUrl, 
-                    prompt: basePrompt, 
-                    model: currentModelKey 
+                const item = {
+                    id: Date.now(),
+                    image: currentBlobUrl, // nur gültig bis zum Neuladen der Seite
+                    prompt: basePrompt,
+                    model: currentModelKey
                 };
-                
-                // Metadaten in Galerie speichern (aber NICHT im LocalStorage, siehe load/saveLocalGallery)
+
                 myGallery.unshift(item);
-                
+
                 statusContainer.classList.add('hidden');
                 previewArea.classList.remove('hidden');
                 showPreview(item);
-                
-                btn.disabled = false;
-                btn.textContent = "Erstellen";
-                clearTimeout(timeoutId);
 
             } catch (err) {
-                clearTimeout(timeoutId);
                 console.error("Generierungs-Fehler:", err);
-                
+
                 statusContainer.classList.add('hidden');
+
+                // Troubleshoot-Box nur bei echten Netzwerkproblemen (Timeout, Verbindung)
+                const isNetworkError = err.name === 'AbortError' || err instanceof TypeError;
+                if (isNetworkError && troubleshootBox) {
+                    troubleshootBox.classList.remove('hidden');
+                }
+
+                const msg = err.name === 'AbortError'
+                    ? "Zeitüberschreitung. Bitte versuche es erneut."
+                    : err.message;
+                alert(`Generierung fehlgeschlagen: ${msg}`);
+
+            } finally {
+                clearTimeout(timeoutId);
                 btn.disabled = false;
                 btn.textContent = "Erstellen";
-                
-                // Bei Netzwerkfehlern den Troubleshoot-Kasten zeigen
-                if (err.name === 'AbortError' || err.message.includes('NetworkError') || err.message.includes('Worker Fehler')) {
-                    if(troubleshootBox) troubleshootBox.classList.remove('hidden');
-                }
-                
-                alert(`Generierung fehlgeschlagen: ${err.message}`);
             }
         }
-
+    
         function showPreview(item) {
             const preview = document.getElementById('preview-area');
             if (!preview) return;
