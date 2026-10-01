@@ -478,12 +478,14 @@
 
                 currentBlobUrl = URL.createObjectURL(blob);
 
-                const item = {
-                    id: Date.now(),
-                    image: currentBlobUrl, // nur gültig bis zum Neuladen der Seite
-                    prompt: basePrompt,
-                    model: currentModelKey
-                };
+            const item = {
+    id: Date.now(),
+    image: currentBlobUrl,
+    prompt: basePrompt,
+    model: currentModelKey,
+    w: currentSize.w,      // NEU
+    h: currentSize.h       // NEU
+};
 
                 myGallery.unshift(item);
 
@@ -524,7 +526,7 @@
 
             preview.innerHTML = `
                 <div class="glaggle-card max-w-sm w-full p-4 bg-white dark:bg-zinc-800 animate-[popIn_0.5s_ease-out_forwards]">
-                    <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden shadow-inner relative group">
+                    <div class="bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-4 overflow-hidden shadow-inner relative group" style="aspect-ratio: ${item.w || 1024} / ${item.h || 1024};">
                         <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500'; alert('Bild-Ladefehler in WebKit. Speicher ist voll.');">
                         <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-mono px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow">
                             🎨 ${displayModelName}
@@ -568,7 +570,7 @@
                 if (item.model === "dream") displayModelName = "Fantasy (Flux)";
 
                 div.innerHTML = `
-                    <div class="aspect-square bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-3 overflow-hidden shadow-inner group cursor-pointer relative">
+                    <div class="bg-slate-50 dark:bg-zinc-900 rounded-2xl mb-3 overflow-hidden shadow-inner group cursor-pointer relative" style="aspect-ratio: ${item.w || 1024} / ${item.h || 1024};">
                         <img src="${item.image}" alt="${item.prompt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500';">
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-end justify-start p-3">
                             <span class="bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
@@ -588,19 +590,59 @@
             });
         }
 
-        window.downloadImage = (id) => {
-            const item = myGallery.find(i => i.id == id);
-            if(!item) return;
-
-            const a = document.createElement('a');
-            a.href = item.image; // Dies ist die Blob-URL
-            a.download = `AImage_Magic_${id}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showToast("Download gestartet!", "success");
-        };
-
+        window.downloadImage = async (id) => {
+    const item = myGallery.find(i => i.id == id);
+    if (!item) return;
+ 
+    const loadImg = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+ 
+    let href = item.image;
+    let tempUrl = null;
+    let filename = `AImage_Magic_${id}.jpg`;
+ 
+    try {
+        // Pfad ggf. anpassen, relativ zu aimage.html
+        const [img, logo] = await Promise.all([loadImg(item.image), loadImg('aimagelogo.png')]);
+ 
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+ 
+        // Wasserzeichen unten links: 20 % der Bildbreite, 3 % Rand
+        const logoW = canvas.width * 0.2;
+        const logoH = logoW * (logo.naturalHeight / logo.naturalWidth);
+        const margin = canvas.width * 0.03;
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(logo, margin, canvas.height - logoH - margin, logoW, logoH);
+        ctx.globalAlpha = 1;
+ 
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        if (blob) {
+            tempUrl = URL.createObjectURL(blob);
+            href = tempUrl;
+            filename = `AImage_Magic_${id}.png`;
+        }
+    } catch (e) {
+        // Logo oder Bild nicht ladbar: Original ohne Wasserzeichen herunterladen
+        console.warn("Wasserzeichen fehlgeschlagen:", e);
+    }
+ 
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (tempUrl) setTimeout(() => URL.revokeObjectURL(tempUrl), 5000);
+    showToast("Download gestartet!", "success");
+};
         // --- GEÄNDERT: LocalStorage Management ---
         
         function loadLocalGallery() {
