@@ -1,5 +1,5 @@
 /* ===== GLAGGLE SMART MOUSE SYSTEM ===== */
-let smartMouseActive = false;
+let smartMouseActive = false; 
 const smartCursor = document.getElementById('glaggle-smart-cursor');
 
 /* ===== FIX: Cursor immer frisch suchen ===== */
