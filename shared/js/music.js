@@ -1,4 +1,4 @@
-// ===== MUSIK KOMPLETT =====
+// ===== MUSIK KOMPLETT ===== 
 let glaggleAudio = null; // falls noch nicht definiert, sonst diese Zeile weglassen
 
 // NEU (fix):
