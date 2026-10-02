@@ -148,17 +148,37 @@
             : Promise.resolve();
     }
 
+    // ---- Preloader ------------------------------------------------------
+    // Wird IMMER ausgeblendet, egal ob ein Feature fehlgeschlagen ist.
+    // Unabhängig von CSS: Inline-Styles + Entfernen nach dem Ausblenden.
+    function hidePreloader() {
+        document.querySelectorAll('#preloader').forEach(p => {
+            p.classList.add('preloader-hidden');
+            p.style.transition = 'opacity .5s ease';
+            p.style.opacity = '0';
+            p.style.pointerEvents = 'none';
+            setTimeout(() => p.remove(), 600);
+        });
+    }
+
     // ---- Start ---------------------------------------------------------
     const ready = (async () => {
-        await domReady();
-        await loadFeature('core');
-        for (const name of wanted) {
-            try { await loadFeature(name); }
-            catch (err) { console.error('[Glaggle]', name, err); }
+        try {
+            await domReady();
+            try { await loadFeature('core'); }
+            catch (err) { console.error('[Glaggle] core', err); }
+            for (const name of wanted) {
+                try { await loadFeature(name); }
+                catch (err) { console.error('[Glaggle]', name, err); }
+            }
+            document.dispatchEvent(new CustomEvent('glaggle:ready', { detail: [...done] }));
+            return [...done];
+        } finally {
+            setTimeout(hidePreloader, 300);
         }
-        document.dispatchEvent(new CustomEvent('glaggle:ready', { detail: [...done] }));
-        return [...done];
     })();
+
+    setTimeout(hidePreloader, 10000);   // Notausgang, falls irgendetwas hängt
 
     // Öffentliche API: Glaggle.ready.then(...) oder Glaggle.has('voice')
     window.Glaggle = {
