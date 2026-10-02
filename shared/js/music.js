@@ -127,3 +127,14 @@ function tryAutoplayMusic() {
         }
     }
 }
+
+function playWhenAllowed(audio) {
+    audio.play().catch(() => {
+        const events = ['pointerdown', 'keydown', 'touchstart'];
+        const start = () => {
+            events.forEach(e => document.removeEventListener(e, start));
+            if (glaggleAudio === audio) audio.play().catch(() => {});
+        };
+        events.forEach(e => document.addEventListener(e, start, { passive: true }));
+    });
+}
