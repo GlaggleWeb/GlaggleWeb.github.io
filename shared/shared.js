@@ -48,8 +48,8 @@
             js:   ['/account/glaggle-avatar.js', 'js/auth.js']
         },
         design: {
-            deps: ['navbar'],
-            html: [['components/design-panel.html', '#sidebar-design-slot', 'beforeend']],
+            deps: ['navbar', 'smart-mouse'],   // Maus-Button sitzt im Design-Panel
+            html: [['components/design-panel.html', '.sidebar-content', 'beforeend']],
             css:  ['css/design.css'],
             js:   ['js/theme.js', 'js/music.js', 'js/background.js']
         },
@@ -95,13 +95,13 @@
     async function loadHTML([file, target, position]) {
         const url = resolve(file);
         if (loaded.has(url)) return;
-        loaded.add(url);
         const res = await fetch(url);
         if (!res.ok) throw new Error('HTML nicht gefunden: ' + url + ' (' + res.status + ')');
         const html = await res.text();
         const el = document.querySelector(target);
         if (!el) throw new Error('Ziel "' + target + '" existiert nicht für ' + file);
         el.insertAdjacentHTML(position || 'beforeend', html);
+        loaded.add(url);   // erst nach Erfolg merken, sonst wird ein Retry übersprungen
         // Hinweis: <script> innerhalb der HTML-Dateien wird NICHT ausgeführt -> Logik gehört in js/
     }
 
@@ -119,7 +119,12 @@
         });
     }
 
-    async function loadFeature(name) {
+    const pending = {};
+    function loadFeature(name) {
+        return pending[name] || (pending[name] = runFeature(name));
+    }
+
+    async function runFeature(name) {
         if (done.has(name)) return;
         const f = FEATURES[name];
         if (!f) { console.warn('[Glaggle] Unbekanntes Feature:', name); return; }
