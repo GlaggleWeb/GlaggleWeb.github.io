@@ -257,3 +257,23 @@
     height: 100%;
     display: block;
 }
+
+/* ---- Account-Bereich in der Sidebar ---- */
+#user-section { padding: 15px; border-bottom: 1px solid rgba(128,128,128,.3); margin-bottom: 10px; }
+.user-label { margin: 0; font-size: .8rem; opacity: .7; }
+.user-row { display: flex; align-items: center; gap: 8px; margin: 5px 0 12px; }
+#user-name-display { font-weight: bold; font-size: .95rem; }
+
+#sidebar-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-block; }
+.nav-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid #70C4F7; display: none; transition: transform .2s, box-shadow .2s; }
+.nav-avatar:hover { transform: scale(1.08); box-shadow: 0 0 10px rgba(112,196,247,.6); }
+.nav-avatar svg, #sidebar-avatar svg { width: 100%; height: 100%; display: block; }
+
+.sidebar-cta {
+    display: block; background: #70C4F7; color: #fff !important; text-align: center;
+    border-radius: 10px; font-weight: bold; text-decoration: none;
+    padding: 12px; margin-bottom: 10px; font-size: .9rem; border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+.logout-btn { width: 100%; margin-top: 5px; padding: 8px; background: none; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 15px; cursor: pointer; font-size: .75rem; }
+.login-hint { display: block; text-align: center; font-size: .75rem; margin-top: 8px; opacity: .7; color: inherit; text-decoration: none; }
