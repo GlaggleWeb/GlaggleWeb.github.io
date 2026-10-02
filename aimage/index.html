@@ -193,7 +193,7 @@
         <!-- Search & Create View -->
         <section id="search-view" class="view-section active w-full max-w-2xl text-center">
             <h1 class="text-4xl sm:text-5xl font-extrabold mb-2">Glaggle-Magic</h1>
-            <p class="text-slate-500 text-lg mb-8">Erschaffe Bilder mit der Kraft von Cloudfare Workers und Black Forest Labs</p>
+            <p class="text-slate-500 text-lg mb-8">Erschaffe Bilder mit der Kraft von Cloudfare Workers und Flux 2</p>
 
 <!-- ============================================================
   1) HTML: den kompletten Block "Model Selection Grid" ersetzen
@@ -379,13 +379,13 @@
 
         function getStyledPrompt(basePrompt, styleKey) {
             switch(styleKey) {
-                case 'flux':
+                case 'realistisch':
                     return `highly detailed raw photorealistic scene, real life texture, 8k resolution, crisp detailing, ${basePrompt}`;
                 case 'anime':
                     return `beautiful modern anime illustration, vibrant colors, aesthetic clean lineart, manga aesthetic, masterpiece, detailed art, ${basePrompt}`;
                 case 'dream':
                     return `epic dreamshaper fantasy digital painting, atmospheric volumetric lighting, beautiful surrealism, highly detailed fantasy art, concept design, ${basePrompt}`;
-                case 'sdxl':
+                case 'cinematic':
                 default:
                     return `cinematic lighting, professional award-winning photography, rich textures, 3d render masterpiece, detailed, ${basePrompt}`;
             }
@@ -616,10 +616,10 @@ try {
         ctx.drawImage(img, 0, 0);
  
         // Wasserzeichen unten links: 20 % der Bildbreite, 3 % Rand
-        const logoW = canvas.width * 0.2;
-        const logoH = logoW * (logo.naturalHeight / logo.naturalWidth);
-        const margin = canvas.width * 0.03;
-        ctx.globalAlpha = 0.9;
+        const logoW = canvas.width * 0.08;   // 8 % der Bildbreite
+const logoH = logoW * (logo.naturalHeight / logo.naturalWidth);
+const margin = canvas.width * 0.015; // kleinerer Abstand zum Rand
+        ctx.globalAlpha = 0.7;
         ctx.drawImage(logo, margin, canvas.height - logoH - margin, logoW, logoH);
         ctx.globalAlpha = 1;
  
