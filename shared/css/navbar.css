@@ -201,11 +201,6 @@
     transition: 0.3s;
 }
 
-.sidebar-category summary:hover {
-    background-color: var(--card-bg);
-    color: var(--link-color);
-}
-
 /* Ein kleiner schicker Pfeil rechts */
 .sidebar-category summary::after {
     content: '›'; 
