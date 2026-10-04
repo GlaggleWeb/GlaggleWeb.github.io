@@ -145,4 +145,12 @@ document.addEventListener('mouseout', (e) => {
         enableSmartMouse();
     }
 })();
+
+function toggleSmartMouse() {
+    if (smartMouseActive) {
+        disableSmartMouse();
+    } else {
+        enableSmartMouse();
+    }
+}
 /* ===== ENDE GLAGGLE SMART MOUSE SYSTEM ===== */
