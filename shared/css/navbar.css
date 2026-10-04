@@ -189,10 +189,6 @@
 
 /* --- NEU: Styling für Unterkategorien --- */
 
-.sidebar-category {
-    border-bottom: 1px solid var(--card-border);
-}
-
 .sidebar-category summary {
     padding: 15px 20px;
     font-size: 1.2rem;
