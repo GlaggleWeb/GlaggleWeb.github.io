@@ -73,3 +73,21 @@ body.smart-mouse-active #glaggle-smart-cursor.cursor-click {
         display: none !important;
     }
 }
+
+/* Farbe des Hover-Hintergrunds als Variable, damit der Rand dieselbe Farbe hat */
+body.smart-mouse-active .smart-hover { --smart-bg: #000; }
+body.smart-mouse-active .web-button.smart-hover,
+body.smart-mouse-active .nav-button.smart-hover { --smart-bg: #70C4F7; }
+
+/* Eckige Elemente werden abgerundet */
+body.smart-mouse-active .smart-hover.smart-round { border-radius: 14px !important; }
+
+/* Elemente ohne Innenabstand (z.B. FAQ-Zeilen): Hintergrund wächst nach aussen,
+   ohne dass das Layout springt */
+body.smart-mouse-active .smart-hover.smart-pad { box-shadow: 0 0 0 8px var(--smart-bg); }
+
+/* Weiche Übergänge beim Rein- und Rausfahren */
+body.smart-mouse-active :is(a, button, summary, [onclick], .glaggle-entry) {
+    transition: background-color .15s ease, color .15s ease,
+                border-radius .15s ease, box-shadow .15s ease, transform .2s ease;
+}
