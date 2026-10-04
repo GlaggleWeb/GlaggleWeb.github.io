@@ -25,7 +25,7 @@
     // ---- Konfiguration -------------------------------------------------
     const script  = document.currentScript;
     const BASE    = script.src.replace(/[^/]*$/, '');          // Ordner von shared.js
-    const VERSION = script.dataset.version || '1';             // bei Änderungen hochzählen (Cache-Busting)
+    let   VERSION = script.dataset.version || '1';             // Fallback; echte Version steht in version.json
     const wanted  = (script.dataset.features || 'navbar')
                       .split(',').map(s => s.trim()).filter(Boolean);
 
@@ -165,6 +165,11 @@
     const ready = (async () => {
         try {
             await domReady();
+            // Aktuelle Version holen (nie gecacht) -> gilt für alle Dateien unter /shared/
+            try {
+                const r = await fetch(BASE + 'version.json', { cache: 'no-store' });
+                if (r.ok) VERSION = String((await r.json()).v);
+            } catch (e) { /* Fallback: data-version */ }
             try { await loadFeature('core'); }
             catch (err) { console.error('[Glaggle] core', err); }
             for (const name of wanted) {
