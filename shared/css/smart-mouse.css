@@ -84,7 +84,7 @@ body.smart-mouse-active .smart-hover.smart-round { border-radius: 14px !importan
 
 /* Elemente ohne Innenabstand (z.B. FAQ-Zeilen): Hintergrund wächst nach aussen,
    ohne dass das Layout springt */
-body.smart-mouse-active .smart-hover.smart-pad { box-shadow: 0 0 0 8px var(--smart-bg); }
+body.smart-mouse-active .smart-hover.smart-pad { box-shadow: 0 0 0 4px var(--smart-bg); }
 
 /* Weiche Übergänge beim Rein- und Rausfahren */
 body.smart-mouse-active :is(a, button, summary, [onclick], .glaggle-entry) {
