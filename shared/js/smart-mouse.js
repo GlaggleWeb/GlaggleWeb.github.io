@@ -124,8 +124,14 @@ document.addEventListener('mouseover', (e) => {
     const target = e.target.closest(SMART_HOVER_SELECTORS);
     if (target) {
         target.classList.add('smart-hover');
+
+        // NEU: nur eckige bzw. randlose Elemente bekommen den Modern-Look
+        const cs = getComputedStyle(target);
+        if (parseFloat(cs.borderTopLeftRadius) === 0) target.classList.add('smart-round');
+        if (parseFloat(cs.paddingLeft) < 4)          target.classList.add('smart-pad');
+
         smartCursor.classList.add('cursor-hover');
-        smartCursor.style.opacity = '0'; // immer unsichtbar über klickbarem Element
+        smartCursor.style.opacity = '0';
     }
 });
 
@@ -133,9 +139,9 @@ document.addEventListener('mouseout', (e) => {
     if (!smartMouseActive) return;
     const target = e.target.closest(SMART_HOVER_SELECTORS);
     if (target) {
-        target.classList.remove('smart-hover');
+        target.classList.remove('smart-hover', 'smart-round', 'smart-pad');   // NEU: alle drei
         smartCursor.classList.remove('cursor-hover');
-        smartCursor.style.opacity = '1'; // wieder sichtbar
+        smartCursor.style.opacity = '1';
     }
 });
 
