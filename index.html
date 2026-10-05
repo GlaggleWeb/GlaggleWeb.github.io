@@ -1158,10 +1158,6 @@ pre, code, .ai-text-content {
     </div>
 </main>
 
-<button id="backToTop" title="Nach oben">
-    <span style="font-size: 20px;">↑</span>
-</button>
-    
 <footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
     &copy; 2026 Glaggle — Glaggle your life!
 </footer>
@@ -1178,14 +1174,6 @@ const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const client = new Appwrite.Client()
-        .setEndpoint('https://cloud.appwrite.io/v1')
-        .setProject('69fb638a002b7d03d829');
-
-    const account = new Appwrite.Account(client);
-
-
-    
 function getGKey() { return p1 + p2 + p3; }
 
 function createAiPlaceholder() {
@@ -2898,6 +2886,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000); // 1000ms Delay für sicheres Laden der DOM-Elemente
     }
 })();
+
+// ===== WELCOME POPUP =====
+let currentWelcomeSlide = 1;
+const totalWelcomeSlides = 3;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    if (!overlay) return;
+    if (!localStorage.getItem('glaggle_first_timer')) {
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 100);
+    }
+});
+
+function nextSlide() {
+    if (currentWelcomeSlide < totalWelcomeSlides) {
+        currentWelcomeSlide++;
+        showSlide(currentWelcomeSlide);
+    } else {
+        dismissWelcomePopup();
+    }
+}
+
+function goToSlide(n) {
+    currentWelcomeSlide = n;
+    showSlide(n);
+}
+
+function showSlide(n) {
+    document.querySelectorAll('.welcome-slide').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.welcome-slide[data-slide="${n}"]`).classList.add('active');
+    document.querySelectorAll('.welcome-dot').forEach((d, i) => d.classList.toggle('active', i + 1 === n));
+    document.getElementById('welcome-action-btn').innerText = (n === totalWelcomeSlides) ? "Los geht's!" : "Weiter";
+}
+
+function dismissWelcomePopup() {
+    const overlay = document.getElementById('glaggle-welcome-overlay');
+    overlay.classList.remove('show');
+    localStorage.setItem('glaggle_first_timer', 'true');
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
+}
+
 </script>
 
 <div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
