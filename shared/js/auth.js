@@ -1,3 +1,8 @@
+const client = new Appwrite.Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('69fb638a002b7d03d829');
+const account = new Appwrite.Account(client);
+
 async function checkLogin() {
     try {
         const user = await account.get();
