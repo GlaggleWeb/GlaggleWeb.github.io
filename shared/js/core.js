@@ -26,23 +26,10 @@ window.addEventListener('load', function() {
         }, 100);
     }
 });
-
-const backToTopBtn = document.getElementById("backToTop");
-
-// 1. Überwachen, wie weit gescrollt wurde
-window.addEventListener("scroll", () => {
-  // Zeigt den Button an, wenn mehr als 300px nach unten gescrollt wurde
-  if (window.scrollY > 300) {
-    backToTopBtn.classList.add("show");
-  } else {
-    backToTopBtn.classList.remove("show");
+  const backToTopBtn = document.getElementById("backToTop");
+  if (backToTopBtn) {
+      window.addEventListener("scroll", () => {
+          backToTopBtn.classList.toggle("show", window.scrollY > 300);
+      }, { passive: true });
+      backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   }
-});
-
-// 2. Klick-Event: Smooth nach oben scrollen
-backToTopBtn.addEventListener("click", () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth" // Sorgt für das weiche Scrollen
-  });
-});
