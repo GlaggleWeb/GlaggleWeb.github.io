@@ -1166,15 +1166,9 @@ pre, code, .ai-text-content {
 
 <script>
 
-const p1 = "gsk_"; 
-const p2 = "FAnwmg4IMqrAexyzdupqWGdyb"; 
-const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r"; 
-
 const SUPABASE_URL = "https://lbdlyomgopqrlyxmmqvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_pHfUpRhM-DL6HsKJ97zVRw_wOGbON2P"; // Nur den Publishable Key nutzen!
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-function getGKey() { return p1 + p2 + p3; }
 
 function createAiPlaceholder() {
     const aiBox = document.createElement('div');
