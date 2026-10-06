@@ -4,14 +4,6 @@ const client = new Appwrite.Client()
 
     const account = new Appwrite.Account(client);
 
-// 1. Sidebar Toggle (Wird vom Hamburger-Icon und Overlay gebraucht)
-function toggleMenu() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    if (sidebar) sidebar.classList.toggle("active");
-    if (overlay) overlay.classList.toggle("active");
-}
-
 window.toggleMenu = function () {
     document.getElementById('sidebar')?.classList.toggle('active');
     document.getElementById('overlay')?.classList.toggle('active');
