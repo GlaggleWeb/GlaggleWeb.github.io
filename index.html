@@ -404,21 +404,32 @@ body::before {
         font-size: 1rem !important;
     }
 }
-
 .glaggle-nav {
     display: none; /* Wird per JS eingeblendet */
     position: sticky;
-    top: 10px;
-    z-index: 1000;
-    background: #1a1a1a; /* Dein Schwarz */
+    top: calc(85px + env(safe-area-inset-top)); /* UNTER der sticky Suchleiste */
+    z-index: 998; /* WICHTIG: Kleiner als die Suchleiste (999), damit sie nicht verdeckt */
+    
+    width: fit-content !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+    background: #1a1a1a;
     padding: 8px 15px;
-    margin: 10px auto;
-    width: fit-content;
-    max-width: 90%;
-    /* HIER SIND DIE RUNDEN ECKEN */
-    border-radius: 50px; 
+    border-radius: 50px;
     border: 1px solid #333;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    
+    /* Smooth appearance wenn sie sticky wird */
+    transition: top 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+/* Optional: Schatten verstärken wenn sie "klebt" */
+.glaggle-nav.is-sticky {
+    box-shadow: 0 6px 25px rgba(0,0,0,0.7);
+    background: rgba(26, 26, 26, 0.98);
+    backdrop-filter: blur(10px);
 }
 
 .nav-item {
