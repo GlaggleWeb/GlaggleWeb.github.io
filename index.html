@@ -2751,6 +2751,37 @@ if (document.readyState === 'loading') {
         });
     }
 })();
+
+// Sticky Nav Observer
+(function initStickyNav() {
+    const nav = document.getElementById('main-nav');
+    if (!nav) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            // Wenn die Nav aus dem Viewport scrollt, bekommt sie die sticky-Klasse
+            if (!entry.isIntersecting && entry.boundingClientRect.top <= 0) {
+                nav.classList.add('is-sticky');
+            } else if (entry.isIntersecting) {
+                nav.classList.remove('is-sticky');
+            }
+        });
+    }, {
+        root: null,
+        threshold: 0,
+        rootMargin: '-85px 0px 0px 0px' /* Matcht den top-Wert der sticky Suchleiste */
+    });
+    
+    // Observer starten sobald die Nav sichtbar wird (nach Suche)
+    const checkAndObserve = () => {
+        if (nav.style.display === 'block') {
+            observer.observe(nav);
+        } else {
+            requestAnimationFrame(checkAndObserve);
+        }
+    };
+    checkAndObserve();
+})();
     
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
@@ -2760,7 +2791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Nur ausführen, wenn beide Elemente auch wirklich im HTML existieren
     if (logoContainer && searchInput) {
         logoContainer.addEventListener('click', () => {
-            searchInput.value = 'Glaggle Flappyfish'; // Suchbegriff eintragen
+            searchInput.value = 'Glaggle'; // Suchbegriff eintragen
             glaggleSearch();                    // Suche starten
         });
     }
