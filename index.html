@@ -1100,6 +1100,52 @@ pre, code, .ai-text-content {
     flex: 0 0 auto;                /* Items nicht quetschen → lieber scrollen */
     white-space: nowrap;           /* Text bleibt in einer Zeile */
 }
+
+/* Basis: Nav liegt normal im Fluss (kein sticky mehr!) */
+.glaggle-nav {
+    position: relative;
+    top: auto;
+    width: fit-content !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+    background: #1a1a1a;
+    padding: 8px 15px;
+    border-radius: 50px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+/* FIXIERT: schwebt VOR der Navbar und bleibt dort */
+.glaggle-nav.nav-fixed {
+    position: fixed !important;
+    top: calc(10px + env(safe-area-inset-top)) !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    margin: 0 !important;
+    z-index: 99999 !important;   /* WICHTIG: größer als die Navbar aus shared.js */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    animation: navDropIn 0.3s ease;
+}
+
+@keyframes navDropIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Horizontal scrollbar behalten (aus der letzten Lösung) */
+.nav-scroll-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.nav-scroll-wrapper::-webkit-scrollbar { display: none; }
+.nav-item { flex: 0 0 auto; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -2781,6 +2827,40 @@ if (document.readyState === 'loading') {
         }
     };
     checkAndObserve();
+})();
+
+(function initFixedNav() {
+    const nav = document.getElementById('main-nav');
+    if (!nav) return;
+
+    // Platzhalter im Flow: verhindert das Layout-Springen beim Fixieren
+    const sentinel = document.createElement('div');
+    sentinel.id = 'nav-sentinel';
+    sentinel.style.height = '0px';
+    nav.parentNode.insertBefore(sentinel, nav);
+
+    let isFixed = false;
+
+    function update() {
+        if (nav.style.display === 'none') return; // Nav noch nicht aktiv (vor erster Suche)
+
+        const rect = sentinel.getBoundingClientRect();
+        const shouldFix = rect.top < 20; // Originalplatz ist oben rausgescrollt
+
+        if (shouldFix && !isFixed) {
+            sentinel.style.height = nav.offsetHeight + 'px'; // Platz reservieren
+            nav.classList.add('nav-fixed');
+            isFixed = true;
+        } else if (!shouldFix && isFixed) {
+            nav.classList.remove('nav-fixed');
+            sentinel.style.height = '0px';
+            isFixed = false;
+        }
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
 })();
     
 //Zu unterst lassen:
