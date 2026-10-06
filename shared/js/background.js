@@ -82,11 +82,10 @@ function buildSpotlightGrid() {
 }
 
 
-const origToggleMenu = window.toggleMenu;
-window.toggleMenu = function() {
-    if(typeof origToggleMenu === "function") origToggleMenu();
-    setTimeout(buildSpotlightGrid, 100);
-};
+// Spotlight-Grid beim Öffnen der Sidebar aufbauen
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.hamburger')) setTimeout(buildSpotlightGrid, 100);
+});
 
 function setBgMode(mode, fixedIndex = null) {
 
