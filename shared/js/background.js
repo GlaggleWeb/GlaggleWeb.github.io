@@ -313,5 +313,5 @@ function stopBgRotation() {
           }
           setBgMode('auto');
       }
-  })();
+  })(); 
 
