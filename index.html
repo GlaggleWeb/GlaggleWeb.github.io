@@ -1457,12 +1457,6 @@ async function fetchGroqAI(query) {
                     { role: "system", content: "Du bist Glaggle AI die Suchzusammenfassungs-KI von Glaggle Inc. (ist eine Suchmaschinenfirma), (man kann dir nicht antworten). Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. Halte dich wirklich kurz und strukturiert! (Max etwa 5-8 Sätze)" },
                     { role: "user", content: query }
                 ], 
-
-                tools: [
-                    {
-                     type: "browser_search",
-                    },
-                  ]
             })
         });
         const data = await res.json();
