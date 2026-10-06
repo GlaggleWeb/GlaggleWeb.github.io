@@ -1146,6 +1146,10 @@ pre, code, .ai-text-content {
 }
 .nav-scroll-wrapper::-webkit-scrollbar { display: none; }
 .nav-item { flex: 0 0 auto; white-space: nowrap; }
+
+.sticky-search-wrapper {
+    z-index: 99997 !important; /* über der Navbar, unter der Glaggle-Nav (99999) */
+}
 </style>
 </head>
 <body>
@@ -2730,68 +2734,53 @@ function dismissPushNotice() {
         }, 500);
     }
 }
-function initStickySearch() {
-    const originalInput = document.getElementById('glaggleQuery');
+/* ===== Sticky-Suche: robust, positioniert sich selbst unter Navbar + Glaggle-Nav ===== */
+(function initStickySearchRobust() {
     const originalContainer = document.querySelector('.search-bar-container');
+    const originalInput = document.getElementById('glaggleQuery');
     const stickyWrapper = document.getElementById('sticky-search-wrapper');
     const stickyInput = document.getElementById('stickyGlaggleQuery');
-    const navbar = document.querySelector('.navbar');
+    if (!originalContainer || !stickyWrapper || !stickyInput || !originalInput) return;
 
-    if (!originalContainer || !stickyWrapper || !stickyInput || !navbar) return;
-
-    stickyInput.addEventListener('input', () => {
-        originalInput.value = stickyInput.value;
-    });
+    /* Sync zwischen beiden Suchfeldern */
+    stickyInput.addEventListener('input', () => { originalInput.value = stickyInput.value; });
+    originalInput.addEventListener('input', () => { stickyInput.value = originalInput.value; });
     stickyInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            glaggleSearch();
-            stickyInput.blur();
+        if (e.key === 'Enter') { e.preventDefault(); glaggleSearch(); stickyInput.blur(); }
+    });
+
+    /* Position: immer direkt UNTER Navbar + fixierter Glaggle-Nav */
+    function positionSticky() {
+        let bottom = 10;
+
+        const navbar = document.querySelector('.navbar');
+        if (navbar && navbar.offsetHeight > 0) {
+            bottom = Math.max(bottom, navbar.getBoundingClientRect().bottom);
         }
-    });
-    originalInput.addEventListener('input', () => {
-        stickyInput.value = originalInput.value;
-    });
 
-   function setupObserver() {
-    const navHeight = navbar.getBoundingClientRect().height;
-    let hasFiredOnce = false;
+        const glaggleNav = document.getElementById('main-nav');
+        if (glaggleNav && glaggleNav.classList.contains('nav-fixed')) {
+            bottom = Math.max(bottom, glaggleNav.getBoundingClientRect().bottom);
+        }
 
+        stickyWrapper.style.top = Math.round(bottom + 8) + 'px'; // 8px Abstand
+    }
+
+    /* Einblenden, sobald das Original-Suchfeld aus dem Viewport scrollt */
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (!hasFiredOnce) {
-                hasFiredOnce = true;
-                // Ersten Callback ignorieren, falls er direkt beim Setup mit falschem Wert kommt
-                if (entry.isIntersecting) return;
-            }
             if (entry.isIntersecting) {
                 stickyWrapper.classList.remove('show');
             } else {
-                stickyWrapper.classList.add('show');
+                positionSticky();               // zuerst Position berechnen...
+                stickyWrapper.classList.add('show'); // ...dann einblenden
             }
         });
-    }, {
-        root: null,
-        threshold: 0,
-        rootMargin: `-${Math.round(navHeight)}px 0px 0px 0px`
-    });
+    }, { threshold: 0 });
 
     observer.observe(originalContainer);
-}
-    if (document.readyState === 'complete') {
-        setupObserver();
-    } else {
-        window.addEventListener('load', setupObserver);
-    }
-}
-
-// Aufruf
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initStickySearch);
-} else {
-    initStickySearch();
-}
-
+    window.addEventListener('resize', positionSticky);
+})();
 // Automatischer Suchstart aus URL-Parameter (?q=...)
 (function autoSearchFromURL() {
     const params = new URLSearchParams(window.location.search);
