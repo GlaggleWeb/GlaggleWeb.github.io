@@ -12,6 +12,11 @@ function toggleMenu() {
     if (overlay) overlay.classList.toggle("active");
 }
 
+window.toggleMenu = function () {
+    document.getElementById('sidebar')?.classList.toggle('active');
+    document.getElementById('overlay')?.classList.toggle('active');
+};
+
 // 2. Groq API Key (Wird zwingend für den Voice Assistant benötigt!)
 const p1 = "gsk_";
 const p2 = "FAnwmg4IMqrAexyzdupqWGdyb";
