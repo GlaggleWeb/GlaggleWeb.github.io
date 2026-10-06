@@ -26,7 +26,7 @@ window.addEventListener('load', function() {
     if (preloader) {
         setTimeout(() => {
             preloader.classList.add('preloader-hidden');
-        }, 500);
+        }, 100);
     }
 });
 
