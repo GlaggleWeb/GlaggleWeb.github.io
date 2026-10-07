@@ -4,7 +4,7 @@
   "description": "Glaggle your life! Nutze die KI gestützte Suche, verbringe deine Zeit im Glaggle Gamecenter oder chatte mit Glame AI Pro. All das und noch viel mehr gratis und ohne LogIn auf Glaggle.ch",
   "id": "/",
   "start_url": "/?source=pwa",
-  "scope": "/glame",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
