@@ -2257,6 +2257,79 @@ function renderCalculatorWidget(initialQuery) {
     }
 }
 
+async function fetchRealWeather(city) {
+    const resultsDiv = document.getElementById('glaggleResults');
+
+    const div = document.createElement('div');
+    div.className = 'glaggle-entry fav-project';
+    div.style.textAlign = 'center';
+    div.innerHTML = `<div style="opacity:0.7;">🌤️ Lade Wetter...</div>`;
+    resultsDiv.prepend(div);
+
+    const codes = {
+        0: ["☀️", "Klar"], 1: ["🌤️", "Überwiegend klar"], 2: ["⛅", "Teilweise bewölkt"],
+        3: ["☁️", "Bedeckt"], 45: ["🌫️", "Nebel"], 48: ["🌫️", "Reifnebel"],
+        51: ["🌦️", "Leichter Nieselregen"], 53: ["🌦️", "Nieselregen"], 55: ["🌧️", "Starker Nieselregen"],
+        61: ["🌧️", "Leichter Regen"], 63: ["🌧️", "Regen"], 65: ["🌧️", "Starker Regen"],
+        71: ["🌨️", "Leichter Schneefall"], 73: ["🌨️", "Schneefall"], 75: ["❄️", "Starker Schneefall"],
+        80: ["🌦️", "Regenschauer"], 81: ["🌧️", "Starke Schauer"], 82: ["⛈️", "Heftige Schauer"],
+        95: ["⛈️", "Gewitter"], 96: ["⛈️", "Gewitter mit Hagel"], 99: ["⛈️", "Starkes Gewitter mit Hagel"]
+    };
+
+    try {
+        // Default-Stadt, falls keine angegeben wurde
+        const name = city && city.trim() ? city.trim() : "Zürich";
+
+        // 1. Stadt -> Koordinaten
+        const geoRes = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=de&format=json`
+        );
+        const geo = await geoRes.json();
+        if (!geo.results || !geo.results.length) {
+            div.innerHTML = `<p>Ort "${name}" wurde nicht gefunden.</p>`;
+            return;
+        }
+        const { latitude, longitude, name: place, country } = geo.results[0];
+
+        // 2. Wetterdaten holen
+        const wRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+            `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code` +
+            `&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=4`
+        );
+        const w = await wRes.json();
+        const c = w.current;
+        const [icon, desc] = codes[c.weather_code] || ["🌡️", "Unbekannt"];
+
+        const days = w.daily.time.map((d, i) => {
+            const [dIcon] = codes[w.daily.weather_code[i]] || ["🌡️"];
+            const label = i === 0 ? "Heute" : new Date(d).toLocaleDateString('de-CH', { weekday: 'short' });
+            return `
+                <div style="flex:1; min-width:70px;">
+                    <div style="font-size:0.8rem; opacity:0.7;">${label}</div>
+                    <div style="font-size:1.6rem;">${dIcon}</div>
+                    <div style="font-size:0.85rem;">${Math.round(w.daily.temperature_2m_max[i])}° / ${Math.round(w.daily.temperature_2m_min[i])}°</div>
+                </div>`;
+        }).join('');
+
+        div.innerHTML = `
+            <div style="font-weight:bold; letter-spacing:1px; text-transform:uppercase; font-size:0.75rem; margin-bottom:10px;">
+                Glaggle Wetter · ${place}${country ? ', ' + country : ''}
+            </div>
+            <div style="font-size:3.5rem;">${icon}</div>
+            <div style="font-size:2.8rem; font-weight:800;">${Math.round(c.temperature_2m)}°C</div>
+            <div style="margin-bottom:10px;">${desc} · gefühlt ${Math.round(c.apparent_temperature)}°C</div>
+            <div style="font-size:0.85rem; opacity:0.8; margin-bottom:15px;">
+                💧 ${c.relative_humidity_2m}% &nbsp; 💨 ${Math.round(c.wind_speed_10m)} km/h
+            </div>
+            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">${days}</div>
+        `;
+    } catch (e) {
+        console.error("Wetter Fehler", e);
+        div.innerHTML = `<p>Wetterdaten momentan nicht verfügbar.</p>`;
+    }
+}
+    
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
     const limit = 8;
