@@ -301,17 +301,22 @@ function stopBgRotation() {
     }
 }
 
-  (function restoreBackgroundSettings() {
-      const mode = localStorage.getItem('glaggle-bg-mode');
-      if (!mode || mode === 'auto') return setBgMode('auto');
-      if (mode === 'theme' || mode === 'none') return setBgMode(mode);
-      if (mode === 'fixed') {
-          const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
-          if (idx >= 0 && idx < spotlightImages.length) {
-              buildSpotlightGrid();
-              return setBgMode('fixed', idx);
-          }
-          setBgMode('auto');
-      }
-  })(); 
+(function restoreBackgroundSettings() {
+    const mode = localStorage.getItem('glaggle-bg-mode');
+
+    // Standard: Theme-Hintergrund (kein Bild)
+    if (!mode || mode === 'theme') return setBgMode('theme');
+
+    if (mode === 'auto' || mode === 'none') return setBgMode(mode);
+
+    if (mode === 'fixed') {
+        const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
+        if (idx >= 0 && idx < spotlightImages.length) {
+            buildSpotlightGrid();
+            return setBgMode('fixed', idx);
+        }
+    }
+
+    setBgMode('theme');
+})();
 
