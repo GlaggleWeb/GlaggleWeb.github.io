@@ -112,15 +112,16 @@ function setBgMode(mode, fixedIndex = null) {
     // =========================
     // AUTOMATISCH
     // =========================
-if (mode === 'auto') {
-    document.getElementById('bg-btn-auto')?.classList.add('active');
+    if (mode === 'auto') {
 
-    localStorage.setItem('glaggle-bg-mode', 'auto');   // statt removeItem
-    localStorage.removeItem('glaggle-bg-fixed');
+        document.getElementById('bg-btn-auto')?.classList.add('active');
 
-    startBgRotation();
-    return;
-}
+        localStorage.removeItem('glaggle-bg-mode');
+        localStorage.removeItem('glaggle-bg-fixed');
+
+        startBgRotation();
+        return;
+    }
 
 
     // =========================
@@ -300,22 +301,16 @@ function stopBgRotation() {
     }
 }
 
-(function restoreBackgroundSettings() {
-    const mode = localStorage.getItem('glaggle-bg-mode');
-
-    // Standard: Theme-Hintergrund (kein Bild)
-    if (!mode || mode === 'theme') return setBgMode('theme');
-
-    if (mode === 'auto' || mode === 'none') return setBgMode(mode);
-
-    if (mode === 'fixed') {
-        const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
-        if (idx >= 0 && idx < spotlightImages.length) {
-            buildSpotlightGrid();
-            return setBgMode('fixed', idx);
-        }
-    }
-
-    setBgMode('theme');
-})();
-
+  (function restoreBackgroundSettings() {
+      const mode = localStorage.getItem('glaggle-bg-mode');
+      if (!mode || mode === 'auto') return setBgMode('auto');
+      if (mode === 'theme' || mode === 'none') return setBgMode(mode);
+      if (mode === 'fixed') {
+          const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
+          if (idx >= 0 && idx < spotlightImages.length) {
+              buildSpotlightGrid();
+              return setBgMode('fixed', idx);
+          }
+          setBgMode('auto');
+      }
+  })(); 
