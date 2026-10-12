@@ -18,7 +18,16 @@
             :root { --bg-color: #202124; --text-color: #e8eaed; --card-bg: #303134; --card-border: #444444; }
         }
 
-        body { background: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body {
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    padding-top: calc(var(--navbar-height, 70px) + 20px);
+}
         .container { width: 100%; max-width: 800px; }
         
         .glaggle-card {
