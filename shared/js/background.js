@@ -112,16 +112,15 @@ function setBgMode(mode, fixedIndex = null) {
     // =========================
     // AUTOMATISCH
     // =========================
-    if (mode === 'auto') {
+if (mode === 'auto') {
+    document.getElementById('bg-btn-auto')?.classList.add('active');
 
-        document.getElementById('bg-btn-auto')?.classList.add('active');
+    localStorage.setItem('glaggle-bg-mode', 'auto');   // statt removeItem
+    localStorage.removeItem('glaggle-bg-fixed');
 
-        localStorage.removeItem('glaggle-bg-mode');
-        localStorage.removeItem('glaggle-bg-fixed');
-
-        startBgRotation();
-        return;
-    }
+    startBgRotation();
+    return;
+}
 
 
     // =========================
