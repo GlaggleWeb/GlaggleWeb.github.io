@@ -25,7 +25,7 @@
     // ---- Konfiguration -------------------------------------------------
     const script  = document.currentScript;
     const BASE    = script.src.replace(/[^/]*$/, '');          // Ordner von shared.js
-    let   VERSION = script.dataset.version || '1';             // Fallback; echte Version steht in version.json
+    let VERSION = localStorage.getItem('glaggle_v') || script.dataset.version || '1';       // Fallback; echte Version steht in version.json
     const wanted  = (script.dataset.features || 'navbar')
                       .split(',').map(s => s.trim()).filter(Boolean);
 
