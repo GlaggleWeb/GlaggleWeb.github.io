@@ -3237,18 +3237,17 @@ function dismissWelcomePopup() {
 }
 
 /* ===== PWA INSTALL POPUP (3. Besuch) ===== */
-(function initPwaPopup() {
+document.addEventListener('DOMContentLoaded', function () {
     const VISIT_KEY = 'glaggle_visit_count';
     const DONE_KEY  = 'glaggle_pwa_popup_done';
     const SHOW_ON_VISIT = 3;
 
-    // Schon als App installiert? Dann nie anzeigen.
-    const isInstalled =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
-    if (isInstalled) return;
+    const overlay = document.getElementById('pwa-overlay');
+    if (!overlay) { console.warn('PWA-Popup: #pwa-overlay fehlt im HTML'); return; }
 
-    // Besuch zählen (pro Browser-Sitzung nur 1x, Reloads zählen nicht)
+    const force = new URLSearchParams(location.search).get('pwa') === '1'; // Test: ?pwa=1
+
+    // Besuch zählen (1x pro Sitzung)
     let visits = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10);
     try {
         if (!sessionStorage.getItem('glaggle_visit_counted')) {
@@ -3258,26 +3257,27 @@ function dismissWelcomePopup() {
         }
     } catch (e) {}
 
-    if (visits !== SHOW_ON_VISIT || localStorage.getItem(DONE_KEY)) return;
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+                     || window.navigator.standalone === true;
 
-    // Plattform erkennen → passenden Tab vorwählen
-    const ua = navigator.userAgent;
-    let platform = 'windows';
-    if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) platform = 'ios';
-    else if (/Android/.test(ua)) platform = 'android';
+    console.log('PWA-Popup:', { visits, done: localStorage.getItem(DONE_KEY), isInstalled, force });
 
-    const overlay = document.getElementById('pwa-overlay');
+    // Tabs
     const tabs = overlay.querySelectorAll('.pwa-tab');
     const panels = overlay.querySelectorAll('.pwa-panel');
-
     function switchTab(name) {
         tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
         panels.forEach(p => p.classList.toggle('active', p.dataset.panel === name));
     }
     tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+    const ua = navigator.userAgent;
+    let platform = 'windows';
+    if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) platform = 'ios';
+    else if (/Android/.test(ua)) platform = 'android';
     switchTab(platform);
 
-    // Echter Install-Button (Chrome/Edge auf Android & Windows)
+    // Install-Button (Chrome/Edge)
     let deferredPrompt = null;
     const installBtn = document.getElementById('pwa-install-btn');
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -3293,16 +3293,24 @@ function dismissWelcomePopup() {
         closePwaPopup();
     });
     window.addEventListener('appinstalled', closePwaPopup);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closePwaPopup(); });
 
-    // Popup nach 4 Sek. anzeigen (nicht gleichzeitig mit dem Welcome-Popup)
-    setTimeout(() => {
-        if (document.getElementById('glaggle-welcome-overlay')?.classList.contains('show')) return;
+    // Soll das Popup überhaupt kommen?
+    if (!force) {
+        if (isInstalled) return;
+        if (localStorage.getItem(DONE_KEY)) return;
+        if (visits < SHOW_ON_VISIT) return;   // ab dem 3. Besuch, bis weggeklickt
+    }
+
+    // Anzeigen, sobald das Welcome-Popup nicht (mehr) offen ist
+    function tryShow() {
+        const welcome = document.getElementById('glaggle-welcome-overlay');
+        if (welcome && welcome.style.display === 'flex') { setTimeout(tryShow, 1000); return; }
         overlay.style.display = 'flex';
         setTimeout(() => overlay.classList.add('show'), 50);
-    }, 4000);
-
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closePwaPopup(); });
-})();
+    }
+    setTimeout(tryShow, force ? 300 : 4000);
+});
 
 function closePwaPopup() {
     const overlay = document.getElementById('pwa-overlay');
@@ -3311,7 +3319,6 @@ function closePwaPopup() {
     localStorage.setItem('glaggle_pwa_popup_done', 'true');
     setTimeout(() => { overlay.style.display = 'none'; }, 400);
 }
-
 </script>
 
 <div id="glaggle-welcome-overlay" class="welcome-overlay" style="display: none;">
