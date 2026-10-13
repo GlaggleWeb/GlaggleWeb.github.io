@@ -165,11 +165,11 @@
     const ready = (async () => {
         try {
             await domReady();
-            // Aktuelle Version holen (nie gecacht) -> gilt für alle Dateien unter /shared/
-            try {
-                const r = await fetch(BASE + 'version.json', { cache: 'no-store' });
-                if (r.ok) VERSION = String((await r.json()).v);
-            } catch (e) { /* Fallback: data-version */ }
+            // Version im Hintergrund prüfen (blockiert nichts). Neue Version greift beim nächsten Aufruf.
+            fetch(BASE + 'version.json', { cache: 'no-store' })
+                .then(r => r.ok ? r.json() : null)
+                .then(j => { if (j && j.v) localStorage.setItem('glaggle_v', String(j.v)); })
+                .catch(() => {});
             try { await loadFeature('core'); }
             catch (err) { console.error('[Glaggle] core', err); }
             for (const name of wanted) {
