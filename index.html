@@ -1411,8 +1411,8 @@ document.getElementById('glaggleQuery').addEventListener('keypress', function (e
     }
 });
     
-async function glaggleSearch() {
-    const query = document.getElementById('glaggleQuery').value.trim();
+async function glaggleSearch(opts = {}) {
+    let query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
     // 1. Alles zurücksetzen
