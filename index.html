@@ -1428,10 +1428,24 @@ async function glaggleSearch() {
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
     
+
+    let corrected = null;
+    if (!opts.skipCorrection) {
+        corrected = await getSpellingSuggestion(query);
+        if (corrected) {
+            document.getElementById('glaggleQuery').value = corrected;
+            document.getElementById('stickyGlaggleQuery').value = corrected;
+        }
+    }
+    const original = query;
+    if (corrected) query = corrected;
+
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
+    if (corrected) showCorrectionBanner(original, corrected);
 
     checkWidgets(query);
+    resultsDiv.appendChild(createAiPlaceholder());
     resultsDiv.appendChild(createAiPlaceholder());
 
     try {
@@ -1474,8 +1488,8 @@ async function searchWikipedia(query, lang) {
             if(navWiki) navWiki.style.display = 'block';
 
             // Wikipedia gibt die Seiten unsortiert zurück, wir wandeln sie in ein Array um
-            const pages = Object.values(data.query.pages);
-
+            const pages = Object.values(data.query.pages).sort((a, b) => a.index - b.index);
+            
             pages.forEach((page, index) => {
                 // Wir prüfen auf extract ODER title, falls mal kein Text da ist
                 if (page.extract || page.title) {
@@ -2661,12 +2675,7 @@ async function searchSupabase(query) {
 
     try {
         // Suche in Supabase mit Ranking (clicks absteigend)
-        const { data, error } = await supabaseClient
-            .from('search_index')
-            .select('*')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-            .order('clicks', { ascending: false }) // Die meistgeklickten nach oben
-            .limit(10);
+        const { data, error } = await supabaseClient.rpc('search_glaggle', { q: query, lim: 10 });
 
         if (error) {
             console.error("Supabase Query Fehler:", error.message);
@@ -2760,6 +2769,55 @@ async function registerClick(id) {
     } catch (err) {
         console.error("Tracking fehlgeschlagen:", err);
     }
+}
+
+const _fixCache = new Map();
+
+function isProtectedQuery(q) {
+    const l = q.toLowerCase();
+    if (l.includes('glaggle')) return true;
+    if (/^[0-9+\-*/().\s^%]+$/.test(l)) return true;               // Rechner
+    if (/timer|minuten|wetter|rechner|calculator/.test(l)) return true;
+    if (Object.keys(glaggleGamesList).some(k => l.includes(k))) return true;
+    // Wörter, die in deinen Favoriten vorkommen (Markennamen!) nie "korrigieren"
+    const words = l.split(/\s+/);
+    return words.every(w => meineLieblingsSeiten.some(s => s.title.toLowerCase().includes(w)));
+}
+
+async function getSpellingSuggestion(q) {
+    const key = q.toLowerCase();
+    if (_fixCache.has(key)) return _fixCache.get(key);
+    if (q.length < 3 || isProtectedQuery(q)) return null;
+
+    let result = null;
+    try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 1500); // nie die Suche blockieren
+        const r = await fetch(
+            `https://de.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}` +
+            `&srinfo=suggestion&srprop=&srlimit=1&format=json&origin=*`, { signal: ctrl.signal });
+        const d = await r.json();
+        result = d.query?.searchinfo?.suggestion || null;
+    } catch (e) {}
+    _fixCache.set(key, result);
+    return result;
+}
+
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function showCorrectionBanner(original, corrected) {
+    const el = document.createElement('div');
+    el.className = 'glaggle-entry';
+    el.id = 'did-you-mean';
+    el.innerHTML = `Ergebnisse für <b>${esc(corrected)}</b><br>
+        <small>Stattdessen suchen nach
+        <a href="#" id="dym-orig">${esc(original)}</a></small>`;
+    document.getElementById('glaggleResults').prepend(el);
+    el.querySelector('#dym-orig').onclick = (e) => {
+        e.preventDefault();
+        document.getElementById('glaggleQuery').value = original;
+        glaggleSearch({ skipCorrection: true });
+    };
 }
     
 function refreshObserver() {
