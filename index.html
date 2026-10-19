@@ -1419,7 +1419,6 @@ async function glaggleSearch(opts = {}) {
     const navLeiste = document.querySelector('.glaggle-nav');
     if (navLeiste) navLeiste.style.display = 'block'; 
     
-    // Alle Buttons in der Leiste erst mal verstecken
     document.querySelectorAll('.nav-item').forEach(item => {
         item.style.display = 'none';
         item.classList.remove('active');
@@ -1427,26 +1426,31 @@ async function glaggleSearch(opts = {}) {
 
     const resultsDiv = document.getElementById('glaggleResults');
     const loader = document.getElementById('glaggleLoader');
-    
-
-    let corrected = null;
-    if (!opts.skipCorrection) {
-        corrected = await getSpellingSuggestion(query);
-        if (corrected) {
-            document.getElementById('glaggleQuery').value = corrected;
-            document.getElementById('stickyGlaggleQuery').value = corrected;
-        }
-    }
-    const original = query;
-    if (corrected) query = corrected;
 
     resultsDiv.innerHTML = "";
     loader.style.display = "block";
-    if (corrected) showCorrectionBanner(original, corrected);
+
+    const original = query;
+    let corrected = null;
+    if (!opts || !opts.skipCorrection) {
+        try {
+            corrected = await getSpellingSuggestion(query);
+        } catch (e) {
+            console.warn("Spellcheck fehlgeschlagen", e);
+        }
+    }
+    if (corrected && corrected.toLowerCase() !== query.toLowerCase()) {
+        query = corrected;
+        document.getElementById('glaggleQuery').value = corrected;
+        const sq = document.getElementById('stickyGlaggleQuery');
+        if (sq) sq.value = corrected;
+    } else {
+        corrected = null;
+    }
 
     checkWidgets(query);
     resultsDiv.appendChild(createAiPlaceholder());
-    resultsDiv.appendChild(createAiPlaceholder());
+    if (corrected) showCorrectionBanner(original, corrected);
 
     try {
         await Promise.allSettled([
@@ -1831,8 +1835,7 @@ async function getAiProcessedFavs(query) {
         });
 
         const data = await res.json();
-        if (!data.choices || data.choices.length === 0) return sofort;
-
+        if (!data.choices || data.choices.length === 0) return sofort.sort((a, b) => scoreFav(b, q) - scoreFav(a, q)).slice(0, 5);
         const content = data.choices[0].message.content;
         
         // 2. ROBUSTES PARSING (Sucht sicher nach dem Array-Anfang und -Ende)
@@ -1862,7 +1865,7 @@ async function getAiProcessedFavs(query) {
 
     } catch(e) { 
         console.error("Glaggle AI Favs Error:", e);
-        return sofort; // Fallback auf normale Suche, wenn KI/Internet streikt
+        return sofort.sort((a, b) => scoreFav(b, q) - scoreFav(a, q)).slice(0, 5);
     }
 }
     
