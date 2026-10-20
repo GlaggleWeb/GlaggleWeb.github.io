@@ -2750,7 +2750,18 @@ async function searchSupabase(query) {
 
     try {
         // Suche in Supabase mit Ranking (clicks absteigend)
-        const { data, error } = await supabaseClient.rpc('search_glaggle', { q: query, lim: 10 });
+        // Suchbegriffe normalisieren: Reihenfolge vereinheitlichen
+const normalizedQuery = query
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .sort()
+    .join(' ');
+
+const { data, error } = await supabaseClient.rpc('search_glaggle', {
+    q: normalizedQuery,
+    lim: 10
+});
 
         if (error) {
             console.error("Supabase Query Fehler:", error.message);
@@ -2804,7 +2815,6 @@ async function searchSupabase(query) {
                 domain = new URL(res.url).hostname.replace('www.', '');
             } catch(e) {}
 
-            // Hier bauen wir den Klick-Trigger ein: onclick="registerClick('${res.id}')"
             item.innerHTML = `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
                     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;" onerror="this.style.display='none'">
