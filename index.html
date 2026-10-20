@@ -1215,6 +1215,13 @@ pre, code, .ai-text-content {
     font-size: 0.85rem; margin-top: 14px; font-family: inherit;
 }
 .pwa-later:hover { color: #fff; }
+
+#ai-container               { order: 1; }
+.glaggle-entry.fav-project  { order: 2; }  /* Favoriten, Widgets */
+#glaggle-web-search-box     { order: 3; }
+#glaggle-image-container    { order: 4; }
+.glaggle-entry:not(.fav-project):not(#ai-container):not(#glaggle-web-search-box) { order: 5; } /* Wikipedia */
+        
 </style>
 </head>
 <body>
