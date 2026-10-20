@@ -1800,7 +1800,42 @@ function scoreFav(site, query) {
     s += (site.prio || 0);      // optionaler manueller Bonus, siehe unten
     return s;
 }
-    
+
+function scoreWeb(res, query) {
+    const q = query.toLowerCase().trim();
+    const words = q.split(/\s+/).filter(Boolean);
+    const title = (res.title || '').toLowerCase();
+    const desc  = (res.description || '').toLowerCase();
+
+    let domainName = '', path = '';
+    try {
+        const u = new URL(res.url);
+        domainName = u.hostname.replace('www.', '').split('.')[0].toLowerCase(); // claude.ai -> "claude"
+        path = u.pathname.replace(/\/+$/, '');
+    } catch (e) {}
+
+    let s = 0;
+
+    // Domain-Name = Suchbegriff -> Hauptseite (claude.ai bei "Claude")
+    if (domainName === q) s += 120;
+
+    // Titel
+    if (title === q)               s += 100;
+    else if (title.startsWith(q))  s += 60;
+    else if (title.includes(q))    s += 30;
+
+    // Startseite vor Unterseiten (Support, Docs, ...)
+    s += (path === '') ? 40 : -path.split('/').length * 5;
+
+    // Wie viele Suchwörter kommen vor?
+    s += (words.filter(w => title.includes(w)).length / words.length) * 20;
+    s += (words.filter(w => desc.includes(w)).length  / words.length) * 8;
+
+    // Kurzer Titel = eher Hauptprodukt
+    s -= title.length * 0.2;
+
+    return s;
+}
 async function getAiProcessedFavs(query) {
     const q = query.toLowerCase().trim();
     if (q.length < 3) return []; 
@@ -2775,7 +2810,7 @@ async function searchSupabase(query) {
                     <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" style="width:16px; height:16px;" onerror="this.style.display='none'">
                     <small style="color:var(--desc-color); font-size:0.75rem;">${domain}</small>
                 </div>
-                <a href="${res.url}" target="_blank" onclick="registerClick('${res.id}')" style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
+                <a href="${res.url}" target="_blank"  style="color:var(--link-color); text-decoration:none; font-weight:bold; font-size:1.1rem; display:block; margin-bottom:4px;">
                     ${res.title}
                 </a>
                 <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;">
@@ -2790,26 +2825,7 @@ async function searchSupabase(query) {
     }
 }
 
-// Diese kleine Funktion muss zusätzlich irgendwo im Code stehen:
-async function registerClick(id) {
-    await supabaseClient.rpc('increment_clicks', { row_id: id });
-}
 
-async function registerClick(id) {
-    try {
-        const rowId = parseInt(id);
-        // Ruft die SQL-Funktion in deinem Supabase-Backend auf
-        const { error } = await supabaseClient.rpc('increment_clicks', { row_id: rowId });
-        
-        if (error) {
-            console.error("RPC Fehler:", error.message);
-        } else {
-            console.log("Klick erfolgreich registriert für ID:", rowId);
-        }
-    } catch (err) {
-        console.error("Tracking fehlgeschlagen:", err);
-    }
-}
 
 const _fixCache = new Map();
 
