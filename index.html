@@ -1454,29 +1454,11 @@ function createAiPlaceholder() {
     aiBox.style.cssText = `
         border-radius: 25px;
         border-left: 5px solid #70C4F7;
-        background: rgba(255,255,255,0.08);
         backdrop-filter: blur(10px);
         transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
         cursor: default;
     `;
 
-    // Hover-Effekt
-    aiBox.addEventListener('mouseenter', () => {
-        aiBox.style.background = 'rgba(255,255,255,0.95)';
-        aiBox.style.boxShadow = '0 8px 32px rgba(112,196,247,0.3)';
-        aiBox.style.transform = 'translateY(-2px)';
-        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
-            el.style.color = '#111';
-        });
-    });
-    aiBox.addEventListener('mouseleave', () => {
-        aiBox.style.background = 'rgba(255,255,255,0.08)';
-        aiBox.style.boxShadow = '';
-        aiBox.style.transform = 'translateY(0)';
-        aiBox.querySelectorAll('p, li, strong, h1, h2, h3').forEach(el => {
-            el.style.color = '';
-        });
-    });
 
     aiBox.innerHTML = `
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
