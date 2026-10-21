@@ -1224,7 +1224,38 @@ pre, code, .ai-text-content {
 #glaggle-web-search-box     { order: 4; }
 #glaggle-image-container    { order: 5; }
 .glaggle-entry:not(.fav-project):not(#ai-container):not(#glaggle-web-search-box):not(#spelling-suggestion) { order: 6; }
-        
+
+/* ===== WIKI-KARTE (page/summary) ===== */
+#wiki-card { order: 1; border-radius: 25px; border-left: 5px solid #FBBC05; }
+
+.wc-inner { display: flex; gap: 18px; align-items: flex-start; }
+.wc-img {
+    width: 120px; height: 120px; flex-shrink: 0;
+    border-radius: 16px; object-fit: cover;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    cursor: zoom-in;
+}
+.wc-body { flex: 1; min-width: 0; }
+.wc-badge { font-size: 0.72rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+#wiki-card .wc-title { font-size: 1.5rem; margin: 4px 0 2px; line-height: 1.2; }
+#wiki-card .wc-desc  { color: #555 !important; font-size: 0.9rem; font-style: italic; margin: 0 0 8px; }
+#wiki-card .wc-text  { font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.wc-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin-top: 12px;
+}
+#wiki-card .wc-more {
+    background: linear-gradient(135deg, #70C4F7, #2E94D1);
+    color: #fff !important; padding: 8px 18px; border-radius: 20px;
+    font-size: 0.85rem !important; font-weight: bold; text-decoration: none;
+}
+#wiki-card .wc-src { font-size: 0.7rem; color: #777 !important; }
+
+/* Skeleton beim Laden ist optional – Karte erscheint einfach, sobald Daten da sind */
+@media (max-width: 480px) {
+    .wc-inner { flex-direction: column; }
+    .wc-img { width: 100%; height: 180px; }
+}
 </style>
 </head>
 <body>
@@ -1464,6 +1495,7 @@ async function glaggleSearch(opts = {}) {
 
     try {
         await Promise.allSettled([
+            fetchWikiCard(query),
             fetchGroqAI(query),
             (async () => {
                 const favs = await getAiProcessedFavs(query);
@@ -2516,7 +2548,85 @@ function renderWeatherWidget(city, c, info) {
     resultsDiv.prepend(div);
 }
 
-    
+let _wikiCardToken = 0;
+
+async function wikiGetSummary(title, lang) {
+    const r = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/\s+/g, '_'))}?redirect=true`
+    );
+    if (!r.ok) return null;
+    return r.json();
+}
+
+async function fetchWikiCard(query, lang = 'de') {
+    const token = ++_wikiCardToken;
+    document.getElementById('wiki-card')?.remove();
+
+    const q = query.trim();
+    // Lange Sätze/Fragen sind keine Wiki-Titel -> gar nicht erst versuchen
+    if (q.length < 2 || q.split(/\s+/).length > 4) return;
+
+    try {
+        // 1) Direkter Treffer (löst Weiterleitungen auf, z.B. "Katze" -> "Hauskatze")
+        let data = await wikiGetSummary(q.charAt(0).toUpperCase() + q.slice(1), lang);
+        let viaSearch = false;
+
+        // 2) Fallback: Suche (z.B. "albert einstein" -> "Albert Einstein")
+        if (!data || data.type !== 'standard' || !data.extract) {
+            const s = await fetch(
+                `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=1&srprop=&format=json&origin=*`
+            );
+            const hit = (await s.json()).query?.search?.[0];
+            if (!hit) return;
+            data = await wikiGetSummary(hit.title, lang);
+            viaSearch = true;
+        }
+
+        // Nur echte Artikel, keine Begriffsklärungen
+        if (!data || data.type !== 'standard' || !data.extract) return;
+
+        // Relevanz-Check beim Such-Fallback: Titel muss zur Anfrage passen
+        if (viaSearch) {
+            const t = data.title.toLowerCase();
+            const ok = q.toLowerCase().split(/\s+/).every(w => t.includes(w));
+            if (!ok) return;
+        }
+
+        // Veraltete Antwort einer früheren Suche verwerfen
+        if (token !== _wikiCardToken) return;
+
+        let text = data.extract;
+        if (text.length > 380) text = text.substring(0, 380).replace(/\s+\S*$/, '') + '…';
+
+        const card = document.createElement('div');
+        card.id = 'wiki-card';
+        card.className = 'glaggle-entry';
+
+        const img = data.thumbnail
+            ? `<img class="wc-img" src="${esc(data.thumbnail.source)}" alt="${esc(data.title)}" loading="lazy">`
+            : '';
+
+        card.innerHTML = `
+            <div class="wc-inner">
+                ${img}
+                <div class="wc-body">
+                    <span class="wc-badge" style="color:#FBBC05;">📖 Kurzüberblick</span>
+                    <h3 class="wc-title">${esc(data.title)}</h3>
+                    ${data.description ? `<p class="wc-desc">${esc(data.description)}</p>` : ''}
+                    <p class="wc-text">${esc(text)}</p>
+                </div>
+            </div>
+            <div class="wc-footer">
+                <a class="wc-more" href="${esc(data.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Auf Wikipedia weiterlesen ↗</a>
+                <span class="wc-src">Quelle: Wikipedia · CC BY-SA 4.0</span>
+            </div>
+        `;
+
+        document.getElementById('glaggleResults').prepend(card);
+    } catch (e) {
+        console.warn('Wiki-Karte Fehler', e);
+    }
+}    
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
     const limit = 8;
