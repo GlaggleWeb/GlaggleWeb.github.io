@@ -2877,7 +2877,7 @@ const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',
 function showCorrectionBanner(original, corrected) {
     const el = document.createElement('div');
     el.className = 'glaggle-entry';
-    el.id = 'did-you-mean';
+    el.id = 'spelling-suggestion';
     el.innerHTML = `Ergebnisse für <b>${esc(corrected)}</b><br>
         <small>Stattdessen suchen nach
         <a href="#" id="dym-orig">${esc(original)}</a></small>`;
