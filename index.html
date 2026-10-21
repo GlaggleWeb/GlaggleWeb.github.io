@@ -1259,6 +1259,79 @@ pre, code, .ai-text-content {
     .wc-inner { flex-direction: column; }
     .wc-img { width: 100%; height: 180px; }
 }
+
+/* ===== GLAS-EINSTELLUNGEN (per Regler steuerbar) ===== */
+:root {
+    --card-rgb: 255,255,255;     /* Farbe der Ergebnis-Karten */
+    --glass-alpha: 0.2;          /* Deckkraft Ergebnisse */
+    --search-rgb: 255,255,255;
+    --search-alpha: 0.9;         /* Deckkraft Suchfeld */
+    --hover-rgb: 255,255,255;    /* Hover-Farbe */
+    --hover-alpha: 1;            /* Deckkraft beim Hover */
+    --hover-lift: -2px;          /* wie weit die Karte hochschwebt */
+    --hover-scale: 1;            /* Vergrößerung beim Hover */
+    --hover-text: #111111;       /* wird automatisch hell/dunkel gesetzt */
+}
+
+/* Ergebnisse */
+.glaggle-entry {
+    background: rgba(var(--card-rgb), var(--glass-alpha)) !important;
+}
+
+/* Favoriten: der bunte Rand wird als Ring gezeichnet, damit er
+   nicht durch die transparente Karte scheint */
+.glaggle-entry.fav-project {
+    background: rgba(var(--card-rgb), var(--glass-alpha)) !important;
+    border: none !important;
+    position: relative;
+}
+.glaggle-entry.fav-project::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* Hover (normale Karten UND Favoriten) */
+.glaggle-entry:hover,
+.glaggle-entry.fav-project:hover {
+    background: rgba(var(--hover-rgb), var(--hover-alpha)) !important;
+    transform: translateY(var(--hover-lift)) scale(var(--hover-scale)) !important;
+}
+.glaggle-entry:hover p,
+.glaggle-entry:hover li,
+.glaggle-entry:hover strong,
+.glaggle-entry:hover h1,
+.glaggle-entry:hover h2,
+.glaggle-entry:hover h3,
+.glaggle-entry:hover span,
+.glaggle-entry:hover a,
+.glaggle-entry:hover small {
+    color: var(--hover-text) !important;
+}
+
+/* Suchfeld */
+.search-bar-container {
+    background: rgba(var(--search-rgb), var(--search-alpha)) !important;
+}
+.search-bar-container:focus-within {
+    background: rgba(var(--search-rgb), min(1, calc(var(--search-alpha) + 0.1))) !important;
+}
+.sticky-search-bar {
+    background: rgba(var(--search-rgb), var(--search-alpha)) !important;
+}
+
+/* Regler-Panel */
+.glass-panel { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+.glass-panel label { display:flex; justify-content:space-between; font-size:0.8rem; }
+.glass-panel input[type=range] { width:100%; accent-color:#70C4F7; }
+.glass-panel input[type=color] { width:100%; height:32px; border:none; border-radius:8px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -3482,6 +3555,99 @@ function dismissWelcomePopup() {
     setTimeout(() => { overlay.style.display = 'none'; }, 400);
 }
 
+/* ===== GLASS-EINSTELLUNGEN ===== */
+(function () {
+    const KEY = 'glaggle_glass';
+    const DEFAULTS = { card: 20, search: 90, hoverA: 100, lift: 2, scale: 100, hoverColor: '#ffffff' };
+
+    let S = { ...DEFAULTS };
+    try { S = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) {}
+
+    function hexToRgb(hex) {
+        const n = parseInt(hex.replace('#', ''), 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    function apply() {
+        const st = document.documentElement.style;
+        const [r, g, b] = hexToRgb(S.hoverColor);
+        // Textfarbe automatisch lesbar machen (hell/dunkel)
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+        st.setProperty('--glass-alpha', S.card / 100);
+        st.setProperty('--search-alpha', S.search / 100);
+        st.setProperty('--hover-alpha', S.hoverA / 100);
+        st.setProperty('--hover-lift', `-${S.lift}px`);
+        st.setProperty('--hover-scale', S.scale / 100);
+        st.setProperty('--hover-rgb', `${r},${g},${b}`);
+        st.setProperty('--hover-text', lum > 0.55 ? '#111111' : '#ffffff');
+    }
+
+    function save() {
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    }
+
+    const map = {
+        'gl-card':   ['card',   v => v + '%'],
+        'gl-search': ['search', v => v + '%'],
+        'gl-hoverA': ['hoverA', v => v + '%'],
+        'gl-lift':   ['lift',   v => v + 'px'],
+        'gl-scale':  ['scale',  v => v + '%']
+    };
+
+    // UI mit gespeicherten Werten synchronisieren
+    function syncUI() {
+        Object.entries(map).forEach(([id, [key, fmt]]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = S[key];
+            const out = document.getElementById(id + '-val');
+            if (out) out.textContent = fmt(S[key]);
+        });
+        const c = document.getElementById('gl-hoverColor');
+        if (c) c.value = S.hoverColor;
+    }
+
+    // Event Delegation: funktioniert auch, wenn das Panel erst später eingefügt wird
+    document.addEventListener('input', (e) => {
+        const id = e.target.id;
+        if (map[id]) {
+            const [key, fmt] = map[id];
+            S[key] = Number(e.target.value);
+            const out = document.getElementById(id + '-val');
+            if (out) out.textContent = fmt(S[key]);
+        } else if (id === 'gl-hoverColor') {
+            S.hoverColor = e.target.value;
+        } else return;
+        apply();
+        save();
+    });
+
+    window.resetGlass = function () {
+        S = { ...DEFAULTS };
+        apply(); save(); syncUI();
+    };
+
+    apply(); // sofort anwenden, kein Flackern
+
+    // UI synchronisieren, sobald das Panel im DOM auftaucht
+    const mo = new MutationObserver(() => {
+        if (document.getElementById('gl-card')) { syncUI(); mo.disconnect(); }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        if (!document.getElementById('gl-card')) mo.observe(document.body, { childList: true, subtree: true });
+
+        // "Alles zurücksetzen" soll auch die Glas-Werte zurücksetzen
+        const orig = window.resetDesignFull;
+        if (typeof orig === 'function') {
+            window.resetDesignFull = function () {
+                orig.apply(this, arguments);
+                window.resetGlass();
+            };
+        }
+    });
+})();
 /* ===== PWA INSTALL POPUP (3. Besuch) ===== */
 document.addEventListener('DOMContentLoaded', function () {
     const VISIT_KEY = 'glaggle_visit_count';
