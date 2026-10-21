@@ -2670,21 +2670,26 @@ async function fetchWikiCard(query, lang = 'de') {
             ? `<img class="wc-img" src="${esc(data.thumbnail.source)}" alt="${esc(data.title)}" loading="lazy">`
             : '';
 
-        card.innerHTML = `
+                card.innerHTML = `
             <div class="wc-inner">
                 ${img}
                 <div class="wc-body">
                     <span class="wc-badge" style="color:#FBBC05;">📖 Kurzüberblick</span>
                     <h3 class="wc-title">${esc(data.title)}</h3>
-                    ${data.description ? `<p class="wc-desc">${esc(data.description)}</p>` : ''}
+                    ${data.description ? `<p class="wc-desc">\${esc(data.description)}</p>` : ''}
                     <p class="wc-text">${esc(text)}</p>
                 </div>
             </div>
-            <div class="wc-footer">
-                <a class="wc-more" href="${esc(data.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Auf Wikipedia weiterlesen ↗</a>
-                <span class="wc-src">Quelle: Wikipedia · CC BY-SA 4.0</span>
+            <div class="wc-footer" style="font-size: 0.8em; color: #555; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <a class="wc-more" href="${esc(data.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">Auf Wikipedia weiterlesen ↗</a>
+                <span class="wc-src">
+                    Text von <a href="${esc(data.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Wikipedia-Autoren</a> 
+                    (Lizenziert unter <a href="https://creativecommons.org" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>). 
+                    ${data.thumbnail ? 'Bildrechte können abweichen.' : ''}
+                </span>
             </div>
         `;
+
 
         document.getElementById('glaggleResults').prepend(card);
     } catch (e) {
