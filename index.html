@@ -1219,14 +1219,17 @@ pre, code, .ai-text-content {
 #spelling-suggestion {
     order: 1;
 }
-#ai-container               { order: 2; }
-.glaggle-entry.fav-project  { order: 3; }  /* Favoriten, Widgets */
-#glaggle-web-search-box     { order: 4; }
-#glaggle-image-container    { order: 5; }
-.glaggle-entry:not(.fav-project):not(#ai-container):not(#glaggle-web-search-box):not(#spelling-suggestion) { order: 6; }
+#spelling-suggestion {
+    order: 2;
+}
+#ai-container               { order: 3; }
+.glaggle-entry.fav-project  { order: 4; }  /* Favoriten, Widgets */
+#glaggle-web-search-box     { order: 5; }
+#glaggle-image-container    { order: 6; }
+.glaggle-entry:not(.fav-project):not(#ai-container):not(#glaggle-web-search-box):not(#spelling-suggestion):not(#wiki-card) { order: 7; }
 
 /* ===== WIKI-KARTE (page/summary) ===== */
-#wiki-card { order: 1; border-radius: 25px; border-left: 5px solid #FBBC05; }
+#wiki-card { order: 1; border-radius: 25px; }
 
 .wc-inner { display: flex; gap: 18px; align-items: flex-start; }
 .wc-img {
