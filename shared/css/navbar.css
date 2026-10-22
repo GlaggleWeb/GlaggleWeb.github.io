@@ -288,3 +288,7 @@
     background: #70C4F7;
     color: #fff !important;
 }
+
+/* Einstellungen nur auf Hauptseite */
+#glass-section { display: none; }
+html.is-home #glass-section { display: block; }
