@@ -143,7 +143,9 @@ function setBgMode(mode, fixedIndex = null) {
             } catch(e) {}
         }
 
-        applyThemeBackground(accent);
+       const nav = document.querySelector('nav, .navbar'); // Selektor an dein Markup anpassen
+       const navColor = nav ? getComputedStyle(nav).backgroundColor : accent;
+       applyThemeBackground(navColor);
 
         localStorage.setItem('glaggle-bg-mode', 'theme');
         localStorage.removeItem('glaggle-bg-fixed');
@@ -237,24 +239,10 @@ function applyThemeBackground(accent) {
     if (!bgLayer) return;
     bgLayer.style.opacity = '0';
     setTimeout(() => {
-        const darker = shadeColor(accent, -40);
-        bgLayer.style.backgroundImage = `linear-gradient(135deg, ${accent}, ${darker})`;
+        bgLayer.style.backgroundImage = 'none';
+        bgLayer.style.backgroundColor = accent;
         bgLayer.style.opacity = '1';
     }, 500);
-}
-
-// Hilfsfunktion: Farbe abdunkeln/aufhellen
-function shadeColor(hex, percent) {
-    if (!hex || hex.charAt(0) !== '#') return hex;
-    let R = parseInt(hex.substring(1,3),16);
-    let G = parseInt(hex.substring(3,5),16);
-    let B = parseInt(hex.substring(5,7),16);
-    R = Math.max(0, Math.min(255, Math.round(R * (100 + percent) / 100)));
-    G = Math.max(0, Math.min(255, Math.round(G * (100 + percent) / 100)));
-    B = Math.max(0, Math.min(255, Math.round(B * (100 + percent) / 100)));
-    return "#" + R.toString(16).padStart(2,'0')
-               + G.toString(16).padStart(2,'0')
-               + B.toString(16).padStart(2,'0');
 }
 
 function loadCustomBg(event) {
