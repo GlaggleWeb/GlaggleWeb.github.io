@@ -333,32 +333,6 @@ body::before {
     gap: 5px;
 }
 
-/* Spezielles Styling für offizielle Projekte */
-/* Spezielles Styling für offizielle Projekte */
-.glaggle-entry.fav-project {
-    border-radius: 25px !important;
-    border: 2px solid transparent !important;
-    background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
-                linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
-    margin-bottom: 15px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.5s ease-in-out !important;
-}
-
-.glaggle-entry.fav-project:hover {
-    /* Gleicher Hub (-5px) und gleiche Skalierung (1.02) wie normale Container */
-    transform: translateY(-5px) scale(1.02); 
-    
-    /* Ein weicheres, farbiges Glühen statt eines harten Schattens */
-    box-shadow: 0 10px 25px rgba(112, 196, 247, 0.25) !important;
-    
-    /* Rand bleibt bunt, wird aber durch den Schatten weicher unterstützt */
-    border-color: transparent !important;
-    z-index: 20;
-}
-
 .quick-time-btn:hover {
     background: #70C4F7 !important;
     color: white !important;
@@ -566,14 +540,6 @@ html {
     overflow-x: hidden !important; /* Schneidet alles ab, was zu breit ist */
 }
 
-/* Zwingt alle Kind-Elemente, sich an den Container zu halten */
-.glaggle-entry, .glaggle-entry * {
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    /* Wort-Umbruch erzwingen */
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-}
 
 /* Spezieller Schutz für Code-Blöcke oder lange Links */
 pre, code, .ai-text-content {
