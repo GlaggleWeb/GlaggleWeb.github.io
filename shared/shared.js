@@ -17,6 +17,13 @@
 
    Abhängigkeiten werden automatisch aufgelöst.
    ========================================================= */
+/* Hauptseite erkennen */
+(function () {
+    const p = location.pathname.replace(/\/+$/, '').toLowerCase();
+    const isHome = p === '' || p === '/index' || p === '/index.html';
+    if (isHome) document.documentElement.classList.add('is-home');
+})();
+/* ---- */
 (function () {
     'use strict';
 
