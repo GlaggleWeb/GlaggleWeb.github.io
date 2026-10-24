@@ -45,11 +45,9 @@ const dynPg = document.getElementById('dyn-pagebg') || (() => {
 })();
 dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`;
   // Overlay
-  const dynOv = document.getElementById('dyn-overlay') || (() => {
-    const s = document.createElement('style'); s.id = 'dyn-overlay';
-    document.head.appendChild(s); return s;
-  })();
-  dynOv.textContent = `body::before{background:${t.overlay}!important;}`;
+const bgMode = localStorage.getItem('glaggle-bg-mode') || 'auto';
+const overlayColor = (bgMode === 'none' || bgMode === 'theme') ? 'rgba(0,0,0,0)' : t.overlay;
+dynOv.textContent = `body::before{background:${overlayColor}!important;}`;
   // Preview Bar
   const bar = document.getElementById('design-preview-bar');
   if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
