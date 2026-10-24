@@ -45,14 +45,16 @@ const dynPg = document.getElementById('dyn-pagebg') || (() => {
 })();
 dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`;
   // Overlay
-const bgMode = localStorage.getItem('glaggle-bg-mode') || 'auto';
-const overlayColor = (bgMode === 'none' || bgMode === 'theme') ? 'rgba(0,0,0,0)' : t.overlay;
-dynOv.textContent = `body::before{background:${overlayColor}!important;}`;
+  const dynOv = document.getElementById('dyn-overlay') || (() => {
+    const s = document.createElement('style'); s.id = 'dyn-overlay';
+    document.head.appendChild(s); return s;
+  })();
+  const bgMode = localStorage.getItem('glaggle-bg-mode') || 'auto';
+  const overlayColor = (bgMode === 'none' || bgMode === 'theme') ? 'rgba(0,0,0,0)' : t.overlay;
+  dynOv.textContent = `body::before{background:${overlayColor}!important;}`;
   // Preview Bar
   const bar = document.getElementById('design-preview-bar');
   if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
-  // Speichern
-  localStorage.setItem('glaggle-theme', JSON.stringify(t));
 
   // 🎨 Wenn Theme-Hintergrund aktiv ist, Farbe sofort anpassen
 if (localStorage.getItem('glaggle-bg-mode') === 'theme') {
@@ -80,28 +82,21 @@ function resetDesignFull() {
   document.getElementById('music-controls').style.display = 'none';
   setBgMode('auto');  // Setzt auch die Button-Optik korrekt zurück
 }
-function restoreTheme() {
-      let savedName = localStorage.getItem('glaggle-theme-name');
-  let savedData = localStorage.getItem('glaggle-theme');
-  if (savedName === 'custom') {
-      savedName = 'hell';
-      savedData = null;
-      localStorage.setItem('glaggle-theme-name', 'hell');
-      localStorage.removeItem('glaggle-theme');
-  }
-    if (savedData) {
-        try {
-            applyThemeData(JSON.parse(savedData));
-        } catch(e) {}
-    } else if (savedName && THEMES[savedName]) {
-        applyThemeData(THEMES[savedName]);
-    }
 
-    if (savedName) {
-        document.querySelectorAll('#theme-grid .t-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.querySelector(`#theme-grid [data-t="${savedName}"]`);
-        if (btn) btn.classList.add('active');
+function restoreTheme() {
+    let savedName = localStorage.getItem('glaggle-theme-name');
+
+    if (!savedName || !THEMES[savedName]) {
+        savedName = 'hell';
+        localStorage.setItem('glaggle-theme-name', 'hell');
     }
+    localStorage.removeItem('glaggle-theme'); // Altlast entfernen
+
+    applyThemeData(THEMES[savedName]);
+
+    document.querySelectorAll('#theme-grid .t-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#theme-grid [data-t="${savedName}"]`);
+    if (btn) btn.classList.add('active');
 }
 
 // Auf DOMContentLoaded warten, damit Navbar sicher existiert
