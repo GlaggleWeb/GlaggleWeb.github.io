@@ -270,7 +270,7 @@ function startBgRotation() {
     stopBgRotation();
     const bgLayer = document.getElementById('background-layer');
     if(!bgLayer) return;
-    bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`;
+    bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`; 
     bgLayer.style.opacity = '1';
     bgInterval = setInterval(() => {
         bgLayer.style.opacity = '0';
