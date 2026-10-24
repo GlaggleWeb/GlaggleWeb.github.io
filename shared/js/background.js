@@ -137,31 +137,22 @@ return;
     // =========================
     // THEME-FARBE
     // =========================
-    if (mode === 'theme') {
+if (mode === 'theme') {
 
-        document.getElementById('bg-btn-theme')?.classList.add('active');
+    document.getElementById('bg-btn-theme')?.classList.add('active');
 
-        stopBgRotation();
+    stopBgRotation();
 
-        const savedTheme = localStorage.getItem('glaggle-theme');
+    const n = localStorage.getItem('glaggle-theme-name') || 'hell';
+    const t = THEMES[n] || THEMES.hell;
+    applyThemeBackground(t.pageBg);
 
-        let accent = '#70C4F7';
+    localStorage.setItem('glaggle-bg-mode', 'theme');
+    localStorage.removeItem('glaggle-bg-fixed');
+    refreshThemeOverlay();
 
-        if (savedTheme) {
-            try {
-                accent = JSON.parse(savedTheme).accent || accent;
-            } catch(e) {}
-        }
-
-       const nav = document.querySelector('nav, .navbar'); // Selektor an dein Markup anpassen
-       const navColor = nav ? getComputedStyle(nav).backgroundColor : accent;
-       applyThemeBackground(navColor);
-
-        localStorage.setItem('glaggle-bg-mode', 'theme');
-localStorage.removeItem('glaggle-bg-fixed');
-refreshThemeOverlay();   // NEU
-return;
-    }
+    return;
+}
 
 
     // =========================
