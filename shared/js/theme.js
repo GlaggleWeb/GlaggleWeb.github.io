@@ -56,7 +56,7 @@ dynOv.textContent = `body::before{background:${overlayColor}!important;}`;
 
   // 🎨 Wenn Theme-Hintergrund aktiv ist, Farbe sofort anpassen
 if (localStorage.getItem('glaggle-bg-mode') === 'theme') {
-    applyThemeBackground(t.accent);
+    applyThemeBackground(t.pageBg);
 }
 }
 
