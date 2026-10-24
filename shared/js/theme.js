@@ -99,13 +99,6 @@ function restoreTheme() {
     if (btn) btn.classList.add('active');
 }
 
-// Auf DOMContentLoaded warten, damit Navbar sicher existiert
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', restoreTheme);
-} else {
-    restoreTheme(); // DOM bereits fertig
-}
-
 // Erweitert um das Umschalten der Kontrast-Klasse
 function setOverlay(color, isDark = false) {
     const style = document.getElementById('dynamic-overlay') || (() => {
