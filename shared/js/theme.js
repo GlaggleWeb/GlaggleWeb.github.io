@@ -35,8 +35,8 @@ function applyThemeData(t) {
   })();
   dynSb.textContent = `
   .search-bar-container{background:${t.search}!important;border-color:${t.searchBorder}!important;}
-  .search-bar-container input{color:${t.searchText || '#000'}!important;caret-color:${t.searchText || '#000'}!important;}
-  .search-bar-container input::placeholder{color:${t.searchText || '#000'}!important;opacity:.6;}
+  #glaggleQuery{color:${t.searchText || '#000'}!important;caret-color:${t.searchText || '#000'}!important;}
+  #glaggleQuery::placeholder{color:${t.searchText || '#000'}!important;opacity:.6;}
 `;
   // Seitenhintergrund
 const dynPg = document.getElementById('dyn-pagebg') || (() => {
@@ -67,33 +67,10 @@ function applyTheme(name, btn) {
   if (!t) return;
   document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  document.getElementById('custom-pickers').style.display = 'none';
   applyThemeData(t);
   localStorage.setItem('glaggle-theme-name', name);
 }
 
-function toggleCustomPickers() {
-  const p = document.getElementById('custom-pickers');
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
-  document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('[data-t="custom"]').classList.add('active');
-}
-
-function applyCustomTheme() {
-  const t = {
-    navbar:       document.getElementById('cp-navbar').value,
-    navText:      '#ffffff',
-    search:       document.getElementById('cp-search').value + 'ee',
-    searchBorder: document.getElementById('cp-accent').value,
-    overlay:      document.getElementById('cp-overlay').value + '88',
-    isDark:       true,
-    accent:       document.getElementById('cp-accent').value,
-    sidebar:      document.getElementById('cp-navbar').value,
-    sidebarText:  '#ffffff'
-  };
-  applyThemeData(t);
-  localStorage.setItem('glaggle-theme-name', 'custom');
-}
 
 /* ===== RESET ===== */
 function resetDesignFull() {
@@ -106,9 +83,14 @@ function resetDesignFull() {
   setBgMode('auto');  // Setzt auch die Button-Optik korrekt zurück
 }
 function restoreTheme() {
-    const savedName = localStorage.getItem('glaggle-theme-name');
-    const savedData = localStorage.getItem('glaggle-theme');
-
+      let savedName = localStorage.getItem('glaggle-theme-name');
+  let savedData = localStorage.getItem('glaggle-theme');
+  if (savedName === 'custom') {
+      savedName = 'hell';
+      savedData = null;
+      localStorage.setItem('glaggle-theme-name', 'hell');
+      localStorage.removeItem('glaggle-theme');
+  }
     if (savedData) {
         try {
             applyThemeData(JSON.parse(savedData));
