@@ -87,6 +87,11 @@ document.addEventListener('click', (e) => {
     if (e.target.closest('.hamburger')) setTimeout(buildSpotlightGrid, 100);
 });
 
+function refreshThemeOverlay() {
+    const n = localStorage.getItem('glaggle-theme-name') || 'hell';
+    if (THEMES[n]) applyThemeData(THEMES[n]);
+}
+
 function setBgMode(mode, fixedIndex = null) {
 
     // Alle Modus-Buttons zurücksetzen
@@ -119,7 +124,12 @@ function setBgMode(mode, fixedIndex = null) {
         localStorage.removeItem('glaggle-bg-mode');
         localStorage.removeItem('glaggle-bg-fixed');
 
-        startBgRotation();
+        localStorage.removeItem('glaggle-bg-mode');
+localStorage.removeItem('glaggle-bg-fixed');
+startBgRotation();
+refreshThemeOverlay();   // NEU
+return;
+
         return;
     }
 
@@ -148,9 +158,9 @@ function setBgMode(mode, fixedIndex = null) {
        applyThemeBackground(navColor);
 
         localStorage.setItem('glaggle-bg-mode', 'theme');
-        localStorage.removeItem('glaggle-bg-fixed');
-
-        return;
+localStorage.removeItem('glaggle-bg-fixed');
+refreshThemeOverlay();   // NEU
+return;
     }
 
 
@@ -174,10 +184,10 @@ function setBgMode(mode, fixedIndex = null) {
             }, 500);
         }
 
-        localStorage.setItem('glaggle-bg-mode', 'none');
-        localStorage.removeItem('glaggle-bg-fixed');
-
-        return;
+localStorage.setItem('glaggle-bg-mode', 'none');
+localStorage.removeItem('glaggle-bg-fixed');
+refreshThemeOverlay();   // NEU
+return;
     }
 
 
@@ -228,7 +238,11 @@ function setBgMode(mode, fixedIndex = null) {
         localStorage.setItem('glaggle-bg-mode', 'fixed');
         localStorage.setItem('glaggle-bg-fixed', fixedIndex);
 
-        return;
+       localStorage.setItem('glaggle-bg-mode', 'fixed');
+localStorage.setItem('glaggle-bg-fixed', fixedIndex);
+refreshThemeOverlay();   // NEU
+return;
+    
     }
 }
 
