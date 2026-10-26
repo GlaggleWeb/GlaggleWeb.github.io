@@ -20,65 +20,51 @@ const spotlightImages = [
     "https://res.cloudinary.com/dcvdvvbnj/image/upload/image_akjjqf.jpg"
 ];
 
+const stripExt = u => u.replace(/\.(jpe?g|png|webp)$/i, '');
+const cld = (u, t) => stripExt(u).replace('/image/upload/', `/image/upload/${t}/`);
+const thumbUrl = u => cld(u, 'w_400,q_auto,f_auto');
+const bgUrl    = u => cld(u, 'w_1920,q_auto,f_auto');
+
 let bgInterval = null;
 let currentIndex = Math.floor(Math.random() * spotlightImages.length);
-
 function buildSpotlightGrid() {
     const grid = document.getElementById('spotlight-grid');
-
     if (!grid || grid.children.length > 0) return;
 
+    const savedIndex = localStorage.getItem('glaggle-bg-mode') === 'fixed'
+        ? parseInt(localStorage.getItem('glaggle-bg-fixed'))
+        : -1;
+
     spotlightImages.forEach((url, i) => {
-
         const btn = document.createElement('button');
-
+        btn.dataset.index = i;
+        btn.title = `Bild ${i + 1}`;
         btn.style.cssText = `
             width: 100%;
             aspect-ratio: 16/9;
             border-radius: 8px;
-            border: 2px solid transparent;
-            background-image: url('${url}');
-            background-size: cover;
-            background-position: center;
+            border: 2px solid ${i === savedIndex ? '#70C4F7' : 'transparent'};
+            background: rgba(128,128,128,0.2);
             cursor: pointer;
             transition: border-color 0.2s, transform 0.2s;
             padding: 0;
             overflow: hidden;
         `;
 
-        btn.title = `Bild ${i + 1}`;
-        btn.dataset.index = i;
+        const img = document.createElement('img');
+        img.src = thumbUrl(url);
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.alt = '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        btn.appendChild(img);
 
-        btn.onclick = () => {
-            setBgMode('fixed', i);
-        };
-
-        btn.onmouseover = () => {
-            btn.style.transform = 'scale(1.05)';
-        };
-
-        btn.onmouseout = () => {
-            btn.style.transform = 'scale(1)';
-        };
+        btn.onclick = () => setBgMode('fixed', i);
+        btn.onmouseover = () => { btn.style.transform = 'scale(1.05)'; };
+        btn.onmouseout  = () => { btn.style.transform = 'scale(1)'; };
 
         grid.appendChild(btn);
     });
-
-    // Bereits gespeichertes Bild markieren
-    const savedMode = localStorage.getItem('glaggle-bg-mode');
-    const savedIndex = parseInt(
-        localStorage.getItem('glaggle-bg-fixed')
-    );
-
-    if (savedMode === 'fixed' && !isNaN(savedIndex)) {
-        const activeBtn = grid.querySelector(
-            `button[data-index="${savedIndex}"]`
-        );
-
-        if (activeBtn) {
-            activeBtn.style.borderColor = '#70C4F7';
-        }
-    }
 }
 
 
@@ -126,19 +112,11 @@ if (mode === 'auto') {
     // THEME-FARBE
     // =========================
 if (mode === 'theme') {
-
     document.getElementById('bg-btn-theme')?.classList.add('active');
-
     stopBgRotation();
-
-    const n = localStorage.getItem('glaggle-theme-name') || 'hell';
-    const t = THEMES[n] || THEMES.hell;
-    applyThemeBackground(t.pageBg);
-
     localStorage.setItem('glaggle-bg-mode', 'theme');
     localStorage.removeItem('glaggle-bg-fixed');
     refreshThemeOverlay();
-
     return;
 }
 
@@ -226,19 +204,6 @@ return;
 }
 
 
-function applyThemeBackground(color, instant = false) {
-    const bgLayer = document.getElementById('background-layer');
-    if (!bgLayer) return;
-    const apply = () => {
-        bgLayer.style.backgroundImage = 'none';
-        bgLayer.style.backgroundColor = color;
-        bgLayer.style.opacity = '1';
-    };
-    if (instant) return apply();
-    bgLayer.style.opacity = '0';
-    setTimeout(apply, 500);
-}
-
 function loadCustomBg(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -263,16 +228,22 @@ function setBackgroundImage(url) {
 function startBgRotation() {
     stopBgRotation();
     const bgLayer = document.getElementById('background-layer');
-    if(!bgLayer) return;
-    bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`; 
+    if (!bgLayer) return;
+    bgLayer.style.backgroundImage = `url('${bgUrl(spotlightImages[currentIndex])}')`;
     bgLayer.style.opacity = '1';
+
     bgInterval = setInterval(() => {
-        bgLayer.style.opacity = '0';
-        setTimeout(() => {
-            currentIndex = (currentIndex + 1) % spotlightImages.length;
-            bgLayer.style.backgroundImage = `url('${spotlightImages[currentIndex]}')`;
-            bgLayer.style.opacity = '1';
-        }, 1000);
+        const next = (currentIndex + 1) % spotlightImages.length;
+        const img = new Image();
+        img.onload = () => {
+            bgLayer.style.opacity = '0';
+            setTimeout(() => {
+                currentIndex = next;
+                bgLayer.style.backgroundImage = `url('${bgUrl(spotlightImages[next])}')`;
+                bgLayer.style.opacity = '1';
+            }, 1000);
+        };
+        img.src = bgUrl(spotlightImages[next]);
     }, 15000);
 }
 
