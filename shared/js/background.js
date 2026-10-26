@@ -135,10 +135,11 @@ if (mode === 'theme') {
         if (bgLayer) {
             bgLayer.style.opacity = '0';
 
-            setTimeout(() => {
-                bgLayer.style.backgroundImage = 'none';
-                bgLayer.style.opacity = '1';
-            }, 500);
+         setTimeout(() => {
+    bgLayer.style.backgroundImage = 'none';
+    bgLayer.style.backgroundColor = 'transparent';
+    bgLayer.style.opacity = '1';
+}, 500);
         }
 
 localStorage.setItem('glaggle-bg-mode', 'none');
@@ -188,21 +189,29 @@ return;
             activeBtn.style.borderColor = '#70C4F7';
         }
 
-        stopBgRotation();
-
-        setBackgroundImage(spotlightImages[fixedIndex]);
+                stopBgRotation();
+        setBackgroundImage(bgUrl(spotlightImages[fixedIndex]));
 
         localStorage.setItem('glaggle-bg-mode', 'fixed');
         localStorage.setItem('glaggle-bg-fixed', fixedIndex);
-
-       localStorage.setItem('glaggle-bg-mode', 'fixed');
-localStorage.setItem('glaggle-bg-fixed', fixedIndex);
-refreshThemeOverlay();   // NEU
-return;
-    
+        refreshThemeOverlay();
+        return;
     }
 }
 
+
+function applyThemeBackground(color, instant = false) {
+    const bgLayer = document.getElementById('background-layer');
+    if (!bgLayer) return;
+    const apply = () => {
+        bgLayer.style.backgroundImage = 'none';
+        bgLayer.style.backgroundColor = color;
+        bgLayer.style.opacity = '1';
+    };
+    if (instant) return apply();
+    bgLayer.style.opacity = '0';
+    setTimeout(apply, 500);
+}
 
 function loadCustomBg(event) {
     const file = event.target.files[0];
@@ -217,12 +226,20 @@ function loadCustomBg(event) {
 
 function setBackgroundImage(url) {
     const bgLayer = document.getElementById('background-layer');
-    if(!bgLayer) return;
-    bgLayer.style.opacity = '0';
-    setTimeout(() => {
-        bgLayer.style.backgroundImage = `url('${url}')`;
-        bgLayer.style.opacity = '1';
-    }, 500);
+    if (!bgLayer) return;
+    const show = () => {
+        bgLayer.style.opacity = '0';
+        setTimeout(() => {
+            bgLayer.style.backgroundColor = 'transparent';
+            bgLayer.style.backgroundImage = `url('${url}')`;
+            bgLayer.style.opacity = '1';
+        }, 500);
+    };
+    if (url.startsWith('data:')) return show();   // Custom-Upload: schon lokal
+    const img = new Image();
+    img.onload = show;
+    img.onerror = show;
+    img.src = url;
 }
 
 function startBgRotation() {
