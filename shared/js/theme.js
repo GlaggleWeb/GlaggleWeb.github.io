@@ -49,7 +49,7 @@ dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`
     const s = document.createElement('style'); s.id = 'dyn-overlay';
     document.head.appendChild(s); return s;
   })();
-  const bgMode = localStorage.getItem('glaggle-bg-mode') || 'auto';
+  const bgMode = localStorage.getItem('glaggle-bg-mode') || 'theme';
   const overlayColor = (bgMode === 'none' || bgMode === 'theme') ? 'rgba(0,0,0,0)' : t.overlay;
   dynOv.textContent = `body::before{background:${overlayColor}!important;}`;
   // Preview Bar
@@ -57,7 +57,7 @@ dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`
   if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
 
   // 🎨 Wenn Theme-Hintergrund aktiv ist, Farbe sofort anpassen
-if (localStorage.getItem('glaggle-bg-mode') === 'theme') {
+if (localStorage.if (bgMode === 'theme') applyThemeBackground(t.pageBg); ) {
     applyThemeBackground(t.pageBg);
 }
 }
