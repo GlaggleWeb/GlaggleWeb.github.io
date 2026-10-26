@@ -1298,6 +1298,68 @@ pre, code, .ai-text-content {
 .glass-panel label { display:flex; justify-content:space-between; font-size:0.8rem; }
 .glass-panel input[type=range] { width:100%; accent-color:#70C4F7; }
 .glass-panel input[type=color] { width:100%; height:32px; border:none; border-radius:8px; cursor:pointer; }
+
+/* ===== SCHÖNERE KARTEN: Schatten, Ecken, ohne bunte Ränder ===== */
+:root {
+    --card-radius: 32px;
+    --card-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 4px 8px rgba(0, 0, 0, 0.06),
+        0 12px 24px rgba(0, 0, 0, 0.08),
+        0 24px 48px rgba(0, 0, 0, 0.10);
+    --card-shadow-hover:
+        0 2px 4px rgba(0, 0, 0, 0.06),
+        0 8px 16px rgba(0, 0, 0, 0.08),
+        0 20px 40px rgba(0, 0, 0, 0.12),
+        0 36px 72px rgba(0, 0, 0, 0.16);
+}
+
+/* Alle Ergebnis-Karten */
+.glaggle-entry,
+.glaggle-entry.fav-project,
+#ai-container,
+#glaggle-web-search-box,
+#glaggle-image-container,
+#wiki-card {
+    border-radius: var(--card-radius) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;  /* dezenter, neutraler Rand */
+    box-shadow: var(--card-shadow) !important;
+}
+
+/* Bunten Gradient-Ring der Favoriten entfernen */
+.glaggle-entry.fav-project::before {
+    display: none !important;
+}
+
+/* Farbige linke Ränder (AI = blau, WebSearch = grün) entfernen */
+#ai-container,
+#glaggle-web-search-box {
+    border-left: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Hover: Schatten wird größer */
+.glaggle-entry:hover,
+.glaggle-entry.fav-project:hover {
+    box-shadow: var(--card-shadow-hover) !important;
+}
+
+/* Bilder-Karten und Bilder in der Galerie auch runder */
+#glaggle-image-grid > div {
+    border-radius: 18px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.wc-img {
+    border-radius: 22px !important;
+}
+
+/* Suchfeld passend dazu */
+.search-bar-container {
+    border-radius: 40px !important;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.08),
+        0 8px 16px rgba(0, 0, 0, 0.12),
+        0 20px 40px rgba(0, 0, 0, 0.16) !important;
+}
 </style>
 </head>
 <body>
