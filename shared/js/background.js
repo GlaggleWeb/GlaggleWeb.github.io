@@ -82,11 +82,6 @@ function buildSpotlightGrid() {
 }
 
 
-// Spotlight-Grid beim Öffnen der Sidebar aufbauen
-document.addEventListener('click', (e) => {
-    if (e.target.closest('.hamburger')) setTimeout(buildSpotlightGrid, 100);
-});
-
 function refreshThemeOverlay() {
     const n = localStorage.getItem('glaggle-theme-name') || 'hell';
     if (THEMES[n]) applyThemeData(THEMES[n]);
@@ -117,21 +112,14 @@ function setBgMode(mode, fixedIndex = null) {
     // =========================
     // AUTOMATISCH
     // =========================
-    if (mode === 'auto') {
-
-        document.getElementById('bg-btn-auto')?.classList.add('active');
-
-        localStorage.removeItem('glaggle-bg-mode');
-        localStorage.removeItem('glaggle-bg-fixed');
-
-        localStorage.removeItem('glaggle-bg-mode');
-localStorage.removeItem('glaggle-bg-fixed');
-startBgRotation();
-refreshThemeOverlay();   // NEU
-return;
-
-        return;
-    }
+if (mode === 'auto') {
+    document.getElementById('bg-btn-auto')?.classList.add('active');
+    localStorage.setItem('glaggle-bg-mode', 'auto');
+    localStorage.removeItem('glaggle-bg-fixed');
+    startBgRotation();
+    refreshThemeOverlay();
+    return;
+}
 
 
     // =========================
@@ -238,16 +226,17 @@ return;
 }
 
 
-// Erzeugt einen schönen Farbverlauf aus der Theme-Akzentfarbe
-function applyThemeBackground(accent) {
+function applyThemeBackground(color, instant = false) {
     const bgLayer = document.getElementById('background-layer');
     if (!bgLayer) return;
-    bgLayer.style.opacity = '0';
-    setTimeout(() => {
+    const apply = () => {
         bgLayer.style.backgroundImage = 'none';
-        bgLayer.style.backgroundColor = accent;
+        bgLayer.style.backgroundColor = color;
         bgLayer.style.opacity = '1';
-    }, 500);
+    };
+    if (instant) return apply();
+    bgLayer.style.opacity = '0';
+    setTimeout(apply, 500);
 }
 
 function loadCustomBg(event) {
@@ -294,16 +283,12 @@ function stopBgRotation() {
     }
 }
 
-  (function restoreBackgroundSettings() {
-      const mode = localStorage.getItem('glaggle-bg-mode');
-      if (!mode || mode === 'auto') return setBgMode('auto');
-      if (mode === 'theme' || mode === 'none') return setBgMode(mode);
-      if (mode === 'fixed') {
-          const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
-          if (idx >= 0 && idx < spotlightImages.length) {
-              buildSpotlightGrid();
-              return setBgMode('fixed', idx);
-          }
-          setBgMode('auto');
-      }
-  })(); 
+(function restoreBackgroundSettings() {
+    const mode = localStorage.getItem('glaggle-bg-mode') || 'theme';
+    if (mode === 'fixed') {
+        const idx = parseInt(localStorage.getItem('glaggle-bg-fixed') || '0');
+        if (idx >= 0 && idx < spotlightImages.length) return setBgMode('fixed', idx);
+        return setBgMode('theme');
+    }
+    setBgMode(mode);
+})();
