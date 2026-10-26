@@ -56,11 +56,11 @@ dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`
   const bar = document.getElementById('design-preview-bar');
   if (bar) bar.style.background = `linear-gradient(90deg,${t.navbar} 33%,${t.accent} 33% 66%,${t.sidebar} 66%)`;
 
-  // 🎨 Wenn Theme-Hintergrund aktiv ist, Farbe sofort anpassen
-if (localStorage.if (bgMode === 'theme') applyThemeBackground(t.pageBg); ) {
-    applyThemeBackground(t.pageBg);
+if (bgMode === 'theme' && typeof applyThemeBackground === 'function') {
+    applyThemeBackground(t.pageBg, true);
 }
 }
+
 
 function applyTheme(name, btn) {
   const t = THEMES[name];
@@ -76,12 +76,9 @@ function applyTheme(name, btn) {
 function resetDesignFull() {
   ['glaggle-theme','glaggle-theme-name','glaggle-bg-mode','glaggle-bg-fixed'].forEach(k => localStorage.removeItem(k));
   ['dyn-overlay','dyn-searchbar','dyn-pagebg'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
-  applyTheme('hell', document.querySelector('[data-t="hell"]'));
-  if (glaggleAudio) { glaggleAudio.pause(); glaggleAudio = null; }
-  document.getElementById('music-select').value = '';
-  document.getElementById('music-controls').style.display = 'none';
-  setBgMode('auto');  // Setzt auch die Button-Optik korrekt zurück
-}
+    document.getElementById('custom-upload-zone').style.display = 'none';
+    setBgMode('theme');
+  }
 
 function restoreTheme() {
     let savedName = localStorage.getItem('glaggle-theme-name');
