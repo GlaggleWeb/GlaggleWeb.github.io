@@ -11,6 +11,7 @@ const THEMES = {
 };
 
 function applyThemeData(t) {
+  document.documentElement.style.setProperty('--accent', t.accent);
   // Navbar
   const navbar = document.querySelector('.navbar');
   if (navbar) {
