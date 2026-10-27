@@ -18,19 +18,16 @@ function enableSmartMouse() {
     cursor.style.opacity = '1';                 // WICHTIG: Sichtbar erzwingen
     cursor.classList.remove('cursor-hover', 'cursor-click'); // Klebrige Klassen lösen
 
-    const savedTheme = localStorage.getItem('glaggle-theme');
-    if (savedTheme) {
-        try { smartCursorStyleAccent(savedTheme); } catch(e){}
-    }
+    smartCursorStyleAccent();
     localStorage.setItem('glaggle-smart-mouse', 'true');
     updateSmartMouseToggleUI();
 }
 
-// Kleine Hilfe fürs Accent-Setting (optional, vereinfacht)
-function smartCursorStyleAccent(savedTheme){
-    const t = JSON.parse(savedTheme);
+function smartCursorStyleAccent() {
+    const name = localStorage.getItem('glaggle-theme-name') || 'hell';
+    const t = (typeof THEMES !== 'undefined' && THEMES[name]) || null;
     const c = getSmartCursor();
-    if (c && t.accent) c.style.background = t.accent;
+    if (c && t && t.accent) c.style.background = t.accent;
 }
 
 function disableSmartMouse() {
@@ -83,26 +80,36 @@ function updateSmartMouseToggleUI() {
 // Maus bewegen: Cursor folgt
 document.addEventListener('mousemove', (e) => {
     if (!smartMouseActive) return;
-    smartCursor.style.left = e.clientX + 'px';
-    smartCursor.style.top = e.clientY + 'px';
+    const c = getSmartCursor();
+    if (!c) return;
+    c.style.left = e.clientX + 'px';
+    c.style.top = e.clientY + 'px';
 });
 
 // Maus verlässt Fenster: Cursor verstecken
 document.addEventListener('mouseleave', () => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     smartCursor.style.opacity = '0';
 });
 document.addEventListener('mouseenter', () => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     smartCursor.style.opacity = '1';
 });
 
 // Klick-Animation
 document.addEventListener('mousedown', () => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     smartCursor.classList.add('cursor-click');
 });
 document.addEventListener('mouseup', () => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     smartCursor.classList.remove('cursor-click');
 });
@@ -120,6 +127,8 @@ const SMART_HOVER_SELECTORS = [
 
 // Hover-Logik: Cursor verschwindet komplett über klickbaren Elementen
 document.addEventListener('mouseover', (e) => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     const target = e.target.closest(SMART_HOVER_SELECTORS);
     if (target) {
@@ -136,6 +145,8 @@ document.addEventListener('mouseover', (e) => {
 });
 
 document.addEventListener('mouseout', (e) => {
+    const smartCursor = getSmartCursor();
+if (!smartCursor) return;
     if (!smartMouseActive) return;
     const target = e.target.closest(SMART_HOVER_SELECTORS);
     if (target) {
