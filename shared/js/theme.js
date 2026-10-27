@@ -59,6 +59,7 @@ dynPg.textContent = `body{background-color:${t.pageBg || '#ffffff'}!important;}`
 if (bgMode === 'theme' && typeof applyThemeBackground === 'function') {
     applyThemeBackground(t.pageBg, true);
 }
+  if (typeof smartCursorStyleAccent === 'function') smartCursorStyleAccent();
 }
 
 
