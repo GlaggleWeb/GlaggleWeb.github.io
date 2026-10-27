@@ -3585,7 +3585,7 @@ function dismissWelcomePopup() {
 /* ===== GLASS-EINSTELLUNGEN ===== */
 (function () {
     const KEY = 'glaggle_glass';
-    const DEFAULTS = { card: 20, search: 90, hoverA: 100, lift: 2, scale: 100, hoverColor: '#ffffff' };
+    const DEFAULTS = { card: 100, search: 90, hoverA: 30, lift: 0, scale: 100, hoverColor: '#ffffff' };
 
     let S = { ...DEFAULTS };
     try { S = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) {}
