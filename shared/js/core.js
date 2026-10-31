@@ -35,9 +35,15 @@ window.addEventListener('load', function() {
   }
 
 (function smartNavbar() {
-    const HIDE_AFTER = 120;   // ab so vielen Pixeln darf die Navbar verschwinden
-    const MIN_DELTA  = 8;     // Zittern ignorieren
-    const IDLE_MS    = 2000;  // Inaktivität, nach der sie wieder verschwindet
+    const HIDE_AFTER = 120;
+    const MIN_DELTA  = 10;     // etwas höher = ruhiger, weniger Flackern
+    const IDLE_MS    = 2000;
+
+    // Hauptseite? Dann nichts tun, die Navbar bleibt normal.
+    const isHome = () =>
+        document.documentElement.classList.contains('is-home') ||
+        ((location.hostname === 'glaggle.ch' || location.hostname === 'www.glaggle.ch') &&
+         (location.pathname === '/' || location.pathname === '/index.html'));
 
     let lastY = window.scrollY;
     let idleTimer = null;
@@ -55,6 +61,12 @@ window.addEventListener('load', function() {
 
     function update() {
         ticking = false;
+
+        if (isHome()) {              // Sicherheit: auf der Startseite immer sichtbar
+            showNav();
+            return;
+        }
+
         const y = Math.max(window.scrollY || document.documentElement.scrollTop || 0, 0);
         const diff = y - lastY;
         if (Math.abs(diff) < MIN_DELTA) return;
