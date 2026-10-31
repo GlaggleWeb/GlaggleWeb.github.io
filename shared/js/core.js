@@ -33,3 +33,55 @@ window.addEventListener('load', function() {
       }, { passive: true });
       backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   }
+
+(function smartNavbar() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    const HIDE_AFTER = 120;   // ab so vielen Pixeln darf die Navbar verschwinden
+    const MIN_DELTA  = 8;     // minimale Scrollbewegung, damit Zittern ignoriert wird
+    const IDLE_MS    = 2000;  // Inaktivität (ms), nach der sie wieder verschwindet
+
+    let lastY = window.scrollY;
+    let idleTimer = null;
+    let ticking = false;
+
+    const sidebarOpen = () =>
+        document.getElementById('sidebar')?.classList.contains('active');
+
+    const showNav = () => navbar.classList.remove('nav-hidden');
+    const hideNav = () => {
+        if (sidebarOpen()) return;          // nicht verstecken, solange das Menü offen ist
+        navbar.classList.add('nav-hidden');
+    };
+
+    function update() {
+        ticking = false;
+        const y = Math.max(window.scrollY, 0);   // iOS-Overscroll abfangen
+        const diff = y - lastY;
+        if (Math.abs(diff) < MIN_DELTA) return;
+
+        clearTimeout(idleTimer);
+
+        if (y <= HIDE_AFTER) {
+            showNav();                           // ganz oben immer sichtbar
+        } else if (diff > 0) {
+            hideNav();                           // runter: verstecken
+        } else {
+            showNav();                           // hoch: anzeigen
+            idleTimer = setTimeout(hideNav, IDLE_MS);  // bei Inaktivität wieder weg
+        }
+        lastY = y;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(update);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    // Optional: Timer pausieren, solange die Maus/der Finger auf der Navbar ist
+    navbar.addEventListener('mouseenter', () => clearTimeout(idleTimer));
+    navbar.addEventListener('touchstart', () => clearTimeout(idleTimer), { passive: true });
+})();
