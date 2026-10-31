@@ -129,7 +129,7 @@
     <!-- Schritt 1: Benutzername oder E-Mail eingeben -->
     <div id="step1">
         <h1>Anmelden</h1>
-        <p>Gib deinen Benutzernamen oder deine E-Mail-Adresse ein, um einen Login-Link per E-Mail zu erhalten.</p>
+        <p>Gib deine E-Mail-Adresse ein, um einen Login-Link per E-Mail zu erhalten.</p>
         <input type="text" id="identifier" placeholder="Benutzername oder E-Mail">
         <button id="btnSend" onclick="requestLoginLink()">Login-Link anfordern</button>
         <p style="margin-top: 20px; font-size: 0.8rem;">
@@ -221,39 +221,23 @@ window.onload = async () => {
 async function requestLoginLink() {
     hideMessage();
     const input = document.getElementById('identifier').value.trim();
-    if (!input) return showMessage("Bitte gib einen Benutzernamen oder eine E-Mail ein.", true);
+    
+    // Zwingend eine E-Mail verlangen
+    if (!input || !input.includes('@')) {
+        return showMessage("Bitte gib eine gültige E-Mail-Adresse ein.", true);
+    }
 
     showLoading(true);
-    let targetEmail = "";
 
     try {
-        if (input.includes('@')) {
-            targetEmail = input;
-        } else {
-            // Benutzername in der Datenbank suchen, um die E-Mail abzurufen
-            const response = await databases.listDocuments(DB_ID, COLL_ID, [
-                Appwrite.Query.equal('userName', input)
-            ]);
-
-            if (response.documents.length > 0) {
-                targetEmail = response.documents[0].userEmail;
-            } else {
-                throw new Error("Konto wurde nicht gefunden. Bitte registriere dich zuerst.");
-            }
-        }
-
-        // Falls noch eine alte Sitzung existiert, diese vorher entfernen
         try { await account.deleteSession('current'); } catch(e) {}
 
-        // Sichere eindeutige Token-ID generieren
-        const userId = Appwrite.ID.unique();
+        // Wichtig: Bei bestehenden Nutzern wird hier "current" statt einer neuen ID übergeben!
+        // Appwrite sucht dann automatisch den passenden Account anhand der E-Mail.
+        await account.createMagicURLToken('current', input, window.location.href);
 
-        // Magic URL Token erstellen und senden
-        await account.createMagicURLToken(userId, targetEmail, window.location.href);
-
-        showMessage("E-Mail versendet! Bitte überprüfe dein Postfach und klicke auf den Bestätigungslink.", false);
+        showMessage("E-Mail versendet! Bitte überprüfe dein Postfach.", false);
         document.getElementById('btnSend').disabled = true;
-        document.getElementById('btnSend').innerText = "Link gesendet...";
 
     } catch (error) {
         showMessage("Fehler: " + error.message, true);
@@ -261,6 +245,7 @@ async function requestLoginLink() {
         showLoading(false);
     }
 }
+
 
 async function confirmLoginLink() {
     if (isVerifying) return;
