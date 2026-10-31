@@ -292,3 +292,15 @@
 /* Einstellungen nur auf Hauptseite */
 #glass-section { display: none; }
 html.is-home #glass-section { display: block; }
+
+/* sticky navbar */
+.navbar {
+    position: sticky;   /* oder fixed, wie du es bereits hast */
+    top: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.navbar.nav-hidden {
+    transform: translateY(-100%);
+}
