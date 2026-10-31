@@ -164,11 +164,18 @@
     left: 0; 
     z-index: 1000; 
     box-sizing: border-box;
-    transition: transform 0.3s ease;   /* NEU */
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.45s ease;
+    will-change: transform;
+}
+.navbar.nav-hidden {
+    transform: translateY(-110%);   /* 110 %, damit der Schatten nicht rausschaut */
+    box-shadow: none;
 }
 
-.navbar.nav-hidden {
-    transform: translateY(-100%);      /* NEU */
+/* Wer Animationen reduziert haben will, bekommt keine */
+@media (prefers-reduced-motion: reduce) {
+    .navbar { transition: none; }
 }
 
 /* Sidebar hell machen und Text schwarz */
