@@ -1802,142 +1802,133 @@ async function searchWikipedia(query, lang) {
     }
 }
 
+const AI_ENDPOINT = "groq-glaggle-search.rhpjmf7t2s.workers.dev";
+
+async function streamGroq(body, onText, signal) {
+    const res = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, stream: true }),
+        signal
+    });
+    if (!res.ok || !res.body) throw new Error("API " + res.status);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "", full = "";
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // unvollständige Zeile behalten
+
+        for (const line of lines) {
+            const l = line.trim();
+            if (!l.startsWith("data:")) continue;
+            const data = l.slice(5).trim();
+            if (data === "[DONE]") return full;
+            try {
+                const delta = JSON.parse(data).choices?.[0]?.delta?.content;
+                if (delta) { full += delta; onText(full); }
+            } catch {}
+        }
+    }
+    return full;
+}
+    
+let _aiAbort = null;
 
 async function fetchGroqAI(query) {
-    const aiTextElement = document.getElementById('ai-text');
-    const aiContainer = document.getElementById('ai-container');
-    
-    // Smoothie Such-Animation starten
-    if (aiContainer) {
-        aiContainer.classList.add('ai-searching');
-        aiTextElement.innerHTML = `
-            <div class="ai-search-pulse">
-                <span class="ai-search-spinner"></span>
-                <span>Durchsuche das Web nach aktuellen Informationen...</span>
-            </div>
-        `;
-    }
+    // Vorherigen Stream abbrechen, falls neue Suche gestartet wurde
+    if (_aiAbort) _aiAbort.abort();
+    _aiAbort = new AbortController();
+    const signal = _aiAbort.signal;
+
+    const aiContainer  = document.getElementById('ai-container');
+    const aiText       = document.getElementById('ai-text');
+    const aiFullDiv    = document.getElementById('ai-text-full');
+    const expandBtn    = document.getElementById('ai-expand-btn');
+    if (!aiContainer || !aiText) return;
+
+    aiContainer.classList.add('ai-searching');
+    aiText.innerHTML = `
+        <div class="ai-search-pulse">
+            <span class="ai-search-spinner"></span>
+            <span>Durchsuche das Web nach aktuellen Informationen...</span>
+        </div>`;
+
+    const clean = t => t.replace(/【\d+†[^】]*】/g, m => `[${parseInt(m.match(/\d+/)[0]) + 1}]`);
+
+    let antwort = "";
+    let started = false;
+    let expanded = false;
+
+    const render = (text) => {
+        antwort = clean(text);
+        const html = marked.parse(antwort);
+        if (expanded) {
+            aiFullDiv.innerHTML = html;
+        } else {
+            aiText.innerHTML = html;
+            // Preview scrollt mit, damit man immer das Neueste sieht
+            const prev = document.getElementById('ai-preview');
+            if (prev) prev.scrollTop = prev.scrollHeight;
+        }
+    };
 
     try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                model: "openai/gpt-oss-20b", 
-                messages: [
-                    { 
-                        role: "system", 
-                        content: `Du bist Glaggle AI, die Suchzusammenfassungs-KI von Glaggle Inc. 
-                        Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig. 
-                        Halte dich wirklich kurz (max. 5-8 Sätze).
-                        WICHTIG: Wenn du das Browser-Search-Tool verwendest, verwende im Text Standard-Markdown-Links wie [Name](URL) oder setze einfach Nummern wie [1], [2], um deine Aussagen zu belegen.` 
-                    },
-                    { role: "user", content: query }
-                ],
-                // Native Websuche aktivieren
-                tools: [{ "type": "browser_search" }],
-                tool_choice: "auto" // KI entscheidet selbstständig basierend auf der Suchanfrage
-            })
-        });
-        
-        const data = await res.json();
-        
-        // Such-Animation entfernen
-        if (aiContainer) aiContainer.classList.remove('ai-searching');
-
-        let antwort = data.choices[0].message.content || "";
-
-        // Unschöne Klammern wie 【0†source】 oder 【2†L17-L23】 via Regex säubern und in hübsche Ziffern wandeln
-        antwort = antwort.replace(/【\d+†[^\]]+】/g, (match) => {
-            const digits = match.match(/\d+/);
-            const num = digits ? parseInt(digits[0]) + 1 : 1;
-            return `[${num}]`;
-        });
-
-        // Extrahiere optionale Quellen aus dem metadata/tool_calls-Verlauf, falls vorhanden
-        let quellenHTML = "";
-        try {
-            // Groq liefert bei integrierten Tools die Resultate oft direkt im Response-Protokoll mit
-            if (data.choices[0].message.tool_calls) {
-                const searchCalls = data.choices[0].message.tool_calls.filter(t => t.function.name === "browser_search");
-                if (searchCalls.length > 0) {
-                    quellenHTML = `<div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(112,196,247,0.2); font-size:0.85rem; color:var(--desc-color);"><strong>Quellen:</strong><ul style="margin:5px 0 0 0; padding-left:20px; list-style-type: decimal;">`;
-                    searchCalls.forEach(call => {
-                        const args = JSON.parse(call.function.arguments);
-                        // Falls die API Quellen-Objekte zurückgibt
-                        if (args.sources) {
-                            args.sources.forEach(src => {
-                                quellenHTML += `<li><a href="${src.url}" target="_blank" style="color:#70C4F7; text-decoration:none; hover:underline;">${src.title || src.url}</a></li>`;
-                            });
-                        } else if (args.query) {
-                            quellenHTML += `<li>Websuche nach: <em>"${args.query}"</em></li>`;
-                        }
-                    });
-                    quellenHTML += `</ul></div>`;
-                }
+        await streamGroq({
+            model: "openai/gpt-oss-20b",
+            messages: [
+                { role: "system", content: `Du bist Glaggle AI, die Suchzusammenfassungs-KI von Glaggle Inc.
+Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig.
+Halte dich wirklich kurz (max. 5-8 Sätze).
+WICHTIG: Wenn du das Browser-Search-Tool verwendest, verwende im Text Standard-Markdown-Links wie [Name](URL) oder setze einfach Nummern wie [1], [2], um deine Aussagen zu belegen.` },
+                { role: "user", content: query }
+            ],
+            tools: true   // Worker setzt browser_search
+        }, (text) => {
+            if (!started) {                    // erster Chunk: Spinner weg, UI freischalten
+                started = true;
+                aiContainer.classList.remove('ai-searching');
+                aiText.style.fontStyle = "normal";
+                document.getElementById('nav-ai').style.display = 'block';
+                document.getElementById('nav-ai').classList.add('active');
+                expandBtn.style.display = 'inline-block';
             }
-        } catch(err) { console.log("Fehler beim Extrahieren der Quellen", err); }
+            render(text);
+        }, signal);
 
-        document.getElementById('nav-ai').style.display = 'block';
-        document.getElementById('nav-ai').classList.add('active');
+        aiContainer.classList.remove('ai-searching');
+        if (!started) { aiText.innerText = "Keine Antwort erhalten."; return; }
 
-        const aiText = document.getElementById('ai-text');
-        const expandBtn = document.getElementById('ai-expand-btn');
-        const aiFullDiv = document.getElementById('ai-text-full');
-
-        aiText.style.fontStyle = "normal";
-
-        const words = antwort.split(' ');
-        let wordIndex = 0;
-        let currentText = '';
-        let typingTimeout = null;
-
-        const handleExpand = () => {
-            clearTimeout(typingTimeout);
-            
+        // "Mehr erfahren" -> Volltext anzeigen
+        expandBtn.onclick = () => {
+            expanded = true;
+            expandBtn.style.display = 'none';
             const preview = document.getElementById('ai-preview');
             const full = document.getElementById('ai-full');
-            expandBtn.style.display = 'none';
-
             preview.style.transition = 'opacity 0.3s ease';
             preview.style.opacity = '0';
-            
             setTimeout(() => {
                 preview.style.display = 'none';
                 full.style.display = 'block';
-                
-                // Formatierten Text + das bereinigte Quellenverzeichnis einsetzen
-                aiFullDiv.innerHTML = marked.parse(antwort) + quellenHTML; 
-                
+                aiFullDiv.innerHTML = marked.parse(antwort);
                 requestAnimationFrame(() => {
                     full.style.opacity = '1';
                     full.style.transform = 'translateY(0)';
                 });
-
-                document.getElementById('ai-open-chat-btn').onclick = () => {
-                    openAiChat(antwort);
-                };
+                document.getElementById('ai-open-chat-btn').onclick = () => openAiChat(antwort);
             }, 300);
         };
 
-        expandBtn.style.display = 'inline-block';
-        expandBtn.onclick = handleExpand;
-
-        function typeWord() {
-            if (wordIndex < words.length) {
-                currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
-                aiText.innerHTML = marked.parse(currentText);
-                wordIndex++;
-                typingTimeout = setTimeout(typeWord, 35);
-            } else {
-                aiFullDiv.innerHTML = marked.parse(antwort) + quellenHTML;
-            }
-        }
-        typeWord();
-
-    } catch (e) { 
-        if (aiContainer) aiContainer.classList.remove('ai-searching');
-        document.getElementById('ai-text').innerText = "Glaggle-AI-Zusammenfassung momentan nicht verfügbar."; 
+    } catch (e) {
+        if (e.name === 'AbortError') return;   // neue Suche hat übernommen
+        aiContainer.classList.remove('ai-searching');
+        aiText.innerText = "Glaggle-AI-Zusammenfassung momentan nicht verfügbar.";
+        console.error(e);
     }
 }
 function openAiChat(context) {
