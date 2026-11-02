@@ -1604,6 +1604,7 @@ if (corrected) showCorrectionBanner(original, corrected);
     loader.style.display = "none";
     setTimeout(refreshObserver, 500);
 }
+} 
 
 // ===== SMARTE FAVORITEN-SUCHE =====
 const FAV_STOPWORDS = new Set([
@@ -1992,29 +1993,6 @@ async function sendMessage() {
     setTimeout(() => newInput.focus(), 100);
 }
     
-function scoreFav(site, query) {
-    const q = query.toLowerCase().trim();
-    const t = site.title.toLowerCase();
-    const d = (site.desc || '').toLowerCase();
-    const words = q.split(/\s+/).filter(Boolean);
-    let s = 0;
-
-    if (t === q)                         s += 100; // exakter Titel: "google" → Google
-    else if (t.startsWith(q))            s += 70;  // "goog" → Google
-    else if (q.includes(t))              s += 60;  // "google wetter" → Google
-    else if (t.split(/\s+/).some(w => w.startsWith(q))) s += 50;
-    else if (t.includes(q))              s += 35;
-
-    // Wie viele Suchwörter stehen im Titel bzw. in der Beschreibung?
-    const inTitle = words.filter(w => t.includes(w)).length;
-    const inDesc  = words.filter(w => d.includes(w)).length;
-    s += (inTitle / words.length) * 20;
-    s += (inDesc  / words.length) * 8;
-
-    s -= t.length * 0.1;        // Hauptprodukt (kurzer Name) vor Unterdiensten
-    s += (site.prio || 0);      // optionaler manueller Bonus, siehe unten
-    return s;
-}
 
 function scoreWeb(res, query) {
     const q = query.toLowerCase().trim();
@@ -2244,6 +2222,7 @@ const glaggleGamesList = {
     "juggle": { url: "/juggle", title: "Glaggle Juggle Master", icon: "🤹" },
     "brick": { url: "/brick", title: "Glaggle Brick EXTREM", icon: "🧱" },
     "leafwhacker": { url: "/leafwhacker", title: "Glaggle Leafwhacker", icon: "🍃" },
+    "flycatch": { url: "/leafwhacker", title: "Glaggle Flycatch", icon: "🐸" },
     "crossroad": { url: "/crossroad", title: "Glaggle Cross Road", icon: "🚦" },
     "catcher": { url: "/catcher", title: "Glaggle Catcher", icon: "😀" },
     "skyjump": { url: "/skyjump", title: "Glaggle Sky Jump", icon: "☁️" },
@@ -2726,7 +2705,7 @@ async function fetchWikiCard(query, lang = 'de') {
                 <div class="wc-body">
                     <span class="wc-badge" style="color:#FBBC05;">📖 Kurzüberblick</span>
                     <h3 class="wc-title">${esc(data.title)}</h3>
-                    ${data.description ? `<p class="wc-desc">\${esc(data.description)}</p>` : ''}
+                    ${data.description ? `<p class="wc-desc">${esc(data.description)}</p>` : ''}
                     <p class="wc-text">${esc(text)}</p>
                 </div>
             </div>
