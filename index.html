@@ -1592,32 +1592,20 @@ async function glaggleSearch(opts = {}) {
     if (corrected) showCorrectionBanner(original, corrected);
 
     try {
-        await Promise.allSettled([
-            fetchWikiCard(query),
-            fetchGroqAI(query),
-            (async () => {
-                const favs = await getAiProcessedFavs(query);
-                if(favs && favs.length > 0) {
-                    // Button einblenden
-                    document.getElementById('nav-fav').style.display = 'block';
-                    favs.forEach((res, index) => {
-                        // ID nur beim ersten Favoriten setzen für den Sprung
-                        const id = (index === 0) ? "fav-section" : null;
-                        renderResult(res.title, res.desc, res.url, "fav", id);
-                    });
-                }
-            })(),
-            searchSupabase(query),
-            searchGlaggleImages(query),
-            searchWikipedia(query, 'de')
-        ]);
-    } catch (e) {
-        console.error(e);
-    } finally {
-        loader.style.display = "none";
-        setTimeout(refreshObserver, 500);
-    }
+    await Promise.allSettled([
+        fetchWikiCard(query),
+        fetchGroqAI(query),
+        searchSupabase(query),
+        searchGlaggleImages(query),
+        searchWikipedia(query, 'de')
+    ]);
+} catch (e) {
+    console.error(e);
+} finally {
+    loader.style.display = "none";
+    setTimeout(refreshObserver, 500);
 }
+
 async function searchWikipedia(query, lang) {
     try {
         // KORREKTUR: prop=pageimages|extracts und die entsprechenden Parameter für Bilder hinzugefügt
@@ -1969,80 +1957,8 @@ function scoreWeb(res, query) {
 
     return s;
 }
-async function getAiProcessedFavs(query) {
-    const q = query.toLowerCase().trim();
-    if (q.length < 3) return []; 
 
-    // 1. VERBESSERTER SOFORT-CHECK (Sucht in Titel UND Beschreibung)
-    // Damit findet "Design" sofort "Canva", weil "Design" in der desc steht.
-    const sofort = meineLieblingsSeiten.filter(s => 
-        s.title.toLowerCase().includes(q) || 
-        s.desc.toLowerCase().includes(q)
-    );
-
-    try {
-        // Wir begrenzen den Kontext etwas, falls die Liste zu lang wird (optional)
-        const context = meineLieblingsSeiten.map(s => `App: ${s.title}, Info: ${s.desc}`).join(" | ");
-        
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { 
-                "Authorization": "Bearer " + getGKey(), 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({
-                model: "openai/gpt-oss-20b",
-                messages: [
-                    { 
-                        role: "system", 
-                        content: `Du bist ein intelligenter App-Finder für Glaggle. 
-                        DEINE AUFGABE: Suche in dieser Liste nach Apps: [${context}].
-                        REGELN:
-                        1. Finde Apps, die thematisch passen (z.B. Suche 'Designtool' -> finde 'Canva' oder 'Figma'. Oder zb. Weltraumorganisation -> "Nasa" oder "Esa").
-                        2. Verstehe Synonyme (Tool = App = Plattform = Software).
-                        3. Wenn der Nutzer nach einer Marke sucht (z.B. 'Glaggle'), gib ALLE zugehörigen Apps zurück.
-                        4. Antworte AUSSCHLIESSLICH mit einem validen JSON-Array der gefundenen Objekte. Keine Einleitung, kein Text!` 
-                    }, 
-                    { role: "user", content: q }
-                ],
-                temperature: 0.1 // Niedrige Temperatur für präzisere Ergebnisse
-            })
-        });
-
-        const data = await res.json();
-        if (!data.choices || data.choices.length === 0) return sofort.sort((a, b) => scoreFav(b, q) - scoreFav(a, q)).slice(0, 5);
-        const content = data.choices[0].message.content;
-        
-        // 2. ROBUSTES PARSING (Sucht sicher nach dem Array-Anfang und -Ende)
-        let aiFavs = [];
-        const start = content.indexOf("[");
-        const end = content.lastIndexOf("]") + 1;
-        
-        if (start !== -1 && end > 0) {
-            aiFavs = JSON.parse(content.substring(start, end));
-        }
-        
-        // 3. KOMBINIEREN & DUPLIKATE ENTFERNEN
-        // 3. KOMBINIEREN, DUPLIKATE ENTFERNEN, NACH RELEVANZ SORTIEREN
-        const gesamt = [...sofort];
-        aiFavs.forEach(af => {
-            if (af && af.title && !gesamt.find(g => g.title.toLowerCase() === af.title.toLowerCase())) {
-                gesamt.push(af);
-            }
-        });
-
-        return gesamt
-            .map(site => ({ site, score: scoreFav(site, q) }))
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 5)                 // nicht mehr als 5 Empfehlungen
-            .map(x => x.site);
-        
-
-    } catch(e) { 
-        console.error("Glaggle AI Favs Error:", e);
-        return sofort.sort((a, b) => scoreFav(b, q) - scoreFav(a, q)).slice(0, 5);
-    }
-}
+    
     
 // Erweitere die Parameterliste um 'dbId' (die ID aus deiner Supabase-Tabelle)
 function renderResult(title, text, url, type = "web", elementId = null, dbId = null) {
