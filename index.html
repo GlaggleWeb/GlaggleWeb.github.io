@@ -1182,16 +1182,13 @@ pre, code, .ai-text-content {
 }
 .pwa-later:hover { color: #fff; }
 
-#spelling-suggestion {
-    order: 1;
-}
-#spelling-suggestion {
-    order: 2;
-}
-#ai-container               { order: 3; }
-.glaggle-entry.fav-project  { order: 4; }  /* Favoriten, Widgets */
-#glaggle-web-search-box     { order: 5; }
-#glaggle-image-container    { order: 6; }
+#spelling-suggestion                          { order: 0; }
+.glaggle-entry.fav-project[data-fav="1"]      { order: 1; }  /* Favoriten-Treffer ganz oben */
+#wiki-card                                    { order: 2; }
+#ai-container                                 { order: 3; }
+.glaggle-entry.fav-project:not([data-fav])    { order: 4; }  /* Widgets etc. */
+#glaggle-web-search-box                       { order: 5; }
+#glaggle-image-container                      { order: 6; }
 .glaggle-entry:not(.fav-project):not(#ai-container):not(#glaggle-web-search-box):not(#spelling-suggestion):not(#wiki-card) { order: 7; }
 
 /* ===== WIKI-KARTE (page/summary) ===== */
@@ -1586,10 +1583,12 @@ async function glaggleSearch(opts = {}) {
     } else {
         corrected = null;
     }
-
+    
+if (corrected) showCorrectionBanner(original, corrected);
     checkWidgets(query);
-    resultsDiv.appendChild(createAiPlaceholder());
-    if (corrected) showCorrectionBanner(original, corrected);
+resultsDiv.appendChild(createAiPlaceholder());
+searchFavorites(query);                       // ← NEU
+if (corrected) showCorrectionBanner(original, corrected);
 
     try {
     await Promise.allSettled([
@@ -1606,6 +1605,101 @@ async function glaggleSearch(opts = {}) {
     setTimeout(refreshObserver, 500);
 }
 
+// ===== SMARTE FAVORITEN-SUCHE =====
+const FAV_STOPWORDS = new Set([
+  'der','die','das','ein','eine','und','in','auf','zu','von','mit','fur','im','am','zum',
+  'the','a','of','to','wie','was','wo','ist','gratis','kostenlos','online','seite','app'
+]);
+
+function normalizeText(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // ä→a, ü→u, é→e
+    .replace(/[^a-z0-9\s]/g, ' ')                        // "X (Twitter)" → "x twitter"
+    .replace(/\s+/g, ' ').trim();
+}
+
+function levenshtein(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = Math.min(
+        dp[i-1][j] + 1, dp[i][j-1] + 1,
+        dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+      );
+  return dp[a.length][b.length];
+}
+
+// Wort-Match: exakt, Präfix (in beide Richtungen) oder Tippfehler
+function wordMatch(qw, w) {
+  if (qw === w) return 'exact';
+  if (qw.length >= 3 && w.startsWith(qw)) return 'prefix';
+  if (w.length >= 4 && qw.startsWith(w)) return 'prefix';   // "generieren" ↔ "generiere"
+  if (qw.length >= 5 && w.length >= 5 && levenshtein(qw, w) <= 1) return 'fuzzy';
+  return null;
+}
+
+function scoreFav(site, query) {
+  const q = normalizeText(query);
+  let qWords = q.split(' ').filter(w => w && !FAV_STOPWORDS.has(w));
+  if (!qWords.length) qWords = q.split(' ').filter(Boolean);
+  if (!qWords.length) return 0;
+
+  const t = normalizeText(site.title);
+  const tWords = t.split(' ');
+  const dWords = normalizeText(site.desc).split(' ');
+
+  let s = 0, matched = 0;
+
+  // 1) Titel als Ganzes
+  if (t === q)                                   s += 100;
+  else if (t.startsWith(q))                      s += 70;
+  else if (` ${q} `.includes(` ${t} `))          s += 60;  // "youtube videos" → YouTube
+  else if (tWords.some(w => w.startsWith(q)))    s += 50;
+  else if (t.includes(q))                        s += 35;
+
+  // 2) Wort für Wort: Titel zählt mehr als Beschreibung
+  for (const qw of qWords) {
+    const inTitle = tWords.map(w => wordMatch(qw, w)).filter(Boolean);
+    const inDesc  = dWords.map(w => wordMatch(qw, w)).filter(Boolean);
+
+    if (inTitle.includes('exact'))       { s += 20; matched++; }
+    else if (inTitle.includes('prefix')) { s += 14; matched++; }
+    else if (inTitle.includes('fuzzy'))  { s += 10; matched++; }
+    else if (inDesc.includes('exact'))   { s += 8;  matched++; }
+    else if (inDesc.includes('prefix'))  { s += 6;  matched++; }
+    else if (inDesc.includes('fuzzy'))   { s += 4;  matched++; }
+  }
+
+  if (matched === 0) return 0;
+  s += (matched / qWords.length) * 15;   // Bonus, wenn alle Suchwörter passen
+  s -= t.length * 0.1;                   // kurzer Name = Hauptprodukt
+  s += (site.prio || 0);
+  return s;
+}
+
+function rankFavorites(query, minScore = 15) {
+  const seen = new Set();
+  return meineLieblingsSeiten
+    .map(site => ({ site, score: scoreFav(site, query) }))
+    .filter(x => x.score >= minScore)
+    .sort((a, b) => b.score - a.score)
+    .filter(x => {                                   // gleiche URL nur 1x (FAQ / Glaggle Info / Gamecenter)
+      const key = x.site.url.replace(/\/$/, '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(x => x.site);
+}
+
+function searchFavorites(query, maxResults = 2) {
+  if (query.trim().split(/\s+/).length > 5) return;  // lange Fragen: keine Favoriten
+  rankFavorites(query).slice(0, maxResults).forEach((site, i) => {
+    renderResult(site.title, site.desc, site.url, 'fav', i === 0 ? 'fav-section' : null);
+  });
+}
+    
 async function searchWikipedia(query, lang) {
     try {
         // KORREKTUR: prop=pageimages|extracts und die entsprechenden Parameter für Bilder hinzugefügt
