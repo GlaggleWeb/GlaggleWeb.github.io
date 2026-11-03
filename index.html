@@ -1420,6 +1420,54 @@ pre, code, .ai-text-content {
     100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 2px #70C4F7); }
 }
 
+/* ===== PNG-LEISTE im abgerundeten Container ===== */
+.png-strip {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+
+    width: min(600px, 90vw);          /* gleich breit wie die Suchleiste */
+    margin: 30px auto 0 auto;
+    padding: 16px 20px;
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 32px;              /* wie deine Karten (--card-radius) */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.png-strip-item {
+    flex: 1 1 0;                      /* alle 5 gleich breit */
+    min-width: 0;                     /* erlaubt Schrumpfen auf Mobile */
+    aspect-ratio: 1 / 1;              /* quadratische Felder */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.png-strip-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;              /* PNG wird nie verzerrt/abgeschnitten */
+    padding: 8%;
+    box-sizing: border-box;
+}
+
+.png-strip-item:hover {
+    transform: translateY(-4px) scale(1.06);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 480px) {
+    .png-strip { gap: 8px; padding: 12px; border-radius: 26px; }
+}
 </style>
 </head>
 <body>
@@ -1516,11 +1564,25 @@ pre, code, .ai-text-content {
 
     <div class="loader" id="glaggleLoader"></div>
     <div id="glaggleResults" class="results-container"></div>
-
-    <div class="button-container" id="quickButtons">
-        <a href="https://glaggle.ch/glame" class="web-button">Glame Chatbot →</a>
-        <a href="https://glaggle.ch/gamecenter" class="web-button">Gamecenter →</a>
-    </div>
+    
+<div class="png-strip" id="pngStrip">
+    <a href="https://glaggle.ch/glame" class="png-strip-item">
+        <img src="/icons-apps/Glame AI Pro Logo.png" alt="Glame" loading="lazy">
+    </a>
+    <a href="https://glaggle.ch/gamecenter" class="png-strip-item">
+        <img src="/icons-apps/Glaggle Gamecenter Logo.png" alt="Gamecenter" loading="lazy">
+    </a>
+    <a href="https://glaggle.ch/aimage" class="png-strip-item">
+        <img src="/icons-apps/AImage Logo.png" alt="Bild 3" loading="lazy">
+    </a>
+    <a href="https://glaggle.ch/faq" class="png-strip-item">
+        <img src="/icons-apps/Glaggle FAQ Logo.png" alt="Bild 4" loading="lazy">
+    </a>
+    <a href="https://glaggle.ch/" class="png-strip-item">
+        <img src="/icons-apps/glagglesonne.png" alt="Bild 5" loading="lazy">
+    </a>
+</div>
+    
 </main>
 
 <footer style="margin-top: auto; padding: 40px 0; text-align: center; color: var(--desc-color); font-size: 0.9rem; width: 100%;">
