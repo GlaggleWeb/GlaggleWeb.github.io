@@ -1588,6 +1588,7 @@ function createAiPlaceholder() {
             backdrop-filter: blur(5px);
         ">Mehr erfahren ↓</button>
     `;
+    aiBox.style.display = 'none';
     return aiBox;
 }
     
@@ -1639,24 +1640,35 @@ async function glaggleSearch(opts = {}) {
 if (corrected) showCorrectionBanner(original, corrected);
     checkWidgets(query);
 resultsDiv.appendChild(createAiPlaceholder());
-searchFavorites(query);                       // ← NEU
-if (corrected) showCorrectionBanner(original, corrected);
-
+searchFavorites(query);  // ← NEU
+    
     try {
-    await Promise.allSettled([
-        fetchWikiCard(query),
-        fetchGroqAI(query),
-        searchSupabase(query),
-        searchGlaggleImages(query),
-        searchWikipedia(query, 'de')
-    ]);
-} catch (e) {
-    console.error(e);
-} finally {
-    loader.style.display = "none";
-    setTimeout(refreshObserver, 500);
+        const wikiPromise = fetchWikiCard(query);
+
+        const aiPromise = wikiPromise.then(hasWikiCard => {
+            const box = document.getElementById('ai-container');
+            if (hasWikiCard) {
+                box?.remove();                 // Wiki-Karte vorhanden → keine KI
+                return;
+            }
+            if (box) box.style.display = '';   // sichtbar machen
+            return fetchGroqAI(query);
+        });
+
+        await Promise.allSettled([
+            wikiPromise,
+            aiPromise,
+            searchSupabase(query),
+            searchGlaggleImages(query),
+            searchWikipedia(query, 'de')
+        ]);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        loader.style.display = "none";
+        setTimeout(refreshObserver, 500);
+    }
 }
-} 
 
 // ===== SMARTE FAVORITEN-SUCHE =====
 const FAV_STOPWORDS = new Set([
@@ -2750,37 +2762,31 @@ async function fetchWikiCard(query, lang = 'de') {
     document.getElementById('wiki-card')?.remove();
 
     const q = query.trim();
-    // Lange Sätze/Fragen sind keine Wiki-Titel -> gar nicht erst versuchen
-    if (q.length < 2 || q.split(/\s+/).length > 4) return;
+    if (q.length < 2 || q.split(/\s+/).length > 4) return false;   // war: return;
 
     try {
-        // 1) Direkter Treffer (löst Weiterleitungen auf, z.B. "Katze" -> "Hauskatze")
         let data = await wikiGetSummary(q.charAt(0).toUpperCase() + q.slice(1), lang);
         let viaSearch = false;
 
-        // 2) Fallback: Suche (z.B. "albert einstein" -> "Albert Einstein")
         if (!data || data.type !== 'standard' || !data.extract) {
             const s = await wikiFetch(
-    `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=1&srprop=&format=json&origin=*`
-);
+                `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=1&srprop=&format=json&origin=*`
+            );
             const hit = (await s.json()).query?.search?.[0];
-            if (!hit) return;
+            if (!hit) return false;                                 // war: return;
             data = await wikiGetSummary(hit.title, lang);
             viaSearch = true;
         }
 
-        // Nur echte Artikel, keine Begriffsklärungen
-        if (!data || data.type !== 'standard' || !data.extract) return;
+        if (!data || data.type !== 'standard' || !data.extract) return false;
 
-        // Relevanz-Check beim Such-Fallback: Titel muss zur Anfrage passen
         if (viaSearch) {
             const t = data.title.toLowerCase();
             const ok = q.toLowerCase().split(/\s+/).every(w => t.includes(w));
-            if (!ok) return;
+            if (!ok) return false;
         }
 
-        // Veraltete Antwort einer früheren Suche verwerfen
-        if (token !== _wikiCardToken) return;
+        if (token !== _wikiCardToken) return false;
 
         let text = data.extract;
         if (text.length > 380) text = text.substring(0, 380).replace(/\s+\S*$/, '') + '…';
@@ -2814,11 +2820,13 @@ async function fetchWikiCard(query, lang = 'de') {
         `;
 
 
-        document.getElementById('glaggleResults').prepend(card);
+       document.getElementById('glaggleResults').prepend(card);
+        return true;                                                // NEU
     } catch (e) {
         console.warn('Wiki-Karte Fehler', e);
+        return false;                                               // NEU
     }
-}    
+}
 async function searchGlaggleImages(query, offset = 0) {
     const resultsDiv = document.getElementById('glaggleResults');
     const limit = 8;
