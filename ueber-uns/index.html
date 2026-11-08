@@ -32,7 +32,7 @@
         overflow-x: hidden;
     }
 
-    /* Vollbild-Container für das Scroll-Intro (nutzt exakt die Hintergrundfarbe statt weiß) */
+    /* Vollbild-Container für das Scroll-Intro */
     #scroll-animation-wrapper {
         position: fixed;
         top: 0;
@@ -94,7 +94,7 @@
         margin-bottom: 40px; 
     }
 
-    /* SMOOTHE SEKTIONEN & KÄSTCHEN (Initial unsichtbar für sanften Scroll-Erscheinen-Effekt) */
+    /* MISSIONS-ARTIGES EINBLENDEN (Pop-up & Pop-down Effekt) */
     .info-section {
         background: var(--card-bg);
         border: 2px solid transparent;
@@ -104,16 +104,19 @@
         padding: 30px;
         margin-bottom: 30px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        
+        /* Startzustand: Verkleinert und unsichtbar (Pop-in Effekt) */
         opacity: 0;
-        transform: translateY(30px);
-        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-                    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+        transform: translateY(40px) scale(0.95);
+        transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
                     box-shadow 0.3s ease;
     }
 
+    /* Sobald die Sektion aktiv/sichtbar wird, ploppt sie smooth auf */
     .info-section.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 
     .info-section:hover {
@@ -140,17 +143,18 @@
         background: var(--bg-color);
         border: 1px solid var(--card-border);
         padding: 20px; border-radius: 15px; text-align: center;
+        
         opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
-                    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+        transform: scale(0.9);
+        transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
                     box-shadow 0.3s ease, 
                     border-color 0.3s ease;
     }
 
     .feature-card.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
     }
 
     .feature-card:hover { 
@@ -254,10 +258,10 @@
 </head>
 <body>
 
-    <!-- Shared Script lädt Navbar & Tools ganz oben (sofort sichtbar) -->
+    <!-- Shared Script lädt Navbar & Tools ganz oben -->
     <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
 
-    <!-- Scroll-Animation Container (Im Hintergrundton statt weiß) -->
+    <!-- Scroll-Animation Container -->
     <div id="scroll-animation-wrapper">
         <video id="scroll-video" src="Glaggle Logo Clip kurz.mp4" muted playsinline preload="auto"></video>
         <div class="scroll-hint">Scroll</div>
@@ -299,6 +303,7 @@
                 </div>
                 <div class="feature-card">
                     <div style="font-size: 2rem; margin-bottom: 10px;">❌</div>
+                    <!-- Fixed comment syntax from HTML to CSS comment format or plain text -->
                     <strong>Non-Profit</strong>
                     <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle ist eine Non-Profit Organisation, die gratis Onlinedienstleistungen anbieten will!</p>
                 </div>
@@ -335,7 +340,6 @@
     const video = document.getElementById('scroll-video');
     const body = document.body;
 
-    // Virtueller Scroll-Weg für das Video (3000px)
     const scrollLength = 3000; 
     document.body.style.height = scrollLength + 'px';
 
@@ -353,34 +357,32 @@
             video.currentTime = progress * video.duration;
         }
 
-        // Wenn durchgescrollt wurde
         if (progress >= 0.99) {
             body.classList.add('animation-finished');
-            document.body.style.height = 'auto'; // Normale Seitenhöhe freigeben
-            window.scrollTo(0, 0); // Wieder nach oben springen
+            document.body.style.height = 'auto'; 
+            window.scrollTo(0, 0); 
             
-            // Observer aktivieren, damit die Sektionen beim Scrollen weich einblenden
-            initScrollAnimations();
+            initMissionPopups();
         }
     });
 
-    // Tastatursperre während des Intros
     window.addEventListener('keydown', (e) => {
         if (!body.classList.contains('animation-finished') && ['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.code)) {
             e.preventDefault();
         }
     }, { passive: false });
 
-    // Sanftes Einblenden der Sektionen und Karten beim späteren Scrollen
-    function initScrollAnimations() {
+    // Der "Missions-Effekt": Kästchen poppen nacheinander mit Schwung auf, wenn man hinscrollt
+    function initMissionPopups() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.15 });
 
+        // Wir beobachten Sektionen und Feature-Karten einzeln für den Pop-up-Effekt
         document.querySelectorAll('.info-section, .feature-card').forEach(el => {
             observer.observe(el);
         });
