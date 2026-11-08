@@ -10,249 +10,148 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    
+
     <style>
     :root {
         --bg-color: #ffffff;
-        --text-color: #333333;
-        --nav-bg: #ffffff;
+        --text-color: #1f2430;
         --card-bg: #fdfdfd;
         --card-border: #eeeeee;
         --link-color: #2E94D1;
-        --desc-color: #555555;
+        --desc-color: #5b6270;
+        --grad: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
     }
 
+    * { box-sizing: border-box; }
+    html { scroll-behavior: auto; }
+
     body {
-        background-color: var(--bg-color);
+        background: var(--bg-color);
         color: var(--text-color);
-        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif; 
-        margin: 0; padding: 0;
-        display: flex; flex-direction: column; align-items: center; 
-        min-height: 100vh; 
+        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+        margin: 0;
         overflow-x: hidden;
     }
 
-    /* Vollbild-Container für das Scroll-Intro */
-    #scroll-animation-wrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: var(--bg-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 990;
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+    /* Weicher, farbiger Hintergrund, der mit dem Scrollen wandert */
+    .backdrop {
+        position: fixed; inset: 0; z-index: -1; pointer-events: none;
+        background:
+            radial-gradient(40vmax 40vmax at calc(10% + var(--bgp, 0) * 60%) 15%, rgba(66,133,244,.16), transparent 70%),
+            radial-gradient(40vmax 40vmax at calc(90% - var(--bgp, 0) * 60%) 55%, rgba(234,67,53,.10), transparent 70%),
+            radial-gradient(45vmax 45vmax at 50% calc(100% - var(--bgp, 0) * 30%), rgba(52,168,83,.12), transparent 70%),
+            var(--bg-color);
     }
 
-    #scroll-animation-wrapper video {
-        width: 100%;
-        max-width: 350px;
-        height: auto;
-        object-fit: contain;
+    /* Jede Szene ist hoch; die Bühne darin bleibt "sticky" am Bildschirm */
+    .scene { position: relative; }
+    .stage {
+        position: sticky; top: 0;
+        height: 100vh; height: 100svh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 80px 24px 24px;
+        overflow: hidden;
     }
 
+    /* ---------- 1. Logo-Intro (ohne weissen Hintergrund) ---------- */
+    #hero { height: 420vh; }
+    #hero video {
+        width: 100%; max-width: 520px; height: auto;
+        background: transparent;
+        /* weisse Pixel des Videos verschwinden, der Hintergrund scheint durch */
+        mix-blend-mode: multiply;
+        transform: scale(calc(1 + var(--p) * .25)) translateY(calc(var(--p) * -6vh));
+        will-change: transform;
+    }
+    .hero-title {
+        text-align: center; margin: 0;
+        font-size: clamp(2rem, 6vw, 4rem);
+        opacity: clamp(0, calc((var(--p) - .8) * 6), 1);
+        transform: translateY(calc((1 - clamp(0, (var(--p) - .8) * 6, 1)) * 30px));
+    }
+    .hero-sub {
+        margin: 8px 0 0; color: var(--desc-color); text-align: center;
+        opacity: clamp(0, calc((var(--p) - .88) * 8), 1);
+    }
     .scroll-hint {
-        margin-top: 15px;
-        font-size: 0.8rem;
-        color: var(--desc-color);
-        letter-spacing: 1px;
-        opacity: 0.5;
-        text-transform: uppercase;
+        position: absolute; bottom: 28px; font-size: .8rem; letter-spacing: 1px;
+        color: var(--desc-color); text-transform: uppercase;
+        opacity: clamp(0, calc(.6 - var(--p) * 8), .6);
     }
 
-    /* Hauptinhalt anfangs unsichtbar */
-    .main-content { 
-        margin-top: 120px; 
-        padding: 20px; 
-        width: 100%; 
-        max-width: 800px; 
-        box-sizing: border-box; 
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.8s ease;
+    /* ---------- 2. Mission: Wörter leuchten beim Scrollen auf ---------- */
+    #mission { height: 300vh; }
+    .mission-text {
+        max-width: 820px; margin: 0;
+        font-size: clamp(1.6rem, 4.6vw, 3rem); line-height: 1.25; text-align: center;
     }
+    .mission-text span { opacity: .14; transition: opacity .15s linear; }
 
-    /* Wenn das Intro durchgescrollt wurde */
-    body.animation-finished #scroll-animation-wrapper {
-        opacity: 0;
-        pointer-events: none;
-        visibility: hidden;
-    }
-
-    body.animation-finished .main-content {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    h1 { 
-        text-align: center; 
-        color: var(--text-color); 
-        margin-bottom: 40px; 
-    }
-
-    /* MISSIONS-ARTIGES EINBLENDEN (Pop-up & Pop-down Effekt) */
-    .info-section {
-        background: var(--card-bg);
-        border: 2px solid transparent;
-        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
-                    linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box;
-        border-radius: 25px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-        
-        /* Startzustand: Verkleinert und unsichtbar (Pop-in Effekt) */
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-        transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                    box-shadow 0.3s ease;
-    }
-
-    /* Sobald die Sektion aktiv/sichtbar wird, ploppt sie smooth auf */
-    .info-section.visible {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-    .info-section:hover {
-        transform: translateY(-4px) scale(1.005);
-        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
-    }
-
-    .info-section h2 {
-        color: var(--link-color);
-        margin-top: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    /* FEATURES GRID */
-    .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px; margin-top: 20px;
-    }
-
+    /* ---------- 3. Features: horizontale Fahrt ---------- */
+    #features { height: 450vh; }
+    #features .stage { align-items: flex-start; justify-content: center; }
+    .feat-head { padding-left: 6vw; margin: 0 0 28px; font-size: clamp(1.5rem, 4vw, 2.4rem); }
+    .track { display: flex; gap: 22px; padding: 0 6vw; will-change: transform; }
     .feature-card {
-        background: var(--bg-color);
-        border: 1px solid var(--card-border);
-        padding: 20px; border-radius: 15px; text-align: center;
-        
-        opacity: 0;
-        transform: scale(0.9);
-        transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                    box-shadow 0.3s ease, 
-                    border-color 0.3s ease;
+        flex: 0 0 min(300px, 76vw);
+        min-height: 300px;
+        padding: 28px; border-radius: 26px; text-align: left;
+        border: 2px solid transparent;
+        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--grad) border-box;
+        display: flex; flex-direction: column; justify-content: flex-end;
     }
+    .feature-card .ico { font-size: 3.2rem; margin-bottom: auto; }
+    .feature-card strong { font-size: 1.35rem; margin: 18px 0 8px; }
+    .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.5; font-size: .95rem; }
+    .progress { position: absolute; left: 6vw; right: 6vw; bottom: 36px; height: 4px; background: rgba(0,0,0,.08); border-radius: 4px; }
+    .progress i { display: block; height: 100%; width: calc(var(--p) * 100%); background: var(--grad); border-radius: 4px; }
 
-    .feature-card.visible {
-        opacity: 1;
-        transform: scale(1);
+    /* ---------- 4. Zahlen ---------- */
+    #facts { height: 320vh; }
+    .facts-row { display: flex; flex-wrap: wrap; gap: 4vw; justify-content: center; text-align: center; }
+    .fact {
+        min-width: 180px;
+        opacity: clamp(0, calc((var(--p) - var(--s)) * 6), 1);
+        transform: scale(calc(.7 + .3 * clamp(0, (var(--p) - var(--s)) * 6, 1)));
     }
-
-    .feature-card:hover { 
-        transform: translateY(-6px) scale(1.02); 
-        box-shadow: 0 10px 25px rgba(46, 148, 209, 0.1);
-        border-color: var(--link-color);
+    .fact b {
+        display: block; font-size: clamp(3.2rem, 11vw, 7rem); line-height: 1;
+        background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+        font-variant-numeric: tabular-nums;
     }
+    .fact span { color: var(--desc-color); display: block; margin-top: 10px; max-width: 240px; }
 
-    /* ENTWICKLER SEKTION STYLES */
+    /* ---------- 5. Entwickler ---------- */
+    #dev { height: 260vh; }
     .dev-container {
-        display: flex;
-        flex-direction: column;
-        background: var(--bg-color);
-        border: 1px solid var(--card-border);
-        border-radius: 20px;
-        padding: 25px;
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        width: 100%; max-width: 640px;
+        background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 30px;
+        box-shadow: 0 20px 50px rgba(0,0,0,.08);
+        opacity: clamp(0, calc(var(--p) * 4), 1);
+        transform: translateY(calc((1 - clamp(0, var(--p) * 3, 1)) * 80px)) scale(calc(.85 + .15 * clamp(0, var(--p) * 3, 1)));
     }
-
-    .dev-container:hover {
-        transform: scale(1.01);
-        border-color: var(--link-color);
-        box-shadow: 0 8px 20px rgba(46, 148, 209, 0.08);
-    }
-
-    .dev-header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
+    .dev-header { display: flex; align-items: center; gap: 16px; }
     .dev-avatar {
-        width: 60px;
-        height: 60px;
-        background: var(--nav-bg);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        border: 2px solid var(--link-color);
-        transition: transform 0.3s ease;
+        width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--link-color);
+        display: flex; align-items: center; justify-content: center; font-size: 2rem;
+        transform: rotate(calc(var(--p) * 360deg));
     }
-
-    .dev-container:hover .dev-avatar {
-        transform: rotate(10deg) scale(1.05);
-    }
-
-    .dev-main-info h3 {
-        margin: 0;
-        font-size: 1.3rem;
-        color: var(--text-color);
-    }
-
-    .dev-tag {
-        margin: 0;
-        color: var(--link-color);
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-
-    .dev-skills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 20px;
-    }
-
+    .dev-header h3 { margin: 0; font-size: 1.4rem; }
+    .dev-tag { margin: 2px 0 0; color: var(--link-color); font-weight: bold; font-size: .9rem; }
+    .dev-text { color: var(--desc-color); line-height: 1.65; margin: 18px 0 0; }
+    .dev-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
     .skill-badge {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 0.75rem;
-        font-weight: bold;
-        color: var(--desc-color);
-        transition: all 0.2s ease;
+        border: 1px solid var(--card-border); background: var(--bg-color); color: var(--desc-color);
+        padding: 6px 14px; border-radius: 15px; font-size: .78rem; font-weight: bold;
+        opacity: clamp(0, calc((var(--p) - .35 - var(--i) * .08) * 8), 1);
+        transform: translateY(calc((1 - clamp(0, (var(--p) - .35 - var(--i) * .08) * 8, 1)) * 14px));
     }
 
-    .skill-badge:hover {
-        background: var(--link-color);
-        color: #ffffff;
-        border-color: var(--link-color);
-        transform: translateY(-2px);
-    }
+    footer { padding: 50px 20px 60px; text-align: center; color: var(--desc-color); font-size: .9rem; }
 
-    footer { 
-        margin: 40px 0; 
-        text-align: center; 
-        color: var(--desc-color); 
-        font-size: 0.9rem; 
-    }
-
-    @media (max-width: 600px) {
-        .dev-header {
-            flex-direction: column;
-            text-align: center;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        #hero video { transform: none; }
+        .mission-text span { opacity: 1; }
     }
     </style>
 </head>
@@ -261,132 +160,138 @@
     <!-- Shared Script lädt Navbar & Tools ganz oben -->
     <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
 
-    <!-- Scroll-Animation Container -->
-    <div id="scroll-animation-wrapper">
-        <video id="scroll-video" src="Glaggle Logo Clip kurz.mp4" muted playsinline preload="auto"></video>
-        <div class="scroll-hint">Scroll</div>
-    </div>
+    <div class="backdrop" id="backdrop"></div>
 
-    <!-- Hauptinhalt der Über uns Seite -->
-    <main class="main-content">
-        <h1>Über Glaggle</h1>
+    <!-- 1. Logo-Intro: Video wird per Scroll abgespielt, ohne weissen Kasten -->
+    <section class="scene" id="hero">
+        <div class="stage">
+            <video id="scroll-video" src="Glaggle Logo Clip kurz.mp4" muted playsinline preload="auto"></video>
+            <h1 class="hero-title">Über Glaggle</h1>
+            <p class="hero-sub">Glaggle your life!</p>
+            <div class="scroll-hint">Scroll</div>
+        </div>
+    </section>
 
-        <section class="info-section">
-            <h2>🚀 Über Glaggle</h2>
-            <p style="color: var(--desc-color);">Glaggle ist ein Schweizer Unternehmen und hat sich zum Ziel gesetzt, Online-(KI)-Dienste kostenlos anzubieten.</p>
-            
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">🤖</div>
-                    <strong>KI Power</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Unsere KI ist extrem schnell dank Groq!</p>
-                </div>
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">🛡️</div>
-                    <strong>Privatsphäre</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle braucht keine Cookies von dir und verkauft deine Daten an niemanden weiter!</p>
-                </div>
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">⚡</div>
-                    <strong>Speed</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Die Glaggle-Website optimiert für minimale Ladezeiten.</p>
-                </div>
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">🇨🇭</div>
-                    <strong>Swissness</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle kommt zu 100% aus der Schweiz!</p>
-                </div>
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">🪙</div>
-                    <strong>0 CHF Kosten</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle hat sich zum Ziel gesetzt 100% kostenlos zu bleiben!</p>
-                </div>
-                <div class="feature-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">❌</div>
-                    <!-- Fixed comment syntax from HTML to CSS comment format or plain text -->
-                    <strong>Non-Profit</strong>
-                    <p style="font-size: 0.85rem; color: var(--desc-color);">Glaggle ist eine Non-Profit Organisation, die gratis Onlinedienstleistungen anbieten will!</p>
-                </div>
+    <!-- 2. Mission -->
+    <section class="scene" id="mission">
+        <div class="stage">
+            <p class="mission-text" id="mission-text">Glaggle ist ein Schweizer Unternehmen und hat sich zum Ziel gesetzt, Online-(KI)-Dienste kostenlos anzubieten.</p>
+        </div>
+    </section>
+
+    <!-- 3. Features -->
+    <section class="scene" id="features">
+        <div class="stage">
+            <h2 class="feat-head">Das steckt in Glaggle</h2>
+            <div class="track" id="track">
+                <div class="feature-card"><div class="ico">🤖</div><strong>KI Power</strong><p>Unsere KI ist extrem schnell dank Groq!</p></div>
+                <div class="feature-card"><div class="ico">🛡️</div><strong>Privatsphäre</strong><p>Glaggle braucht keine Cookies von dir und verkauft deine Daten an niemanden weiter!</p></div>
+                <div class="feature-card"><div class="ico">⚡</div><strong>Speed</strong><p>Die Glaggle-Website ist für minimale Ladezeiten optimiert.</p></div>
+                <div class="feature-card"><div class="ico">🇨🇭</div><strong>Swissness</strong><p>Glaggle kommt zu 100% aus der Schweiz!</p></div>
+                <div class="feature-card"><div class="ico">🪙</div><strong>0 CHF Kosten</strong><p>Glaggle hat sich zum Ziel gesetzt, 100% kostenlos zu bleiben!</p></div>
+                <div class="feature-card"><div class="ico">❌</div><strong>Non-Profit</strong><p>Glaggle ist eine Non-Profit Organisation, die gratis Onlinedienstleistungen anbieten will!</p></div>
             </div>
-        </section>
+            <div class="progress"><i></i></div>
+        </div>
+    </section>
 
-        <section class="info-section">
-            <h2>👤 Vom Entwickler</h2>
+    <!-- 4. Zahlen -->
+    <section class="scene" id="facts">
+        <div class="stage">
+            <div class="facts-row">
+                <div class="fact" style="--s:.05"><b data-to="100" data-suffix="%">0%</b><span>aus der Schweiz</span></div>
+                <div class="fact" style="--s:.30"><b data-to="0" data-from="20" data-suffix=" CHF">0 CHF</b><span>Kosten für dich</span></div>
+                <div class="fact" style="--s:.55"><b data-to="0">0</b><span>Cookies, die du akzeptieren musst</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Entwickler -->
+    <section class="scene" id="dev">
+        <div class="stage">
             <div class="dev-container">
                 <div class="dev-header">
                     <div class="dev-avatar">🚀</div>
-                    <div class="dev-main-info">
+                    <div>
                         <h3>GlaggleWeb</h3>
-                        <p class="dev-tag">Inhaber & Entwickler</p>
+                        <p class="dev-tag">Inhaber &amp; Entwickler</p>
                     </div>
                 </div>
-                <p style="color: var(--desc-color); line-height: 1.6; margin-top: 15px;">
+                <p class="dev-text">
                     Hi! Ich bin GlaggleWeb! Mein Ziel ist es, moderne Web-Dienste wie <b>WebSearch</b> und KI-Tools wie <b>Glame</b> für jeden kostenlos und ohne LogIn zugänglich zu machen. Glaggle ist für mich ein Hobbyprojekt, an dem ich in meiner Freizeit gerne weiterprogrammiere. Ich hoffe dir gefällt Glaggle, wenn ja, empfehle es gerne weiter!
                 </p>
                 <div class="dev-skills">
-                    <span class="skill-badge">WebSearch</span>
-                    <span class="skill-badge">AI Integration</span>
-                    <span class="skill-badge">Gamecenter</span>
+                    <span class="skill-badge" style="--i:0">WebSearch</span>
+                    <span class="skill-badge" style="--i:1">AI Integration</span>
+                    <span class="skill-badge" style="--i:2">Gamecenter</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <footer>
-            &copy; 2026 Glaggle - Glaggle your life!
-        </footer>
-    </main>
-    
+    <footer>&copy; 2026 Glaggle - Glaggle your life!</footer>
+
     <script>
-    const video = document.getElementById('scroll-video');
-    const body = document.body;
+    (function () {
+        const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+        const scenes = [...document.querySelectorAll('.scene')];
+        const video = document.getElementById('scroll-video');
+        const track = document.getElementById('track');
+        const backdrop = document.getElementById('backdrop');
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const scrollLength = 3000; 
-    document.body.style.height = scrollLength + 'px';
+        // Mission-Text in Wörter zerlegen
+        const mt = document.getElementById('mission-text');
+        const words = mt.textContent.trim().split(/\s+/);
+        mt.innerHTML = words.map(w => '<span>' + w + '</span>').join(' ');
+        const wordEls = [...mt.querySelectorAll('span')];
 
-    window.addEventListener('scroll', () => {
-        if (body.classList.contains('animation-finished')) return;
+        // Zahlen
+        const counters = [...document.querySelectorAll('.fact b')];
 
-        const scrollTop = window.scrollY;
-        const maxScroll = scrollLength - window.innerHeight;
-        let progress = scrollTop / maxScroll;
-        
-        if (progress > 1) progress = 1;
-        if (progress < 0) progress = 0;
+        let ticking = false;
+        function update() {
+            ticking = false;
+            const vh = window.innerHeight;
 
-        if (video.duration) {
-            video.currentTime = progress * video.duration;
-        }
+            scenes.forEach(sc => {
+                const r = sc.getBoundingClientRect();
+                const p = clamp(-r.top / (r.height - vh));
+                sc.style.setProperty('--p', p.toFixed(4));
 
-        if (progress >= 0.99) {
-            body.classList.add('animation-finished');
-            document.body.style.height = 'auto'; 
-            window.scrollTo(0, 0); 
-            
-            initMissionPopups();
-        }
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (!body.classList.contains('animation-finished') && ['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.code)) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    // Der "Missions-Effekt": Kästchen poppen nacheinander mit Schwung auf, wenn man hinscrollt
-    function initMissionPopups() {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+                if (sc.id === 'hero' && video.duration && !reduce) {
+                    // Video-Ende leicht vor 100%, damit der letzte Frame sicher steht
+                    video.currentTime = clamp(p / 0.8) * video.duration;
+                }
+                if (sc.id === 'mission') {
+                    const n = wordEls.length;
+                    const lit = clamp((p - .1) / .7) * n;
+                    wordEls.forEach((el, i) => { el.style.opacity = clamp(lit - i, 0, 1) * .86 + .14; });
+                }
+                if (sc.id === 'features') {
+                    const max = Math.max(0, track.scrollWidth - window.innerWidth);
+                    track.style.transform = 'translate3d(' + (-clamp((p - .05) / .9) * max) + 'px,0,0)';
+                }
+                if (sc.id === 'facts') {
+                    counters.forEach(b => {
+                        const s = parseFloat(b.parentElement.style.getPropertyValue('--s'));
+                        const t = clamp((p - s) / .22);
+                        const to = +b.dataset.to, from = b.dataset.from !== undefined ? +b.dataset.from : 0;
+                        b.textContent = Math.round(from + (to - from) * t) + (b.dataset.suffix || '');
+                    });
                 }
             });
-        }, { threshold: 0.15 });
 
-        // Wir beobachten Sektionen und Feature-Karten einzeln für den Pop-up-Effekt
-        document.querySelectorAll('.info-section, .feature-card').forEach(el => {
-            observer.observe(el);
-        });
-    }
+            const total = document.documentElement.scrollHeight - vh;
+            backdrop.style.setProperty('--bgp', clamp(window.scrollY / total).toFixed(4));
+        }
+
+        function request() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+        window.addEventListener('scroll', request, { passive: true });
+        window.addEventListener('resize', request);
+        video.addEventListener('loadedmetadata', request);
+        update();
+    })();
     </script>
 </body>
 </html>
