@@ -29,9 +29,10 @@
         margin: 0; padding: 0;
         display: flex; flex-direction: column; align-items: center; 
         min-height: 100vh; 
+        overflow-x: hidden;
     }
 
-    /* Vollbild-Container für das Scroll-Intro (liegt unter der Navbar) */
+    /* Vollbild-Container für das Scroll-Intro (nutzt exakt die Hintergrundfarbe statt weiß) */
     #scroll-animation-wrapper {
         position: fixed;
         top: 0;
@@ -43,8 +44,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        z-index: 990; /* Unter der Navbar vom Shared-Script, aber über dem Inhalt */
-        transition: opacity 0.5s ease, visibility 0.5s ease;
+        z-index: 990;
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
     }
 
     #scroll-animation-wrapper video {
@@ -54,13 +55,12 @@
         object-fit: contain;
     }
 
-    /* Dezenter, unkitschiger Hinweis */
     .scroll-hint {
         margin-top: 15px;
         font-size: 0.8rem;
         color: var(--desc-color);
         letter-spacing: 1px;
-        opacity: 0.6;
+        opacity: 0.5;
         text-transform: uppercase;
     }
 
@@ -94,6 +94,7 @@
         margin-bottom: 40px; 
     }
 
+    /* SMOOTHE SEKTIONEN & KÄSTCHEN (Initial unsichtbar für sanften Scroll-Erscheinen-Effekt) */
     .info-section {
         background: var(--card-bg);
         border: 2px solid transparent;
@@ -102,13 +103,22 @@
         border-radius: 25px;
         padding: 30px;
         margin-bottom: 30px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                    box-shadow 0.3s ease;
+    }
+
+    .info-section.visible {
+        opacity: 1;
+        transform: translateY(0);
     }
 
     .info-section:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-4px) scale(1.005);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
     }
 
     .info-section h2 {
@@ -130,10 +140,22 @@
         background: var(--bg-color);
         border: 1px solid var(--card-border);
         padding: 20px; border-radius: 15px; text-align: center;
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                    box-shadow 0.3s ease, 
+                    border-color 0.3s ease;
     }
+
+    .feature-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     .feature-card:hover { 
-        transform: translateY(-5px); 
+        transform: translateY(-6px) scale(1.02); 
+        box-shadow: 0 10px 25px rgba(46, 148, 209, 0.1);
         border-color: var(--link-color);
     }
 
@@ -145,12 +167,13 @@
         border: 1px solid var(--card-border);
         border-radius: 20px;
         padding: 25px;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .dev-container:hover {
         transform: scale(1.01);
         border-color: var(--link-color);
+        box-shadow: 0 8px 20px rgba(46, 148, 209, 0.08);
     }
 
     .dev-header {
@@ -169,6 +192,11 @@
         justify-content: center;
         font-size: 2rem;
         border: 2px solid var(--link-color);
+        transition: transform 0.3s ease;
+    }
+
+    .dev-container:hover .dev-avatar {
+        transform: rotate(10deg) scale(1.05);
     }
 
     .dev-main-info h3 {
@@ -199,6 +227,14 @@
         font-size: 0.75rem;
         font-weight: bold;
         color: var(--desc-color);
+        transition: all 0.2s ease;
+    }
+
+    .skill-badge:hover {
+        background: var(--link-color);
+        color: #ffffff;
+        border-color: var(--link-color);
+        transform: translateY(-2px);
     }
 
     footer { 
@@ -221,7 +257,7 @@
     <!-- Shared Script lädt Navbar & Tools ganz oben (sofort sichtbar) -->
     <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
 
-    <!-- Scroll-Animation Container (Das Video liegt direkt unter der Navbar) -->
+    <!-- Scroll-Animation Container (Im Hintergrundton statt weiß) -->
     <div id="scroll-animation-wrapper">
         <video id="scroll-video" src="Glaggle Logo Clip kurz.mp4" muted playsinline preload="auto"></video>
         <div class="scroll-hint">Scroll</div>
@@ -322,6 +358,9 @@
             body.classList.add('animation-finished');
             document.body.style.height = 'auto'; // Normale Seitenhöhe freigeben
             window.scrollTo(0, 0); // Wieder nach oben springen
+            
+            // Observer aktivieren, damit die Sektionen beim Scrollen weich einblenden
+            initScrollAnimations();
         }
     });
 
@@ -331,6 +370,21 @@
             e.preventDefault();
         }
     }, { passive: false });
+
+    // Sanftes Einblenden der Sektionen und Karten beim späteren Scrollen
+    function initScrollAnimations() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.info-section, .feature-card').forEach(el => {
+            observer.observe(el);
+        });
+    }
     </script>
 </body>
 </html>
