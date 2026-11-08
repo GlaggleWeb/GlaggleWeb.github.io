@@ -105,18 +105,17 @@
     #features { height: 700vh; }
     #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; }
     .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
-    .track { position: relative; align-self: flex-start; margin-left: -24px; display: flex; gap: 48px; width: max-content; will-change: transform; }
+    .track { position: relative; width: 100%; height: min(56vh, 440px); }
     .feature-card {
         --f: 0;
-        position: relative;
-        flex: 0 0 min(560px, 84vw);
-        height: min(56vh, 440px);
+        position: absolute; top: 0; left: 50%;
+        width: min(560px, 84vw); margin-left: calc(min(560px, 84vw) / -2);
+        height: 100%;
         padding: clamp(24px, 4vw, 44px); border-radius: 32px; text-align: left;
         background: var(--card-bg);
         border: 3px solid color-mix(in srgb, var(--blue) calc(var(--f) * 100%), transparent);
         display: flex; flex-direction: column; justify-content: flex-end;
         opacity: calc(.25 + .75 * var(--f));
-        transform: scale(calc(.78 + .22 * var(--f)));
         box-shadow: 0 24px 60px rgba(112, 196, 247, calc(.25 * var(--f)));
         will-change: transform, opacity;
     }
@@ -128,7 +127,12 @@
         -webkit-mask-composite: xor; mask-composite: exclude;
         opacity: calc(1 - var(--f)); pointer-events: none;
     }
-    .feature-card .ico { font-size: clamp(3.5rem, 9vw, 5.5rem); margin-bottom: auto; }
+    .feature-card .ico {
+        width: 76px; height: 76px; border-radius: 22px; margin-bottom: auto;
+        display: grid; place-items: center; color: var(--blue);
+        background: rgba(112, 196, 247, .14);
+    }
+    .feature-card .ico svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .feature-card strong { font-size: clamp(1.7rem, 4vw, 2.3rem); margin: 18px 0 10px; display: block; width: max-content; max-width: 100%; }
     .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
     .progress { position: absolute; left: 6vw; right: 6vw; bottom: 36px; height: 4px; background: rgba(0,0,0,.08); border-radius: 4px; }
@@ -211,12 +215,12 @@
         <div class="stage">
             <h2 class="feat-head">Das steckt in Glaggle</h2>
             <div class="track" id="track">
-                <div class="feature-card"><div class="ico">🤖</div><strong>KI Power</strong><p>Unsere KI ist extrem schnell dank Groq!</p></div>
-                <div class="feature-card"><div class="ico">🛡️</div><strong>Privatsphäre</strong><p>Glaggle braucht keine Cookies von dir und verkauft deine Daten an niemanden weiter!</p></div>
-                <div class="feature-card"><div class="ico">⚡</div><strong>Speed</strong><p>Die Glaggle-Website ist für minimale Ladezeiten optimiert.</p></div>
-                <div class="feature-card"><div class="ico">🇨🇭</div><strong>Swissness</strong><p>Glaggle kommt zu 100% aus der Schweiz!</p></div>
-                <div class="feature-card"><div class="ico">🪙</div><strong>0 CHF Kosten</strong><p>Glaggle hat sich zum Ziel gesetzt, 100% kostenlos zu bleiben!</p></div>
-                <div class="feature-card"><div class="ico">❌</div><strong>Non-Profit</strong><p>Glaggle ist eine Non-Profit Organisation, die gratis Onlinedienstleistungen anbieten will!</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4M22 5h-4M4 17v2M5 18H3"/></svg></div><strong>KI Power</strong><p>Unsere KI ist extrem schnell dank Groq!</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div><strong>Privatsphäre</strong><p>Glaggle braucht keine Cookies von dir und verkauft deine Daten an niemanden weiter!</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div><strong>Speed</strong><p>Die Glaggle-Website ist für minimale Ladezeiten optimiert.</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></div><strong>Swissness</strong><p>Glaggle kommt zu 100% aus der Schweiz!</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9.5c0-1 1-1.5 3-1.5s3 .5 3 1.5-1 1.5-3 2-3 1-3 2 1 1.5 3 1.5 3-.5 3-1.5M12 6v2M12 16v2"/></svg></div><strong>0 CHF Kosten</strong><p>Glaggle hat sich zum Ziel gesetzt, 100% kostenlos zu bleiben!</p></div>
+                <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div><strong>Non-Profit</strong><p>Glaggle ist eine Non-Profit Organisation, die gratis Onlinedienstleistungen anbieten will!</p></div>
             </div>
             <div class="progress"><i></i></div>
         </div>
@@ -297,17 +301,19 @@
                     wordEls.forEach((el, i) => { el.style.opacity = clamp(lit - i, 0, 1) * .86 + .14; });
                 }
                 if (sc.id === 'features') {
-                    // u = Position zwischen den Karten; pro Karte kurz "verweilen", dann weich zur nächsten
+                    // pos = aktuelle Karte (Kommazahl); pro Karte kurz verweilen, dann weich zur nächsten
                     const n = cards.length;
                     const u = clamp((p - .04) / .92) * (n - 1);
                     const i = Math.min(Math.floor(u), n - 2);
                     let t = clamp((u - i - .25) / .5);
                     t = t * t * (3 - 2 * t);
                     const pos = i + t;
-                    const c = k => cards[k].offsetLeft + cards[k].offsetWidth / 2;
-                    const center = c(i) + (c(i + 1) - c(i)) * t;
-                    track.style.transform = 'translate3d(' + (document.documentElement.clientWidth / 2 - center) + 'px,0,0)';
-                    cards.forEach((el, k) => el.style.setProperty('--f', clamp(1 - Math.abs(k - pos)).toFixed(3)));
+                    const step = cards[0].offsetWidth + 48;
+                    cards.forEach((el, k) => {
+                        const f = clamp(1 - Math.abs(k - pos));
+                        el.style.setProperty('--f', f.toFixed(3));
+                        el.style.transform = 'translate3d(' + ((k - pos) * step).toFixed(1) + 'px,0,0) scale(' + (.78 + .22 * f).toFixed(3) + ')';
+                    });
                 }
                 if (sc.id === 'facts') {
                     counters.forEach(b => {
