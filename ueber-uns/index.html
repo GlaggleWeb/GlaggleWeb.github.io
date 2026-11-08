@@ -31,7 +31,7 @@
         min-height: 100vh; 
     }
 
-    /* Der Scroll-Animation Vollbild-Container für dein GIF */
+    /* Der Scroll-Animation Vollbild-Container */
     #scroll-animation-wrapper {
         position: fixed;
         top: 0;
@@ -47,7 +47,7 @@
         transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
-    #scroll-animation-wrapper img {
+    #scroll-animation-wrapper video {
         width: 100%;
         max-width: 400px;
         height: auto;
@@ -66,7 +66,7 @@
         50% { opacity: 1; }
     }
 
-    /* Hauptinhalt ist anfangs unsichtbar, aber Navbar vom Shared-Script ist da */
+    /* Hauptinhalt anfangs unsichtbar, Navbar vom Shared-Script ist direkt da */
     .main-content { 
         margin-top: 120px; 
         padding: 20px; 
@@ -78,7 +78,7 @@
         transition: opacity 0.8s ease;
     }
 
-    /* Sobald fertig durchgescrollt wurde */
+    /* Wenn das Scroll-Intro fertig ist */
     body.animation-finished #scroll-animation-wrapper {
         opacity: 0;
         pointer-events: none;
@@ -220,13 +220,14 @@
 </head>
 <body>
 
-    <!-- Scroll-Animation Container mit deinem GIF -->
+    <!-- Scroll-Animation Container -->
     <div id="scroll-animation-wrapper">
-        <img id="scroll-gif" src="/Glaggle Logo Clip kurz.gif" alt="Glaggle Logo Animation">
-        <div class="scroll-hint">Scrolle nach unten, um fortzufahren... 👇</div>
+        <!-- Hier das konvertierte MP4-Video einbinden -->
+        <video id="scroll-video" src="Glaggle Logo Clip kurz.mp4" muted playsinline preload="auto"></video>
+        <div class="scroll-hint">Scrolle nach unten, um das Logo zu steuern... 👇</div>
     </div>
 
-    <!-- Hauptinhalt (Navbar lädt sofort, .main-content wird erst nach dem Scrollen eingeblendet) -->
+    <!-- Hauptinhalt -->
     <main class="main-content">
         <h1>Über Glaggle</h1>
 
@@ -298,10 +299,11 @@
     <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
     
     <script>
+    const video = document.getElementById('scroll-video');
     const body = document.body;
 
-    // Wir machen die Seite künstlich 2000 Pixel lang, damit man scrollen kann, bis das Intro fertig ist
-    const scrollLength = 2000; 
+    // Wir machen die Seite künstlich 3000 Pixel lang, damit man genug Scroll-Weg hat
+    const scrollLength = 3000; 
     document.body.style.height = scrollLength + 'px';
 
     window.addEventListener('scroll', () => {
@@ -314,15 +316,20 @@
         if (progress > 1) progress = 1;
         if (progress < 0) progress = 0;
 
-        // Wenn der Nutzer ganz nach unten gescrollt hat (Intro beendet)
+        // Koppel die Video-Zeit exakt an die Scroll-Position
+        if (video.duration) {
+            video.currentTime = progress * video.duration;
+        }
+
+        // Wenn das Video bis zum Ende gescrollt wurde
         if (progress >= 0.99) {
             body.classList.add('animation-finished');
-            document.body.style.height = 'auto'; // Normale Seitenhöhe freigeben
+            document.body.style.height = 'auto'; // Normale Höhe freigeben
             window.scrollTo(0, 0); // Wieder nach oben springen
         }
     });
 
-    // Tastatursperre während das Intro aktiv ist
+    // Verhindert das Springen per Pfeiltasten während des Intros
     window.addEventListener('keydown', (e) => {
         if (!body.classList.contains('animation-finished') && ['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.code)) {
             e.preventDefault();
