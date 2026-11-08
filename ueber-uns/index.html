@@ -105,7 +105,7 @@
     #features { height: 700vh; }
     #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; }
     .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
-    .track { display: flex; gap: 48px; width: max-content; will-change: transform; }
+    .track { position: relative; align-self: flex-start; margin-left: -24px; display: flex; gap: 48px; width: max-content; will-change: transform; }
     .feature-card {
         --f: 0;
         position: relative;
@@ -306,7 +306,7 @@
                     const pos = i + t;
                     const c = k => cards[k].offsetLeft + cards[k].offsetWidth / 2;
                     const center = c(i) + (c(i + 1) - c(i)) * t;
-                    track.style.transform = 'translate3d(' + (window.innerWidth / 2 - center) + 'px,0,0)';
+                    track.style.transform = 'translate3d(' + (document.documentElement.clientWidth / 2 - center) + 'px,0,0)';
                     cards.forEach((el, k) => el.style.setProperty('--f', clamp(1 - Math.abs(k - pos)).toFixed(3)));
                 }
                 if (sc.id === 'facts') {
