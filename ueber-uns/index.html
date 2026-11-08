@@ -20,6 +20,7 @@
         --link-color: #2E94D1;
         --desc-color: #5b6270;
         --grad: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
+        --blue: #70C4F7; /* Glaggle Blau */
     }
 
     * { box-sizing: border-box; }
@@ -42,6 +43,19 @@
             radial-gradient(45vmax 45vmax at 50% calc(100% - var(--bgp, 0) * 30%), rgba(52,168,83,.12), transparent 70%),
             var(--bg-color);
     }
+
+
+    /* Verlauf bewegt sich beim Scrollen, löst sich dann (--f: 0 -> 1) in Glaggle Blau auf */
+    .hero-title, .feat-head, .feature-card strong, .fact b, .dev-header h3 {
+        background: var(--grad); background-size: 300% 100%;
+        background-position: calc(var(--p, 0) * 100%) 0;
+        -webkit-background-clip: text; background-clip: text;
+        color: color-mix(in srgb, var(--blue) calc(var(--f, 0) * 100%), transparent);
+    }
+    .hero-title { --f: clamp(0, calc((var(--p) - .92) * 12), 1); }
+    .feat-head { --f: clamp(0, calc(var(--p) * 12), 1); }
+    .dev-header h3 { --f: clamp(0, calc((var(--p) - .5) * 6), 1); }
+    .fact b { --f: clamp(0, calc((var(--p) - var(--s) - .22) * 10), 1); }
 
     /* Jede Szene ist hoch; die Bühne darin bleibt "sticky" am Bildschirm */
     .scene { position: relative; }
@@ -87,22 +101,36 @@
     }
     .mission-text span { opacity: .14; transition: opacity .15s linear; }
 
-    /* ---------- 3. Features: horizontale Fahrt ---------- */
-    #features { height: 450vh; }
-    #features .stage { align-items: flex-start; justify-content: center; }
-    .feat-head { padding-left: 6vw; margin: 0 0 28px; font-size: clamp(1.5rem, 4vw, 2.4rem); }
-    .track { display: flex; gap: 22px; padding: 0 6vw; will-change: transform; }
+    /* ---------- 3. Features: eine grosse Karte im Fokus ---------- */
+    #features { height: 700vh; }
+    #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; }
+    .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
+    .track { display: flex; gap: 48px; width: max-content; will-change: transform; }
     .feature-card {
-        flex: 0 0 min(300px, 76vw);
-        min-height: 300px;
-        padding: 28px; border-radius: 26px; text-align: left;
-        border: 2px solid transparent;
-        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--grad) border-box;
+        --f: 0;
+        position: relative;
+        flex: 0 0 min(560px, 84vw);
+        height: min(56vh, 440px);
+        padding: clamp(24px, 4vw, 44px); border-radius: 32px; text-align: left;
+        background: var(--card-bg);
+        border: 3px solid color-mix(in srgb, var(--blue) calc(var(--f) * 100%), transparent);
         display: flex; flex-direction: column; justify-content: flex-end;
+        opacity: calc(.25 + .75 * var(--f));
+        transform: scale(calc(.78 + .22 * var(--f)));
+        box-shadow: 0 24px 60px rgba(112, 196, 247, calc(.25 * var(--f)));
+        will-change: transform, opacity;
     }
-    .feature-card .ico { font-size: 3.2rem; margin-bottom: auto; }
-    .feature-card strong { font-size: 1.35rem; margin: 18px 0 8px; }
-    .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.5; font-size: .95rem; }
+    /* Verlaufsrand: sichtbar solange die Karte nicht im Fokus ist */
+    .feature-card::before {
+        content: ""; position: absolute; inset: -3px; padding: 3px; border-radius: 32px;
+        background: var(--grad);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        opacity: calc(1 - var(--f)); pointer-events: none;
+    }
+    .feature-card .ico { font-size: clamp(3.5rem, 9vw, 5.5rem); margin-bottom: auto; }
+    .feature-card strong { font-size: clamp(1.7rem, 4vw, 2.3rem); margin: 18px 0 10px; display: block; width: max-content; max-width: 100%; }
+    .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
     .progress { position: absolute; left: 6vw; right: 6vw; bottom: 36px; height: 4px; background: rgba(0,0,0,.08); border-radius: 4px; }
     .progress i { display: block; height: 100%; width: calc(var(--p) * 100%); background: var(--grad); border-radius: 4px; }
 
@@ -116,7 +144,6 @@
     }
     .fact b {
         display: block; font-size: clamp(3.2rem, 11vw, 7rem); line-height: 1;
-        background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
         font-variant-numeric: tabular-nums;
     }
     .fact span { color: var(--desc-color); display: block; margin-top: 10px; max-width: 240px; }
@@ -237,6 +264,7 @@
         const scenes = [...document.querySelectorAll('.scene')];
         const video = document.getElementById('scroll-video');
         const track = document.getElementById('track');
+        const cards = [...track.querySelectorAll('.feature-card')];
         const backdrop = document.getElementById('backdrop');
         const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -269,8 +297,17 @@
                     wordEls.forEach((el, i) => { el.style.opacity = clamp(lit - i, 0, 1) * .86 + .14; });
                 }
                 if (sc.id === 'features') {
-                    const max = Math.max(0, track.scrollWidth - window.innerWidth);
-                    track.style.transform = 'translate3d(' + (-clamp((p - .05) / .9) * max) + 'px,0,0)';
+                    // u = Position zwischen den Karten; pro Karte kurz "verweilen", dann weich zur nächsten
+                    const n = cards.length;
+                    const u = clamp((p - .04) / .92) * (n - 1);
+                    const i = Math.min(Math.floor(u), n - 2);
+                    let t = clamp((u - i - .25) / .5);
+                    t = t * t * (3 - 2 * t);
+                    const pos = i + t;
+                    const c = k => cards[k].offsetLeft + cards[k].offsetWidth / 2;
+                    const center = c(i) + (c(i + 1) - c(i)) * t;
+                    track.style.transform = 'translate3d(' + (window.innerWidth / 2 - center) + 'px,0,0)';
+                    cards.forEach((el, k) => el.style.setProperty('--f', clamp(1 - Math.abs(k - pos)).toFixed(3)));
                 }
                 if (sc.id === 'facts') {
                     counters.forEach(b => {
