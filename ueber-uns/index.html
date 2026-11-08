@@ -29,27 +29,65 @@
         margin: 0; padding: 0;
         display: flex; flex-direction: column; align-items: center; 
         min-height: 100vh; 
-        opacity: 0;
-        animation: smoothFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes smoothFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(15px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Der Scroll-Animation Vollbild-Container für dein GIF */
+    #scroll-animation-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
+    #scroll-animation-wrapper img {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .scroll-hint {
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: var(--desc-color);
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+    }
+
+    /* Hauptinhalt ist anfangs unsichtbar, aber Navbar vom Shared-Script ist da */
     .main-content { 
         margin-top: 120px; 
         padding: 20px; 
         width: 100%; 
         max-width: 800px; 
         box-sizing: border-box; 
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.8s ease;
+    }
+
+    /* Sobald fertig durchgescrollt wurde */
+    body.animation-finished #scroll-animation-wrapper {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+    }
+
+    body.animation-finished .main-content {
+        opacity: 1;
+        pointer-events: auto;
     }
 
     h1 { 
@@ -178,69 +216,17 @@
             text-align: center;
         }
     }
-
-    /* Der Wrapper füllt anfangs den ganzen Bildschirm */
-#scroll-animation-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: var(--bg-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
-}
-
-#scroll-animation-wrapper video {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    object-fit: contain;
-}
-
-.scroll-hint {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: var(--desc-color);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-/* Hauptinhalt ist anfangs unsichtbar und blockiert */
-#main-page-content {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.8s ease;
-}
-
-/* Klasse, wenn das Video fertig abgespielt wurde */
-body.animation-finished #scroll-animation-wrapper {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-body.animation-finished #main-page-content {
-    opacity: 1;
-    pointer-events: auto;
-}
-        
     </style>
 </head>
 <body>
-    <!-- Scroll-Animation Container -->
-<div id="scroll-animation-wrapper">
-    <video id="scroll-video" src="/Glaggle Logo Clip kurz.gif" muted playsinline preload="auto"></video>
-    <div class="scroll-hint">Scrolle nach unten, um fortzufahren... </div>
-</div>
+
+    <!-- Scroll-Animation Container mit deinem GIF -->
+    <div id="scroll-animation-wrapper">
+        <img id="scroll-gif" src="/Glaggle Logo Clip kurz.gif" alt="Glaggle Logo Animation">
+        <div class="scroll-hint">Scrolle nach unten, um fortzufahren... 👇</div>
+    </div>
+
+    <!-- Hauptinhalt (Navbar lädt sofort, .main-content wird erst nach dem Scrollen eingeblendet) -->
     <main class="main-content">
         <h1>Über Glaggle</h1>
 
@@ -308,20 +294,19 @@ body.animation-finished #main-page-content {
         </footer>
     </main>
 
+    <!-- Shared Script für Navbar etc. -->
     <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
+    
     <script>
-    const video = document.getElementById('scroll-video');
     const body = document.body;
 
-    // Wir machen die Seite künstlich 3000 Pixel lang, damit man genug scrollen kann,
-    // während das Video läuft.
-    const scrollLength = 3000; 
+    // Wir machen die Seite künstlich 2000 Pixel lang, damit man scrollen kann, bis das Intro fertig ist
+    const scrollLength = 2000; 
     document.body.style.height = scrollLength + 'px';
 
     window.addEventListener('scroll', () => {
         if (body.classList.contains('animation-finished')) return;
 
-        // Berechne, wie weit der Nutzer gescrollt hat (0 bis 1)
         const scrollTop = window.scrollY;
         const maxScroll = scrollLength - window.innerHeight;
         let progress = scrollTop / maxScroll;
@@ -329,27 +314,20 @@ body.animation-finished #main-page-content {
         if (progress > 1) progress = 1;
         if (progress < 0) progress = 0;
 
-        // Wenn das Video geladen ist, setze die aktuelle Zeit proportional zum Scrollen
-        if (video.duration) {
-            video.currentTime = progress * video.duration;
-        }
-
-        // Wenn der Nutzer ganz nach unten gescrollt hat (Video ist fertig)
+        // Wenn der Nutzer ganz nach unten gescrollt hat (Intro beendet)
         if (progress >= 0.99) {
             body.classList.add('animation-finished');
-            // Körper-Höhe wieder auf normal setzen, damit das normale Scrollen der Seite funktioniert
-            document.body.style.height = 'auto';
-            window.scrollTo(0, 0); // Nach oben springen für den sauberen Start der echten Seite
+            document.body.style.height = 'auto'; // Normale Seitenhöhe freigeben
+            window.scrollTo(0, 0); // Wieder nach oben springen
         }
     });
 
-    // Verhindert, dass man per Pfeiltasten/Leertaste weiterspringt, bevor das Intro durch ist
+    // Tastatursperre während das Intro aktiv ist
     window.addEventListener('keydown', (e) => {
         if (!body.classList.contains('animation-finished') && ['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp'].includes(e.code)) {
             e.preventDefault();
         }
     }, { passive: false });
-</script>
+    </script>
 </body>
-
 </html>
