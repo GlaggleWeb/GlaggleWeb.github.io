@@ -31,7 +31,7 @@
         color: var(--text-color);
         font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
         margin: 0;
-        overflow-x: hidden;
+        overflow-x: clip;
     }
 
     /* Weicher, farbiger Hintergrund, der mit dem Scrollen wandert */
@@ -64,7 +64,7 @@
         height: 100vh; height: 100svh;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         padding: 80px 24px 24px;
-        overflow: hidden;
+         overflow: visible;
     }
 
     /* ---------- 1. Logo-Intro (ohne weissen Hintergrund) ---------- */
@@ -104,7 +104,7 @@
 
     /* ---------- 3. Features: eine grosse Karte im Fokus ---------- */
     #features { height: 700vh; }
-    #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; }
+    #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; overflow: visible;}
     .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
     .track { position: relative; width: 100%; height: min(56vh, 440px); }
     .feature-card {
