@@ -270,10 +270,9 @@
 .qlink .arrow { flex: none; width: 24px; height: 24px; color: var(--blue); transition: transform .35s cubic-bezier(.2,.8,.2,1); }
 
 @media (hover: hover) {
-    .qlink.in:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 22px 50px rgba(112, 196, 247, .35); transition-delay: 0s; }
+    .qlink.in:hover { scale(1.02); box-shadow: 0 22px 50px rgba(112, 196, 247, .35); transition-delay: 0s; }
     .qlink:hover::before { opacity: 1; }
     .qlink:hover .ico { transform: rotate(-8deg) scale(1.08); background: rgba(112, 196, 247, .24); }
-    .qlink:hover .arrow { transform: translateX(6px); }
 }
 .qlink.in:active { transform: scale(.97); transition-delay: 0s; transition-duration: .15s; }
 .qlink:focus-visible { outline: 3px solid var(--link-color); outline-offset: 4px; }
