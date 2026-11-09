@@ -136,18 +136,29 @@
     .feature-card .ico svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .feature-card strong { font-size: clamp(1.7rem, 4vw, 2.3rem); margin: 18px 0 10px; display: block; width: max-content; max-width: 100%; }
     .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
-    .progress {
-    position: absolute; left: 0; right: 0; bottom: 0;   /* volle Gerätebreite */
-    height: 5px; background: rgba(0,0,0,.08);
+   .progress {
+    position: fixed;
+    left: 16px; right: 16px;                          /* passt sich der Gerätebreite an */
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));  /* mind. 15px Abstand, auch auf dem iPhone */
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.08);
+    overflow: hidden;                                  /* rundet auch die Füllung ab */
+    z-index: 5;
+    opacity: 0; transition: opacity .3s; pointer-events: none;
 }
+.progress.show { opacity: 1; }
+
 .progress i {
-    position: absolute; inset: 0;
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: calc(var(--p, 0) * 100%);                  /* echte Breite statt clip-path */
+    border-radius: 999px;
     background: var(--blue);
-    /* Füllung per clip-path, damit der Verlauf immer über die ganze Breite läuft */
-    clip-path: inset(0 calc((1 - var(--p)) * 100%) 0 0);
+    overflow: hidden;
 }
 .progress i::after {
-    content: ""; position: absolute; inset: 0;
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: var(--bw, 100vw);                           /* Verlauf immer so breit wie der ganze Balken */
     background: var(--grad);
     opacity: 0; transition: opacity .25s;
 }
@@ -315,7 +326,10 @@
                     const lit = clamp((p - .1) / .7) * n;
                     wordEls.forEach((el, i) => { el.style.opacity = clamp(lit - i, 0, 1) * .86 + .14; });
                 }
-                if (sc.id === 'features') {
+               if (sc.id === 'features') {
+    bar.classList.toggle('show', p > 0 && p < 1);   // Balken nur in diesem Abschnitt zeigen
+    bar.style.setProperty('--p', p.toFixed(4));
+    bar.style.setProperty('--bw', bar.offsetWidth + 'px');
                     // pos = aktuelle Karte (Kommazahl); pro Karte kurz verweilen, dann weich zur nächsten
                     const n = cards.length;
                     const u = clamp((p - .04) / .92) * (n - 1);
