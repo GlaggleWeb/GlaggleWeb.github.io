@@ -76,8 +76,8 @@
         mix-blend-mode: multiply;
         transform: scale(calc(1 + var(--p) * .25)) translateY(calc(var(--p) * -6vh));
         will-change: transform;
-        mix-blend-mode: multiply; 
     }
+    #hero .stage { mix-blend-mode: multiply; }
     .hero-title {
         text-align: center; margin: 0;
         font-size: clamp(2rem, 6vw, 4rem);
@@ -136,9 +136,23 @@
     .feature-card .ico svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .feature-card strong { font-size: clamp(1.7rem, 4vw, 2.3rem); margin: 18px 0 10px; display: block; width: max-content; max-width: 100%; }
     .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
-    .progress { position: absolute; left: 6vw; right: 6vw; bottom: 36px; height: 4px; background: rgba(0,0,0,.08); border-radius: 4px; }
-    .progress i { display: block; height: 100%; width: calc(var(--p) * 100%); background: var(--grad); border-radius: 4px; }
-
+    .progress {
+    position: absolute; left: 0; right: 0; bottom: 0;   /* volle Gerätebreite */
+    height: 5px; background: rgba(0,0,0,.08);
+}
+.progress i {
+    position: absolute; inset: 0;
+    background: var(--blue);
+    /* Füllung per clip-path, damit der Verlauf immer über die ganze Breite läuft */
+    clip-path: inset(0 calc((1 - var(--p)) * 100%) 0 0);
+}
+.progress i::after {
+    content: ""; position: absolute; inset: 0;
+    background: var(--grad);
+    opacity: 0; transition: opacity .25s;
+}
+.progress.moving i::after { opacity: 1; }
+        
     /* ---------- 4. Zahlen ---------- */
     #facts { height: 320vh; }
     .facts-row { display: flex; flex-wrap: wrap; gap: 4vw; justify-content: center; text-align: center; }
@@ -334,6 +348,20 @@
         window.addEventListener('scroll', request, { passive: true });
         window.addEventListener('resize', request);
         video.addEventListener('loadedmetadata', request);
+        const bar = document.querySelector('.progress');
+let lastY = window.scrollY, idle;
+
+window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y > lastY) {                 // nur vorwärts = farbig
+        bar.classList.add('moving');
+        clearTimeout(idle);
+        idle = setTimeout(() => bar.classList.remove('moving'), 150);
+    } else {                         // rückwärts = sofort blau
+        bar.classList.remove('moving');
+    }
+    lastY = y;
+}, { passive: true });
         update();
     })();
     </script>
