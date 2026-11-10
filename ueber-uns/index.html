@@ -299,17 +299,16 @@
     .qtext small { font-size: .9rem; }
 }
 
-/* Fixes */
-#features .stage,   
-#hero .stage {
+#features .stage {
     overflow-x: clip;
     overflow-y: visible;
 }
-
-/* Fallback für iOS < 16 */
 @supports not (overflow: clip) {
-    #features .stage,
-    #hero .stage { overflow-x: hidden; }
+    #features .stage { overflow-x: hidden; }
+}
+#hero video {
+    width: 100%;
+    max-width: min(520px, 78vw);   /* 78vw × 1.25 = 97.5vw, passt also nach dem Zoom noch auf den Bildschirm */
 }
     </style>
 </head>
