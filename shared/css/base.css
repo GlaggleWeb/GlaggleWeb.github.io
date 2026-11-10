@@ -7,9 +7,9 @@
 
 
         @font-face {
-  font-family: 'Varela Round';
-  src: url('/shared/other/VarelaRound-Regular.ttf') format('truetype');
-  font-weight: 900;
+  font-family: 'Nunito';
+  src: url('/shared/other/Nunito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 650;
   font-style: normal;
   font-display: swap;  
 }
@@ -20,7 +20,7 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Varela Round', sans-serif;
+    font-family: 'Nunito', sans-serif;
     min-height: 100vh;
     width: 100%;
     margin: 0;
