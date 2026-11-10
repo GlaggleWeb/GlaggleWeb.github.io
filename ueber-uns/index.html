@@ -295,9 +295,18 @@
 }
 
 /* Fixes */
-html, body { overflow-x: clip; }
+/* 1. Feature-Karten: nur der Track schneidet den Überhang ab (statt body/scene) */
+.track {
+    overflow-x: clip;
+    overflow-y: visible;
+    margin: 0 -24px;                 /* gleicht das Stage-Padding aus, geclippt wird am Bildschirmrand */
+    width: calc(100% + 48px);
+}
 
-.scene { overflow-x: clip; }
+/* 2. Hero-Video: so gross, dass es nach scale(1.25) nicht mehr über den Rand ragt */
+#hero video {
+    max-width: min(520px, 78%);
+}
     </style>
 </head>
 <body>
