@@ -10,6 +10,9 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 
     <style>
     :root {
@@ -29,7 +32,9 @@
     body {
         background: var(--bg-color);
         color: var(--text-color);
-        font-family: 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+        font-family: "Varela Round", sans-serif;
+  font-weight: 400;
+  font-style: normal;
         margin: 0;
         overflow-x: clip;
     }
@@ -295,17 +300,16 @@
 }
 
 /* Fixes */
-/* 1. Feature-Karten: nur der Track schneidet den Überhang ab (statt body/scene) */
-.track {
+#features .stage,
+#hero .stage {
     overflow-x: clip;
     overflow-y: visible;
-    margin: 0 -24px;                 /* gleicht das Stage-Padding aus, geclippt wird am Bildschirmrand */
-    width: calc(100% + 48px);
 }
 
-/* 2. Hero-Video: so gross, dass es nach scale(1.25) nicht mehr über den Rand ragt */
-#hero video {
-    max-width: min(520px, 78%);
+/* Fallback für iOS < 16 */
+@supports not (overflow: clip) {
+    #features .stage,
+    #hero .stage { overflow-x: hidden; }
 }
     </style>
 </head>
