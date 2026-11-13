@@ -108,21 +108,9 @@
 
     /* ---------- 3. Features: eine grosse Karte im Fokus ---------- */
     #features { height: 700vh; }
-    #features .stage {
-    position: sticky; top: 0;
-    height: 100vh; height: 100svh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 80px 24px 24px;
-    overflow: visible; /* Geändert von overflow-x: clip zu visible */
-}
+    #features .stage { justify-content: center; gap: 4vh; padding-top: 90px; overflow: visible;}
     .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
-   .track { 
-    position: relative; 
-    width: 100%; 
-    max-width: 600px; /* Optional: Verhindert, dass er auf riesigen Bildschirmen zu breit wird */
-    height: min(56vh, 440px); 
-    overflow: visible; /* Wichtig, damit rausgeschobene Karten sichtbar bleiben */
-}
+    .track { position: relative; width: 100%; height: min(56vh, 440px); }
     .feature-card {
         --f: 0;
         position: absolute; top: 0; left: 50%;
@@ -310,6 +298,10 @@
     .qtext small { font-size: .9rem; }
 }
 
+#features .stage {
+    overflow-x: clip;
+    overflow-y: visible;
+}
 @supports not (overflow: clip) {
     #features .stage { overflow-x: hidden; }
 }
