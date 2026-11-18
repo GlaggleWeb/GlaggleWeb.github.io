@@ -3568,7 +3568,65 @@ function dismissPushNotice() {
     update();
 })();
 
+const PRANK_SELECTOR = [
+    '.glaggle-entry',
+    '.search-bar-container',
+    '.png-strip',
+    '#logo-container',
+    '.glaggle-push-notice',
+    '.glaggle-nav',
+    'a[href="/preview"]',
+    '.sticky-search-bar',
+    'footer'
+].join(',');
 
+function createPrankTracker() {
+    const items = new Map();   // Element -> Daten
+
+    // Neue Elemente aufnehmen, entfernte vergessen
+    function sync(now) {
+        document.querySelectorAll(PRANK_SELECTOR).forEach(el => {
+            if (items.has(el)) return;
+            if (el.offsetHeight === 0 || getComputedStyle(el).display === 'none') return;
+
+            el.style.setProperty('transition', 'none', 'important');
+            el.style.setProperty('animation', 'none', 'important');
+            el.style.setProperty('will-change', 'transform', 'important');
+
+            items.set(el, {
+                el,
+                base: el.classList.contains('nav-fixed') ? 'translateX(-50%) ' : '',
+                tx: 0, ty: 0,
+                joined: now,
+                turns: 2 + Math.random() * 2,
+                delay: Math.random() * 0.2
+            });
+        });
+        items.forEach((it, el) => { if (!el.isConnected) items.delete(el); });
+    }
+
+    // Aktuelle Original-Mitte (ohne die von uns gesetzte Verschiebung)
+    function origin(it) {
+        const r = it.el.getBoundingClientRect();
+        return { ox: r.left + r.width / 2 - it.tx, oy: r.top + r.height / 2 - it.ty };
+    }
+
+    // Sanftes Einblenden neu hinzugekommener Elemente (0..1)
+    function weight(it, now) {
+        return Math.min((now - it.joined) / 400, 1);
+    }
+
+    function release() {
+        items.forEach(it => {
+            ['transform', 'opacity', 'transition', 'animation', 'will-change']
+                .forEach(p => it.el.style.removeProperty(p));
+        });
+        items.clear();
+    }
+
+    return { items, sync, origin, weight, release };
+}
+    
 function checkPranks(query) {
     const q = query.trim().toLowerCase();
 
@@ -3619,109 +3677,63 @@ function startTornadoPrank() {
     if (_tornadoRunning) return;
     _tornadoRunning = true;
 
-    // Sofort nach oben (instant überschreibt dein scroll-behavior: smooth) und Scrollen sperren
     window.scrollTo({ top: 0, behavior: 'instant' });
     document.documentElement.style.overflow = 'hidden';
     document.body.classList.add('tornado-running');
 
-    // Kurz warten, damit nav-fixed & sticky-Suche sich zurücksetzen können
     setTimeout(() => {
         const DURATION = 5000;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const CX = vw / 2, CY = vh / 2;
+        const CX = window.innerWidth / 2, CY = window.innerHeight / 2;
 
-        const selector = [
-            '.glaggle-entry',
-            '.search-bar-container',
-            '.png-strip',
-            '#logo-container',
-            '.glaggle-push-notice',
-            '.glaggle-nav',
-            'a[href="/preview"]',
-            'footer'
-        ].join(',');
-
-        // Trichter einblenden
         const vortex = document.createElement('div');
         vortex.id = 'tornado-vortex';
         document.body.appendChild(vortex);
         requestAnimationFrame(() => vortex.classList.add('on'));
 
-        const items = [...document.querySelectorAll(selector)]
-            .filter(el => el.offsetHeight > 0 && getComputedStyle(el).display !== 'none')
-            .map(el => {
-                const r = el.getBoundingClientRect();
-                const ox = r.left + r.width / 2;
-                const oy = r.top + r.height / 2;
-                const dx = ox - CX, dy = oy - CY;
-
-                // Nav ist per translateX(-50%) zentriert -> Basis-Transform beibehalten
-                const base = el.classList.contains('nav-fixed') ? 'translateX(-50%) ' : '';
-
-                el.style.setProperty('transition', 'none', 'important');
-                el.style.setProperty('animation', 'none', 'important');
-                el.style.setProperty('will-change', 'transform', 'important');
-
-                return {
-                    el, base,
-                    ox, oy,
-                    radius: Math.hypot(dx, dy),
-                    angle: Math.atan2(dy, dx),
-                    turns: 2 + Math.random() * 2,        // 2–4 Umdrehungen
-                    delay: Math.random() * 0.2           // leicht versetzter Start
-                };
-            });
-
+        const tracker = createPrankTracker();
         const start = performance.now();
 
         function frame(now) {
             const p = Math.min((now - start) / DURATION, 1);
+            tracker.sync(now);          // neue Karten laufend aufnehmen
 
-            // Trichter dreht sich mit
-            vortex.style.transform = `rotate(${p * -1080}deg) scale(${0.8 + 0.4 * Math.sin(Math.PI * p)})`;
+            vortex.style.transform =
+                `rotate(${p * -1080}deg) scale(${0.8 + 0.4 * Math.sin(Math.PI * p)})`;
 
-            items.forEach(it => {
-                // lokaler Fortschritt je Element (0..1)
+            tracker.items.forEach(it => {
+                const { ox, oy } = tracker.origin(it);
+                const dx = ox - CX, dy = oy - CY;
+                const radius = Math.hypot(dx, dy);
+                const angle  = Math.atan2(dy, dx);
+
                 const lp = Math.min(Math.max((p - it.delay) / (1 - it.delay), 0), 1);
-
-                // f: 1 = Originalabstand, ~0.04 = fast im Zentrum (Mitte der Animation)
                 const f = 1 - 0.96 * Math.sin(Math.PI * lp);
-
-                // Drehung: Ende bei ganzer Umdrehung -> kein Ruck
                 const ease = 0.5 - 0.5 * Math.cos(Math.PI * lp);
+
+                const wholeTurns = Math.max(1, Math.round(it.turns));
                 const theta = it.turns * 2 * Math.PI * ease;
-                const wholeTurns = Math.round(it.turns);        // für Eigen-Rotation
                 const spin = wholeTurns * 360 * ease;
 
-                // Neue Position auf der Spiralbahn
-                const nx = CX + f * it.radius * Math.cos(it.angle + theta * (it.turns / wholeTurns));
-                const ny = CY + f * it.radius * Math.sin(it.angle + theta * (it.turns / wholeTurns));
+                const nx = CX + f * radius * Math.cos(angle + theta * (it.turns / wholeTurns));
+                const ny = CY + f * radius * Math.sin(angle + theta * (it.turns / wholeTurns));
 
-                const tx = nx - it.ox;
-                const ty = ny - it.oy;
-                const scale = 0.12 + 0.88 * f;
+                const w = tracker.weight(it, now);      // sanftes Einsteigen
+                it.tx = (nx - ox) * w;
+                it.ty = (ny - oy) * w;
+                const scale = 1 + (0.12 + 0.88 * f - 1) * w;
 
-                it.el.style.setProperty(
-                    'transform',
-                    `translate(${tx}px, ${ty}px) ${it.base}rotate(${spin}deg) scale(${scale})`,
-                    'important'
-                );
-                it.el.style.setProperty('opacity', (0.4 + 0.6 * f).toFixed(2), 'important');
+                it.el.style.setProperty('transform',
+                    `translate(${it.tx}px, ${it.ty}px) ${it.base}rotate(${spin * w}deg) scale(${scale})`,
+                    'important');
+                it.el.style.setProperty('opacity', (1 - (0.6 - 0.6 * f) * w).toFixed(2), 'important');
             });
 
-            if (p < 1) {
-                requestAnimationFrame(frame);
-            } else {
-                finish();
-            }
+            if (p < 1) requestAnimationFrame(frame);
+            else finish();
         }
 
         function finish() {
-            items.forEach(it => {
-                ['transform', 'opacity', 'transition', 'animation', 'will-change']
-                    .forEach(prop => it.el.style.removeProperty(prop));
-            });
+            tracker.release();
             vortex.classList.remove('on');
             setTimeout(() => vortex.remove(), 600);
             document.documentElement.style.overflow = '';
@@ -3740,77 +3752,40 @@ let _waveRunning = false;
 function startWavePrank() {
     if (_waveRunning) return;
     _waveRunning = true;
-    document.body.classList.add('tornado-running');   // nutzt die vorhandene Klasse: pointer-events: none
+    document.body.classList.add('tornado-running');
 
-    const DURATION = 4000;      // Gesamtdauer in ms
-    const CYCLES   = 4;         // Anzahl Wellenbewegungen pro Element
-    const AMP      = 22;        // Auslenkung in px
+    const DURATION = 4000, CYCLES = 4, AMP = 22;
     const vw = window.innerWidth, vh = window.innerHeight;
-
-    const selector = [
-        '.glaggle-entry',
-        '.search-bar-container',
-        '.png-strip',
-        '#logo-container',
-        '.glaggle-push-notice',
-        '.glaggle-nav',
-        'a[href="/preview"]',
-        '.sticky-search-bar',
-        'footer'
-    ].join(',');
-
-    const items = [...document.querySelectorAll(selector)]
-        .filter(el => el.offsetHeight > 0 && getComputedStyle(el).display !== 'none')
-        .map(el => {
-            const r = el.getBoundingClientRect();
-            const docY = r.top + window.scrollY + r.height / 2;
-            const docX = r.left + r.width / 2;
-
-            el.style.setProperty('transition', 'none', 'important');
-            el.style.setProperty('animation', 'none', 'important');
-            el.style.setProperty('will-change', 'transform', 'important');
-
-            return {
-                el,
-                // Nav ist per translateX(-50%) zentriert -> Basis-Transform behalten
-                base: el.classList.contains('nav-fixed') ? 'translateX(-50%) ' : '',
-                // Phase: Welle läuft von oben nach unten und leicht von links nach rechts
-                phase: (docY / vh) * 1.6 + (docX / vw) * 0.8
-            };
-        });
-
+    const tracker = createPrankTracker();
     const start = performance.now();
 
     function frame(now) {
         const p = Math.min((now - start) / DURATION, 1);
-        const env = Math.sin(Math.PI * p);               // 0 -> 1 -> 0 (weich rein und raus)
+        const env = Math.sin(Math.PI * p);
         const t = p * CYCLES * 2 * Math.PI;
+        tracker.sync(now);
 
-        items.forEach(it => {
-            const w1 = Math.sin(t - it.phase * 2 * Math.PI);          // Hauptwelle
-            const w2 = Math.cos(t * 0.8 - it.phase * 2 * Math.PI);    // versetzte Nebenwelle
+        tracker.items.forEach(it => {
+            const { ox, oy } = tracker.origin(it);
+            const docY = oy + window.scrollY;
+            const phase = (docY / vh) * 1.6 + (ox / vw) * 0.8;
 
-            const ty    = env * AMP * w1;
-            const tx    = env * AMP * 0.35 * w2;
-            const skewX = env * 5 * w2;
-            const skewY = env * 2.5 * w1;
-            const scale = 1 + env * 0.05 * w1;
-            const rot   = env * 1.5 * w2;
+            const w1 = Math.sin(t - phase * 2 * Math.PI);
+            const w2 = Math.cos(t * 0.8 - phase * 2 * Math.PI);
+            const k = env * tracker.weight(it, now);
 
-            it.el.style.setProperty(
-                'transform',
-                `translate(${tx}px, ${ty}px) ${it.base}rotate(${rot}deg) skew(${skewX}deg, ${skewY}deg) scale(${scale})`,
-                'important'
-            );
+            it.tx = k * AMP * 0.35 * w2;
+            it.ty = k * AMP * w1;
+
+            it.el.style.setProperty('transform',
+                `translate(${it.tx}px, ${it.ty}px) ${it.base}rotate(${k * 1.5 * w2}deg) ` +
+                `skew(${k * 5 * w2}deg, ${k * 2.5 * w1}deg) scale(${1 + k * 0.05 * w1})`,
+                'important');
         });
 
-        if (p < 1) {
-            requestAnimationFrame(frame);
-        } else {
-            items.forEach(it => {
-                ['transform', 'transition', 'animation', 'will-change']
-                    .forEach(prop => it.el.style.removeProperty(prop));
-            });
+        if (p < 1) requestAnimationFrame(frame);
+        else {
+            tracker.release();
             document.body.classList.remove('tornado-running');
             _waveRunning = false;
         }
