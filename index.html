@@ -1746,6 +1746,7 @@ async function glaggleSearch(opts = {}) {
 if (corrected) showCorrectionBanner(original, corrected);
     checkWidgets(query);
     checkPranks(query); 
+    setTimeout(runPendingPranks, 300);
 resultsDiv.appendChild(createAiPlaceholder());
 searchFavorites(query);  // ← NEU
     
@@ -1774,15 +1775,6 @@ searchFavorites(query);  // ← NEU
     } finally {
         loader.style.display = "none";
         setTimeout(refreshObserver, 500);
-
-        if (_tornadoPending) {
-            _tornadoPending = false;
-            startTornadoPrank();
-        }
-        if (_wavePending) {               
-        _wavePending = false;
-        startWavePrank();
-    }
     }
 }
 
@@ -3596,6 +3588,17 @@ function checkPranks(query) {
         return true;
     }
     return false;
+}
+
+function runPendingPranks() {
+    if (_tornadoPending) {
+        _tornadoPending = false;
+        startTornadoPrank();
+    }
+    if (_wavePending) {
+        _wavePending = false;
+        startWavePrank();
+    }
 }
     
 // ===== BEAT PRANK =====
