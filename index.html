@@ -1467,6 +1467,27 @@ pre, code, .ai-text-content {
 @media (max-width: 480px) {
     .png-strip { gap: 8px; padding: 12px; border-radius: 26px; }
 }
+
+/* ===== BEAT PRANK ===== */
+@keyframes glaggleBeat {
+    0%   { transform: scale(1); }
+    15%  { transform: scale(1.12); }
+    40%  { transform: scale(1); }
+    100% { transform: scale(1); }
+}
+
+body.beat-prank .glaggle-entry,
+body.beat-prank .search-bar-container,
+body.beat-prank .png-strip,
+body.beat-prank .glaggle-nav,
+body.beat-prank .large-logo,
+body.beat-prank .glaggle-entry img,
+body.beat-prank .supabase-result-item,
+body.beat-prank .wc-title,
+body.beat-prank .web-button {
+    animation: glaggleBeat 1s ease-in-out infinite !important;
+    transform-origin: center center;
+}
 </style>
 </head>
 <body>
@@ -1700,6 +1721,7 @@ async function glaggleSearch(opts = {}) {
     
 if (corrected) showCorrectionBanner(original, corrected);
     checkWidgets(query);
+    checkPranks(query); 
 resultsDiv.appendChild(createAiPlaceholder());
 searchFavorites(query);  // ← NEU
     
@@ -3518,6 +3540,26 @@ function dismissPushNotice() {
     window.addEventListener('resize', update);
     update();
 })();
+
+// ===== BEAT PRANK =====
+function checkPranks(query) {
+    const q = query.trim().toLowerCase();
+
+    if (q === 'beat') {
+        startBeatPrank();
+        return true;
+    }
+    stopBeatPrank();
+    return false;
+}
+
+function startBeatPrank() {
+    document.body.classList.add('beat-prank');
+}
+
+function stopBeatPrank() {
+    document.body.classList.remove('beat-prank');
+}
     
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
