@@ -1488,6 +1488,28 @@ body.beat-prank .web-button {
     animation: glaggleBeat 1s ease-in-out infinite !important;
     transform-origin: center center;
 }
+
+/* ===== TORNADO PRANK ===== */
+@keyframes glaggleTornado {
+    0% {
+        transform: translate(0, 0) rotate(0turn) scale(1);
+    }
+    20% {
+        transform: translate(calc(var(--tx) * 0.35), calc(var(--ty) * 0.35))
+                   rotate(calc(var(--turns) * 0.25turn)) scale(0.9);
+    }
+    50% {
+        transform: translate(var(--tx), var(--ty))
+                   rotate(calc(var(--turns) * 0.5turn)) scale(0.25);
+    }
+    80% {
+        transform: translate(calc(var(--tx) * 0.35), calc(var(--ty) * 0.35))
+                   rotate(calc(var(--turns) * 0.75turn)) scale(0.9);
+    }
+    100% {
+        transform: translate(0, 0) rotate(calc(var(--turns) * 1turn)) scale(1);
+    }
+}
 </style>
 </head>
 <body>
@@ -1747,10 +1769,15 @@ searchFavorites(query);  // ← NEU
         ]);
     } catch (e) {
         console.error(e);
-    } finally {
-        loader.style.display = "none";
-        setTimeout(refreshObserver, 500);
+    } } finally {
+    loader.style.display = "none";
+    setTimeout(refreshObserver, 500);
+
+    if (_tornadoPending) {          // ← NEU
+        _tornadoPending = false;
+        startTornadoPrank();
     }
+}
 }
 
 // ===== SMARTE FAVORITEN-SUCHE =====
@@ -3237,6 +3264,7 @@ const _fixCache = new Map();
 
 function isProtectedQuery(q) {
     const l = q.toLowerCase();
+    if (l === 'beat' || l === 'tornado') return true;   // ← erweitert
     if (l.includes('glaggle')) return true;
     if (/^[0-9+\-*/().\s^%]+$/.test(l)) return true;               // Rechner
     if (/timer|minuten|wetter|rechner|calculator/.test(l)) return true;
@@ -3550,15 +3578,74 @@ function checkPranks(query) {
         return true;
     }
     stopBeatPrank();
+
+    if (q === 'tornado') {
+        _tornadoPending = true;   // erst starten, wenn alle Ergebnisse da sind
+        return true;
+    }
     return false;
 }
-
 function startBeatPrank() {
     document.body.classList.add('beat-prank');
 }
 
 function stopBeatPrank() {
     document.body.classList.remove('beat-prank');
+}
+
+// ===== TORNADO PRANK =====
+let _tornadoPending = false;
+let _tornadoRunning = false;
+
+function startTornadoPrank() {
+    if (_tornadoRunning) return;
+    _tornadoRunning = true;
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Kurz warten, bis das Hochscrollen fertig ist, dann Positionen messen
+    setTimeout(() => {
+        const selector = [
+            '.glaggle-entry',
+            '.search-bar-container',
+            '.png-strip',
+            '#logo-container',
+            '.glaggle-push-notice',
+            'footer'
+        ].join(',');
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const els = [...document.querySelectorAll(selector)]
+            .filter(el => el.offsetHeight > 0);
+
+        els.forEach(el => {
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+
+            // Jedes Element wird zur Bildschirmmitte gesaugt
+            const tx = (vw / 2 - cx) * 0.85 + (Math.random() - 0.5) * 80;
+            const ty = (vh / 2 - cy) * 0.85 + (Math.random() - 0.5) * 80;
+            const turns = (Math.random() < 0.5 ? -1 : 1) * (2 + Math.floor(Math.random() * 3));
+
+            el.style.setProperty('--tx', tx + 'px');
+            el.style.setProperty('--ty', ty + 'px');
+            el.style.setProperty('--turns', turns);
+            el.style.animation = 'glaggleTornado 5s ease-in-out 1 both';
+        });
+
+        // Nach 5 Sekunden alles aufräumen
+        setTimeout(() => {
+            els.forEach(el => {
+                el.style.animation = '';
+                el.style.removeProperty('--tx');
+                el.style.removeProperty('--ty');
+                el.style.removeProperty('--turns');
+            });
+            _tornadoRunning = false;
+        }, 5100);
+    }, 400);
 }
     
 //Zu unterst lassen:
