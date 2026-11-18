@@ -1779,6 +1779,10 @@ searchFavorites(query);  // ← NEU
             _tornadoPending = false;
             startTornadoPrank();
         }
+        if (_wavePending) {               
+        _wavePending = false;
+        startWavePrank();
+    }
     }
 }
 
@@ -3267,7 +3271,7 @@ const _fixCache = new Map();
 
 function isProtectedQuery(q) {
     const l = q.toLowerCase();
-    if (l === 'beat' || l === 'tornado' || l === 'tornados') return true;   // ← erweitert
+    if (['beat', 'tornado', 'wave', 'waves'].includes(l)) return true;
     if (l.includes('glaggle')) return true;
     if (/^[0-9+\-*/().\s^%]+$/.test(l)) return true;               // Rechner
     if (/timer|minuten|wetter|rechner|calculator/.test(l)) return true;
@@ -3572,7 +3576,7 @@ function dismissPushNotice() {
     update();
 })();
 
-// ===== BEAT PRANK =====
+
 function checkPranks(query) {
     const q = query.trim().toLowerCase();
 
@@ -3583,11 +3587,19 @@ function checkPranks(query) {
     stopBeatPrank();
 
     if (q === 'tornado') {
-        _tornadoPending = true;   // erst starten, wenn alle Ergebnisse da sind
+        _tornadoPending = true;
+        return true;
+    }
+
+    if (q === 'wave' || q === 'waves') {
+        _wavePending = true;
         return true;
     }
     return false;
 }
+    
+// ===== BEAT PRANK =====
+
 function startBeatPrank() {
     document.body.classList.add('beat-prank');
 }
@@ -3716,6 +3728,92 @@ function startTornadoPrank() {
 
         requestAnimationFrame(frame);
     }, 150);
+}
+
+// ===== WAVE PRANK =====
+let _wavePending = false;
+let _waveRunning = false;
+
+function startWavePrank() {
+    if (_waveRunning) return;
+    _waveRunning = true;
+    document.body.classList.add('tornado-running');   // nutzt die vorhandene Klasse: pointer-events: none
+
+    const DURATION = 4000;      // Gesamtdauer in ms
+    const CYCLES   = 4;         // Anzahl Wellenbewegungen pro Element
+    const AMP      = 22;        // Auslenkung in px
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    const selector = [
+        '.glaggle-entry',
+        '.search-bar-container',
+        '.png-strip',
+        '#logo-container',
+        '.glaggle-push-notice',
+        '.glaggle-nav',
+        'a[href="/preview"]',
+        '.sticky-search-bar',
+        'footer'
+    ].join(',');
+
+    const items = [...document.querySelectorAll(selector)]
+        .filter(el => el.offsetHeight > 0 && getComputedStyle(el).display !== 'none')
+        .map(el => {
+            const r = el.getBoundingClientRect();
+            const docY = r.top + window.scrollY + r.height / 2;
+            const docX = r.left + r.width / 2;
+
+            el.style.setProperty('transition', 'none', 'important');
+            el.style.setProperty('animation', 'none', 'important');
+            el.style.setProperty('will-change', 'transform', 'important');
+
+            return {
+                el,
+                // Nav ist per translateX(-50%) zentriert -> Basis-Transform behalten
+                base: el.classList.contains('nav-fixed') ? 'translateX(-50%) ' : '',
+                // Phase: Welle läuft von oben nach unten und leicht von links nach rechts
+                phase: (docY / vh) * 1.6 + (docX / vw) * 0.8
+            };
+        });
+
+    const start = performance.now();
+
+    function frame(now) {
+        const p = Math.min((now - start) / DURATION, 1);
+        const env = Math.sin(Math.PI * p);               // 0 -> 1 -> 0 (weich rein und raus)
+        const t = p * CYCLES * 2 * Math.PI;
+
+        items.forEach(it => {
+            const w1 = Math.sin(t - it.phase * 2 * Math.PI);          // Hauptwelle
+            const w2 = Math.cos(t * 0.8 - it.phase * 2 * Math.PI);    // versetzte Nebenwelle
+
+            const ty    = env * AMP * w1;
+            const tx    = env * AMP * 0.35 * w2;
+            const skewX = env * 5 * w2;
+            const skewY = env * 2.5 * w1;
+            const scale = 1 + env * 0.05 * w1;
+            const rot   = env * 1.5 * w2;
+
+            it.el.style.setProperty(
+                'transform',
+                `translate(${tx}px, ${ty}px) ${it.base}rotate(${rot}deg) skew(${skewX}deg, ${skewY}deg) scale(${scale})`,
+                'important'
+            );
+        });
+
+        if (p < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            items.forEach(it => {
+                ['transform', 'transition', 'animation', 'will-change']
+                    .forEach(prop => it.el.style.removeProperty(prop));
+            });
+            document.body.classList.remove('tornado-running');
+            _waveRunning = false;
+        }
+    }
+
+    requestAnimationFrame(frame);
 }
     
 //Zu unterst lassen:
