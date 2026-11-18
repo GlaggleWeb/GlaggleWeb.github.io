@@ -1769,13 +1769,14 @@ searchFavorites(query);  // ← NEU
         ]);
     } catch (e) {
         console.error(e);
-    } } finally {
-    loader.style.display = "none";
-    setTimeout(refreshObserver, 500);
+    } finally {
+        loader.style.display = "none";
+        setTimeout(refreshObserver, 500);
 
-    if (_tornadoPending) {          // ← NEU
-        _tornadoPending = false;
-        startTornadoPrank();
+        if (_tornadoPending) {
+            _tornadoPending = false;
+            startTornadoPrank();
+        }
     }
 }
 }
