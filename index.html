@@ -3265,7 +3265,7 @@ const _fixCache = new Map();
 
 function isProtectedQuery(q) {
     const l = q.toLowerCase();
-    if (l === 'beat' || l === 'tornado') return true;   // ← erweitert
+    if (l === 'beat' || l === 'tornado' || l === 'tornados') return true;   // ← erweitert
     if (l.includes('glaggle')) return true;
     if (/^[0-9+\-*/().\s^%]+$/.test(l)) return true;               // Rechner
     if (/timer|minuten|wetter|rechner|calculator/.test(l)) return true;
