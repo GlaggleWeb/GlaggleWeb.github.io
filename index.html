@@ -1490,26 +1490,28 @@ body.beat-prank .web-button {
 }
 
 /* ===== TORNADO PRANK ===== */
-@keyframes glaggleTornado {
-    0% {
-        transform: translate(0, 0) rotate(0turn) scale(1);
-    }
-    20% {
-        transform: translate(calc(var(--tx) * 0.35), calc(var(--ty) * 0.35))
-                   rotate(calc(var(--turns) * 0.25turn)) scale(0.9);
-    }
-    50% {
-        transform: translate(var(--tx), var(--ty))
-                   rotate(calc(var(--turns) * 0.5turn)) scale(0.25);
-    }
-    80% {
-        transform: translate(calc(var(--tx) * 0.35), calc(var(--ty) * 0.35))
-                   rotate(calc(var(--turns) * 0.75turn)) scale(0.9);
-    }
-    100% {
-        transform: translate(0, 0) rotate(calc(var(--turns) * 1turn)) scale(1);
-    }
+#tornado-vortex {
+    position: fixed;
+    left: 50%; top: 50%;
+    width: 140vmax; height: 140vmax;
+    margin: -70vmax 0 0 -70vmax;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;                       /* hinter den Karten, vor dem dunklen Overlay */
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255,255,255,0)    0deg,
+        rgba(112,196,247,0.35) 14deg,
+        rgba(255,255,255,0)    34deg
+    );
+    -webkit-mask: radial-gradient(circle closest-side, #000 0%, transparent 70%);
+    mask: radial-gradient(circle closest-side, #000 0%, transparent 70%);
 }
+#tornado-vortex.on { opacity: 1; }
+
+body.tornado-running { pointer-events: none; }
 </style>
 </head>
 <body>
@@ -3602,51 +3604,118 @@ function startTornadoPrank() {
     if (_tornadoRunning) return;
     _tornadoRunning = true;
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Sofort nach oben (instant überschreibt dein scroll-behavior: smooth) und Scrollen sperren
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    document.documentElement.style.overflow = 'hidden';
+    document.body.classList.add('tornado-running');
 
-    // Kurz warten, bis das Hochscrollen fertig ist, dann Positionen messen
+    // Kurz warten, damit nav-fixed & sticky-Suche sich zurücksetzen können
     setTimeout(() => {
+        const DURATION = 5000;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const CX = vw / 2, CY = vh / 2;
+
         const selector = [
             '.glaggle-entry',
             '.search-bar-container',
             '.png-strip',
             '#logo-container',
             '.glaggle-push-notice',
+            '.glaggle-nav',
+            'a[href="/preview"]',
             'footer'
         ].join(',');
 
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const els = [...document.querySelectorAll(selector)]
-            .filter(el => el.offsetHeight > 0);
+        // Trichter einblenden
+        const vortex = document.createElement('div');
+        vortex.id = 'tornado-vortex';
+        document.body.appendChild(vortex);
+        requestAnimationFrame(() => vortex.classList.add('on'));
 
-        els.forEach(el => {
-            const r = el.getBoundingClientRect();
-            const cx = r.left + r.width / 2;
-            const cy = r.top + r.height / 2;
+        const items = [...document.querySelectorAll(selector)]
+            .filter(el => el.offsetHeight > 0 && getComputedStyle(el).display !== 'none')
+            .map(el => {
+                const r = el.getBoundingClientRect();
+                const ox = r.left + r.width / 2;
+                const oy = r.top + r.height / 2;
+                const dx = ox - CX, dy = oy - CY;
 
-            // Jedes Element wird zur Bildschirmmitte gesaugt
-            const tx = (vw / 2 - cx) * 0.85 + (Math.random() - 0.5) * 80;
-            const ty = (vh / 2 - cy) * 0.85 + (Math.random() - 0.5) * 80;
-            const turns = (Math.random() < 0.5 ? -1 : 1) * (2 + Math.floor(Math.random() * 3));
+                // Nav ist per translateX(-50%) zentriert -> Basis-Transform beibehalten
+                const base = el.classList.contains('nav-fixed') ? 'translateX(-50%) ' : '';
 
-            el.style.setProperty('--tx', tx + 'px');
-            el.style.setProperty('--ty', ty + 'px');
-            el.style.setProperty('--turns', turns);
-            el.style.animation = 'glaggleTornado 5s ease-in-out 1 both';
-        });
+                el.style.setProperty('transition', 'none', 'important');
+                el.style.setProperty('animation', 'none', 'important');
+                el.style.setProperty('will-change', 'transform', 'important');
 
-        // Nach 5 Sekunden alles aufräumen
-        setTimeout(() => {
-            els.forEach(el => {
-                el.style.animation = '';
-                el.style.removeProperty('--tx');
-                el.style.removeProperty('--ty');
-                el.style.removeProperty('--turns');
+                return {
+                    el, base,
+                    ox, oy,
+                    radius: Math.hypot(dx, dy),
+                    angle: Math.atan2(dy, dx),
+                    turns: 2 + Math.random() * 2,        // 2–4 Umdrehungen
+                    delay: Math.random() * 0.2           // leicht versetzter Start
+                };
             });
+
+        const start = performance.now();
+
+        function frame(now) {
+            const p = Math.min((now - start) / DURATION, 1);
+
+            // Trichter dreht sich mit
+            vortex.style.transform = `rotate(${p * -1080}deg) scale(${0.8 + 0.4 * Math.sin(Math.PI * p)})`;
+
+            items.forEach(it => {
+                // lokaler Fortschritt je Element (0..1)
+                const lp = Math.min(Math.max((p - it.delay) / (1 - it.delay), 0), 1);
+
+                // f: 1 = Originalabstand, ~0.04 = fast im Zentrum (Mitte der Animation)
+                const f = 1 - 0.96 * Math.sin(Math.PI * lp);
+
+                // Drehung: Ende bei ganzer Umdrehung -> kein Ruck
+                const ease = 0.5 - 0.5 * Math.cos(Math.PI * lp);
+                const theta = it.turns * 2 * Math.PI * ease;
+                const wholeTurns = Math.round(it.turns);        // für Eigen-Rotation
+                const spin = wholeTurns * 360 * ease;
+
+                // Neue Position auf der Spiralbahn
+                const nx = CX + f * it.radius * Math.cos(it.angle + theta * (it.turns / wholeTurns));
+                const ny = CY + f * it.radius * Math.sin(it.angle + theta * (it.turns / wholeTurns));
+
+                const tx = nx - it.ox;
+                const ty = ny - it.oy;
+                const scale = 0.12 + 0.88 * f;
+
+                it.el.style.setProperty(
+                    'transform',
+                    `translate(${tx}px, ${ty}px) ${it.base}rotate(${spin}deg) scale(${scale})`,
+                    'important'
+                );
+                it.el.style.setProperty('opacity', (0.4 + 0.6 * f).toFixed(2), 'important');
+            });
+
+            if (p < 1) {
+                requestAnimationFrame(frame);
+            } else {
+                finish();
+            }
+        }
+
+        function finish() {
+            items.forEach(it => {
+                ['transform', 'opacity', 'transition', 'animation', 'will-change']
+                    .forEach(prop => it.el.style.removeProperty(prop));
+            });
+            vortex.classList.remove('on');
+            setTimeout(() => vortex.remove(), 600);
+            document.documentElement.style.overflow = '';
+            document.body.classList.remove('tornado-running');
             _tornadoRunning = false;
-        }, 5100);
-    }, 400);
+        }
+
+        requestAnimationFrame(frame);
+    }, 150);
 }
     
 //Zu unterst lassen:
