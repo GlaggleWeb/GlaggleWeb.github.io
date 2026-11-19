@@ -1566,6 +1566,74 @@ body.beat-prank .web-button {
 #tornado-vortex.on { opacity: 1; }
 
 body.tornado-running { pointer-events: none; }
+
+/* ===== BLACK HOLE / SUPERNOVA PRANK ===== */
+#bh-layer {
+    position: fixed; inset: 0;
+    z-index: 100000;
+    pointer-events: none;
+    overflow: hidden;
+}
+#bh-dim {
+    position: absolute; inset: 0; opacity: 0;
+    background: radial-gradient(ellipse at center, rgba(5, 0, 15, .25) 0%, rgba(0, 0, 8, .92) 100%);
+}
+#bh-shards { position: absolute; inset: 0; }
+#bh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+#bh-flash {
+    position: absolute; left: 50%; top: 50%;
+    width: 20px; height: 20px; margin: -10px 0 0 -10px;
+    border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle closest-side, #fff 0%, #fff 20%, #ffe9b0 40%, rgba(255,160,60,.75) 65%, rgba(255,90,20,0) 100%);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+}
+.bh-ring {
+    position: absolute; left: 50%; top: 50%;
+    width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    border-radius: 50%;
+    border: 4px solid currentColor;
+    box-shadow: 0 0 36px 4px currentColor, inset 0 0 36px 4px currentColor;
+    opacity: 0;
+}
+
+#bh-hole {
+    position: absolute; left: 50%; top: 50%;
+    width: 340px; height: 340px; margin: -170px 0 0 -170px;
+    transform: scale(0); opacity: 0;
+    will-change: transform, opacity;
+}
+#bh-hole > div { position: absolute; inset: 0; border-radius: 50%; }
+
+#bh-hole .bh-glow {
+    background: radial-gradient(circle closest-side,
+        rgba(255,150,40,0) 40%, rgba(255,120,30,.35) 58%, rgba(140,60,255,.28) 80%, rgba(80,40,200,0) 100%);
+    transform: scale(1.8);
+    filter: blur(10px);
+}
+#bh-hole .bh-disk {
+    -webkit-mask: radial-gradient(circle closest-side, transparent 0 33%, #000 41%, #000 55%, transparent 100%);
+            mask: radial-gradient(circle closest-side, transparent 0 33%, #000 41%, #000 55%, transparent 100%);
+}
+#bh-hole .bh-disk-a {
+    background: conic-gradient(from 0deg, #ff6a00, #ffd27a, #ffffff, #ff9a2e, #7d3cff, #ff6a00);
+    filter: blur(1.5px) saturate(1.3);
+    animation: bhSpin 2.4s linear infinite;
+}
+#bh-hole .bh-disk-b {
+    inset: 6%;
+    background: conic-gradient(from 90deg, rgba(255,255,255,0), rgba(255,255,255,.85), rgba(255,255,255,0) 40%, rgba(120,200,255,.6) 70%, rgba(255,255,255,0));
+    mix-blend-mode: screen;
+    animation: bhSpin 3.6s linear infinite reverse;
+}
+#bh-hole .bh-core {
+    inset: 32%;
+    background: #000;
+    box-shadow: 0 0 0 2px rgba(255,236,200,.95), 0 0 22px 6px rgba(255,170,70,.9), 0 0 70px 22px rgba(150,70,255,.5);
+}
+@keyframes bhSpin { to { transform: rotate(360deg); } }
+        
 </style>
 </head>
 <body>
@@ -1761,6 +1829,7 @@ document.getElementById('glaggleQuery').addEventListener('keypress', function (e
 });
     
 async function glaggleSearch(opts = {}) {
+    if (_bhRunning) return;
     let query = document.getElementById('glaggleQuery').value.trim();
     if (!query) return;
 
@@ -3317,7 +3386,7 @@ const _fixCache = new Map();
 
 function isProtectedQuery(q) {
     const l = q.toLowerCase();
-    if (['beat', 'tornado', 'wave', 'waves'].includes(l)) return true;
+    if (['beat', 'tornado', 'wave', 'waves', 'blackhole', 'black hole', 'supernova', 'schwarzes loch'].includes(l)) return true;
     if (l.includes('glaggle')) return true;
     if (/^[0-9+\-*/().\s^%]+$/.test(l)) return true;               // Rechner
     if (/timer|minuten|wetter|rechner|calculator/.test(l)) return true;
@@ -3699,6 +3768,12 @@ function checkPranks(query) {
         _wavePending = true;
         return true;
     }
+
+    if (q === 'blackhole' || q === 'black hole' || q === 'supernova' || q === 'schwarzes loch') {
+    _bhPending = true;
+    return true;
+}
+    
     return false;
 }
 
@@ -3711,6 +3786,11 @@ function runPendingPranks() {
         _wavePending = false;
         startWavePrank();
     }
+    if (_bhPending) {
+    _bhPending = false;
+    setTimeout(startBlackholePrank, 2200);
+}
+    
 }
     
 // ===== SCHICKER STOP-BUTTON FÜR DAUER-PRANKS =====
@@ -3871,7 +3951,375 @@ function startWavePrank() {
 
     requestAnimationFrame(frame);
 }
-    
+
+// ===== SUPERNOVA / BLACK HOLE PRANK =====
+let _bhPending = false;
+let _bhRunning = false;
+
+// Was explodiert? Standard: nur die Suchergebnisse.
+// Für ALLES: '.glaggle-entry, .png-strip, #logo-container, .search-bar-container'
+const BH_TARGETS = '.glaggle-entry';
+const BH_MAX_SHARDS = 150;   // Performance-Deckel
+
+const BH = {                 // Zeitachse in ms (total = Gesamtdauer)
+    boom: 1300, holeStart: 3000, holeFull: 4300,
+    suckStart: 4300, suckEnd: 7500, collapse: 7500,
+    restore: 8100, total: 9400
+};
+
+const bhClamp  = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const bhRamp   = (t, a, b) => bhClamp((t - a) / (b - a));
+const eOutCubic = x => 1 - Math.pow(1 - x, 3);
+const eInCubic  = x => x * x * x;
+const eOutBack  = x => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow(x - 1, 2);
+
+function bhVisibleTargets() {
+    const W = innerWidth, H = innerHeight;
+    return [...document.querySelectorAll(BH_TARGETS)].filter(el => {
+        if (el.closest('#bh-layer')) return false;
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        return r.width > 20 && r.height > 20 && cs.display !== 'none' && cs.visibility !== 'hidden'
+            && r.bottom > 0 && r.top < H && r.right > 0 && r.left < W;
+    });
+}
+
+// Zickzack-Dreiecke (zufällig verschobene Gitterpunkte) -> sieht aus wie echtes Glas
+function bhTriangles(w, h, cols, rows) {
+    const pts = [];
+    for (let j = 0; j <= rows; j++) {
+        pts[j] = [];
+        for (let i = 0; i <= cols; i++) {
+            let x = (i / cols) * w, y = (j / rows) * h;
+            if (i > 0 && i < cols) x += (Math.random() - 0.5) * (w / cols) * 0.7;
+            if (j > 0 && j < rows) y += (Math.random() - 0.5) * (h / rows) * 0.7;
+            pts[j][i] = [x, y];
+        }
+    }
+    const tris = [];
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const a = pts[j][i], b = pts[j][i + 1], c = pts[j + 1][i + 1], d = pts[j + 1][i];
+        if (Math.random() < 0.5) { tris.push([a, b, c], [a, c, d]); }
+        else                     { tris.push([a, b, d], [b, c, d]); }
+    }
+    return tris;
+}
+
+function bhMakeClone(el, r) {
+    const c = el.cloneNode(true);
+
+    // iframes/videos nicht neu laden -> schwarzer Platzhalter
+    const oMedia = el.querySelectorAll('iframe, video, canvas');
+    c.querySelectorAll('iframe, video, canvas').forEach((n, i) => {
+        const ph = document.createElement('div');
+        ph.style.cssText = `width:${oMedia[i].offsetWidth}px;height:${oMedia[i].offsetHeight}px;background:#000;`;
+        n.replaceWith(ph);
+    });
+    c.querySelectorAll('audio, script').forEach(n => n.remove());
+    const oIn = el.querySelectorAll('input, textarea');
+    c.querySelectorAll('input, textarea').forEach((n, i) => { if (oIn[i]) n.value = oIn[i].value; });
+
+    const set = (k, v) => c.style.setProperty(k, v, 'important');
+    set('position', 'fixed');  set('left', r.left + 'px');  set('top', r.top + 'px');
+    set('width', r.width + 'px');  set('height', r.height + 'px');
+    set('margin', '0');  set('max-width', 'none');  set('box-sizing', 'border-box');
+    set('transition', 'none');  set('animation', 'none');  set('pointer-events', 'none');
+    set('backdrop-filter', 'none');  set('-webkit-backdrop-filter', 'none');
+    set('visibility', 'visible');  set('will-change', 'transform');
+    return c;
+}
+
+function bhSpark(parts, x, y, n, vmin, vmax, cold) {
+    for (let i = 0; i < n && parts.length < 800; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = vmin + Math.pow(Math.random(), 1.5) * (vmax - vmin);
+        const blue = cold || Math.random() < 0.15;
+        parts.push({
+            x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, age: 0, life: 4 + Math.random() * 3.5,
+            h: blue ? 195 + Math.random() * 40 : 12 + Math.random() * 48,
+            l: blue ? 82 : 55 + Math.random() * 30,
+            size: 1 + Math.random() * 2.2
+        });
+    }
+}
+
+function bhRing(el, t, start, dur, maxSize, color) {
+    const p = bhRamp(t, start, start + dur);
+    if (p <= 0 || p >= 1) { el.style.opacity = 0; return; }
+    const s = 40 + (maxSize - 40) * eOutCubic(p);
+    el.style.color = color;
+    el.style.width = el.style.height = s + 'px';
+    el.style.margin = `${-s / 2}px 0 0 ${-s / 2}px`;
+    el.style.borderWidth = (2 + 10 * (1 - p)) + 'px';
+    el.style.opacity = Math.pow(1 - p, 1.4).toFixed(3);
+}
+
+function startBlackholePrank(attempt = 0) {
+    if (_bhRunning) return;
+    const all = [...document.querySelectorAll(BH_TARGETS)].filter(el => el.offsetHeight > 20);
+    if (all.length < 2 && attempt < 8) { setTimeout(() => startBlackholePrank(attempt + 1), 500); return; }
+    if (!all.length) return;
+
+    _bhRunning = true;
+    document.documentElement.style.overflow = 'hidden';          // ZUERST (Scrollbar-Sprung vermeiden)
+    document.body.classList.add('tornado-running');              // blockiert Klicks
+    window.scrollTo({ top: Math.max(0, all[0].getBoundingClientRect().top + window.scrollY - 110), behavior: 'instant' });
+
+    const W = innerWidth, H = innerHeight, CX = W / 2, CY = H / 2;
+    const targets = bhVisibleTargets();
+
+    // --- Scherben-Plan (Deckel gegen Lag) ---
+    const plan = targets.map(el => {
+        const r = el.getBoundingClientRect();
+        return { el, r,
+            cols: bhClamp(Math.round(r.width / 120), 2, 6),
+            rows: bhClamp(Math.round(r.height / 80), 2, 4) };
+    });
+    const total = plan.reduce((a, p) => a + p.cols * p.rows * 2, 0);
+    if (total > BH_MAX_SHARDS) {
+        const f = Math.sqrt(BH_MAX_SHARDS / total);
+        plan.forEach(p => { p.cols = Math.max(1, Math.round(p.cols * f)); p.rows = Math.max(1, Math.round(p.rows * f)); });
+    }
+
+    // --- Layer ---
+    const layer = document.createElement('div');
+    layer.id = 'bh-layer';
+    layer.innerHTML = `
+        <div id="bh-dim"></div>
+        <div id="bh-shards"></div>
+        <canvas id="bh-canvas"></canvas>
+        <div id="bh-hole">
+            <div class="bh-glow"></div>
+            <div class="bh-disk bh-disk-a"></div>
+            <div class="bh-disk bh-disk-b"></div>
+            <div class="bh-core"></div>
+        </div>
+        <div class="bh-ring"></div><div class="bh-ring"></div><div class="bh-ring"></div>
+        <div id="bh-flash"></div>`;
+    document.body.appendChild(layer);
+
+    const dim = layer.querySelector('#bh-dim');
+    const wrap = layer.querySelector('#bh-shards');
+    const hole = layer.querySelector('#bh-hole');
+    const flash = layer.querySelector('#bh-flash');
+    const rings = layer.querySelectorAll('.bh-ring');
+    const cvs = layer.querySelector('#bh-canvas');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cvs.width = W * dpr; cvs.height = H * dpr;
+    const ctx = cvs.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // --- Scherben bauen ---
+    const shards = [], centers = [];
+    plan.forEach(({ el, r, cols, rows }) => {
+        centers.push({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+        bhTriangles(r.width, r.height, cols, rows).forEach(tri => {
+            const gx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3;
+            const gy = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
+            const poly = tri.map(p => {                       // 0.6px Überlappung gegen Haarlinien
+                const vx = p[0] - gx, vy = p[1] - gy, l = Math.hypot(vx, vy) || 1;
+                return `${(p[0] + vx / l * 0.6).toFixed(1)}px ${(p[1] + vy / l * 0.6).toFixed(1)}px`;
+            }).join(',');
+
+            const c = bhMakeClone(el, r);
+            c.style.clipPath = `polygon(${poly})`;
+            c.style.transformOrigin = `${gx}px ${gy}px`;
+            wrap.appendChild(c);
+
+            const bx = r.left + gx, by = r.top + gy;
+            const dist = Math.hypot(bx - CX, by - CY) || 1;
+            const ang = Math.atan2(by - CY, bx - CX) + (Math.random() - 0.5) * 1.0;
+            const dirx = Math.cos(ang), diry = Math.sin(ang);
+            const D1 = Math.min((140 + Math.random() * 320 + dist * 0.35) * (0.7 + Math.random() * 0.6), Math.max(W, H) * 0.8);
+            const spin = (Math.random() - 0.5) * 900;
+
+            // Einsaug-Verzögerung: Scherben, die näher am Loch liegen, fallen zuerst
+            const dEnd = Math.hypot(bx + dirx * D1 - CX, by + diry * D1 - CY);
+            const delay = 1100 * bhClamp(dEnd / (Math.hypot(W, H) * 0.55)) * (0.8 + Math.random() * 0.2);
+            const ts = BH.suckStart + delay;
+            const es = eOutCubic(bhRamp(ts, BH.boom, BH.boom + 3400));
+            const p0x = bx + dirx * D1 * es, p0y = by + diry * D1 * es;
+
+            shards.push({
+                el: c, bx, by, dirx, diry, D1, spin, ts,
+                dur: 1800 + Math.random() * 300,
+                r0: Math.hypot(p0x - CX, p0y - CY), th0: Math.atan2(p0y - CY, p0x - CX), rot0: spin * es,
+                turns: 0.7 + Math.random() * 0.7, spinSuck: (Math.random() - 0.5) * 1080,
+                amp: 1.2 + Math.random() * 3.2,
+                f1: 0.8 + Math.random() * 0.6, f2: 0.8 + Math.random() * 0.6,
+                ph1: Math.random() * 6.28, ph2: Math.random() * 6.28, gone: false
+            });
+        });
+    });
+
+    // Originale verstecken (im selben Frame, in dem die Scherben erscheinen -> kein Flackern)
+    targets.forEach(el => el.style.setProperty('visibility', 'hidden', 'important'));
+
+    const parts = [];
+    const HS = Math.min(Math.min(W, H) * 0.7, 460) / 340;       // Lochgröße relativ zum Screen
+    const FL = Math.max(W, H) * 1.8 / 20;                       // Blitz soll den Screen füllen
+    const RING_MAX = Math.max(W, H) * 1.5;
+    let boomed = false, burst = false, restored = false;
+    const start = performance.now();
+    let last = start;
+
+    function restore() {
+        targets.forEach(el => el.style.removeProperty('visibility'));
+        [...document.querySelectorAll(BH_TARGETS)]
+            .filter(el => !el.closest('#bh-layer') && el.offsetHeight > 0)
+            .forEach((el, i) => el.animate(
+                [{ opacity: 0, transform: 'scale(.82) translateY(24px)' },
+                 { opacity: 1, transform: 'scale(1) translateY(0)' }],
+                { duration: 700, delay: Math.min(i * 70, 450), easing: 'cubic-bezier(.2,.9,.25,1.1)', fill: 'backwards' }
+            ));
+    }
+
+    function finish() {
+        targets.forEach(el => el.style.removeProperty('visibility'));
+        layer.remove();
+        document.documentElement.style.overflow = '';
+        document.body.classList.remove('tornado-running');
+        _bhRunning = false;
+    }
+
+    function frame(now) {
+        const t = now - start;
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+
+        // ---------- Abdunkeln ----------
+        dim.style.opacity = bhClamp(
+            0.55 * bhRamp(t, 0, BH.boom) + 0.3 * bhRamp(t, BH.holeStart, BH.holeFull) - 0.85 * bhRamp(t, BH.collapse + 100, 9200)
+        ).toFixed(3);
+
+        // ---------- Supernova-Zündung ----------
+        if (!boomed && t >= BH.boom) {
+            boomed = true;
+            bhSpark(parts, CX, CY, 260, 300, 1500);
+            centers.forEach(c => bhSpark(parts, c.x, c.y, 14, 150, 700));
+        }
+        if (!burst && t >= BH.collapse + 600) {
+            burst = true;
+            bhSpark(parts, CX, CY, 140, 300, 1100, true);
+        }
+
+        // ---------- Blitz / Stern ----------
+        let fs = 0, fo = 0;
+        if (t < BH.boom) {
+            const k = bhRamp(t, 0, BH.boom);
+            fs = (0.4 + 5 * k * k) * (1 + 0.08 * Math.sin(t * 0.03 * (1 + k * 3)));
+            fo = 0.15 + 0.85 * k;
+        } else if (t < 2300) {
+            const k = bhRamp(t, BH.boom, 2300);
+            fs = 5 + (FL - 5) * eOutCubic(k);
+            fo = 1 - bhRamp(t, BH.boom + 250, 2300);
+        } else if (t >= BH.collapse + 500 && t < BH.collapse + 1100) {
+            const k = bhRamp(t, BH.collapse + 500, BH.collapse + 1100);
+            fs = 2 + 14 * eOutCubic(k);
+            fo = 0.9 * (1 - k);
+        }
+        flash.style.opacity = fo.toFixed(3);
+        flash.style.transform = `scale(${fs.toFixed(2)})`;
+
+        bhRing(rings[0], t, BH.boom, 1500, RING_MAX, '#ffd9a0');
+        bhRing(rings[1], t, BH.boom + 180, 2100, RING_MAX, '#b48cff');
+        bhRing(rings[2], t, BH.collapse + 600, 1300, RING_MAX * 0.9, '#9fd8ff');
+
+        // ---------- Screen-Shake (nur die Scherben-Ebene) ----------
+        const sh = (t >= BH.boom ? (1 - bhRamp(t, BH.boom, BH.boom + 800)) * 16 : 0)
+                 + (t >= BH.collapse + 600 ? (1 - bhRamp(t, BH.collapse + 600, BH.collapse + 1000)) * 6 : 0);
+        wrap.style.transform = sh ? `translate(${(Math.random() - .5) * sh}px,${(Math.random() - .5) * sh}px)` : '';
+
+        // ---------- Scherben ----------
+        for (const s of shards) {
+            if (s.gone) continue;
+            let tx, ty, rot = 0, phi = 0, sx = 1, sy = 1, sc = 1, op = 1;
+
+            if (t < BH.boom) {                                    // Aufladung: Zittern + Risse
+                const a = Math.pow(bhRamp(t, 0, BH.boom), 2);
+                tx = Math.sin(t * 0.045 * s.f1 + s.ph1) * s.amp * a * 2 + s.dirx * a * 5;
+                ty = Math.cos(t * 0.052 * s.f2 + s.ph2) * s.amp * a * 2 + s.diry * a * 5;
+                rot = Math.sin(t * 0.04 * s.f2 + s.ph2) * a * 1.2;
+                sc = 1 + a * 0.03;
+            } else if (t < s.ts) {                                // Explosion + Treiben
+                const e = eOutCubic(bhRamp(t, BH.boom, BH.boom + 3400));
+                tx = s.dirx * s.D1 * e;  ty = s.diry * s.D1 * e;  rot = s.spin * e;
+            } else {                                              // Einsaugen
+                const sp = bhRamp(t, s.ts, s.ts + s.dur);
+                if (sp >= 1) { s.el.style.visibility = 'hidden'; s.gone = true; continue; }
+                const g = Math.pow(sp, 2.1);
+                const r = s.r0 * (1 - g);
+                const th = s.th0 + s.turns * 2 * Math.PI * Math.pow(sp, 1.7);
+                tx = CX + r * Math.cos(th) - s.bx;
+                ty = CY + r * Math.sin(th) - s.by;
+                phi = th * 180 / Math.PI;                         // Streckung entlang der Richtung zum Loch
+                rot = s.rot0 + s.spinSuck * g;
+                sc = Math.max(0.03, 1 - 0.97 * Math.pow(sp, 0.9));
+                sx = 1 + 2.4 * g;  sy = 1 - 0.5 * g;
+                op = 1 - bhRamp(sp, 0.8, 1);
+            }
+            s.el.style.transform =
+                `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) rotate(${phi.toFixed(1)}deg) ` +
+                `scale(${(sx * sc).toFixed(3)},${(sy * sc).toFixed(3)}) rotate(${(rot - phi).toFixed(1)}deg)`;
+            if (op < 1) s.el.style.opacity = op.toFixed(3);
+        }
+
+        // ---------- Schwarzes Loch ----------
+        let hs = 0;
+        if (t >= BH.holeStart && t < BH.collapse) {
+            hs = eOutBack(bhRamp(t, BH.holeStart, BH.holeFull)) * (1 + 0.28 * bhRamp(t, BH.suckStart, BH.suckEnd));
+        } else if (t >= BH.collapse) {
+            const c = bhRamp(t, BH.collapse, BH.collapse + 900);
+            hs = 1.28 * (1 + 0.18 * Math.sin(Math.PI * Math.min(1, c * 1.6))) * (1 - eInCubic(c));
+        }
+        hole.style.transform = `scale(${(hs * HS).toFixed(3)})`;
+        hole.style.opacity = t < BH.collapse + 900 ? bhRamp(t, BH.holeStart, BH.holeStart + 500).toFixed(3) : 0;
+
+        // ---------- Funken / Staub (Canvas) ----------
+        if (t > 3200 && t < 6800) {                               // Staub, der aus dem Raum gesaugt wird
+            const n = Math.round(dt * 110);
+            for (let i = 0; i < n && parts.length < 800; i++) {
+                const a = Math.random() * Math.PI * 2, rad = Math.hypot(W, H) * (0.3 + Math.random() * 0.25);
+                parts.push({ x: CX + Math.cos(a) * rad, y: CY + Math.sin(a) * rad, vx: 0, vy: 0, age: 0,
+                    life: 3 + Math.random() * 2, h: 190 + Math.random() * 80, l: 80, size: 0.8 + Math.random() * 1.4 });
+            }
+        }
+        const holeK = bhRamp(t, BH.holeStart, BH.holeFull) * (t < BH.collapse ? 1 : 0);
+        ctx.clearRect(0, 0, W, H);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        for (let i = parts.length - 1; i >= 0; i--) {
+            const p = parts[i];
+            p.age += dt;
+            if (p.age > p.life) { parts.splice(i, 1); continue; }
+            const dx = CX - p.x, dy = CY - p.y, d = Math.hypot(dx, dy) || 1;
+            if (holeK > 0) {
+                const pull = holeK * (220 + 60000 / (d + 80));
+                p.vx += (dx / d) * pull * dt + (dy / d) * pull * 0.55 * dt;   // Sog + Drall
+                p.vy += (dy / d) * pull * dt - (dx / d) * pull * 0.55 * dt;
+                p.vx *= (1 - 0.4 * dt);  p.vy *= (1 - 0.4 * dt);
+                if (d < 22) { parts.splice(i, 1); continue; }
+            } else {
+                p.vx *= (1 - 1.7 * dt);  p.vy *= (1 - 1.7 * dt);
+            }
+            p.x += p.vx * dt;  p.y += p.vy * dt;
+            ctx.strokeStyle = `hsla(${p.h},100%,${p.l}%,${Math.min(1, (1 - p.age / p.life) * 1.4).toFixed(2)})`;
+            ctx.lineWidth = p.size;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x - p.vx * 0.035, p.y - p.vy * 0.035);
+            ctx.stroke();
+        }
+
+        // ---------- Ergebnisse kommen zurück ----------
+        if (!restored && t >= BH.restore) { restored = true; restore(); }
+
+        if (t < BH.total) requestAnimationFrame(frame);
+        else finish();
+    }
+
+    requestAnimationFrame(frame);
+}
 //Zu unterst lassen:
 document.addEventListener('DOMContentLoaded', () => {
     const logoContainer = document.getElementById('logo-container');
@@ -3885,6 +4333,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 </script>
