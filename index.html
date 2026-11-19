@@ -1796,25 +1796,62 @@ function createAiPlaceholder() {
         <div id="ai-full" style="display:none; opacity:0; transform:translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease;">
             <div id="ai-text-full" style="line-height:1.8;"></div>
             <button id="ai-open-chat-btn" style="
-                margin-top:16px;
-                background: #70C4F7;
-                color:white; border:none; border-radius:10px;
-                padding:10px 22px; cursor:pointer; font-weight:bold; font-size:0.9rem;
-                box-shadow: 0 4px 15px rgba(112,196,247,0.4);
-                transition: transform 0.2s, box-shadow 0.2s;
-                display: flex; align-items: center; gap: 8px;
-            ">💬 Mit Glaggle AI chatten</button>
+    margin-top:16px;
+    background:white;
+    color:#70C4F7;
+    border:3px solid #70C4F7;
+    border-radius:20px;
+    padding:10px 22px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:0.9rem;
+    box-shadow:0 4px 15px rgba(112,196,247,0.15);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:all 0.3s ease;
+"
+onmouseover="
+    this.style.background='linear-gradient(white, white) padding-box, linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box';
+    this.style.border='3px solid transparent';
+    this.style.boxShadow='0 4px 18px rgba(66,133,244,0.25)';
+"
+onmouseout="
+    this.style.background='white';
+    this.style.border='3px solid #70C4F7';
+    this.style.boxShadow='0 4px 15px rgba(112,196,247,0.15)';
+"
+onmousedown="this.style.transform='scale(0.93)'"
+onmouseup="this.style.transform='scale(1)'"
+onmouseleave="this.style.transform='scale(1)'"
+>💬 Mit Glaggle AI chatten</button>
         </div>
 
         <button id="ai-expand-btn" style="
-            display:none; margin-top:14px;
-            background: rgba(112,196,247,0.1);
-            border: 1px solid #70C4F7;
-            color:#70C4F7; border-radius:20px;
-            padding:9px 22px; cursor:pointer; font-weight:bold; font-size:0.85rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        ">Mehr erfahren ↓</button>
+    display:none;
+    margin-top:14px;
+    background:white;
+    border:3px solid #70C4F7;
+    color:#70C4F7;
+    border-radius:20px;
+    padding:9px 22px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:0.85rem;
+    transition:all 0.3s ease;
+"
+onmouseover="
+    this.style.background='linear-gradient(white, white) padding-box, linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box';
+    this.style.border='3px solid transparent';
+"
+onmouseout="
+    this.style.background='white';
+    this.style.border='3px solid #70C4F7';
+"
+onmousedown="this.style.transform='scale(0.93)'"
+onmouseup="this.style.transform='scale(1)'"
+onmouseleave="this.style.transform='scale(1)'"
+>Mehr erfahren ↓</button>
     `;
     aiBox.style.display = 'none';
     return aiBox;
