@@ -1468,6 +1468,60 @@ pre, code, .ai-text-content {
     .png-strip { gap: 8px; padding: 12px; border-radius: 26px; }
 }
 
+/* ===== PRANK STOP BUTTON ===== */
+.prank-stop-btn {
+    position: fixed;
+    left: 50%;
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 28px 14px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50px;
+    cursor: pointer;
+    font: 800 0.95rem 'Nunito', 'Segoe UI', sans-serif;
+    letter-spacing: 0.3px;
+    color: #fff;
+    background: linear-gradient(135deg, #EA4335, #b3261e);
+    box-shadow: 0 10px 30px rgba(234, 67, 53, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translate(-50%, 40px) scale(0.9);
+    pointer-events: none;
+    transition: opacity .35s ease, transform .5s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s ease;
+}
+.prank-stop-btn.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    pointer-events: auto;
+}
+.prank-stop-btn:hover {
+    transform: translate(-50%, -3px) scale(1.04);
+    box-shadow: 0 14px 38px rgba(234, 67, 53, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.prank-stop-btn:active { transform: translate(-50%, 0) scale(0.96); }
+
+.psb-icon {
+    position: relative;
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    background: #fff;
+    flex-shrink: 0;
+}
+.psb-icon::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    animation: psbPulse 1.4s ease-out infinite;
+}
+@keyframes psbPulse {
+    from { transform: scale(0.6); opacity: 1; }
+    to   { transform: scale(1.8); opacity: 0; }
+}
+        
 /* ===== BEAT PRANK ===== */
 @keyframes glaggleBeat {
     0%   { transform: scale(1); }
@@ -3659,15 +3713,39 @@ function runPendingPranks() {
     }
 }
     
-// ===== BEAT PRANK =====
+// ===== SCHICKER STOP-BUTTON FÜR DAUER-PRANKS =====
+let _prankStopBtn = null;
 
+function showPrankStop(label, onStop) {
+    if (!_prankStopBtn) {
+        _prankStopBtn = document.createElement('button');
+        _prankStopBtn.type = 'button';
+        _prankStopBtn.className = 'prank-stop-btn';
+        _prankStopBtn.innerHTML = '<span class="psb-icon"></span><span class="psb-label"></span>';
+        document.body.appendChild(_prankStopBtn);
+    }
+    _prankStopBtn.querySelector('.psb-label').textContent = label;
+    _prankStopBtn.onclick = onStop;
+    requestAnimationFrame(() => requestAnimationFrame(() => _prankStopBtn.classList.add('show')));
+}
+
+function hidePrankStop() {
+    if (_prankStopBtn) _prankStopBtn.classList.remove('show');
+}
+
+// ===== BEAT PRANK =====
 function startBeatPrank() {
     document.body.classList.add('beat-prank');
+    showPrankStop('Beat Prank beenden', stopBeatPrank);
 }
 
 function stopBeatPrank() {
     document.body.classList.remove('beat-prank');
+    hidePrankStop();
 }
+
+// Bonus: Escape stoppt den Beat auch
+document.addEventListener('keydown', e => { if (e.key === 'Escape') stopBeatPrank(); });
 
 // ===== TORNADO PRANK =====
 let _tornadoPending = false;
