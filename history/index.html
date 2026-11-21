@@ -2,333 +2,361 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glaggle | History</title>
-    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Glaggle - History</title>
+    <link rel="shortcut icon" href="/favicon.ico?v=3" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <style>
-    /* 1. GLOBALE ANPASSUNGEN */
     :root {
         --bg-color: #ffffff;
-        --nav-bg: #ffffff;
-        --text-color: #202124;
-        --card-bg: #ffffff;
-        --card-border: #dfe1e5;
-        --link-color: #70C4F7;
-        --desc-color: #4d5156;
+        --text-color: #1f2430;
+        --card-bg: #fdfdfd;
+        --card-border: #eeeeee;
+        --link-color: #2E94D1;
+        --desc-color: #5b6270;
+        --grad: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
+        --blue: #70C4F7;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: auto; }
+    body {
+        background: var(--bg-color); color: var(--text-color);
+        font-family: "Nunito", sans-serif; margin: 0; overflow-x: clip;
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --bg-color: #0b0f13;
-            --nav-bg: #161b22;
-            --text-color: #e6edf3;
-            --card-bg: #161b22;
-            --card-border: #30363d;
-            --link-color: #58a6ff;
-            --desc-color: #8b949e;
-        }
+    /* Weicher, farbiger Hintergrund, der mit dem Scrollen wandert */
+    .backdrop {
+        position: fixed; inset: 0; z-index: -1; pointer-events: none;
+        background:
+            radial-gradient(40vmax 40vmax at calc(10% + var(--bgp, 0) * 60%) 15%, rgba(66,133,244,.16), transparent 70%),
+            radial-gradient(40vmax 40vmax at calc(90% - var(--bgp, 0) * 60%) 55%, rgba(234,67,53,.10), transparent 70%),
+            radial-gradient(45vmax 45vmax at 50% calc(100% - var(--bgp, 0) * 30%), rgba(52,168,83,.12), transparent 70%),
+            var(--bg-color);
     }
 
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        overflow-x: hidden; /* Verhindert seitliches Wackeln */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        transition: background-color 0.3s ease;
+    /* Verlauf bewegt sich beim Scrollen, löst sich dann (--f: 0 -> 1) in Glaggle Blau auf */
+    .hero-title, .feat-head, .hcard strong {
+        background: var(--grad); background-size: 300% 100%;
+        background-position: calc(var(--p, 0) * 100%) 0;
+        -webkit-background-clip: text; background-clip: text;
+        color: color-mix(in srgb, var(--blue) calc(var(--f, 0) * 100%), transparent);
+    }
+    .hero-title { --f: clamp(0, calc((var(--p) - .55) * 5), 1); }
+    .feat-head { --f: clamp(0, calc(var(--p) * 12), 1); }
+
+    .scene { position: relative; }
+    .stage {
+        position: sticky; top: 0; height: 100vh; height: 100svh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 80px 24px 24px; overflow: visible;
     }
 
-
-    /* 3. HAUPTINHALT */
-    .main-content { 
-        margin: 120px auto 50px auto; 
-        padding: 20px; 
-        width: 95%; 
-        max-width: 1000px; 
-        box-sizing: border-box; 
+    /* ---------- 1. Intro ---------- */
+    #hero { height: 220vh; }
+    .hero-title {
+        text-align: center; margin: 0; font-size: clamp(2.2rem, 7vw, 4.6rem);
+        transform: scale(calc(1 + var(--p) * .2)) translateY(calc(var(--p) * -4vh));
+    }
+    .hero-sub {
+        margin: 12px 0 0; color: var(--desc-color); text-align: center;
+        font-size: clamp(1rem, 2.4vw, 1.3rem); max-width: 560px;
+        opacity: clamp(0, calc((var(--p) - .15) * 5), 1);
+    }
+    .scroll-hint {
+        position: absolute; bottom: 28px; font-size: .8rem; letter-spacing: 1px;
+        color: var(--desc-color); text-transform: uppercase;
+        opacity: clamp(0, calc(.6 - var(--p) * 8), .6);
     }
 
-    h1 { font-size: 2.8rem; margin-bottom: 10px; text-align: center; }
-    .subtitle { text-align: center; color: var(--desc-color); margin-bottom: 60px; font-size: 1.1rem; }
+    /* ---------- 2. Timeline: eine grosse Karte im Fokus ---------- */
+    #timeline { height: 1200vh; } /* wird per JS an die Kartenanzahl angepasst */
+    #timeline .stage { gap: 4vh; padding-top: 90px; overflow-x: clip; overflow-y: visible; }
+    .feat-head { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); text-align: center; }
+    .track { position: relative; width: 100%; height: min(64vh, 520px); }
+    .hcard {
+        --f: 0;
+        position: absolute; top: 0; left: 50%;
+        width: min(560px, 84vw); margin-left: calc(min(560px, 84vw) / -2);
+        height: 100%; overflow-y: auto; scrollbar-width: none;
+        padding: clamp(22px, 4vw, 40px); border-radius: 32px; text-align: left;
+        background: var(--card-bg);
+        border: 3px solid color-mix(in srgb, var(--blue) calc(var(--f) * 100%), transparent);
+        display: flex; flex-direction: column; justify-content: flex-end;
+        opacity: calc(.25 + .75 * var(--f));
+        box-shadow: 0 24px 60px rgba(112, 196, 247, calc(.25 * var(--f)));
+        will-change: transform, opacity;
+    }
+    .hcard::-webkit-scrollbar { display: none; }
+    .hcard::before {
+        content: ""; position: absolute; inset: -3px; padding: 3px; border-radius: 32px;
+        background: var(--grad);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        opacity: calc(1 - var(--f)); pointer-events: none;
+    }
+    .hcard .ico {
+        flex: none; width: 68px; height: 68px; border-radius: 20px; margin-bottom: auto;
+        display: grid; place-items: center; font-size: 2rem;
+        background: rgba(112, 196, 247, .14);
+    }
+    .hcard .month { display: block; margin: 16px 0 4px; font-weight: bold; color: var(--blue); font-size: 1.05rem; }
+    .hcard strong { font-size: clamp(1.4rem, 3.6vw, 2rem); margin: 0 0 10px; display: block; line-height: 1.2; }
+    .hcard p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(.92rem, 2vw, 1.08rem); }
+    .hcard a { color: var(--link-color); font-weight: bold; text-decoration: none; }
+    .hcard a:hover { text-decoration: underline; }
 
-    /* 4. TIMELINE LOGIK */
-    .timeline {
-        position: relative;
-        width: 100%;
-        margin: 0 auto;
+    .progress {
+        position: fixed; left: 16px; right: 16px;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        height: 8px; border-radius: 999px; background: rgba(0,0,0,.08);
+        overflow: hidden; z-index: 5; opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+    .progress.show { opacity: 1; }
+    .progress i {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: calc(var(--p, 0) * 100%); border-radius: 999px; background: var(--blue); overflow: hidden;
+    }
+    .progress i::after {
+        content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+        width: var(--bw, 100vw); background: var(--grad); opacity: 0; transition: opacity .25s;
+    }
+    .progress.moving i::after { opacity: 1; }
+
+    /* ---------- 3. Quick Links ---------- */
+    .quick { padding: 12vh 24px 8vh; text-align: center; }
+    .quick-head {
+        margin: 0 0 36px; font-size: clamp(1.5rem, 4vw, 2.4rem);
+        background: var(--blue); -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .quick-grid { display: grid; gap: 20px; max-width: 760px; margin: 0 auto; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .qlink {
+        position: relative; display: flex; align-items: center; gap: 16px;
+        padding: 22px 24px; border-radius: 28px; text-align: left;
+        text-decoration: none; color: var(--text-color);
+        background: var(--card-bg); border: 3px solid var(--blue);
+        box-shadow: 0 10px 30px rgba(112, 196, 247, .18);
+        -webkit-tap-highlight-color: transparent;
+        opacity: 0; transform: translateY(40px) scale(.96);
+        transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
+        transition-delay: calc(var(--d, 0) * .12s), calc(var(--d, 0) * .12s), 0s;
+    }
+    .qlink.in { opacity: 1; transform: none; }
+    .qlink::before {
+        content: ""; position: absolute; inset: -3px; padding: 3px; border-radius: 28px;
+        background: var(--grad); background-size: 300% 100%;
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        opacity: 0; transition: opacity .35s ease; pointer-events: none;
+        animation: qshift 4s linear infinite;
+    }
+    @keyframes qshift { to { background-position: 300% 0; } }
+    .qlink .ico {
+        flex: none; width: 60px; height: 60px; border-radius: 18px;
+        display: grid; place-items: center; color: var(--blue);
+        background: rgba(112, 196, 247, .14); transition: transform .4s cubic-bezier(.2,.8,.2,1);
+    }
+    .qlink .ico svg, .qlink .arrow { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .qlink .ico svg { width: 30px; height: 30px; }
+    .qtext { flex: 1; min-width: 0; }
+    .qtext strong { display: block; font-size: 1.35rem; color: var(--blue); }
+    .qtext small { display: block; margin-top: 4px; color: var(--desc-color); font-size: .95rem; line-height: 1.4; }
+    .qlink .arrow { flex: none; width: 24px; height: 24px; color: var(--blue); }
+    @media (hover: hover) {
+        .qlink.in:hover { box-shadow: 0 22px 50px rgba(112, 196, 247, .35); transition-delay: 0s; }
+        .qlink:hover::before { opacity: 1; }
+        .qlink:hover .ico { transform: rotate(-8deg) scale(1.08); }
+    }
+    .qlink.in:active { transform: scale(.97); transition-delay: 0s; transition-duration: .15s; }
+    .qlink:focus-visible { outline: 3px solid var(--link-color); outline-offset: 4px; }
+    @media (max-width: 480px) {
+        .quick { padding-left: 16px; padding-right: 16px; }
+        .qlink { padding: 18px; gap: 14px; border-radius: 24px; }
+        .qlink::before { border-radius: 24px; }
+        .qlink .ico { width: 52px; height: 52px; border-radius: 16px; }
+        .qtext strong { font-size: 1.2rem; }
     }
 
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 50%;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, #4285F4, #EA4335, #FBBC05, #34A853);
-        transform: translateX(-50%);
-        border-radius: 2px;
+    footer { padding: 50px 20px 60px; text-align: center; color: var(--desc-color); font-size: .9rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-title { transform: none; }
+        .qlink { opacity: 1; transform: none; transition: none; }
+        .qlink::before { animation: none; }
     }
-
-    .timeline-item {
-        position: relative;
-        margin-bottom: 80px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-sizing: border-box;
-    }
-
-    .timeline-item:nth-child(even) { flex-direction: row-reverse; }
-
-    .timeline-content {
-        width: 45%; /* Gibt Platz für die Linie in der Mitte */
-        box-sizing: border-box;
-    }
-
-    .timeline-dot {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 24px;
-        height: 24px;
-        background-color: var(--bg-color);
-        border: 4px solid #70C4F7;
-        border-radius: 50%;
-        z-index: 10;
-    }
-
-    /* 5. KARTEN STYLING */
-    .glaggle-entry {
-        background: var(--card-bg); 
-        padding: 25px; 
-        border-radius: 20px; 
-        border: 1px solid var(--card-border);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .glaggle-entry:hover { 
-        transform: translateY(-8px) scale(1.03); 
-        border-color: #70C4F7; 
-        box-shadow: 0 15px 30px rgba(112, 196, 247, 0.2); 
-    }
-
-    .fav-project {
-        border: 2px solid transparent !important;
-        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, 
-                    linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853) border-box !important;
-    }
-
-    .month-label { font-weight: bold; color: #70C4F7; font-size: 1.1rem; display: block; margin-bottom: 10px; }
-    .entry-title { font-size: 1.4rem; margin: 0 0 10px 0; color: var(--text-color); }
-    .glaggle-entry p { line-height: 1.6; margin: 0; color: var(--desc-color); }
-    .glaggle-entry a { color: var(--link-color); text-decoration: none; font-weight: bold; }
-    .glaggle-entry a:hover { text-decoration: underline; }
-
-    /* 6. MOBILE ANPASSUNG */
-    @media (max-width: 768px) {
-        .timeline::before { left: 30px; transform: none; }
-        .timeline-dot { left: 30px; transform: translateX(-50%); }
-        .timeline-item, .timeline-item:nth-child(even) { 
-            flex-direction: row; 
-            margin-bottom: 40px;
-        }
-        .timeline-content { 
-            width: calc(100% - 60px); 
-            margin-left: 60px; 
-        }
-        .navbar { padding: 0 20px; }
-        h1 { font-size: 2rem; }
-    }
-</style>
+    </style>
 </head>
 <body>
 
-<script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
+    <script src="/shared/shared.js" data-features="navbar,design,voice,smart-mouse" data-version="1"></script>
 
-    <main class="main-content">
-        <h1>Glaggle History ✨</h1>
-        <p class="subtitle">Von den ersten Zeilen Code bis zum globalen Glaggle-Erlebnis.</p>
+    <div class="backdrop" id="backdrop"></div>
 
-        <div class="timeline">
-
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">November 2026</span>
-                        <h3 class="entry-title">🙈 Glaggle Pranks</h3>
-                        <p>Neu dabei in der <a href="https://glaggle.ch/">Glaggle Suche</a> sind die Glaggle Pranks! Darunter zb schon Wave, Tornado, Beat oder Black Hole! Was passiert wenn du sie eingiebst?</p>
-                    </div>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Oktober 2026</span>
-                        <h3 class="entry-title">📁 Vereinheitlichung</h3>
-                        <p>Wir sind dran alle Glaggle Seiten im Design zu vereinheitlichen. Wie bereit auf der <a href="https://glaggle.ch/faq">FAQ und Über uns Seite</a>, angewendet wird die Navbar und Sidebar nun über gleich aussehen. Dazu kann das Theme zukünftig auf allen Seiten angewendet werden!</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">September 2026</span>
-                        <h3 class="entry-title">🔎 Neues kleines Suchfeld.</h3>
-                        <p>Du hast nach unten gescrollt, hast aber kein Bock raufzuscrollen un nach was neuem zu suchen? Kein Problem den neu dabei ist das kleine Suchfeld das direkt unter der Glaggle Nav erscheint, sobald das grosse Suchfeld nicht mehr zu sehen ist. Dazu werden Ende September Avatare eingefügt, um Glaggle Accounts mehr zu personaliesieren. Avatar erstellen? <a href="https://glaggle.ch/account">Glaggle Account erstellen</a>, Übersicht <a href="https://glaggle.ch/account/overview">öffnen</a> und Avatar mit Glaggle AI generieren. Viel Spass!</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">August 2026</span>
-                        <h3 class="entry-title">👤 Neue Magic URL anmeldung.</h3>
-                        <p>Spare dir den lästigen Passwort stress, denn ab nun ist das LogIn für Glaggle Accounts über Magic URL abgewickelt, mühelos über Email einloggen. </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Juli 2026</span>
-                        <h3 class="entry-title">🌦️ Glaggle Meteo und anpassung des Designstudios.</h3>
-                        <p>Neu dabei ist das <a href="https://glaggle.ch/meteo">Glaggle Meteo</a> das über die Open Meteo API funktioniert. Dazu gehören bis zu 7 Tage Wettervorhersage. Auch wird das <a href="https://glaggle.ch/designstudio">Glaggle Design Studio</a> angepasst und verbessert. </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Juni 2026</span>
-                        <h3 class="entry-title">⚜️ Design und Glaggle Assistant!</h3>
-                        <p>Neu ist auch die <a href="https://glaggle.ch/">Hauptseite</a> für Handys im neuen Design verfügbar. Dazu kann der Nutzer sein bevorzugtes Farbschema auswählen. Auch neu dabei ist Glaggle Assistant, der wie Siri oder Alexa funktioniert. Dazu wird erstmals eine <a href="https://glaggle.ch/preview">Beta Version</a> vom Web-Search veröffentlicht die helfen soll die Websites schneller zu finden.</p>
-                    </div>
-                </div>
-            </div>
-
-                        <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Mai 2026</span>
-                        <h3 class="entry-title">✨ AI Power und Design Upgrade + LogIN!</h3>
-                        <p>Glame AI Pro wird massiv upgedatet. Erstmals kann man einen  <a href="https://glaggle.ch/account">Glaggle Account erstellen</a> mit dem man Glaggle-Cloud Dienste nutzen kann. Und die Hauptseite wird für PC's neu im neuen Design verfügbar sein.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">16 April 2026</span>
-                        <h3 class="entry-title">🥳 Happy Birthday Glaggle!</h3>
-                        <p>Juhu! Wir feiern unser 1 Geburtstag <a href="https://scratch.mit.edu/projects/1162485203/">Glaggle.com</a> ist seit 1 Jahr auf Scratch!</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">April 2026</span>
-                        <h3 class="entry-title">🌇 AImage, WebSearch und 3D Games</h3>
-                        <p>Neu kann man in <a href="https://glaggle.ch/aimage">AImage</a>  Bilder generieren ohne LogIn und kostenlos! Dazu gibt es auch neu noch <a href="https://glaggle.ch/avideo">AVideo</a> auch ohne LogIn und kostenlos! Dazu kommt die neue Glaggle WebSearch Funktion in der Glaggle-Suche die auf eine Datenbank zugreift, auf der der Glaggle-Bot immer mehr Websites hinzufügt! Auch noch dazu kommt <a href="https://glaggle.ch/historysites">Glaggle Historysites</a> darauf kann man alle Versionen von der Hauptseite Glaggle.ch abrufen. Und im Gamecenter beginnt mit <a href="https://glaggle.ch/glaggleresort">Glaggle Resort 3D</a> die Ära der 3D Games.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">März 2026</span>
-                        <h3 class="entry-title">🎮 Gamecenter und Quiz Studio</h3>
-                        <p>Das Gamecenter mit anfänglich 4 Games wird eröffnet. Dazu gibt es neu das Glaggle Design Studio! Es kommen laufend welche dazu, und erstmals ist das Quiz Studio Pro verfügbar in dem man mit KI Quize erstellen kann! Auch wird die Home Seite um das Hamburgerkonzept erweitert, dass eine bessere Übersicht gewährleisten sollte! Dazu wird Glame 2.0 auf <a href="https://glaggle.ch/glame/pro/">Glame Pro</a>  Upgedatet! Glame Classic besteht aber weiterhin in der Version 3.0!</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Februar 2026</span>
-                        <h3 class="entry-title">🤖 Glame AI Evolution und WebSearch</h3>
-                        <p>Glame 1.0 wird erschaffen und später weiterentwickelt für mehr Designmodes und Markdown. Auch wird ende Februar auch erstmals das GlaggleWebSearch verfügbar sein. Nebenbei wird auch die Home-Seite massiv Upgedatet!</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Januar 2026</span>
-                        <h3 class="entry-title">🔢 Zahlenraten</h3>
-                        <p>Das Glaggle <a href="https://glaggle.ch/zahlenraten/">Zahlenraten</a> ist erstamls öffentlich nur in einem alten design.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">Dezember 2025</span>
-                        <h3 class="entry-title">🔗 Die gekaufte Domain</h3>
-                        <p> Das Motto "Glaggle your life!" wird geboren und die Domain bei <a href="https://hosttech.ch/">hosttech</a> gesichert.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="glaggle-entry fav-project">
-                        <span class="month-label">April 2025</span>
-                        <h3 class="entry-title">✨ Die Geburt von Glaggle</h3>
-                        <p>Als Anfang der Glaggle Geschichte kann der April 16, 2025 angesehen werden. An dem Tag wurde ein Suchmaschinen Projekt namens <a href="https://scratch.mit.edu/projects/1162485203/">Glaggle.com</a> auf Scartch veröffentlicht!</p>
-                    </div>
-                </div>
-            </div>
+    <!-- 1. Intro -->
+    <section class="scene" id="hero">
+        <div class="stage">
+            <h1 class="hero-title">Glaggle History ✨</h1>
+            <p class="hero-sub">Von den ersten Zeilen Code bis zum globalen Glaggle-Erlebnis.</p>
+            <div class="scroll-hint">Scroll</div>
         </div>
-    </main>
+    </section>
+
+    <!-- 2. Timeline (chronologisch: von der Geburt bis heute) -->
+    <section class="scene" id="timeline">
+        <div class="stage">
+            <h2 class="feat-head">Unsere Reise</h2>
+            <div class="track" id="track">
+
+                <div class="hcard"><div class="ico">✨</div><span class="month">April 2025</span><strong>Die Geburt von Glaggle</strong>
+                    <p>Als Anfang der Glaggle Geschichte kann der 16. April 2025 angesehen werden. An dem Tag wurde ein Suchmaschinen-Projekt namens <a href="https://scratch.mit.edu/projects/1162485203/">Glaggle.com</a> auf Scratch veröffentlicht!</p></div>
+
+                <div class="hcard"><div class="ico">🔗</div><span class="month">Dezember 2025</span><strong>Die gekaufte Domain</strong>
+                    <p>Das Motto „Glaggle your life!“ wird geboren und die Domain bei <a href="https://hosttech.ch/">hosttech</a> gesichert.</p></div>
+
+                <div class="hcard"><div class="ico">🔢</div><span class="month">Januar 2026</span><strong>Zahlenraten</strong>
+                    <p>Das Glaggle <a href="https://glaggle.ch/zahlenraten/">Zahlenraten</a> ist erstmals öffentlich, noch in einem alten Design.</p></div>
+
+                <div class="hcard"><div class="ico">🤖</div><span class="month">Februar 2026</span><strong>Glame AI Evolution und WebSearch</strong>
+                    <p>Glame 1.0 wird erschaffen und später weiterentwickelt für mehr Designmodes und Markdown. Ende Februar ist erstmals auch die Glaggle WebSearch verfügbar. Nebenbei wird auch die Home-Seite massiv upgedatet!</p></div>
+
+                <div class="hcard"><div class="ico">🎮</div><span class="month">März 2026</span><strong>Gamecenter und Quiz Studio</strong>
+                    <p>Das Gamecenter wird mit anfänglich 4 Games eröffnet, dazu gibt es das Glaggle Design Studio. Erstmals ist das Quiz Studio Pro verfügbar, mit dem man Quizze per KI erstellen kann. Die Home-Seite bekommt das Hamburgerkonzept für eine bessere Übersicht, und Glame 2.0 wird auf <a href="https://glaggle.ch/glame/pro/">Glame Pro</a> upgedatet. Glame Classic besteht weiterhin in der Version 3.0!</p></div>
+
+                <div class="hcard"><div class="ico">🌇</div><span class="month">April 2026</span><strong>AImage, WebSearch und 3D Games</strong>
+                    <p>In <a href="https://glaggle.ch/aimage">AImage</a> kannst du Bilder kostenlos und ohne LogIn generieren, dazu gibt es <a href="https://glaggle.ch/avideo">AVideo</a>. Die neue WebSearch-Funktion greift auf eine Datenbank zu, in die der Glaggle-Bot immer mehr Websites einträgt. Mit <a href="https://glaggle.ch/historysites">Glaggle Historysites</a> rufst du alle Versionen der Hauptseite ab, und im Gamecenter beginnt mit <a href="https://glaggle.ch/glaggleresort">Glaggle Resort 3D</a> die Ära der 3D Games.</p></div>
+
+                <div class="hcard"><div class="ico">🥳</div><span class="month">16. April 2026</span><strong>Happy Birthday Glaggle!</strong>
+                    <p>Juhu! Wir feiern unseren 1. Geburtstag: <a href="https://scratch.mit.edu/projects/1162485203/">Glaggle.com</a> ist seit 1 Jahr auf Scratch!</p></div>
+
+                <div class="hcard"><div class="ico">✨</div><span class="month">Mai 2026</span><strong>AI Power, Design Upgrade + LogIn!</strong>
+                    <p>Glame AI Pro wird massiv upgedatet. Erstmals kannst du einen <a href="https://glaggle.ch/account">Glaggle Account erstellen</a> und damit Glaggle-Cloud-Dienste nutzen. Die Hauptseite ist für PCs neu im neuen Design verfügbar.</p></div>
+
+                <div class="hcard"><div class="ico">⚜️</div><span class="month">Juni 2026</span><strong>Design und Glaggle Assistant</strong>
+                    <p>Die <a href="https://glaggle.ch/">Hauptseite</a> ist jetzt auch für Handys im neuen Design verfügbar, und man kann sein bevorzugtes Farbschema auswählen. Neu ist Glaggle Assistant, der wie Siri oder Alexa funktioniert. Dazu erscheint erstmals eine <a href="https://glaggle.ch/preview">Beta-Version</a> der WebSearch, die helfen soll, Websites schneller zu finden.</p></div>
+
+                <div class="hcard"><div class="ico">🌦️</div><span class="month">Juli 2026</span><strong>Glaggle Meteo und Design Studio</strong>
+                    <p>Neu dabei ist <a href="https://glaggle.ch/meteo">Glaggle Meteo</a> mit der Open-Meteo-API und bis zu 7 Tagen Wettervorhersage. Auch das <a href="https://glaggle.ch/designstudio">Glaggle Design Studio</a> wird angepasst und verbessert.</p></div>
+
+                <div class="hcard"><div class="ico">👤</div><span class="month">August 2026</span><strong>Neue Magic-URL-Anmeldung</strong>
+                    <p>Spar dir den lästigen Passwort-Stress: Das LogIn für Glaggle Accounts läuft ab jetzt über Magic URL, mühelos per E-Mail.</p></div>
+
+                <div class="hcard"><div class="ico">🔎</div><span class="month">September 2026</span><strong>Neues kleines Suchfeld</strong>
+                    <p>Keine Lust, nach oben zu scrollen, um etwas Neues zu suchen? Das kleine Suchfeld erscheint direkt unter der Glaggle Nav, sobald das grosse nicht mehr zu sehen ist. Dazu kommen Avatare, um Glaggle Accounts persönlicher zu machen: <a href="https://glaggle.ch/account">Account erstellen</a>, die <a href="https://glaggle.ch/account/overview">Übersicht öffnen</a> und den Avatar mit Glaggle AI generieren. Viel Spass!</p></div>
+
+                <div class="hcard"><div class="ico">📁</div><span class="month">Oktober 2026</span><strong>Vereinheitlichung</strong>
+                    <p>Wir vereinheitlichen das Design aller Glaggle Seiten. Wie schon auf der <a href="https://glaggle.ch/faq">FAQ und Über uns Seite</a> sehen Navbar und Sidebar künftig überall gleich aus, und das Theme lässt sich auf allen Seiten anwenden!</p></div>
+
+                <div class="hcard"><div class="ico">🙈</div><span class="month">November 2026</span><strong>Glaggle Pranks</strong>
+                    <p>Neu in der <a href="https://glaggle.ch/">Glaggle Suche</a> sind die Glaggle Pranks, zum Beispiel Wave, Tornado, Beat oder Black Hole! Was passiert, wenn du sie eingibst?</p></div>
+
+            </div>
+            <div class="progress"><i></i></div>
+        </div>
+    </section>
+
+    <!-- 3. Quick Links -->
+    <section class="quick" id="quick">
+        <h2 class="quick-head">Das könnte dir auch gefallen:</h2>
+        <div class="quick-grid">
+            <a class="qlink" href="/faq" style="--d:0">
+                <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <span class="qtext"><strong>Glaggle FAQ</strong><small>Finde Antworten auf Fragen</small></span>
+                <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="qlink" href="https://glame.glaggle.ch" style="--d:1">
+                <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>
+                <span class="qtext"><strong>Glame AI Pro</strong><small>Dein intelligenter KI-Chatbot</small></span>
+                <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+        </div>
+    </section>
+
+    <footer>&copy; 2026 Glaggle - Glaggle your life!</footer>
 
     <script>
-        // Kleiner Effekt: Karten beim Scrollen einblenden
-        const observerOptions = { threshold: 0.5 };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = "1";
-                    entry.target.style.transform = "translateY(0)";
+    (function () {
+        const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+        const scenes = [...document.querySelectorAll('.scene')];
+        const cards = [...document.querySelectorAll('.hcard')];
+        const backdrop = document.getElementById('backdrop');
+        const bar = document.querySelector('.progress');
+        const SCROLL_PER_CARD = 75; // vh Scrollweg pro Karte
+
+        // Szenenhöhe passt sich der Kartenanzahl an
+        document.getElementById('timeline').style.height = (cards.length * SCROLL_PER_CARD + 100) + 'vh';
+
+        let ticking = false;
+        function update() {
+            ticking = false;
+            const vh = window.innerHeight;
+
+            scenes.forEach(sc => {
+                const r = sc.getBoundingClientRect();
+                const p = clamp(-r.top / (r.height - vh));
+                sc.style.setProperty('--p', p.toFixed(4));
+
+                if (sc.id === 'timeline') {
+                    bar.classList.toggle('show', p > 0 && p < 1);
+                    bar.style.setProperty('--p', p.toFixed(4));
+                    bar.style.setProperty('--bw', bar.offsetWidth + 'px');
+
+                    // pos = aktuelle Karte (Kommazahl); pro Karte kurz verweilen, dann weich zur nächsten
+                    const n = cards.length;
+                    const u = clamp((p - .03) / .94) * (n - 1);
+                    const i = Math.min(Math.floor(u), n - 2);
+                    let t = clamp((u - i - .25) / .5);
+                    t = t * t * (3 - 2 * t);
+                    const pos = i + t;
+                    const step = cards[0].offsetWidth + 48;
+                    cards.forEach((el, k) => {
+                        const f = clamp(1 - Math.abs(k - pos));
+                        el.style.setProperty('--f', f.toFixed(3));
+                        el.style.pointerEvents = f > .6 ? 'auto' : 'none';
+                        el.style.transform = 'translate3d(' + ((k - pos) * step).toFixed(1) + 'px,0,0) scale(' + (.78 + .22 * f).toFixed(3) + ')';
+                    });
                 }
             });
-        }, observerOptions);
 
-        document.querySelectorAll('.glaggle-entry').forEach(el => {
-            el.style.opacity = "0";
-            el.style.transform = "translateY(20px)";
-            el.style.transition = "all 0.6s ease-out";
-            observer.observe(el);
-        });
+            const total = document.documentElement.scrollHeight - vh;
+            backdrop.style.setProperty('--bgp', clamp(window.scrollY / total).toFixed(4));
+        }
+
+        function request() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+        window.addEventListener('scroll', request, { passive: true });
+        window.addEventListener('resize', request);
+
+        // Fortschrittsbalken: farbig nur beim Vorwärtsscrollen, rückwärts sofort blau
+        let lastY = window.scrollY, idle;
+        window.addEventListener('scroll', () => {
+            const y = window.scrollY;
+            if (y > lastY) {
+                bar.classList.add('moving');
+                clearTimeout(idle);
+                idle = setTimeout(() => bar.classList.remove('moving'), 150);
+            } else {
+                bar.classList.remove('moving');
+            }
+            lastY = y;
+        }, { passive: true });
+
+        // Quick Links sanft einblenden
+        const qlinks = [...document.querySelectorAll('.qlink')];
+        if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(e => e.target.classList.toggle('in', e.isIntersecting));
+            }, { threshold: .25 });
+            qlinks.forEach(el => io.observe(el));
+        } else {
+            qlinks.forEach(el => el.classList.add('in'));
+        }
+
+        update();
+    })();
     </script>
 </body>
 </html>
