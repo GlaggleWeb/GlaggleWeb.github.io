@@ -123,32 +123,31 @@
     .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
     .feature-card p a { color: var(--link-color); font-weight: bold; text-decoration: none; }
     .feature-card p a:hover { text-decoration: underline; }
-    /* Manuelle Pfeile */
+    /* Manuelle Pfeile: fest knapp über dem Fortschrittsbalken */
+    #features .stage { padding-bottom: 100px; }
+    .track { height: min(56vh, 480px); }
     .nav-arrow {
-        position: absolute; top: 50%; z-index: 4;
-        width: 52px; height: 52px; margin-top: -26px; padding: 0;
+        position: fixed; z-index: 6;
+        bottom: calc(20px + 8px + 14px + env(safe-area-inset-bottom, 0px));
+        width: 48px; height: 48px; padding: 0;
         display: grid; place-items: center; cursor: pointer;
         border-radius: 50%; border: 3px solid var(--blue);
         background: color-mix(in srgb, var(--card-bg) 92%, transparent);
         color: var(--blue);
         box-shadow: 0 10px 30px rgba(112, 196, 247, .25);
         -webkit-tap-highlight-color: transparent;
+        opacity: 0; pointer-events: none;
         transition: opacity .25s, transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
     }
-    .nav-arrow.prev { left: max(8px, calc(50% - min(560px, 84vw) / 2 - 76px)); }
-    .nav-arrow.next { right: max(8px, calc(50% - min(560px, 84vw) / 2 - 76px)); }
-    .nav-arrow svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-arrow.prev { left: calc(50% - 60px); }
+    .nav-arrow.next { left: calc(50% + 12px); }
+    .nav-arrow.show { opacity: 1; pointer-events: auto; }
+    .nav-arrow.show:disabled { opacity: .3; pointer-events: none; }
+    .nav-arrow svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .nav-arrow:active { transform: scale(.92); }
     .nav-arrow:focus-visible { outline: 3px solid var(--link-color); outline-offset: 4px; }
-    .nav-arrow:disabled { opacity: 0; pointer-events: none; }
     @media (hover: hover) {
-        .nav-arrow:hover { box-shadow: 0 16px 36px rgba(112, 196, 247, .4); transform: scale(1.08); }
-    }
-    @media (max-width: 700px) {
-        .nav-arrow { width: 40px; height: 40px; margin-top: -20px; border-width: 2px; }
-        .nav-arrow svg { width: 20px; height: 20px; }
-        .nav-arrow.prev { left: 2px; }
-        .nav-arrow.next { right: 2px; }
+        .nav-arrow.show:not(:disabled):hover { box-shadow: 0 16px 36px rgba(112, 196, 247, .4); transform: scale(1.08); }
     }
     .progress {
         position: fixed;
@@ -413,6 +412,8 @@
 
                 if (sc.id === 'features') {
                     bar.classList.toggle('show', p > 0 && p < 1);   // Balken nur in diesem Abschnitt zeigen
+                    prevBtn.classList.toggle('show', p > 0 && p < 1);
+                    nextBtn.classList.toggle('show', p > 0 && p < 1);
                     bar.style.setProperty('--p', p.toFixed(4));
                     bar.style.setProperty('--bw', bar.offsetWidth + 'px');
                     // pos = aktuelle Karte (Kommazahl); pro Karte kurz verweilen, dann weich zur nächsten
