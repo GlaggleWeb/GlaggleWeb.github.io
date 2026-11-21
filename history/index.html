@@ -123,6 +123,33 @@
     .feature-card p { margin: 0; color: var(--desc-color); line-height: 1.55; font-size: clamp(1rem, 2.2vw, 1.2rem); }
     .feature-card p a { color: var(--link-color); font-weight: bold; text-decoration: none; }
     .feature-card p a:hover { text-decoration: underline; }
+    /* Manuelle Pfeile */
+    .nav-arrow {
+        position: absolute; top: 50%; z-index: 4;
+        width: 52px; height: 52px; margin-top: -26px; padding: 0;
+        display: grid; place-items: center; cursor: pointer;
+        border-radius: 50%; border: 3px solid var(--blue);
+        background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+        color: var(--blue);
+        box-shadow: 0 10px 30px rgba(112, 196, 247, .25);
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity .25s, transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
+    }
+    .nav-arrow.prev { left: max(8px, calc(50% - min(560px, 84vw) / 2 - 76px)); }
+    .nav-arrow.next { right: max(8px, calc(50% - min(560px, 84vw) / 2 - 76px)); }
+    .nav-arrow svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-arrow:active { transform: scale(.92); }
+    .nav-arrow:focus-visible { outline: 3px solid var(--link-color); outline-offset: 4px; }
+    .nav-arrow:disabled { opacity: 0; pointer-events: none; }
+    @media (hover: hover) {
+        .nav-arrow:hover { box-shadow: 0 16px 36px rgba(112, 196, 247, .4); transform: scale(1.08); }
+    }
+    @media (max-width: 700px) {
+        .nav-arrow { width: 40px; height: 40px; margin-top: -20px; border-width: 2px; }
+        .nav-arrow svg { width: 20px; height: 20px; }
+        .nav-arrow.prev { left: 2px; }
+        .nav-arrow.next { right: 2px; }
+    }
     .progress {
         position: fixed;
         left: 16px; right: 16px;
@@ -312,6 +339,8 @@
                 <div class="feature-card"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><span class="month">November 2026</span><strong>🙈 Glaggle Pranks</strong>
                     <p>Neu dabei in der <a href="https://glaggle.ch/">Glaggle Suche</a> sind die Glaggle Pranks! Darunter zb schon Wave, Tornado, Beat oder Black Hole! Was passiert wenn du sie eingiebst?</p></div>
 
+                <button class="nav-arrow prev" id="prev" type="button" aria-label="Vorheriger Eintrag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+                <button class="nav-arrow next" id="next" type="button" aria-label="Nächster Eintrag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             </div>
             <div class="progress"><i></i></div>
         </div>
@@ -349,6 +378,29 @@
         // Szenenhöhe passt sich der Kartenanzahl an
         document.getElementById('features').style.height = (cards.length * SCROLL_PER_CARD + 100) + 'vh';
 
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const featScene = document.getElementById('features');
+        let curPos = 0;
+
+        // Scrollt so, dass Karte k im Fokus steht (Umkehrung der Berechnung in update)
+        function goToCard(k) {
+            const n = cards.length;
+            k = Math.max(0, Math.min(n - 1, k));
+            const u = k === n - 1 ? n - 1 : k + .1;           // innerhalb der "Verweilzone" der Karte
+            const p = .03 + .94 * (u / (n - 1));
+            const top = featScene.getBoundingClientRect().top + window.scrollY;
+            const y = top + p * (featScene.offsetHeight - window.innerHeight);
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+        prevBtn.addEventListener('click', () => goToCard(Math.round(curPos) - 1));
+        nextBtn.addEventListener('click', () => goToCard(Math.round(curPos) + 1));
+        document.addEventListener('keydown', e => {
+            if (!bar.classList.contains('show')) return;
+            if (e.key === 'ArrowLeft') goToCard(Math.round(curPos) - 1);
+            if (e.key === 'ArrowRight') goToCard(Math.round(curPos) + 1);
+        });
+
         let ticking = false;
         function update() {
             ticking = false;
@@ -377,6 +429,9 @@
                         el.style.pointerEvents = f > .6 ? 'auto' : 'none';
                         el.style.transform = 'translate3d(' + ((k - pos) * step).toFixed(1) + 'px,0,0) scale(' + (.78 + .22 * f).toFixed(3) + ')';
                     });
+                    curPos = pos;
+                    prevBtn.disabled = pos < .5;
+                    nextBtn.disabled = pos > n - 1.5;
                 }
             });
 
