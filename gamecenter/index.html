@@ -502,6 +502,79 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
     font-weight: bold;
     min-height: 24px;
 }
+
+/* ===== ADVENTSKALENDER ===== */
+.advent-card {
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+}
+.advent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+.advent-door {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    border: 2px solid var(--card-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+}
+.advent-door small { font-size: 0.7rem; font-weight: normal; color: var(--desc-color); }
+.advent-door.locked { opacity: 0.4; cursor: not-allowed; }
+.advent-door.ready {
+    border-color: var(--accent);
+    animation: adventPulse 1.8s ease-in-out infinite;
+}
+.advent-door.ready:hover { transform: translateY(-3px); filter: brightness(1.08); }
+.advent-door.opened {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    cursor: default;
+}
+.advent-door.opened small { color: rgba(255,255,255,0.85); }
+.advent-door.day-24 { border-color: #FFD700; }
+.advent-door.day-24.opened { background: #FFD700; color: #333; }
+@keyframes adventPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(112,196,247,0.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(112,196,247,0); }
+}
+.advent-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.advent-overlay.open { display: flex; }
+.advent-modal {
+    background: var(--card-bg); border: 2px solid var(--accent);
+    border-radius: 20px; padding: 30px; max-width: 340px; width: 100%;
+    text-align: center; color: var(--text-color);
+    animation: fadeInSlide 0.3s ease-out;
+}
+.advent-modal .big { font-size: 3.5rem; margin-bottom: 10px; }
+
+.advent-door.missed {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-style: dashed;
+    text-decoration: line-through;
+}
 </style>
 </head>
 <body>
@@ -531,6 +604,14 @@ body.smart-mouse-active #toggle-leaderboard.smart-hover {
         </p>
     </div>
 </div>
+
+    <!-- ADVENTSKALENDER -->
+    <div class="advent-card" id="advent-card">
+        <h2 class="game-title" style="justify-content:center; margin-top:0;"><span>🎄</span> Glaggle Adventskalender</h2>
+        <p id="advent-info" style="text-align:center; color:var(--desc-color); font-size:0.9rem; margin:0;"></p>
+        <div class="advent-grid" id="advent-grid"></div>
+    </div>
+            
 <!-- ===== STREAK & GLÜCKSRAD WRAPPER (nach news-container einfügen) ===== -->
 <div style="width: 100%; max-width: 900px; padding: 0 20px; box-sizing: border-box; margin: 0 auto;">
 
@@ -1821,6 +1902,191 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
     document.addEventListener('DOMContentLoaded', initStreakSystem);
 }
+</script>
+<div class="advent-overlay" id="advent-overlay">
+    <div class="advent-modal">
+        <div class="big" id="advent-reveal-icon"></div>
+        <h3 id="advent-reveal-title" style="margin:0 0 8px; color:var(--link-color);"></h3>
+        <p id="advent-reveal-text" style="margin:0 0 18px; color:var(--desc-color); font-size:0.9rem;"></p>
+        <button class="streak-buy-btn" onclick="document.getElementById('advent-overlay').classList.remove('open')">Super!</button>
+    </div>
+</div>
+<script>
+/* ============================================================
+   GLAGGLE ADVENTSKALENDER
+   - Belohnungen sind fest => für alle Spieler gleich
+   - Coins: min. 3 | Tag 24: Glaggle Omega (Platin)
+   ============================================================ */
+const ADVENT_YEAR = 2026;
+const ADVENT_TEST_DAY = null; // zum Testen z.B. 12 setzen, danach wieder null!
+
+const ADVENT_REWARDS = {
+     1: { type: 'coins', amount: 3 },
+     2: { type: 'coins', amount: 4 },
+     3: { type: 'glagini', glId: 10,  name: 'Bubbi',          rarity: 'Normal',       metal: 'none' },
+     4: { type: 'coins', amount: 3 },
+     5: { type: 'coins', amount: 5 },
+     6: { type: 'glagini', glId: 43,  name: 'Frostini',       rarity: 'Selten',       metal: 'none' }, // Nikolaus
+     7: { type: 'coins', amount: 4 },
+     8: { type: 'coins', amount: 5 },
+     9: { type: 'glagini', glId: 6,   name: 'Fungi',          rarity: 'Normal',       metal: 'bronze' },
+    10: { type: 'coins', amount: 6 },
+    11: { type: 'coins', amount: 4 },
+    12: { type: 'glagini', glId: 63,  name: 'Blütengeist',    rarity: 'Selten',       metal: 'none' },
+    13: { type: 'coins', amount: 5 },
+    14: { type: 'coins', amount: 8 },
+    15: { type: 'coins', amount: 7 },
+    16: { type: 'glagini', glId: 69,  name: 'Magnetkugel',    rarity: 'Selten',       metal: 'silver' },
+    17: { type: 'coins', amount: 6 },
+    18: { type: 'glagini', glId: 72,  name: 'Prismatica',     rarity: 'Supersselten', metal: 'none' },
+    19: { type: 'coins', amount: 8 },
+    20: { type: 'coins', amount: 10 },
+    21: { type: 'glagini', glId: 85,  name: 'Eisphönix',      rarity: 'Supersselten', metal: 'gold' }, // Winteranfang
+    22: { type: 'coins', amount: 12 },
+    23: { type: 'coins', amount: 20 },
+    24: { type: 'glagini', glId: 200, name: 'Glaggle Omega',  rarity: 'Episch',       metal: 'platinum' }
+};
+
+const ADVENT_METAL_LABELS = { none: '', bronze: '🥉 Bronze', silver: '🥈 Silber', gold: '🥇 Gold', platinum: '💠 Platin' };
+const ADVENT_STORAGE_KEY = 'glaggleAdventOpened' + ADVENT_YEAR;
+
+function adventCurrentDay() {
+    if (ADVENT_TEST_DAY !== null) return ADVENT_TEST_DAY;
+    const now = new Date();
+    if (now < new Date(ADVENT_YEAR, 11, 1)) return 0;               // noch nicht gestartet
+    if (now.getFullYear() > ADVENT_YEAR || now.getDate() > 24) return 25; // vorbei
+    return now.getDate();
+}
+function adventGetOpened() {
+    try { return JSON.parse(localStorage.getItem(ADVENT_STORAGE_KEY)) || []; }
+    catch (e) { return []; }
+}
+
+function adventRewardLabel(r) {
+    return r.type === 'coins' ? `${r.amount} 🪙` : '🃏';
+}
+
+function renderAdvent() {
+    const grid = document.getElementById('advent-grid');
+    const info = document.getElementById('advent-info');
+    if (!grid) return;
+
+    const today = adventCurrentDay();
+    const opened = adventGetOpened();
+    grid.innerHTML = '';
+
+    if (today === 0) {
+        info.innerText = 'Der Adventskalender startet am 1. Dezember! 🎅';
+    } else if (today > 24) {
+        info.innerText = `Der Adventskalender ist beendet – du hast ${opened.length}/24 Türchen geöffnet. Frohe Weihnachten! 🎄`;
+    } else if (opened.includes(today)) {
+        info.innerText = `Heutiges Türchen geöffnet ✅ Komm morgen wieder! (${opened.length}/24)`;
+    } else {
+        info.innerText = `Öffne heute Türchen ${today} – verpasste Tage verfallen! (${opened.length}/24)`;
+    }
+
+    for (let day = 1; day <= 24; day++) {
+        const btn = document.createElement('button');
+        const isOpened = opened.includes(day);
+        const isReady  = day === today && !isOpened;
+        const isMissed = day < today && !isOpened;
+
+        btn.className = 'advent-door'
+            + (day === 24 ? ' day-24' : '')
+            + (isOpened ? ' opened' : isReady ? ' ready' : isMissed ? ' missed' : ' locked');
+
+        if (isOpened) {
+            btn.innerHTML = `${day}<small>${adventRewardLabel(ADVENT_REWARDS[day])}</small>`;
+        } else {
+            btn.innerHTML = day === 24 ? `${day}<small>⭐</small>` : `${day}`;
+        }
+
+        btn.addEventListener('click', () => openAdventDoor(day));
+        grid.appendChild(btn);
+    }
+}
+
+function adventGiveCoins(amount) {
+    const total = (parseInt(localStorage.getItem('glaggleCoins')) || 0) + amount;
+    localStorage.setItem('glaggleCoins', total);
+    glaggleCoins = total;
+    updateCoinDisplay();
+
+    if (typeof glaggleID !== 'undefined' && glaggleID) {
+        supabaseClient.from('glaggle_accounts')
+            .update({ total_coins: total })
+            .eq('glaggle_id', glaggleID)
+            .then(() => {})
+            .catch(() => {});
+    }
+}
+
+function adventGiveGlagini(r) {
+    let col = [];
+    try { col = JSON.parse(localStorage.getItem('glaginiCollection')) || []; } catch (e) {}
+    col.push({
+        glId: r.glId,
+        instanceId: 'gl_' + Math.random().toString(36).substr(2, 12),
+        metal: r.metal || 'none',
+        stuck: false
+    });
+    localStorage.setItem('glaginiCollection', JSON.stringify(col));
+}
+
+function openAdventDoor(day) {
+    const today = adventCurrentDay();
+    const opened = adventGetOpened();
+
+       if (opened.includes(day)) return;
+
+    if (today === 0) {
+        showStreakToast('🎅 Ab dem 1. Dezember erwarten dich hier täglich Glaggle Coins und Glaginis!');
+        return;
+    }
+    if (day > today) {
+        showStreakToast(`🔒 Türchen ${day} kann erst am ${day}. Dezember geöffnet werden.`);
+        return;
+    }
+    if (day < today) {
+        showStreakToast(`⏰ Türchen ${day} war nur am ${day}. Dezember offen – leider verpasst!`);
+        return;
+    }
+    if (opened.includes(day)) return;
+    if (opened.includes(day)) return;
+
+    const r = ADVENT_REWARDS[day];
+
+    // Erst als geöffnet speichern, dann belohnen (verhindert Doppel-Klick-Bug)
+    opened.push(day);
+    localStorage.setItem(ADVENT_STORAGE_KEY, JSON.stringify(opened));
+
+    let icon, title, text;
+    if (r.type === 'coins') {
+        adventGiveCoins(r.amount);
+        icon = '🪙';
+        title = `${r.amount} Glaggle Coins!`;
+        text = `Türchen ${day}: Die Coins wurden deinem Konto gutgeschrieben.`;
+    } else {
+        adventGiveGlagini(r);
+        const metal = ADVENT_METAL_LABELS[r.metal];
+        icon = '🃏';
+        title = `${r.name}${metal ? ' (' + metal + ')' : ''}`;
+        text = `Türchen ${day}: ${r.rarity}er Glagini! Du findest ihn jetzt in deinen Glaginis.`;
+        if (day === 24) { icon = '🎄✨'; text = 'Frohe Weihnachten! Der beste Glagini aller Zeiten gehört dir!'; }
+    }
+
+    document.getElementById('advent-reveal-icon').innerText = icon;
+    document.getElementById('advent-reveal-title').innerText = title;
+    document.getElementById('advent-reveal-text').innerText = text;
+    document.getElementById('advent-overlay').classList.add('open');
+
+    renderAdvent();
+}
+
+renderAdvent();
+// Falls die Seite über Mitternacht offen bleibt oder man zurück in den Tab kommt
+setInterval(renderAdvent, 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAdvent(); });
 </script>
 </body>
 </html>
