@@ -2055,7 +2055,11 @@ async function streamAI(body, onText, signal) {
         body: JSON.stringify({ ...body, stream: true }),
         signal
     });
-    if (!res.ok || !res.body) throw new Error("API " + res.status);
+    
+    if (!res.ok || !res.body) {
+        const errText = await res.text();
+        throw new Error(`API ${res.status}: ${errText}`);
+    }
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -2066,22 +2070,31 @@ async function streamAI(body, onText, signal) {
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
-        buffer = lines.pop(); // unvollständige Zeile behalten
+        buffer = lines.pop(); 
 
         for (const line of lines) {
-            const l = line.trim();
-            if (!l.startsWith("data:")) continue;
-            const data = l.slice(5).trim();
-            if (data === "[DONE]") return full;
+            let l = line.trim();
+            if (!l) continue;
+            
+            // Manche Cloudflare-Streams senden direkt JSON statt "data: "
+            if (l.startsWith("data:")) {
+                l = l.slice(5).trim();
+            }
+            if (l === "[DONE]") return full;
+
             try {
-                const parsed = JSON.parse(data);
-                // Cloudflare Workers AI nutzt .response, OpenAI/Groq .choices[0].delta.content
+                const parsed = JSON.parse(l);
                 const delta = parsed.response ?? parsed.choices?.[0]?.delta?.content;
                 if (delta) {
                     full += delta;
                     onText(full);
                 }
-            } catch {}
+            } catch {
+                // Falls ein Chunk reinkommt, der direkt als Klartext oder unvollständig ankommt
+                if (l.length > 0 && !l.startsWith(":")) {
+                    // Manchmal senden Modelle reinen Text im Stream
+                }
+            }
         }
     }
     return full;
@@ -2129,7 +2142,7 @@ async function fetchAI(query) {
 
     try {
         await streamAI({
-            model: "@cf/meta/llama-3.1-8b-instruct",
+            model: "@cf/qwen/qwen1.5-7b-chat-awq",
             messages: [
                 {
                     role: "system",
