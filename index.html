@@ -2245,6 +2245,8 @@ function setupAiChat(context) {
     const newInput = input.cloneNode(true);
     input.parentNode.replaceChild(newInput, input);
 
+const AI_ENDPOINT = "https://shiny-credit-811f.rhpjmf7t2s.workers.dev"; // Deine Worker-URL
+
 async function sendMessage() {
     const msg = newInput.value.trim();
     if (!msg) return;
@@ -2262,7 +2264,7 @@ async function sendMessage() {
     newInput.value = '';
     chatHistory.push({ role: "user", content: msg });
 
-    // Lade-Bubble (wird gleich als Streaming-Ziel genutzt)
+    // Lade-Bubble (wird als Streaming-Ziel genutzt)
     const loadBubble = document.createElement('div');
     loadBubble.style.cssText = `
         align-self:flex-start; background:rgba(112,196,247,0.12);
@@ -2276,26 +2278,25 @@ async function sendMessage() {
     messages.scrollTop = messages.scrollHeight;
 
     try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        // ANFRAGE GEHT JETZT AN DEINEN WORKER (Ohne API-Key im Frontend!)
+        const res = await fetch(AI_ENDPOINT, {
             method: "POST",
-            headers: { "Authorization": "Bearer " + getGKey(), "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
-                model: "openai/gpt-oss-20b", 
+                model: "@cf/meta/llama-3.1-8b-instruct", // Dein Cloudflare-Modell
                 messages: chatHistory,
-                stream: true // 1. Streaming aktivieren!
+                stream: true 
             })
         });
 
-        if (!res.ok) throw new Error("API-Fehler");
+        if (!res.ok) throw new Error("API-Fehler " + res.status);
 
-        // 2. Stream-Reader und Decoder aufsetzen
         const reader = res.body.getReader();
         const decoder = new TextDecoder("utf-8");
         
         let accumulatedReply = "";
         let buffer = ""; 
         
-        // Loader-Text entfernen, sobald die ersten Daten eintreffen
         loadBubble.style.color = 'white';
         loadBubble.innerHTML = "";
 
@@ -2303,40 +2304,37 @@ async function sendMessage() {
             const { done, value } = await reader.read();
             if (done) break;
 
-            // Chunks decodieren und in den Puffer schreiben
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split("\n");
-            
-            // Die letzte Zeile im Puffer lassen, falls sie unvollständig abgeschnitten wurde
             buffer = lines.pop(); 
 
             for (const line of lines) {
-                const cleanedLine = line.trim();
+                let cleanedLine = line.trim();
                 if (!cleanedLine) continue;
                 if (cleanedLine === "data: [DONE]") break;
 
-                if (cleanedLine.startsWith("data: ")) {
-                    try {
-                        const jsonStr = cleanedLine.slice(6);
-                        const parsed = JSON.parse(jsonStr);
-                        const content = parsed.choices[0]?.delta?.content || "";
-                        
-                        // Text Stück für Stück aufbauen
+                // Cloudflare-Stream-Parsing (unterstützt "data: " Präfix)
+                if (cleanedLine.startsWith("data:")) {
+                    cleanedLine = cleanedLine.slice(5).trim();
+                }
+
+                try {
+                    const parsed = JSON.parse(cleanedLine);
+                    // Unterstützt sowohl Cloudflare Workers AI (.response) als auch OpenAI-Kompatibilität
+                    const content = parsed.response ?? parsed.choices?.[0]?.delta?.content ?? "";
+                    
+                    if (content) {
                         accumulatedReply += content;
-                        
-                        // Live-Rendering des aktuellen Stands
                         loadBubble.innerHTML = marked.parse(accumulatedReply);
-                        
-                        // Automatisch mitscrollen bei langem Text
                         messages.scrollTop = messages.scrollHeight;
-                    } catch (e) {
-                        // Ignorieren, falls das JSON innerhalb einer Zeile unvollständig war
                     }
+                } catch (e) {
+                    // JSON-Fehler bei unvollständigen Chunks ignorieren
                 }
             }
         }
 
-        // Nach dem Streamen die finale Antwort in den Verlauf pushen
+        // Finale Antwort in den Verlauf speichern
         chatHistory.push({ role: "assistant", content: accumulatedReply });
 
     } catch(e) {
@@ -2346,12 +2344,10 @@ async function sendMessage() {
     messages.scrollTop = messages.scrollHeight;
 }
 
-    newSend.onclick = sendMessage;
-    newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-    
-    // Fokus setzen
-    setTimeout(() => newInput.focus(), 100);
-}
+newSend.onclick = sendMessage;
+newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+setTimeout(() => newInput.focus(), 100);
     
 
 function scoreWeb(res, query) {
