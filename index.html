@@ -2245,109 +2245,106 @@ function setupAiChat(context) {
     const newInput = input.cloneNode(true);
     input.parentNode.replaceChild(newInput, input);
 
-const AI_ENDPOINT = "https://shiny-credit-811f.rhpjmf7t2s.workers.dev"; // Deine Worker-URL
+    const AI_CHAT_ENDPOINT = "https://shiny-credit-811f.rhpjmf7t2s.workers.dev";
 
-async function sendMessage() {
-    const msg = newInput.value.trim();
-    if (!msg) return;
+    async function sendMessage() {
+        const msg = newInput.value.trim();
+        if (!msg) return;
 
-    // User Bubble
-    const userBubble = document.createElement('div');
-    userBubble.style.cssText = `
-        align-self:flex-end; background:linear-gradient(135deg,#70C4F7,#2E94D1);
-        color:white; padding:10px 16px; border-radius:18px 18px 4px 18px;
-        max-width:80%; font-size:0.9rem; line-height:1.5;
-        animation: wordFadeUp 0.25s ease forwards;
-    `;
-    userBubble.innerText = msg;
-    messages.appendChild(userBubble);
-    newInput.value = '';
-    chatHistory.push({ role: "user", content: msg });
+        // User Bubble
+        const userBubble = document.createElement('div');
+        userBubble.style.cssText = `
+            align-self:flex-end; background:linear-gradient(135deg,#70C4F7,#2E94D1);
+            color:white; padding:10px 16px; border-radius:18px 18px 4px 18px;
+            max-width:80%; font-size:0.9rem; line-height:1.5;
+            animation: wordFadeUp 0.25s ease forwards;
+        `;
+        userBubble.innerText = msg;
+        messages.appendChild(userBubble);
+        newInput.value = '';
+        chatHistory.push({ role: "user", content: msg });
 
-    // Lade-Bubble (wird als Streaming-Ziel genutzt)
-    const loadBubble = document.createElement('div');
-    loadBubble.style.cssText = `
-        align-self:flex-start; background:rgba(112,196,247,0.12);
-        border:1px solid rgba(112,196,247,0.2);
-        color:#ccc; padding:10px 16px; border-radius:18px 18px 18px 4px;
-        font-size:0.9rem; line-height:1.5;
-        animation: wordFadeUp 0.25s ease forwards;
-    `;
-    loadBubble.innerHTML = '<span style="opacity:0.6">✨ Glaggle denkt nach...</span>';
-    messages.appendChild(loadBubble);
-    messages.scrollTop = messages.scrollHeight;
+        // Lade-Bubble (wird als Streaming-Ziel genutzt)
+        const loadBubble = document.createElement('div');
+        loadBubble.style.cssText = `
+            align-self:flex-start; background:rgba(112,196,247,0.12);
+            border:1px solid rgba(112,196,247,0.2);
+            color:#ccc; padding:10px 16px; border-radius:18px 18px 18px 4px;
+            font-size:0.9rem; line-height:1.5;
+            animation: wordFadeUp 0.25s ease forwards;
+        `;
+        loadBubble.innerHTML = '<span style="opacity:0.6">✨ Glaggle denkt nach...</span>';
+        messages.appendChild(loadBubble);
+        messages.scrollTop = messages.scrollHeight;
 
-    try {
-        // ANFRAGE GEHT JETZT AN DEINEN WORKER (Ohne API-Key im Frontend!)
-        const res = await fetch(AI_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                model: "@cf/meta/llama-3.1-8b-instruct", // Dein Cloudflare-Modell
-                messages: chatHistory,
-                stream: true 
-            })
-        });
+        try {
+            const res = await fetch(AI_CHAT_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    model: "@cf/meta/llama-3.1-8b-instruct",
+                    messages: chatHistory,
+                    stream: true 
+                })
+            });
 
-        if (!res.ok) throw new Error("API-Fehler " + res.status);
+            if (!res.ok) throw new Error("API-Fehler " + res.status);
 
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        
-        let accumulatedReply = "";
-        let buffer = ""; 
-        
-        loadBubble.style.color = 'white';
-        loadBubble.innerHTML = "";
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            
+            let accumulatedReply = "";
+            let buffer = ""; 
+            
+            loadBubble.style.color = 'white';
+            loadBubble.innerHTML = "";
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop(); 
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop(); 
 
-            for (const line of lines) {
-                let cleanedLine = line.trim();
-                if (!cleanedLine) continue;
-                if (cleanedLine === "data: [DONE]") break;
+                for (const line of lines) {
+                    let cleanedLine = line.trim();
+                    if (!cleanedLine) continue;
+                    if (cleanedLine === "data: [DONE]") break;
 
-                // Cloudflare-Stream-Parsing (unterstützt "data: " Präfix)
-                if (cleanedLine.startsWith("data:")) {
-                    cleanedLine = cleanedLine.slice(5).trim();
-                }
-
-                try {
-                    const parsed = JSON.parse(cleanedLine);
-                    // Unterstützt sowohl Cloudflare Workers AI (.response) als auch OpenAI-Kompatibilität
-                    const content = parsed.response ?? parsed.choices?.[0]?.delta?.content ?? "";
-                    
-                    if (content) {
-                        accumulatedReply += content;
-                        loadBubble.innerHTML = marked.parse(accumulatedReply);
-                        messages.scrollTop = messages.scrollHeight;
+                    if (cleanedLine.startsWith("data:")) {
+                        cleanedLine = cleanedLine.slice(5).trim();
                     }
-                } catch (e) {
-                    // JSON-Fehler bei unvollständigen Chunks ignorieren
+
+                    try {
+                        const parsed = JSON.parse(cleanedLine);
+                        const content = parsed.response ?? parsed.choices?.[0]?.delta?.content ?? "";
+                        
+                        if (content) {
+                            accumulatedReply += content;
+                            loadBubble.innerHTML = marked.parse(accumulatedReply);
+                            messages.scrollTop = messages.scrollHeight;
+                        }
+                    } catch (e) {
+                        // Unvollständige JSON-Chunks ignorieren
+                    }
                 }
             }
+
+            chatHistory.push({ role: "assistant", content: accumulatedReply });
+
+        } catch(e) {
+            loadBubble.innerText = "Fehler beim Antworten.";
+            console.error(e);
         }
-
-        // Finale Antwort in den Verlauf speichern
-        chatHistory.push({ role: "assistant", content: accumulatedReply });
-
-    } catch(e) {
-        loadBubble.innerText = "Fehler beim Antworten.";
-        console.error(e);
+        messages.scrollTop = messages.scrollHeight;
     }
-    messages.scrollTop = messages.scrollHeight;
+
+    newSend.onclick = sendMessage;
+    newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    
+    setTimeout(() => newInput.focus(), 100);
 }
-
-newSend.onclick = sendMessage;
-newInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-
-setTimeout(() => newInput.focus(), 100);
     
 
 function scoreWeb(res, query) {
