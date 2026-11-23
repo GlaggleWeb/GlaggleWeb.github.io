@@ -9,13 +9,6 @@ window.toggleMenu = function () {
     document.getElementById('overlay')?.classList.toggle('active');
 };
 
-// 2. Groq API Key (Wird zwingend für den Voice Assistant benötigt!)
-const p1 = "gsk_";
-const p2 = "FAnwmg4IMqrAexyzdupqWGdyb";
-const p3 = "3FYiivhNRW9aQu5VibY0j0eKQ5r";
-function getGKey() { 
-    return p1 + p2 + p3; 
-}
 
 // 3. Preloader ausblenden (WICHTIG: Sonst bleibt die Ladeanimation auf allen Unterseiten stehen!)
 window.addEventListener('load', function() {
