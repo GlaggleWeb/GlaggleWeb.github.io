@@ -35,7 +35,7 @@ function submitVoiceText(e) {
     transcript.innerText = '⌨️ ' + text;
 
     input.value = '';
-    askGroqVoice(text);
+    askVoice(text);
 }
 
 function getVoiceSystemPrompt() {
