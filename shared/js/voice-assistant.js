@@ -148,7 +148,7 @@ function startListening() {
 
         if (e.results[e.results.length - 1].isFinal) {
             stopListening();
-            askGroqVoice(transcript);
+            askVoice(transcript);
         }
     };
 
@@ -222,8 +222,9 @@ ERLAUBTE AKTIONEN:
 
 Erkenne Absichten auch bei lockerer Umgangssprache. Bei "none" trotzdem inhaltlich in "reply" antworten.
 `;
+const AI_VOICE_ENDPOINT = "https://shiny-credit-811f.rhpjmf7t2s.workers.dev"; // Deine Worker-URL
 
-async function askGroqVoice(text) {
+async function askVoice(text) {
     setVoiceStatus('✨ Glaggle denkt nach...');
     const responseBox = document.getElementById('voice-response');
     responseBox.style.display = 'block';
@@ -237,25 +238,33 @@ async function askGroqVoice(text) {
         : '';
 
     try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        // ANFRAGE LÄUFT JETZT ÜBER DEINEN WORKER (Ohne API-Key im Frontend!)
+        const res = await fetch(AI_VOICE_ENDPOINT, {
             method: "POST",
             headers: {
-                "Authorization": "Bearer " + getGKey(),
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "openai/gpt-oss-20b",
+                model: "@cf/swiss-ai/apertus-v1.5-8b", // Cloudflare-Modell
                 messages: [
                     { role: "system", content: getVoiceSystemPrompt() },
                     { role: "user", content: historyContext + text }
                 ],
                 temperature: 0.2,
-                max_tokens: 300
+                max_tokens: 300,
+                stream: false // Sprachausgabe wartet meist auf die komplette Antwort
             })
         });
 
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`API-Fehler ${res.status}: ${errText}`);
+        }
+
         const data = await res.json();
-        const raw = data.choices[0].message.content;
+        
+        // Cloudflare Workers AI liefert das Ergebnis in data.response (anders als OpenAI/Groq)
+        const raw = data.response ?? data.choices?.[0]?.message?.content ?? "";
 
         let parsed;
         try {
@@ -282,6 +291,7 @@ async function askGroqVoice(text) {
     } catch(e) {
         responseBox.innerText = 'Fehler beim Verbinden mit Glaggle AI.';
         setVoiceStatus('❌ Verbindungsfehler');
+        console.error(e);
     }
 }
 function scrollToWidget(delay = 300) {
