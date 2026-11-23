@@ -1883,7 +1883,7 @@ searchFavorites(query);  // ← NEU
                 return;
             }
             if (box) box.style.display = '';   // sichtbar machen
-            return fetchGroqAI(query);
+            return fetchAI(query);
         });
 
         await Promise.allSettled([
@@ -2084,7 +2084,7 @@ async function streamGroq(body, onText, signal) {
     
 let _aiAbort = null;
 
-async function fetchGroqAI(query) {
+async function fetchAI(query) {
     // Vorherigen Stream abbrechen, falls neue Suche gestartet wurde
     if (_aiAbort) _aiAbort.abort();
     _aiAbort = new AbortController();
@@ -2123,16 +2123,14 @@ async function fetchGroqAI(query) {
     };
 
     try {
-        await streamGroq({
-            model: "openai/gpt-oss-20b",
+      await streamGroq({
+            model: "@cf/meta/llama-3.1-8b-instruct", // <-- Hier ein Cloudflare-Modell nutzen
             messages: [
                 { role: "system", content: `Du bist Glaggle AI, die Suchzusammenfassungs-KI von Glaggle Inc.
 Antworte kurz, präzise und hilfreich auf Deutsch. Erkläre das Thema selbstständig.
-Halte dich wirklich kurz (max. 5-8 Sätze).
-WICHTIG: Wenn du das Browser-Search-Tool verwendest, verwende im Text Standard-Markdown-Links wie [Name](URL) oder setze einfach Nummern wie [1], [2], um deine Aussagen zu belegen.` },
+Halte dich wirklich kurz (max. 5-8 Sätze).` },
                 { role: "user", content: query }
-            ],
-            tools: true   // Worker setzt browser_search
+            ]
         }, (text) => {
             if (!started) {                    // erster Chunk: Spinner weg, UI freischalten
                 started = true;
